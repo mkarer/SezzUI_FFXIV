@@ -1,0 +1,12 @@
+{
+  "Author": "Sezz",
+  "Name": "SezzUI",
+  "Punchline": "Work in progress, does nothing right now.",
+  "Description": "",
+  "InternalName": "SezzUI",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "SezzUI",
+    "plugin"
+  ]
+}

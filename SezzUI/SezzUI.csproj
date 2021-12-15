@@ -1,0 +1,373 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Authors></Authors>
+    <Company></Company>
+    <Version>0.0.0.1</Version>
+    <Description>SezzUI</Description>
+    <Copyright></Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <Platforms>x64</Platforms>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>$(AppData)\XIVLauncher\devPlugins\SezzUI\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Media\Images\Overlays\arcane_missiles.png" />
+    <None Remove="Media\Images\Overlays\arcane_missiles_1.png" />
+    <None Remove="Media\Images\Overlays\arcane_missiles_2.png" />
+    <None Remove="Media\Images\Overlays\arcane_missiles_3.png" />
+    <None Remove="Media\Images\Overlays\backlash.png" />
+    <None Remove="Media\Images\Overlays\backlash_green.png" />
+    <None Remove="Media\Images\Overlays\bandits_guile.png" />
+    <None Remove="Media\Images\Overlays\berserk.png" />
+    <None Remove="Media\Images\Overlays\blood_boil.png" />
+    <None Remove="Media\Images\Overlays\blood_surge.png" />
+    <None Remove="Media\Images\Overlays\brain_freeze.png" />
+    <None Remove="Media\Images\Overlays\dark_tiger.png" />
+    <None Remove="Media\Images\Overlays\dark_transformation.png" />
+    <None Remove="Media\Images\Overlays\daybreak.png" />
+    <None Remove="Media\Images\Overlays\demonic_core.png" />
+    <None Remove="Media\Images\Overlays\demonic_core_vertical.png" />
+    <None Remove="Media\Images\Overlays\denounce.png" />
+    <None Remove="Media\Images\Overlays\echo_of_the_elements.png" />
+    <None Remove="Media\Images\Overlays\feral_omenofclarity.png" />
+    <None Remove="Media\Images\Overlays\focus_fire.png" />
+    <None Remove="Media\Images\Overlays\frozen_fingers.png" />
+    <None Remove="Media\Images\Overlays\fulmination.png" />
+    <None Remove="Media\Images\Overlays\fury_of_stormrage.png" />
+    <None Remove="Media\Images\Overlays\genericarc_01.png" />
+    <None Remove="Media\Images\Overlays\genericarc_02.png" />
+    <None Remove="Media\Images\Overlays\genericarc_03.png" />
+    <None Remove="Media\Images\Overlays\genericarc_04.png" />
+    <None Remove="Media\Images\Overlays\genericarc_05.png" />
+    <None Remove="Media\Images\Overlays\genericarc_06.png" />
+    <None Remove="Media\Images\Overlays\generictop_01.png" />
+    <None Remove="Media\Images\Overlays\generictop_02.png" />
+    <None Remove="Media\Images\Overlays\hand_of_light.png" />
+    <None Remove="Media\Images\Overlays\high_tide.png" />
+    <None Remove="Media\Images\Overlays\hot_streak.png" />
+    <None Remove="Media\Images\Overlays\impact.png" />
+    <None Remove="Media\Images\Overlays\imp_empowerment.png" />
+    <None Remove="Media\Images\Overlays\imp_empowerment_green.png" />
+    <None Remove="Media\Images\Overlays\killing_machine.png" />
+    <None Remove="Media\Images\Overlays\lock_and_load.png" />
+    <None Remove="Media\Images\Overlays\maelstrom_weapon_1.png" />
+    <None Remove="Media\Images\Overlays\maelstrom_weapon_2.png" />
+    <None Remove="Media\Images\Overlays\maelstrom_weapon_3.png" />
+    <None Remove="Media\Images\Overlays\maelstrom_weapon_4.png" />
+    <None Remove="Media\Images\Overlays\master_marksman.png" />
+    <None Remove="Media\Images\Overlays\molten_core.png" />
+    <None Remove="Media\Images\Overlays\molten_core_green.png" />
+    <None Remove="Media\Images\Overlays\monk_blackoutkick.png" />
+    <None Remove="Media\Images\Overlays\monk_ox.png" />
+    <None Remove="Media\Images\Overlays\monk_serpent.png" />
+    <None Remove="Media\Images\Overlays\monk_tiger.png" />
+    <None Remove="Media\Images\Overlays\monk_tigerpalm.png" />
+    <None Remove="Media\Images\Overlays\necropolis.png" />
+    <None Remove="Media\Images\Overlays\nightfall.png" />
+    <None Remove="Media\Images\Overlays\predatory_swiftness.png" />
+    <None Remove="Media\Images\Overlays\predatory_swiftness_green.png" />
+    <None Remove="Media\Images\Overlays\raging_blow.png" />
+    <None Remove="Media\Images\Overlays\rime.png" />
+    <None Remove="Media\Images\Overlays\scythe_of_darkherald.png" />
+    <None Remove="Media\Images\Overlays\serendipity.png" />
+    <None Remove="Media\Images\Overlays\shadow_of_death.png" />
+    <None Remove="Media\Images\Overlays\shadow_word_insanity.png" />
+    <None Remove="Media\Images\Overlays\shooting_stars.png" />
+    <None Remove="Media\Images\Overlays\slice_and_dice.png" />
+    <None Remove="Media\Images\Overlays\sudden_death.png" />
+    <None Remove="Media\Images\Overlays\sudden_doom.png" />
+    <None Remove="Media\Images\Overlays\surge_of_darkness.png" />
+    <None Remove="Media\Images\Overlays\surge_of_light.png" />
+    <None Remove="Media\Images\Overlays\sword_and_board.png" />
+    <None Remove="Media\Images\Overlays\thrill_of_the_hunt_1.png" />
+    <None Remove="Media\Images\Overlays\thrill_of_the_hunt_2.png" />
+    <None Remove="Media\Images\Overlays\thrill_of_the_hunt_3.png" />
+    <None Remove="Media\Images\Overlays\tooth_and_claw.png" />
+    <None Remove="Media\Images\Overlays\ultimatum.png" />
+    <None Remove="Media\Images\Overlays\white_tiger.png" />
+    <None Remove="Media\MyriadProLightCond.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Data\SezzUI.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Data\goat.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+    <Content Include="Media\Fonts\MyriadProLightCond.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\arcane_missiles.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\arcane_missiles_1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\arcane_missiles_2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\arcane_missiles_3.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\backlash.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\backlash_green.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\bandits_guile.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\berserk.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\blood_boil.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\blood_surge.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\brain_freeze.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\dark_tiger.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\dark_transformation.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\daybreak.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\demonic_core.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\demonic_core_vertical.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\denounce.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\echo_of_the_elements.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\feral_omenofclarity.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\focus_fire.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\frozen_fingers.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\fulmination.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\fury_of_stormrage.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\genericarc_01.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\genericarc_02.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\genericarc_03.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\genericarc_04.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\genericarc_05.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\genericarc_06.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\generictop_01.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\generictop_02.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\hand_of_light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\high_tide.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\hot_streak.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\impact.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\imp_empowerment.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\imp_empowerment_green.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\killing_machine.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\lock_and_load.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\maelstrom_weapon_1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\maelstrom_weapon_2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\maelstrom_weapon_3.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\maelstrom_weapon_4.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\master_marksman.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\molten_core.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\molten_core_green.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\monk_blackoutkick.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\monk_ox.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\monk_serpent.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\monk_tiger.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\monk_tigerpalm.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\necropolis.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\nightfall.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\predatory_swiftness.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\predatory_swiftness_green.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\raging_blow.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\rime.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\scythe_of_darkherald.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\serendipity.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\shadow_of_death.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\shadow_word_insanity.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\shooting_stars.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\slice_and_dice.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\sudden_death.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\sudden_doom.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\surge_of_darkness.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\surge_of_light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\sword_and_board.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\thrill_of_the_hunt_1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\thrill_of_the_hunt_2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\thrill_of_the_hunt_3.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\tooth_and_claw.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\ultimatum.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Overlays\white_tiger.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Colourful" Version="3.0.0" />
+    <PackageReference Include="DalamudPackager" Version="2.1.5" />
+    <PackageReference Include="XivCommon" Version="3.2.0" />
+    <Reference Include="FFXIVClientStructs">
+      <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Dalamud">
+      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ImGui.NET">
+      <HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ImGuiScene">
+      <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Lumina">
+      <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Lumina.Excel">
+      <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
