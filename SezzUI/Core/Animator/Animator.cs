@@ -106,7 +106,7 @@ namespace SezzUI.Animator
 					else
 					{
 						// Loop
-						if (Timelines.Loop.HasAnimations && !Timelines.Loop.IsPlaying)
+						if ((Timelines.Loop.HasAnimations && !Timelines.Loop.IsPlaying) || Timelines.Loop.Data != Data)
 						{
 							Timelines.Loop.Play((int)_ticksStart + (int)Timelines.OnShow.Duration, true);
 						}

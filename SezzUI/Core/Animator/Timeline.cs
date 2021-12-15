@@ -25,6 +25,7 @@ namespace SezzUI.Animator
 			}
 		}
 
+		public bool HasStartTime { get { return _ticksStart != null; } }
 		private bool _isPlaying = false;
 		private int? _ticksStart;
 
@@ -71,6 +72,12 @@ namespace SezzUI.Animator
 
 				return true;
 			}
+			else if (!HasAnimations && HasStartTime)
+			{
+				// Idle animation, just reset data to timeline's defaults...
+				Data.Reset();
+				_ticksStart = null;
+			}
 
 			return false;
 		}
@@ -80,10 +87,10 @@ namespace SezzUI.Animator
 			if (!_isPlaying)
 			{
 				_animator.SetData(ref Data);
+				_ticksStart = start;
 
 				if (HasAnimations)
 				{
-					_ticksStart = start;
 					_isPlaying = true;
 					_loop = loop;
 					foreach (BaseAnimation animation in _animations)
