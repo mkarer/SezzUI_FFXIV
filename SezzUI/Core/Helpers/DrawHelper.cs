@@ -1,18 +1,8 @@
 ﻿using ImGuiNET;
-using ImGuiScene;
-using Lumina.Excel;
-using System;
 using System.Numerics;
 
 namespace SezzUI.Helpers
 {
-    public enum TextStyle
-	{
-        Normal,
-        Shadowed,
-        Outline
-	}
-
 	public static class DrawHelper
 	{
         public static void DrawBackdrop(Vector2 pos, Vector2 size, ImDrawListPtr drawList, float opacity = 1)
@@ -25,7 +15,7 @@ namespace SezzUI.Helpers
             drawList.AddRect(pos, pos + size, colorBorder, 0, ImDrawFlags.None, 1);
         }
 
-        public static void DrawCenteredText(string font, TextStyle style, string text, Vector2 pos, Vector2 size, uint color, uint effectColor, ImDrawListPtr drawList)
+        public static void DrawCenteredText(string font, Enums.TextStyle style, string text, Vector2 pos, Vector2 size, uint color, uint effectColor, ImDrawListPtr drawList)
 		{
             bool fontPushed = DelvUI.Helpers.FontsManager.Instance.PushFont(font);
 
@@ -35,15 +25,15 @@ namespace SezzUI.Helpers
 
             switch (style)
 			{
-                case TextStyle.Normal:
+                case Enums.TextStyle.Normal:
                     drawList.AddText(textPosition, color, text);
                     break;
 
-                case TextStyle.Shadowed:
+                case Enums.TextStyle.Shadowed:
                     DelvUI.Helpers.DrawHelper.DrawShadowText(text, textPosition, color, effectColor, drawList, 1);
                     break;
 
-                case TextStyle.Outline:
+                case Enums.TextStyle.Outline:
                     DelvUI.Helpers.DrawHelper.DrawOutlinedText(text, textPosition, color, effectColor, drawList, 1);
                     break;
             }
@@ -53,12 +43,12 @@ namespace SezzUI.Helpers
 
         public static void DrawCenteredShadowText(string font, string text, Vector2 pos, Vector2 size, uint color, uint shadowColor, ImDrawListPtr drawList)
         {
-            DrawCenteredText(font, TextStyle.Shadowed, text, pos, size, color, shadowColor, drawList);
+            DrawCenteredText(font, Enums.TextStyle.Shadowed, text, pos, size, color, shadowColor, drawList);
         }
 
         public static void DrawCenteredOutlineText(string font, string text, Vector2 pos, Vector2 size, uint color, uint outlineColor, ImDrawListPtr drawList)
         {
-            DrawCenteredText(font, TextStyle.Outline, text, pos, size, color, outlineColor, drawList);
+            DrawCenteredText(font, Enums.TextStyle.Outline, text, pos, size, color, outlineColor, drawList);
         }
 
         public static void DrawPlaceholder(string text, Vector2 pos, Vector2 size, ImDrawListPtr drawList, float opacity = 1)
