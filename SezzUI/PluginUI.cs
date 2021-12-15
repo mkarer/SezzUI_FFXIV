@@ -6,100 +6,13 @@ using Dalamud.Interface;
 
 namespace SezzUI
 {
-    #region Fading
-    
-    public class FadeInfo
-    {
-        public uint Duration;
-        public float MinOpacity;
-        public float MaxOpacity;
-        private FadeDirection _direction;
-        public bool IsActive { get { return !_finished;  } }
-
-        public bool Bounce;
-        public uint HoldDuration;
-
-        private int? _ticksFirstDisplay;
-        private FadeDirection _currentDirection;
-        private bool _finished = true;
-
-        public FadeInfo(uint duration, float from, float to, bool bounce = false, uint hold = 0)
-        {
-            Duration = (uint)Math.Max(50f, duration);
-            MinOpacity = Math.Max(0f, Math.Min(from, to));
-            MaxOpacity = Math.Min(1f, Math.Max(from, to));
-            _direction = (to > from) ? FadeDirection.In : FadeDirection.Out;
-            _currentDirection = _direction;
-
-            Bounce = bounce;
-            HoldDuration = hold;
-        }
-
-        public void Start(bool reset = false, bool resetDirection = false)
-        {
-            if (reset || _ticksFirstDisplay == null)
-            {
-                _ticksFirstDisplay = Environment.TickCount;
-                _finished = false;
-                if (resetDirection) { _currentDirection = _direction; }
-            }
-        }
-
-        public float GetOpacity()
-        {
-            float fadeOpacity = _currentDirection == FadeDirection.In ? MaxOpacity : MinOpacity;
-
-            if (!_finished && _ticksFirstDisplay != null)
-            {
-                int ticksNow = Environment.TickCount;
-                int timeElapsed = ticksNow - (int)_ticksFirstDisplay;
-
-                bool holding = Bounce && timeElapsed >= Duration && timeElapsed < Duration + HoldDuration;
-
-                if (!holding)
-                {
-                    float fadeFrom = _currentDirection == FadeDirection.In ? MinOpacity : MaxOpacity;
-                    float fadeTo = _currentDirection == FadeDirection.In ? MaxOpacity : MinOpacity;
-
-                    float fadeRange = fadeTo - fadeFrom;
-                    float fadeProgress = Math.Min(1, Math.Max(0, (float)timeElapsed / (float)Duration));
-                    fadeOpacity = fadeFrom + fadeRange * fadeProgress;
-                }
-
-                if (timeElapsed >= Duration)
-                {
-                    if (Bounce && !holding)
-                    {
-                        // Restart
-                        Start(true);
-                        _currentDirection = (_currentDirection == FadeDirection.In) ? FadeDirection.Out : FadeDirection.In;
-                    } else if (!Bounce)
-                    {
-                        // Done
-                        _finished = true;
-                    }
-                }
-            }
-
-            return fadeOpacity;
-        }
-    }
-
-    public enum FadeDirection
-    {
-        In,
-        Out
-    }
-
-    #endregion
-
     // It is good to have this be disposable in general, in case you ever need it
     // to do any cleanup
     class PluginUI : IDisposable
     {
         private SezzUIPluginConfiguration configuration;
-
         private ImGuiScene.TextureWrap goatImage;
+        private readonly Animator.Animator _animatorBanner;
 
         // this extra bool exists for ImGui, since you can't ref a property
         private bool visible = false;
@@ -121,6 +34,12 @@ namespace SezzUI
         {
             this.configuration = configuration;
             this.goatImage = goatImage;
+
+            _animatorBanner = new();
+            _animatorBanner.Timelines.OnShow.Chain(new Animator.FadeAnimation(0, 1, 2000));
+            _animatorBanner.Timelines.Loop.Chain(new Animator.FadeAnimation(1, 0.6f, 3000));
+            _animatorBanner.Timelines.Loop.Chain(new Animator.FadeAnimation(0.6f, 1, 3000));
+            _animatorBanner.Timelines.OnHide.Chain(new Animator.FadeAnimation(1, 0, 2000));
         }
 
         public void Dispose()
@@ -225,12 +144,13 @@ namespace SezzUI
 
         #region Banner
 
-        private readonly FadeInfo _fadeInfoBanner = new(2000, 1, 0.5f, true);
-     
+             
         private void DrawBanner(Vector2 origin)
         {
-            _fadeInfoBanner.Start();
-            float fadeOpacity = _fadeInfoBanner.GetOpacity();
+            if (!_animatorBanner.IsAnimating) // There's currently no option to toggle the banner!
+                _animatorBanner.Animate();
+
+            _animatorBanner.Update();
 
             Vector2 elementAnchor = new((float)Math.Floor(ImGui.GetMainViewport().Size.X * 0.64f), ImGui.GetMainViewport().Size.Y - 5);
             Vector2 elementSize = new(100, 32);
@@ -239,10 +159,10 @@ namespace SezzUI
             DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_Banner", elementPosition, elementSize, false, false, (drawList) =>
             {
                 // Draw Background
-                drawList.AddRectFilled(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 0.5f * fadeOpacity)), 0);
+                drawList.AddRectFilled(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 0.5f * _animatorBanner.Data.Opacity)), 0);
 
                 // Draw Border
-                drawList.AddRect(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, 0.3f * fadeOpacity)), 0, ImDrawFlags.None, 1);
+                drawList.AddRect(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, 0.3f * _animatorBanner.Data.Opacity)), 0, ImDrawFlags.None, 1);
 
                 // Draw Text
                 bool fontPushed = DelvUI.Helpers.FontsManager.Instance.PushFont("MyriadProLightCond_20");
@@ -254,12 +174,12 @@ namespace SezzUI
 
                 string textPart1 = "Sezz";
                 Vector2 textSizePart1 = ImGui.CalcTextSize(textPart1);
-                DelvUI.Helpers.DrawHelper.DrawShadowText(textPart1, textPosition, ImGui.ColorConvertFloat4ToU32(new Vector4((float)1/255, (float)182/255, (float)214/255, fadeOpacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, fadeOpacity)), drawList, 1);
+                DelvUI.Helpers.DrawHelper.DrawShadowText(textPart1, textPosition, ImGui.ColorConvertFloat4ToU32(new Vector4((float)1/255, (float)182/255, (float)214/255, _animatorBanner.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, _animatorBanner.Data.Opacity)), drawList, 1);
 
                 string textPart2 = "UI";
                 Vector2 textPositionPart2 = textPosition;
                 textPositionPart2.X += textSizePart1.X;
-                DelvUI.Helpers.DrawHelper.DrawShadowText(textPart2, textPositionPart2, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, fadeOpacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, fadeOpacity)), drawList, 1);
+                DelvUI.Helpers.DrawHelper.DrawShadowText(textPart2, textPositionPart2, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, _animatorBanner.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, _animatorBanner.Data.Opacity)), drawList, 1);
 
                 if (fontPushed) { ImGui.PopFont(); }
             });
