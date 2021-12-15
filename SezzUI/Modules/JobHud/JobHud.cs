@@ -49,7 +49,9 @@ namespace SezzUI.Modules.JobHud
                 Configure();
 
                 if (Plugin.SezzUIPlugin.Events.Combat.IsInCombat())
+				{
                     Show();
+                }
             }
             else
             {
@@ -62,7 +64,6 @@ namespace SezzUI.Modules.JobHud
         {
             if (Enabled)
             {
-                Hide(true);
                 Reset();
 
                 Service.ClientState.Login -= OnLogin;
@@ -83,6 +84,7 @@ namespace SezzUI.Modules.JobHud
 
         private void Reset()
 		{
+            Hide(true);
             _bars.ForEach(bar => bar.Dispose());
             _bars.Clear();
             _auraAlerts.ForEach(aa => aa.Dispose());
@@ -111,9 +113,10 @@ namespace SezzUI.Modules.JobHud
 
                     using (Bar bar = new Bar())
                     {
-                        bar.Add(new Icon());
-                        bar.Add(new Icon());
-                        bar.Add(new Icon());
+                        bar.Add(new Icon { TextureActionId = 7531, CooldownSpellId = 7531, AuraSpellId = 7531, MaxDuration = 20, Level = 8 }); // Rampart
+                        bar.Add(new Icon { TextureActionId = 16140, CooldownSpellId = 16140, AuraSpellId = 16140, MaxDuration = 20, Level = 6 }); // Camouflage
+                        bar.Add(new Icon { TextureActionId = 16148, CooldownSpellId = 16148, AuraSpellId = 16148, MaxDuration = 15, Level = 38 }); // Nebula
+                        bar.Add(new Icon { TextureActionId = 16152, CooldownSpellId = 16152, AuraSpellId = 16152, MaxDuration = 10, Level = 50 }); // Superbolide
                         _bars.Add(bar);
                     }
                     break;
@@ -181,6 +184,7 @@ namespace SezzUI.Modules.JobHud
         {
             if (!IsShown)
             {
+                PluginLog.Debug($"[{Name}] Show");
                 _isShown = !IsShown;
                 _animator.Animate();
             }
@@ -190,6 +194,7 @@ namespace SezzUI.Modules.JobHud
         {
             if (IsShown)
             {
+                PluginLog.Debug($"[{Name}] Hide");
                 _isShown = !IsShown;
                 _animator.Stop(force);
             }
