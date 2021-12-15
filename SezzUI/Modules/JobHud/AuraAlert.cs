@@ -36,7 +36,7 @@ namespace SezzUI.Modules.JobHud
 			{
 				_imagePath = value;
 				if (value != null)
-					_texture = Plugin.PluginInterface.UiBuilder.LoadImage(value);
+					_texture = Helpers.ImageCache.Instance.GetImageFromPath(value);
 			}
 		}
 
@@ -98,7 +98,7 @@ namespace SezzUI.Modules.JobHud
 				Animator.Update();
 	
 				// Draw aura alert
-				Vector2 elementSize = (Vector2)Size * Animator.Data.Scale;
+				Vector2 elementSize = Size * Animator.Data.Scale;
 				Vector2 elementPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(origin, elementSize, DelvUI.Enums.DrawAnchor.Center);
 				elementPosition.X += Position.X + Animator.Data.X;
 				elementPosition.Y += Position.Y + Animator.Data.Y;
@@ -132,8 +132,7 @@ namespace SezzUI.Modules.JobHud
 						// Guess the duration until it is available in Dalamud?
 						// Status duration seems to be 1 second longer than it should be?
 						duration = (float)MaxDuration + 1 - (float)Animator.TimeElapsed / 1000;
-						Dalamud.Logging.PluginLog.Debug($"Guessed: {duration}");
-					} else Dalamud.Logging.PluginLog.Debug($"Exact: {duration}");
+					}
 
 					if (duration > 0)
 					{
@@ -150,9 +149,6 @@ namespace SezzUI.Modules.JobHud
 
 		public override void Dispose()
 		{
-			if (_texture != null)
-				_texture.Dispose();
-
 			base.Dispose();
 		}
 	}

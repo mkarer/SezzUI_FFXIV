@@ -128,7 +128,6 @@ namespace SezzUI.Modules.JobHud
                         Position = new Vector2(0, -180),
                         MaxDuration = 30
                     });
-
                     break;
 
                 case DelvUI.Helpers.JobIDs.RPR:

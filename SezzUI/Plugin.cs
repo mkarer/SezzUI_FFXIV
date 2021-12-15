@@ -96,6 +96,7 @@ namespace SezzUI
 
             DelvUI.Helpers.FontsManager.Initialize(AssemblyLocation);
             DelvUI.Helpers.TexturesCache.Initialize();
+            Helpers.ImageCache.Initialize();
 
             pluginInterface.Create<Service>();
             DelvUI.Helpers.ClipRectsHelper.Initialize();
@@ -142,6 +143,7 @@ namespace SezzUI
             DelvUI.Helpers.ClipRectsHelper.Instance.Dispose();
             DelvUI.Helpers.FontsManager.Instance.Dispose();
             DelvUI.Helpers.TexturesCache.Instance.Dispose();
+            Helpers.ImageCache.Instance.Dispose();
         }
 
         private void OnCommand(string command, string args)

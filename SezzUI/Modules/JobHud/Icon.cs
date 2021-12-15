@@ -25,8 +25,6 @@ namespace SezzUI.Modules.JobHud
 
         public void Dispose()
         {
-            if (_texture != null)
-                _texture.Dispose();
         }
     }
 }
