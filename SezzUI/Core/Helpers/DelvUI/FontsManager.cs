@@ -82,19 +82,31 @@ namespace DelvUI.Helpers
             string path = DefaultFontsPath + "MyriadProLightCond.ttf";
             try
             {
-                PluginLog.Verbose($"Loading font MyriadProLightCond_24 from path: {path}");
+                //PluginLog.Verbose($"Loading font MyriadProLightCond_24 from path: {path}");
                 ImFontPtr fontBig = io.Fonts.AddFontFromFileTTF(path, 24);
                 Fonts.Add("MyriadProLightCond_24", fontBig);
                 DefaultFont = fontBig;
                 DefaultFontBuilt = true;
 
-                PluginLog.Verbose($"Loading font MyriadProLightCond_20 from path: {path}");
-                ImFontPtr fontMedim = io.Fonts.AddFontFromFileTTF(path, 20);
-                Fonts.Add("MyriadProLightCond_20", fontMedim);
+                //PluginLog.Verbose($"Loading font MyriadProLightCond_20 from path: {path}");
+                ImFontPtr fontMedium = io.Fonts.AddFontFromFileTTF(path, 20);
+                Fonts.Add("MyriadProLightCond_20", fontMedium);
 
-                PluginLog.Verbose($"Loading font MyriadProLightCond_16 from path: {path}");
+                //PluginLog.Verbose($"Loading font MyriadProLightCond_18 from path: {path}");
+                ImFontPtr fontNormal = io.Fonts.AddFontFromFileTTF(path, 18);
+                Fonts.Add("MyriadProLightCond_18", fontNormal);
+
+                //PluginLog.Verbose($"Loading font MyriadProLightCond_16 from path: {path}");
                 ImFontPtr fontSmall = io.Fonts.AddFontFromFileTTF(path, 16);
                 Fonts.Add("MyriadProLightCond_16", fontSmall);
+
+                //PluginLog.Verbose($"Loading font MyriadProLightCond_12 from path: {path}");
+                ImFontPtr fontTiny = io.Fonts.AddFontFromFileTTF(path, 12);
+                Fonts.Add("MyriadProLightCond_12", fontSmall);
+
+                //PluginLog.Verbose($"Loading font MyriadProLightCond_9 from path: {path}");
+                ImFontPtr fontExtraTiny = io.Fonts.AddFontFromFileTTF(path, 9);
+                Fonts.Add("MyriadProLightCond_9", fontSmall);
             }
             catch (Exception ex)
             {
