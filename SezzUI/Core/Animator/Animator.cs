@@ -10,8 +10,12 @@ namespace SezzUI.Animator
 
 		public AnimatorTimelines(Animator animator) {
 			OnShow = new Timeline(animator);
+			OnShow.Data.DefaultOpacity = 1;
+
 			Loop = new Timeline(animator);
+
 			OnHide = new Timeline(animator);
+			OnHide.Data.DefaultOpacity = 0;
 		}
 	}
 

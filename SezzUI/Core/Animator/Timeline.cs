@@ -46,6 +46,12 @@ namespace SezzUI.Animator
 			_hasAnimations = true;
 		}
 
+		public void Chain(BaseAnimation animation)
+		{
+			animation._delayStart = _duration;
+			Add(animation);
+		}
+
 		public bool Update()
 		{
 			if (HasAnimations && _isPlaying)
@@ -71,15 +77,19 @@ namespace SezzUI.Animator
 
 		public void Play(int start, bool loop = false)
 		{
-			if (HasAnimations && !_isPlaying)
+			if (!_isPlaying)
 			{
-				_ticksStart = start;
-				_isPlaying = true;
-				_loop = loop;
 				_animator.SetData(ref Data);
-				foreach (BaseAnimation animation in _animations)
+
+				if (HasAnimations)
 				{
-					animation.Play(start);
+					_ticksStart = start;
+					_isPlaying = true;
+					_loop = loop;
+					foreach (BaseAnimation animation in _animations)
+					{
+						animation.Play(start);
+					}
 				}
 			}
 		}
