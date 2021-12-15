@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Globalization;
 using Dalamud.Data;
 using Dalamud.Game;
 using Dalamud.Game.ClientState;
@@ -52,6 +53,7 @@ namespace SezzUI
 
         public AvailableEvents Events = new AvailableEvents();
         public AvailableModules Modules = new AvailableModules();
+        public static NumberFormatInfo NumberFormatInfo = CultureInfo.GetCultureInfo("en-GB").NumberFormat;
 
         public Plugin(
             BuddyList buddyList,
