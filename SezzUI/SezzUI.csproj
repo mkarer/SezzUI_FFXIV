@@ -279,9 +279,6 @@
     <Content Include="Media\Images\Overlays\rime.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Media\Images\Overlays\scythe_of_darkherald.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Media\Images\Overlays\serendipity.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

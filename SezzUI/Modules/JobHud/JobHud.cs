@@ -13,20 +13,25 @@ namespace SezzUI.Modules.JobHud
         public override string Name => "Job HUD";
         public override string Description => "Tracks cooldowns, buffs, debuff and proccs.";
 
+        private Animator.Animator _animator = new();
+        public bool IsShown { get { return _isShown; } }
+        internal bool _isShown = false;
+        private Vector2 _positionOffset = new Vector2(0, 140);
+
         private static readonly Lazy<JobHud> ev = new Lazy<JobHud>(() => new JobHud());
         public static JobHud Instance { get { return ev.Value; } }
         public static bool Initialized { get { return ev.IsValueCreated; } }
 
-        private BarController _barcontroller = new();
-        private bool _currentVisibility = false;
-        private bool _lastVisibility = false;
-        
-        public float Opacity = 0f;
-        public bool IsFading = false;
-        private readonly FadeInfo _fadeInfoShow = new(300, 0, 1);
-        private readonly FadeInfo _fadeInfoHide = new(750, 1, 0);
-
+        private List<Bar> _bars = new();
         private List<AuraAlert> _auraAlerts = new();
+
+        public JobHud()
+		{
+            _animator.Timelines.OnShow.Data.DefaultOpacity = 0;
+            _animator.Timelines.OnShow.Chain(new Animator.FadeAnimation(0, 1, 150));
+            _animator.Timelines.OnHide.Data.DefaultOpacity = 1;
+            _animator.Timelines.OnHide.Chain(new Animator.FadeAnimation(1, 0, 500));
+        }
 
         public override void Enable()
         {
@@ -43,7 +48,8 @@ namespace SezzUI.Modules.JobHud
 
                 Configure();
 
-                _currentVisibility = Plugin.SezzUIPlugin.Events.Combat.IsInCombat();
+                if (Plugin.SezzUIPlugin.Events.Combat.IsInCombat())
+                    Show();
             }
             else
             {
@@ -56,8 +62,7 @@ namespace SezzUI.Modules.JobHud
         {
             if (Enabled)
             {
-                base.Disable();
-
+                Hide(true);
                 Reset();
 
                 Service.ClientState.Login -= OnLogin;
@@ -67,10 +72,8 @@ namespace SezzUI.Modules.JobHud
                 Plugin.SezzUIPlugin.Events.Combat.EnteringCombat -= OnEnteringCombat;
                 Plugin.SezzUIPlugin.Events.Combat.LeavingCombat -= OnLeavingCombat;
 
-                _currentVisibility = false;
-                _lastVisibility = false;
-
                 OnLogout(null!, null!);
+                base.Disable();
             }
             else
             {
@@ -80,6 +83,8 @@ namespace SezzUI.Modules.JobHud
 
         private void Reset()
 		{
+            _bars.ForEach(bar => bar.Dispose());
+            _bars.Clear();
             _auraAlerts.ForEach(aa => aa.Dispose());
             _auraAlerts.Clear();
         }
@@ -93,99 +98,102 @@ namespace SezzUI.Modules.JobHud
 
             switch (jobId)
 			{
+                case DelvUI.Helpers.JobIDs.GNB:
+                    using (Bar bar = new Bar())
+                    {
+                        bar.Add(new Icon());
+                        bar.Add(new Icon());
+                        bar.Add(new Icon());
+                        bar.Add(new Icon());
+                        bar.Add(new Icon());
+                        _bars.Add(bar);
+                    }
+
+                    using (Bar bar = new Bar())
+                    {
+                        bar.Add(new Icon());
+                        bar.Add(new Icon());
+                        bar.Add(new Icon());
+                        _bars.Add(bar);
+                    }
+                    break;
+
+                case DelvUI.Helpers.JobIDs.BLM:
+                    // Firestarter
+                    _auraAlerts.Add(new AuraAlert
+                    {
+                        StatusId = 165,
+                        Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\impact.png",
+                        Size = new Vector2(256, 128) * 0.8f,
+                        Position = new Vector2(0, -180),
+                        MaxDuration = 30
+                    });
+
+                    break;
+
                 case DelvUI.Helpers.JobIDs.RPR:
-                    _auraAlerts.Add(new AuraAlert()); // Soulsow (Harvest Moon)
+                    // Soulsow/Harvest Moon
+                    _auraAlerts.Add(new AuraAlert
+                    {
+                        StatusId = 2594,
+                        InvertCheck = true,
+                        EnableInCombat = false,
+                        EnableOutOfCombat = true,
+                        TreatWeaponOutAsCombat = false,
+                        Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\surge_of_darkness.png",
+                        Size = new Vector2(128, 256),
+                        Position = new Vector2(-140, 50)
+                    });
                     break;
 			}
         }
-
-        private void UpdateOpacity()
-        {
-            if (_lastVisibility != _currentVisibility)
-            {
-                // Visibility changed, enable fading
-                _lastVisibility = _currentVisibility;
-                if (_currentVisibility)
-                {
-                    // Fade in
-                    PluginLog.Debug($"[{Name}] Fade IN");
-                    _fadeInfoShow.Start(true);
-                }
-                else
-                {
-                    // Fade out
-                    PluginLog.Debug($"[{Name}] Fade OUT");
-                    _fadeInfoHide.Start(true);
-                }
-            }
-
-            if (_currentVisibility)
-            {
-                if (_fadeInfoShow.IsActive)
-                {
-                    IsFading = true;
-                    Opacity = _fadeInfoShow.GetOpacity();
-                }
-                else
-                {
-                    IsFading = false;
-                    Opacity = _fadeInfoShow.MaxOpacity;
-                }
-            }
-            else
-            {
-                if (_fadeInfoHide.IsActive)
-                {
-                    IsFading = true;
-                    Opacity = _fadeInfoHide.GetOpacity();
-                }
-                else
-                {
-                    IsFading = false;
-                    Opacity = _fadeInfoHide.MinOpacity;
-                }
-            }
-        }
-
-        private bool _showDebugAnchor = false;
 
         public override void Draw(Vector2 origin)
         {
             if (!Enabled) return;
 
             // Bars
-            UpdateOpacity();
-            if (_currentVisibility || IsFading)
+            if (IsShown || _animator.IsAnimating)
             {
-                if (_showDebugAnchor)
+                _animator.Update();
+
+                // Debug anchor (for testing animations)
+                //Vector2 elementSize = new(100, 32);
+                //Vector2 elementPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(origin, elementSize, DelvUI.Enums.DrawAnchor.Center);
+
+                //DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_JobHud", elementPosition, elementSize, false, false, (drawList) =>
+                //{
+                //    Helpers.DrawHelper.DrawPlaceholder(Name, elementPosition, elementSize, drawList, _animator.Data.Opacity);
+                //});
+
+                for (int i = 0; i < _bars.Count; i++)
 				{
-                    Vector2 elementSize = new(100, 32);
-                    Vector2 elementPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(origin, elementSize, DelvUI.Enums.DrawAnchor.Center);
-
-                    DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_JobHud", elementPosition, elementSize, false, false, (drawList) =>
-                    {
-                        // Draw Background
-                        drawList.AddRectFilled(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 0.5f * Opacity)), 0);
-
-                        // Draw Border
-                        drawList.AddRect(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, 0.3f * Opacity)), 0, ImDrawFlags.None, 1);
-
-                        // Draw Text
-                        bool fontPushed = DelvUI.Helpers.FontsManager.Instance.PushFont("MyriadProLightCond_16");
-
-                        string text = Name;
-                        Vector2 textSize = ImGui.CalcTextSize(text);
-                        Vector2 textPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(elementPosition + elementSize / 2, textSize, DelvUI.Enums.DrawAnchor.Center);
-                        textPosition.Y += 1;
-                        DelvUI.Helpers.DrawHelper.DrawShadowText(text, textPosition, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, Opacity)), drawList, 1);
-
-                        if (fontPushed) { ImGui.PopFont(); }
-                    });
-				}
+                    Vector2 pos = origin + _positionOffset;
+                    pos.Y += i * (_bars[i].IconSize.Y + (float)_bars[i].IconPadding);
+                    _bars[i].Draw(pos, _animator);
+                }
             }
 
             // Aura Alerts
             _auraAlerts.ForEach(aa => aa.Draw(origin));
+        }
+
+        public void Show()
+        {
+            if (!IsShown)
+            {
+                _isShown = !IsShown;
+                _animator.Animate();
+            }
+        }
+
+        public void Hide(bool force = false)
+        {
+            if (IsShown)
+            {
+                _isShown = !IsShown;
+                _animator.Stop(force);
+            }
         }
 
         private void OnLogin(object? sender, EventArgs e)
@@ -196,24 +204,31 @@ namespace SezzUI.Modules.JobHud
         private void OnLogout(object? sender, EventArgs e)
         {
             PluginLog.Debug($"[{Name}] OnLogout");
+            Hide(true);
         }
 
         private void OnEnteringCombat(object? sender, EventArgs e)
         {
             PluginLog.Debug($"[{Name}] OnEnteringCombat");
-            _currentVisibility = true;
+            Show();
         }
 
         private void OnLeavingCombat(object? sender, EventArgs e)
         {
             PluginLog.Debug($"[{Name}] OnLeavingCombat");
-            _currentVisibility = false;
+            Hide();
         }
 
         private void OnJobChanged(object? sender, GameEvents.JobChangedEventArgs e)
         {
             PluginLog.Debug($"[{Name}] OnJobChanged: {e.JobId}");
             Configure();
+        }
+
+        public override void Dispose()
+        {
+            Reset();
+            base.Dispose();
         }
     }
 }
