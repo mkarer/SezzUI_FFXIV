@@ -67,6 +67,11 @@ namespace DelvUI.Helpers
             return maxStacks - (int)Math.Ceiling(GetSpellCooldownInt(actionId) / (GetRecastTime(actionId) / maxStacks));
         }
 
+        public unsafe ushort GetMaxCharges(uint actionId, uint level)
+        {
+            return ActionManager.GetMaxCharges(actionId, level);
+        }
+
         /*public unsafe uint CheckActionResources(uint ActionID)
         {
             return _actionManager->CheckActionResources(ActionType.Spell, ActionID);
