@@ -100,8 +100,8 @@ namespace SezzUI.Modules.JobHud
 				// Draw aura alert
 				Vector2 elementSize = Size * Animator.Data.Scale;
 				Vector2 elementPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(origin, elementSize, DelvUI.Enums.DrawAnchor.Center);
-				elementPosition.X += Position.X + Animator.Data.X;
-				elementPosition.Y += Position.Y + Animator.Data.Y;
+				elementPosition.X += Position.X + Animator.Data.Offset.X;
+				elementPosition.Y += Position.Y + Animator.Data.Offset.Y;
 
 				string windowId = $"SezzUI_AuraAlert{Id}";
 				DelvUI.Helpers.DrawHelper.DrawInWindow(windowId, elementPosition, elementSize, false, false, (drawList) =>
