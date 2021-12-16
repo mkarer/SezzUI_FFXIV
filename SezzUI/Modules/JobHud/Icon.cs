@@ -58,7 +58,7 @@ namespace SezzUI.Modules.JobHud
         /// <summary>
         /// Action ID that will be used to display cooldown spiral and text.
         /// </summary>
-		public uint? CooldownActionId;
+        public uint? CooldownActionId;
 
         /// <summary>
         /// Status (NOT Action) ID for tracking the duration of a buff/debuff on a unit.
@@ -97,9 +97,12 @@ namespace SezzUI.Modules.JobHud
         /// </summary>
         public byte Level = 1;
 
+        private IconState _state = IconState.Ready;
+
         public Icon()
 		{
 		}
+
 
         public void Draw(Vector2 pos, Vector2 size, Animator.Animator animator, ImDrawListPtr drawList)
         {
@@ -112,9 +115,9 @@ namespace SezzUI.Modules.JobHud
             // Backdrop + Icon Texture
             if (_texture != null)
 			{
-                Helpers.DrawHelper.DrawBackdrop(pos, size, animator.Data.Opacity, drawList);
+                Helpers.DrawHelper.DrawBackdrop(pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 0.5f * animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(Defaults.StateColors[_state].Border.AddTransparency(animator.Data.Opacity)), drawList);
                 (Vector2 uv0, Vector2 uv1) = DelvUI.Helpers.DrawHelper.GetTexCoordinates(_texture, size, false);
-                drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, uv0, uv1, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, animator.Data.Opacity)));
+                drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Defaults.StateColors[_state].Icon.AddTransparency(animator.Data.Opacity)));
             }
             else
 			{
@@ -124,40 +127,41 @@ namespace SezzUI.Modules.JobHud
             // Cooldown + Charges
             if (CooldownActionId != null)
 			{
-                int maxCharges = DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges((uint)CooldownActionId, player.Level);
-                int currentCharges = DelvUI.Helpers.SpellHelper.Instance.GetStackCount(maxCharges, (uint)CooldownActionId);
-                float chargeTime = DelvUI.Helpers.SpellHelper.Instance.GetRecastTime((uint)CooldownActionId) / maxCharges;
-                float cooldown = chargeTime != 0
-                    ? DelvUI.Helpers.SpellHelper.Instance.GetSpellCooldown((uint)CooldownActionId) % chargeTime
-                    : chargeTime;
+                Helpers.CooldownData cooldown = Helpers.SpellHelper.GetCooldownData((uint)CooldownActionId);
 
-                if (cooldown > 0)
+                if (cooldown.CooldownRemaining > 0)
 				{
+                    _state = cooldown.CooldownRemaining > 7 ? IconState.FadedOut : IconState.Soon;
+
                     // Spiral
-                    DrawProgressSwipe(posInside, sizeInside, cooldown, chargeTime, animator.Data.Opacity, drawList);
+                    DrawProgressSwipe(posInside, sizeInside, cooldown.CooldownRemaining, cooldown.CooldownPerCharge, animator.Data.Opacity, drawList);
 
                     // Text
                     // https://stackoverflow.com/questions/463642/what-is-the-best-way-to-convert-seconds-into-hourminutessecondsmilliseconds
-                    int cooldownRounded = (int)Math.Ceiling(cooldown);
+                    int cooldownRounded = (int)Math.Ceiling(cooldown.CooldownRemaining);
                     int seconds = cooldownRounded % 60;
                     if (cooldownRounded >= 60)
 					{
                         int minutes = (cooldownRounded % 3600) / 60;
                         Helpers.DrawHelper.DrawCenteredOutlineText("MyriadProLightCond_20", String.Format("{0:D1}:{1:D2}", minutes, seconds), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new Vector4(0.6f, 0.6f, 0.6f, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList);
                     }
-                    else if (cooldown > 3)
+                    else if (cooldown.CooldownRemaining > 3)
 					{
                         Helpers.DrawHelper.DrawCenteredOutlineText("MyriadProLightCond_20", String.Format("{0:D1}", seconds), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList);
                     }
                     else
 					{
-                        Helpers.DrawHelper.DrawCenteredOutlineText("MyriadProLightCond_20", cooldown.ToString("0.0", Plugin.NumberFormatInfo), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 0, 0, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList);
+                        Helpers.DrawHelper.DrawCenteredOutlineText("MyriadProLightCond_20", cooldown.CooldownRemaining.ToString("0.0", Plugin.NumberFormatInfo), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 0, 0, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList);
                     }
                 }
-
-                if (maxCharges > 1)
+                else
 				{
-                    Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_14", Enums.TextStyle.Outline, DelvUI.Enums.DrawAnchor.BottomRight, currentCharges.ToString(), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList, -2, -1);
+                    _state = IconState.Ready;
+                }
+
+                if (cooldown.ChargesMax > 1)
+				{
+                    Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_14", Enums.TextStyle.Outline, DelvUI.Enums.DrawAnchor.BottomRight, cooldown.ChargesCurrent.ToString(), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList, -2, -1);
                 }
             }
 
@@ -195,7 +199,7 @@ namespace SezzUI.Modules.JobHud
                                 drawList.AddLine(linePos, linePos + lineSize, ImGui.ColorConvertFloat4ToU32(Defaults.IconBarSeparatorColor.AddTransparency(animator.Data.Opacity)), 1);
 
                                 Helpers.DrawHelper.DrawProgressBar(progressPos, progressSize, 0, (float)MaxStatusDuration, duration,
-                                    ImGui.ColorConvertFloat4ToU32(Defaults.IconBarColor.AddTransparency(animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(Defaults.IconBarBGColor.AddTransparency(animator.Data.Opacity)),
+                                    ImGui.ColorConvertFloat4ToU32(Plugin.SezzUIPlugin.Modules.JobHud.AccentColor.AddTransparency(animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(Defaults.IconBarBGColor.AddTransparency(animator.Data.Opacity)),
                                     drawList);
 
                                 // Duration Text
