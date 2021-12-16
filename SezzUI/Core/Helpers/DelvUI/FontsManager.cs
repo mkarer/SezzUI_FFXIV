@@ -100,13 +100,13 @@ namespace DelvUI.Helpers
                 ImFontPtr fontSmall = io.Fonts.AddFontFromFileTTF(path, 16);
                 Fonts.Add("MyriadProLightCond_16", fontSmall);
 
+                //PluginLog.Verbose($"Loading font MyriadProLightCond_14 from path: {path}");
+                ImFontPtr fontSmaller = io.Fonts.AddFontFromFileTTF(path, 14);
+                Fonts.Add("MyriadProLightCond_14", fontSmaller);
+
                 //PluginLog.Verbose($"Loading font MyriadProLightCond_12 from path: {path}");
                 ImFontPtr fontTiny = io.Fonts.AddFontFromFileTTF(path, 12);
-                Fonts.Add("MyriadProLightCond_12", fontSmall);
-
-                //PluginLog.Verbose($"Loading font MyriadProLightCond_9 from path: {path}");
-                ImFontPtr fontExtraTiny = io.Fonts.AddFontFromFileTTF(path, 9);
-                Fonts.Add("MyriadProLightCond_9", fontSmall);
+                Fonts.Add("MyriadProLightCond_12", fontTiny);
             }
             catch (Exception ex)
             {
