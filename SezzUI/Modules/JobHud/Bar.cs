@@ -6,7 +6,7 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 
 namespace SezzUI.Modules.JobHud
 {
-    class Bar : IDisposable
+    public sealed class Bar : IDisposable
     {
         private List<Icon> _icons;
         public bool HasIcons { get { return _icons.Count > 0;  } }

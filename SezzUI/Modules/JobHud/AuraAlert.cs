@@ -9,7 +9,7 @@ using ImGuiScene;
 
 namespace SezzUI.Modules.JobHud
 {
-	class AuraAlert : AnimatedHudElement
+	public sealed class AuraAlert : AnimatedHudElement
 	{
 		public uint? StatusId;
 		public float? MaxDuration;

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 using Dalamud.Logging;
 using System.Numerics;
 using System.Collections.Generic;
@@ -23,6 +25,7 @@ namespace SezzUI.Modules.JobHud
         internal Vector4 AccentColor;
         private List<Bar> _bars = new();
         private List<AuraAlert> _auraAlerts = new();
+        private Dictionary<uint, BasePreset> _presets = new();
 
         public JobHud()
 		{
@@ -34,6 +37,15 @@ namespace SezzUI.Modules.JobHud
             _animator.Timelines.OnHide.Data.DefaultOpacity = 1;
             _animator.Timelines.OnHide.Add(new Animator.FadeAnimation(1, 0, 150));
             _animator.Timelines.OnHide.Add(new Animator.TranslationAnimation(Vector2.Zero, new Vector2(0, 20), 150));
+
+            try
+            {
+                Assembly.GetAssembly(typeof(BasePreset))!.GetTypes().Where(t => t.BaseType == typeof(BasePreset)).Select(t => Activator.CreateInstance(t)).Cast<BasePreset>().ToList().ForEach(t => _presets.Add(t.JobId, t));
+            }
+            catch (Exception ex)
+            {
+                PluginLog.Error(ex, "Error loading JobHud presets.");
+            }
         }
 
         public override void Enable()
@@ -104,59 +116,8 @@ namespace SezzUI.Modules.JobHud
             if (!Defaults.JobColors.TryGetValue(jobId, out AccentColor))
                 AccentColor = Defaults.IconBarColor;
 
-            switch (jobId)
-			{
-                case DelvUI.Helpers.JobIDs.GNB:
-                    // Offensives/Utility/Small Defensives
-                    using (Bar bar = new())
-                    {
-                        bar.Add(new Icon { TextureActionId = 16138, CooldownActionId = 16138, StatusId = 1831, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 2 }); // No Mercy
-                        bar.Add(new Icon { TextureActionId = 16154, CooldownActionId = 16154, Level = 56 }); // Rough Divide
-                        bar.Add(new Icon { TextureActionId = 16151, CooldownActionId = 16151, StatusId = 1835, MaxStatusDuration = 18, StatusTarget = Enums.Unit.Player, Level = 45 }); // Aurora
-                        bar.Add(new Icon { TextureActionId = 16160, CooldownActionId = 16160, StatusId = 1839, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 64 }); // Heart of Light
-                        bar.Add(new Icon { TextureActionId = 7548, CooldownActionId = 7548, StatusId = 1209, MaxStatusDuration = 6, StatusTarget = Enums.Unit.Player, Level = 32 }); // Arm's Length
-                        if (bar.HasIcons) _bars.Add(bar);
-                    }
-
-                    // Defensives
-                    using (Bar bar = new())
-                    {
-                        bar.Add(new Icon { TextureActionId = 7531, CooldownActionId = 7531, StatusId = 1191, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 8 }); // Rampart
-                        bar.Add(new Icon { TextureActionId = 16140, CooldownActionId = 16140, StatusId = 1832, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 6 }); // Camouflage
-                        bar.Add(new Icon { TextureActionId = 16148, CooldownActionId = 16148, StatusId = 1834, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 38 }); // Nebula
-                        bar.Add(new Icon { TextureActionId = 16161, CooldownActionId = 16161, StatusId = 1840, MaxStatusDuration = 7, StatusTarget = Enums.Unit.Player, Level = 68 }); // Heart of Stone
-                        bar.Add(new Icon { TextureActionId = 16152, CooldownActionId = 16152, StatusId = 1836, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 50 }); // Superbolide
-                        if (bar.HasIcons) _bars.Add(bar);
-                    }
-                    break;
-
-                case DelvUI.Helpers.JobIDs.BLM:
-                    // Firestarter
-                    _auraAlerts.Add(new AuraAlert
-                    {
-                        StatusId = 165,
-                        Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\impact.png",
-                        Size = new Vector2(256, 128) * 0.8f,
-                        Position = new Vector2(0, -180),
-                        MaxDuration = 30
-                    });
-                    break;
-
-                case DelvUI.Helpers.JobIDs.RPR:
-                    // Soulsow/Harvest Moon
-                    _auraAlerts.Add(new AuraAlert
-                    {
-                        StatusId = 2594,
-                        InvertCheck = true,
-                        EnableInCombat = false,
-                        EnableOutOfCombat = true,
-                        TreatWeaponOutAsCombat = false,
-                        Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\surge_of_darkness.png",
-                        Size = new Vector2(128, 256),
-                        Position = new Vector2(-140, 50)
-                    });
-                    break;
-			}
+            if (_presets.TryGetValue(jobId, out BasePreset? preset))
+                preset.Configure(this);
         }
 
         public override void Draw(Vector2 origin)
@@ -179,6 +140,19 @@ namespace SezzUI.Modules.JobHud
             // Aura Alerts
             _auraAlerts.ForEach(aa => aa.Draw(origin));
         }
+
+        public void AddBar(Bar bar)
+		{
+            if (bar.HasIcons)
+			{
+                _bars.Add(bar);
+			}
+		}
+
+        public void AddAlert(AuraAlert alert)
+		{
+            _auraAlerts.Add(alert);
+		}
 
         public void Show()
         {

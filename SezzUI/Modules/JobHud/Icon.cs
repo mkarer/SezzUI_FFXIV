@@ -28,7 +28,7 @@ namespace SezzUI.Modules.JobHud
         NoStatusBarText = 1L << 1,
     }
 
-    class Icon : IDisposable
+    public sealed class Icon : IDisposable
     {
         public IconFeatures Features = IconFeatures.Default;
 
