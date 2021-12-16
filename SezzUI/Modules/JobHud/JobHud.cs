@@ -16,7 +16,7 @@ namespace SezzUI.Modules.JobHud
         private Animator.Animator _animator = new();
         public bool IsShown { get { return _isShown; } }
         internal bool _isShown = false;
-        private Vector2 _positionOffset = new Vector2(0, 140);
+        private Vector2 _positionOffset = new Vector2(0, 148);
 
         private static readonly Lazy<JobHud> ev = new Lazy<JobHud>(() => new JobHud());
         public static JobHud Instance { get { return ev.Value; } }
@@ -101,23 +101,25 @@ namespace SezzUI.Modules.JobHud
             switch (jobId)
 			{
                 case DelvUI.Helpers.JobIDs.GNB:
-                    using (Bar bar = new Bar())
+                    // Offensives/Utility/Small Defensives
+                    using (Bar bar = new())
                     {
-                        bar.Add(new Icon());
-                        bar.Add(new Icon());
-                        bar.Add(new Icon());
-                        bar.Add(new Icon());
-                        bar.Add(new Icon());
-                        _bars.Add(bar);
+                        bar.Add(new Icon { TextureActionId = 16138, CooldownActionId = 16138, StatusId = 1831, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 2 }); // No Mercy
+                        bar.Add(new Icon { TextureActionId = 16154, CooldownActionId = 16154, Level = 56 }); // Rough Divide
+                        bar.Add(new Icon { TextureActionId = 16151, CooldownActionId = 16151, StatusId = 1835, MaxStatusDuration = 18, StatusTarget = Enums.Unit.Player, Level = 45 }); // Aurora
+                        bar.Add(new Icon { TextureActionId = 16161, CooldownActionId = 16161, StatusId = 1840, MaxStatusDuration = 7, StatusTarget = Enums.Unit.Player, Level = 68 }); // Heart of Stone
+                        bar.Add(new Icon { TextureActionId = 16160, CooldownActionId = 16160, StatusId = 1839, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 64 }); // Heart of Light
+                        if (bar.HasIcons) _bars.Add(bar);
                     }
 
-                    using (Bar bar = new Bar())
+                    // Big Defensives
+                    using (Bar bar = new())
                     {
-                        bar.Add(new Icon { TextureActionId = 7531, CooldownSpellId = 7531, AuraSpellId = 7531, MaxDuration = 20, Level = 8 }); // Rampart
-                        bar.Add(new Icon { TextureActionId = 16140, CooldownSpellId = 16140, AuraSpellId = 16140, MaxDuration = 20, Level = 6 }); // Camouflage
-                        bar.Add(new Icon { TextureActionId = 16148, CooldownSpellId = 16148, AuraSpellId = 16148, MaxDuration = 15, Level = 38 }); // Nebula
-                        bar.Add(new Icon { TextureActionId = 16152, CooldownSpellId = 16152, AuraSpellId = 16152, MaxDuration = 10, Level = 50 }); // Superbolide
-                        _bars.Add(bar);
+                        bar.Add(new Icon { TextureActionId = 7531, CooldownActionId = 7531, StatusId = 1191, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 8 }); // Rampart
+                        bar.Add(new Icon { TextureActionId = 16140, CooldownActionId = 16140, StatusId = 1832, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 6 }); // Camouflage
+                        bar.Add(new Icon { TextureActionId = 16148, CooldownActionId = 16148, StatusId = 1834, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 38 }); // Nebula
+                        bar.Add(new Icon { TextureActionId = 16152, CooldownActionId = 16152, StatusId = 1836, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 50 }); // Superbolide
+                        if (bar.HasIcons) _bars.Add(bar);
                     }
                     break;
 
