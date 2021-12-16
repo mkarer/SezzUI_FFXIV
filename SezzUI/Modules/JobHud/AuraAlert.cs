@@ -126,7 +126,6 @@ namespace SezzUI.Modules.JobHud
 
 					// Duration
 					float duration = status?.RemainingTime ?? 0;
-
 					if (duration <= 0 && status != null && MaxDuration != null && Animator.TimeElapsed < 3000)
 					{
 						// Guess the duration until it is available in Dalamud?
