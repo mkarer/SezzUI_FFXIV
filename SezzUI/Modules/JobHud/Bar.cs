@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Numerics;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 
 namespace SezzUI.Modules.JobHud
 {
     class Bar : IDisposable
     {
         private List<Icon> _icons;
-        public Vector2 IconSize = new(36, 36);
-        public uint IconPadding = 4;
+        public bool HasIcons { get { return _icons.Count > 0;  } }
+    
+        public Vector2 IconSize = new(38, 38); // 36px Icon + 1px Borders
+        public uint IconPadding = 8;
+
         public Vector2 Size = Vector2.Zero;
 
         public Bar()
@@ -21,6 +23,16 @@ namespace SezzUI.Modules.JobHud
 
         public void Add(Icon icon)
 		{
+            if (icon.Level > 1)
+			{
+                PlayerCharacter? player = Service.ClientState.LocalPlayer;
+                byte level = (player != null ? player.Level : (byte)0);
+                if (level < icon.Level)
+				{
+                    return;
+                }
+            }
+
             _icons.Add(icon);
 
             Size.Y = IconSize.Y;
@@ -34,6 +46,8 @@ namespace SezzUI.Modules.JobHud
 
         public void Draw(Vector2 origin, Animator.Animator animator)
         {
+            if (!HasIcons) return;
+
             Vector2 pos = DelvUI.Helpers.Utils.GetAnchoredPosition(origin, Size, DelvUI.Enums.DrawAnchor.Top);
 
             DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_JobHudBar", pos, Size, false, false, (drawList) => {
