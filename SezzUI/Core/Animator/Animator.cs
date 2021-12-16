@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace SezzUI.Animator
 {
@@ -21,36 +22,31 @@ namespace SezzUI.Animator
 
 	public class AnimatorTransformData
 	{
-		public float X;
-		public float Y;
+		public Vector2 Offset;
 		public float Opacity;
 		public float Scale;
 
-		public float DefaultX = 0;
-		public float DefaultY = 0;
+		public Vector2 DefaultOffset = new Vector2(0, 0);
 		public float DefaultOpacity = 1f;
 		public float DefaultScale = 1f;
 
 		public void Reset()
 		{
-			X = DefaultX;
-			Y = DefaultY;
+			Offset = DefaultOffset;
 			Opacity = DefaultOpacity;
 			Scale = DefaultScale;
 		}
 
 		public void Reset(AnimatorTransformData data)
 		{
-			X = data.DefaultX;
-			Y = data.DefaultY;
+			Offset = data.DefaultOffset;
 			Opacity = data.DefaultOpacity;
 			Scale = data.DefaultScale;
 		}
 
 		public void SetDefaults(AnimatorTransformData data)
 		{
-			DefaultX = data.DefaultX;
-			DefaultY = data.DefaultY;
+			DefaultOffset = data.DefaultOffset;
 			DefaultOpacity = data.DefaultOpacity;
 			DefaultScale = data.DefaultScale;
 		}
@@ -59,8 +55,7 @@ namespace SezzUI.Animator
 		{
 			AnimatorTransformData data = new AnimatorTransformData
 			{
-				X = data1.X + data2.X,
-				Y = data1.Y + data2.Y,
+				Offset = data1.Offset + data2.Offset,
 				Opacity = data2.Opacity,
 				Scale = data1.Scale * data2.Scale
 			};
