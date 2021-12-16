@@ -6,14 +6,13 @@ namespace SezzUI.Helpers
 {
 	public static class DrawHelper
 	{
-        public static void DrawBackdrop(Vector2 pos, Vector2 size, float opacity, ImDrawListPtr drawList)
+        public static void DrawBackdrop(Vector2 pos, Vector2 size, uint backgroundColor, uint borderColor, ImDrawListPtr drawList)
 		{
             // Background
-            drawList.AddRectFilled(pos, pos + size, ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 0.5f * opacity)), 0);
+            drawList.AddRectFilled(pos, pos + size, backgroundColor, 0);
 
             // Border
-            uint colorBorder = ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, 0.3f * opacity));
-            drawList.AddRect(pos, pos + size, colorBorder, 0, ImDrawFlags.None, 1);
+            drawList.AddRect(pos, pos + size, borderColor, 0, ImDrawFlags.None, 1);
         }
 
         public static void DrawAnchoredText(string font, Enums.TextStyle style, DelvUI.Enums.DrawAnchor anchor, string text, Vector2 pos, Vector2 size, uint color, uint effectColor, ImDrawListPtr drawList, float xOffset = 0, float yOffset = 0, string textPosCalc = "")
@@ -56,7 +55,7 @@ namespace SezzUI.Helpers
         public static void DrawPlaceholder(string text, Vector2 pos, Vector2 size, float opacity, ImDrawListPtr drawList)
 		{
             // Backdrop
-            DrawBackdrop(pos, size, opacity, drawList);
+            DrawBackdrop(pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 0.5f * opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, 0.3f * opacity)), drawList);
 
             // Cross
             uint colorLines = ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, 0.1f * opacity));
