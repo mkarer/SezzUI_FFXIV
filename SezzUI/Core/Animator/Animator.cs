@@ -23,16 +23,19 @@ namespace SezzUI.Animator
 	public class AnimatorTransformData
 	{
 		public Vector2 Offset;
+		public Vector4 Color;
 		public float Opacity;
 		public float Scale;
 
 		public Vector2 DefaultOffset = new Vector2(0, 0);
+		public Vector4 DefaultColor = new Vector4(1f, 1f, 1f, 1f);
 		public float DefaultOpacity = 1f;
 		public float DefaultScale = 1f;
 
 		public void Reset()
 		{
 			Offset = DefaultOffset;
+			Color = DefaultColor;
 			Opacity = DefaultOpacity;
 			Scale = DefaultScale;
 		}
@@ -40,6 +43,7 @@ namespace SezzUI.Animator
 		public void Reset(AnimatorTransformData data)
 		{
 			Offset = data.DefaultOffset;
+			Color = data.DefaultColor;
 			Opacity = data.DefaultOpacity;
 			Scale = data.DefaultScale;
 		}
@@ -47,6 +51,7 @@ namespace SezzUI.Animator
 		public void SetDefaults(AnimatorTransformData data)
 		{
 			DefaultOffset = data.DefaultOffset;
+			DefaultColor = data.DefaultColor;
 			DefaultOpacity = data.DefaultOpacity;
 			DefaultScale = data.DefaultScale;
 		}
@@ -56,6 +61,7 @@ namespace SezzUI.Animator
 			AnimatorTransformData data = new AnimatorTransformData
 			{
 				Offset = data1.Offset + data2.Offset,
+				Color = data2.Color,
 				Opacity = data2.Opacity,
 				Scale = data1.Scale * data2.Scale
 			};
