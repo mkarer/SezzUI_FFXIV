@@ -8,6 +8,13 @@ namespace SezzUI.Modules.JobHud.Jobs
         
         public override void Configure(JobHud hud)
         {
+            using (Bar bar = new())
+            {
+                bar.Add(new Icon(bar) { TextureActionId = 24393, CooldownActionId = 24393, Level = 76 }); // Gluttony
+                bar.Add(new Icon(bar) { TextureActionId = 24405, CooldownActionId = 24405, StatusId = 2599, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 72 }); // Arcane Circle
+                hud.AddBar(bar);
+            }
+            
             // Soulsow/Harvest Moon
             hud.AddAlert(new AuraAlert
             {
