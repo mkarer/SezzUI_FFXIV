@@ -20,6 +20,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Media\Images\Animations\DashedRect38_1.png" />
+    <None Remove="Media\Images\Animations\DashedRect38_2.png" />
+    <None Remove="Media\Images\Animations\DashedRect38_3.png" />
+    <None Remove="Media\Images\Animations\DashedRect38_4.png" />
+    <None Remove="Media\Images\Animations\DashedRect38_5.png" />
+    <None Remove="Media\Images\Animations\DashedRect38_6.png" />
+    <None Remove="Media\Images\Animations\DashedRect38_7.png" />
+    <None Remove="Media\Images\Animations\DashedRect38_8.png" />
     <None Remove="Media\Images\Overlays\arcane_missiles.png" />
     <None Remove="Media\Images\Overlays\arcane_missiles_1.png" />
     <None Remove="Media\Images\Overlays\arcane_missiles_2.png" />
@@ -106,6 +114,30 @@
       <Visible>false</Visible>
     </Content>
     <Content Include="Media\Fonts\MyriadProLightCond.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Animations\DashedRect38_1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Animations\DashedRect38_2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Animations\DashedRect38_3.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Animations\DashedRect38_4.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Animations\DashedRect38_5.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Animations\DashedRect38_6.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Animations\DashedRect38_7.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Media\Images\Animations\DashedRect38_8.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Media\Images\Overlays\arcane_missiles.png">
