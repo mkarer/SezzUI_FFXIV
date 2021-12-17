@@ -9,17 +9,50 @@ namespace SezzUI.Modules.JobHud
     public sealed class Bar : IDisposable
     {
         private List<Icon> _icons;
-        public bool HasIcons { get { return _icons.Count > 0;  } }
+        public bool HasIcons { get { return _icons.Count > 0; } }
     
-        public Vector2 IconSize = new(38, 38); // 36px Icon + 1px Borders
+        public Vector2 IconSize
+        {
+            get { return _iconSize; }
+            set
+			{
+                _iconSize = value;
+
+                IconUV0 = new(1f / IconSize.X, 1f / IconSize.Y);
+                IconUV1 = new(1f - 1f / IconSize.X, 1f - 1f / IconSize.Y);
+
+                if (IconSize.X != IconSize.Y)
+                {
+                    float ratio = Math.Max(IconSize.X, IconSize.Y) / Math.Min(IconSize.X, IconSize.Y);
+                    float crop = (1 - (1 / ratio)) / 2;
+
+                    if (IconSize.X < IconSize.Y)
+                    {
+                        // Crop left/right parts
+                        IconUV0.X += crop;
+                        IconUV1.X -= crop;
+                    }
+                    else
+                    {
+                        // Crop top/bottom parts
+                        IconUV0.Y += crop;
+                        IconUV1.Y -= crop;
+                    }
+                }
+            }
+        }
+        public Vector2 IconUV0 = new Vector2(0, 0);
+        public Vector2 IconUV1 = new Vector2(1, 1);
         public uint IconPadding = 8;
+        private Vector2 _iconSize; // 36px Icon + 1px Borders
 
         public Vector2 Size = Vector2.Zero;
 
         public Bar()
 		{
             _icons = new();
-		}
+            IconSize = new(38, 38); // 36px Icon + 1px Borders
+        }
 
         public void Add(Icon icon)
 		{

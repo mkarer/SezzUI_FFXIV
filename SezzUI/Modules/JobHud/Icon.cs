@@ -1,4 +1,5 @@
-﻿// https://github.com/xivapi/ffxiv-datamining/blob/master/csv/Status.csv
+﻿// https://raw.githubusercontent.com/xivapi/ffxiv-datamining/master/csv/Action.csv
+// https://raw.githubusercontent.com/xivapi/ffxiv-datamining/master/csv/Status.csv
 
 using System;
 using System.Numerics;
@@ -31,6 +32,7 @@ namespace SezzUI.Modules.JobHud
 
     public sealed class Icon : IDisposable
     {
+        private Bar _parent;
         public IconFeatures Features = IconFeatures.Default;
 
         /// <summary>
@@ -102,10 +104,10 @@ namespace SezzUI.Modules.JobHud
 
         private IconState _state = IconState.Ready;
 
-        public Icon()
+        public Icon(Bar parent)
 		{
+            _parent = parent;
 		}
-
 
         public void Draw(Vector2 pos, Vector2 size, Animator.Animator animator, ImDrawListPtr drawList)
         {
@@ -119,8 +121,7 @@ namespace SezzUI.Modules.JobHud
             if (_texture != null)
 			{
                 Helpers.DrawHelper.DrawBackdrop(pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 0.5f * animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(Defaults.StateColors[_state].Border.AddTransparency(animator.Data.Opacity)), drawList);
-                (Vector2 uv0, Vector2 uv1) = DelvUI.Helpers.DrawHelper.GetTexCoordinates(_texture, size, false);
-                drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Defaults.StateColors[_state].Icon.AddTransparency(animator.Data.Opacity)));
+                drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, _parent.IconUV0, _parent.IconUV1, ImGui.ColorConvertFloat4ToU32(Defaults.StateColors[_state].Icon.AddTransparency(animator.Data.Opacity)));
             }
             else
 			{
