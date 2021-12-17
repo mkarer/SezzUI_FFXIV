@@ -8,6 +8,7 @@ using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Game.ClientState.Statuses;
 using XIVAuras.Helpers;
 
 namespace SezzUI.Modules.JobHud
@@ -43,7 +44,7 @@ namespace SezzUI.Modules.JobHud
                 if (value != null)
 				{
                     LuminaAction? action = Helpers.SpellHelper.GetAction((uint)value);
-                    if (action is not null)
+                    if (action != null)
                     {
                         _texture = DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId(action.Icon);
                     }
@@ -80,7 +81,7 @@ namespace SezzUI.Modules.JobHud
                 if (value != null)
                 {
                     LuminaStatus? status = Helpers.SpellHelper.GetStatusByAction((uint)value);
-                    if (status is not null)
+                    if (status != null)
                     {
                         StatusId = status.RowId;
                         Dalamud.Logging.PluginLog.Debug($"Found matching status for {value}: {StatusId}");
@@ -91,6 +92,8 @@ namespace SezzUI.Modules.JobHud
         private uint? _statusActionId;
         public float? MaxStatusDuration;
         public Enums.Unit? StatusTarget;
+
+        public uint? GlowBorderStatusId;
 
         /// <summary>
         /// Required job level to show icon.
@@ -165,65 +168,79 @@ namespace SezzUI.Modules.JobHud
                 }
             }
 
+            // Glow
+            if (GlowBorderStatusId != null && _state == IconState.Ready)
+            {
+                Status? status = Helpers.SpellHelper.GetStatus((uint)GlowBorderStatusId, Enums.Unit.Player);
+                if (status != null && (status?.RemainingTime ?? -1) > 0)
+                {
+                    // Testing fake glow using images...
+                    // https://github.com/ocornut/imgui/issues/4706
+                    // https://kovart.github.io/dashed-border-generator/
+
+                    uint n = 8; // number of textures to cycle through
+                    uint dur = 250; // duration of one full cycle
+                    float frametime = dur / n; // display duration of 1 single frame
+                    uint step = Math.Min(n, Math.Max(1, (uint)Math.Ceiling((uint)(animator.TimeElapsed % dur) / frametime)));
+                    string image = Plugin.AssemblyLocation + "Media\\Images\\Animations\\DashedRect38_" + step + ".png";
+
+                    TextureWrap? tex = Helpers.ImageCache.Instance.GetImageFromPath(image);
+                    if (tex != null)
+					{
+                        uint glowColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.95f, 0.95f, 0.32f, animator.Data.Opacity));
+                        drawList.AddImage(tex.ImGuiHandle, pos, pos + size, Vector2.Zero, Vector2.One, glowColor);
+                    }
+                    else
+					{
+                        uint glowColor = ImGui.ColorConvertFloat4ToU32(new Vector4(206f / 255f, 1, 0, 1 * animator.Data.Opacity));
+                        drawList.AddRect(pos - Vector2.One, pos + size + Vector2.One, glowColor, 0, ImDrawFlags.None, 1);
+                    }
+                }
+            }
+
             // Status
             if (StatusId != null && StatusTarget != null && MaxStatusDuration != null)
 			{
                 bool shouldShowStatusBar = (CooldownActionId != null && !Features.HasFlag(IconFeatures.NoStatusBar));
                 bool shouldShowStatusAsCooldown = (CooldownActionId == null);
+                Status? status = Helpers.SpellHelper.GetStatus((uint)StatusId, (Enums.Unit)StatusTarget);
 
-                GameObject? target = Plugin.TargetManager.SoftTarget ?? Plugin.TargetManager.Target;
-                GameObject? actor = StatusTarget switch
-                {
-                    Enums.Unit.Player => player,
-                    Enums.Unit.Target => target,
-                    Enums.Unit.TargetOfTarget => DelvUI.Helpers.Utils.FindTargetOfTarget(player, target, Plugin.ObjectTable),
-                    Enums.Unit.FocusTarget => Plugin.TargetManager.FocusTarget,
-                    _ => null
-                };
-
-                if (actor is BattleChara chara)
+                if (status != null && status.StatusId == StatusId && status.SourceID == player.ObjectId)
 				{
-                    foreach (var status in chara.StatusList)
+                    float duration = status?.RemainingTime ?? -1;
+                    // Progress Bar
+                    if (shouldShowStatusBar)
 					{
-                        if (status is not null && status.StatusId == StatusId && status.SourceID == player.ObjectId)
-						{
-                            float duration = status?.RemainingTime ?? -1;
-                            // Progress Bar
-                            if (shouldShowStatusBar)
-							{
-                                Vector2 progressSize = new Vector2(sizeInside.X, 2);
-                                Vector2 progressPos = new Vector2(posInside.X, posInside.Y + sizeInside.Y - progressSize.Y);
+                        Vector2 progressSize = new(sizeInside.X, 2);
+                        Vector2 progressPos = new(posInside.X, posInside.Y + sizeInside.Y - progressSize.Y);
 
-                                Vector2 linePos = progressPos.AddY(-1);
-                                Vector2 lineSize = progressSize.AddY(-progressSize.Y);
-                                drawList.AddLine(linePos, linePos + lineSize, ImGui.ColorConvertFloat4ToU32(Defaults.IconBarSeparatorColor.AddTransparency(animator.Data.Opacity)), 1);
+                        Vector2 linePos = progressPos.AddY(-1);
+                        Vector2 lineSize = progressSize.AddY(-progressSize.Y);
+                        drawList.AddLine(linePos, linePos + lineSize, ImGui.ColorConvertFloat4ToU32(Defaults.IconBarSeparatorColor.AddTransparency(animator.Data.Opacity)), 1);
 
-                                Helpers.DrawHelper.DrawProgressBar(progressPos, progressSize, 0, (float)MaxStatusDuration, duration,
-                                    ImGui.ColorConvertFloat4ToU32(Plugin.SezzUIPlugin.Modules.JobHud.AccentColor.AddTransparency(animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(Defaults.IconBarBGColor.AddTransparency(animator.Data.Opacity)),
-                                    drawList);
+                        Helpers.DrawHelper.DrawProgressBar(progressPos, progressSize, 0, (float)MaxStatusDuration, duration,
+                            ImGui.ColorConvertFloat4ToU32(Plugin.SezzUIPlugin.Modules.JobHud.AccentColor.AddTransparency(animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(Defaults.IconBarBGColor.AddTransparency(animator.Data.Opacity)),
+                            drawList);
 
-                                // Duration Text
-                                if (!Features.HasFlag(IconFeatures.NoStatusBarText))
-                                {
-                                    if (duration > 3)
-                                    {
-                                        Helpers.DrawHelper.DrawCenteredOutlineText("MyriadProLightCond_12", String.Format("{0:D1}", (int)Math.Ceiling(duration)), linePos, lineSize, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList);
-                                    }
-                                    else if (duration > 0)
-                                    {
-                                        Helpers.DrawHelper.DrawCenteredOutlineText("MyriadProLightCond_12", duration.ToString("0.0", Plugin.NumberFormatInfo), linePos, lineSize, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 0, 0, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList);
-                                    }
-                                }
-                            }
-
-                            // Cooldown Spiral
-                            if (shouldShowStatusAsCooldown)
+                        // Duration Text
+                        if (!Features.HasFlag(IconFeatures.NoStatusBarText))
+                        {
+                            if (duration > 3)
                             {
+                                Helpers.DrawHelper.DrawCenteredOutlineText("MyriadProLightCond_12", String.Format("{0:D1}", (int)Math.Ceiling(duration)), linePos, lineSize, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList);
                             }
-                            break;
-						}
+                            else if (duration > 0)
+                            {
+                                Helpers.DrawHelper.DrawCenteredOutlineText("MyriadProLightCond_12", duration.ToString("0.0", Plugin.NumberFormatInfo), linePos, lineSize, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 0, 0, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList);
+                            }
+                        }
                     }
-                }
+
+                    // Cooldown Spiral
+                    if (shouldShowStatusAsCooldown)
+                    {
+                    }
+				}
             }
         }
 
