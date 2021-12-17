@@ -129,11 +129,13 @@ namespace SezzUI.Modules.JobHud
             {
                 _animator.Update();
 
+                float yOffset = 0;
                 for (int i = 0; i < _bars.Count; i++)
 				{
                     Vector2 pos = origin + _positionOffset + _animator.Data.Offset;
-                    pos.Y += i * (_bars[i].IconSize.Y + (float)_bars[i].IconPadding);
+                    pos.Y += yOffset;
                     _bars[i].Draw(pos, _animator);
+                    yOffset += _bars[i].IconSize.Y + _bars[i].IconPadding;
                 }
             }
 
