@@ -4,6 +4,8 @@ using Lumina.Excel;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Game.ClientState.Statuses;
 
 namespace SezzUI.Helpers
 {
@@ -24,10 +26,10 @@ namespace SezzUI.Helpers
 		{
 			// TODO: Level filter?
 			ExcelSheet<LuminaAction>? sheet = Plugin.DataManager.GetExcelSheet<LuminaAction>();
-			if (sheet is not null)
+			if (sheet != null)
 			{
 				LuminaAction? action = sheet.GetRow(actionId);
-				if (action is not null)
+				if (action != null)
 				{
 					return action;
 				}
@@ -39,15 +41,44 @@ namespace SezzUI.Helpers
 		public static LuminaStatus? GetStatusByAction(uint actionId)
 		{
 			LuminaAction? action = GetAction(actionId);
-			if (action is not null)
+			if (action != null)
 			{
 				ExcelSheet<LuminaStatus>? sheet = Plugin.DataManager.GetExcelSheet<LuminaStatus>();
 
-				if (sheet is not null)
+				if (sheet != null)
 				{
 					string actionName = action.Name.ToString().ToLower();
 					LuminaStatus? status = sheet.FirstOrDefault(status => status.Name.ToString().ToLower().Equals(actionName));
-					if (status is not null)
+					if (status != null)
+					{
+						return status;
+					}
+				}
+			}
+
+			return null;
+		}
+
+		public unsafe static Status? GetStatus(uint statusId, Enums.Unit unit)
+		{
+			PlayerCharacter? player = Service.ClientState.LocalPlayer;
+			if (player == null) return null;
+
+			GameObject? target = Plugin.TargetManager.SoftTarget ?? Plugin.TargetManager.Target;
+			GameObject? actor = unit switch
+			{
+				Enums.Unit.Player => player,
+				Enums.Unit.Target => target,
+				Enums.Unit.TargetOfTarget => DelvUI.Helpers.Utils.FindTargetOfTarget(player, target, Plugin.ObjectTable),
+				Enums.Unit.FocusTarget => Plugin.TargetManager.FocusTarget,
+				_ => null
+			};
+
+			if (actor is BattleChara chara)
+			{
+				foreach (var status in chara.StatusList)
+				{
+					if (status != null && status.StatusId == statusId && status.SourceID == player.ObjectId)
 					{
 						return status;
 					}
@@ -62,22 +93,30 @@ namespace SezzUI.Helpers
 			CooldownData data = new();
 
 			PlayerCharacter? player = Service.ClientState.LocalPlayer;
-			if (player != null)
+			if (player == null) return data;
+
+			uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
+
+			//if (actionId != actionIdAdjusted)
+			//{
+			//	LuminaAction? original = GetAction(actionId);
+			//	LuminaAction? adj = GetAction(actionIdAdjusted);
+			//	string nameorig = (original != null ? original.Name.ToString() : "Unknown");
+			//	string namead = (adj != null ? adj.Name.ToString() : "Unknown");
+
+			//	Dalamud.Logging.PluginLog.Debug($"Adjusting action: #{actionId} {nameorig} -> #{actionIdAdjusted} {namead} ");
+			//}
+
+			data.ChargesMax = DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, player.Level);
+			data.ChargesCurrent = DelvUI.Helpers.SpellHelper.Instance.GetStackCount(data.ChargesMax, actionIdAdjusted);
+			data.CooldownTotal = DelvUI.Helpers.SpellHelper.Instance.GetRecastTime(actionIdAdjusted);
+			data.CooldownTotalElapsed = DelvUI.Helpers.SpellHelper.Instance.GetRecastTimeElapsed(actionIdAdjusted);
+			data.CooldownPerCharge = data.CooldownTotal / data.ChargesMax;
+
+			float remaining = (data.CooldownTotal - data.CooldownTotalElapsed) % data.CooldownPerCharge;
+			if (remaining > 0)
 			{
-				uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
-
-				data.ChargesMax = DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, player.Level);
-				data.ChargesCurrent = DelvUI.Helpers.SpellHelper.Instance.GetStackCount(data.ChargesMax, actionIdAdjusted);
-				data.CooldownTotal = DelvUI.Helpers.SpellHelper.Instance.GetRecastTime(actionIdAdjusted);
-				data.CooldownTotalElapsed = DelvUI.Helpers.SpellHelper.Instance.GetRecastTimeElapsed(actionIdAdjusted);
-				data.CooldownPerCharge = data.CooldownTotal / data.ChargesMax;
-
-				// TODO: Get correct data by level...
-				float remaining = (data.CooldownTotal - data.CooldownTotalElapsed) % data.CooldownPerCharge;
-				if (remaining > 0)
-				{
-					data.CooldownRemaining = remaining;
-				}
+				data.CooldownRemaining = remaining;
 			}
 
 			return data;
