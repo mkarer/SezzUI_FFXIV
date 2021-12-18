@@ -25,7 +25,8 @@ namespace SezzUI.Modules.JobHud.Jobs
                 TreatWeaponOutAsCombat = false,
                 Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\surge_of_darkness.png",
                 Size = new Vector2(128, 256),
-                Position = new Vector2(-140, 50)
+                Position = new Vector2(-140, 50),
+                Level = 82
             });
 
             base.Configure(hud);
