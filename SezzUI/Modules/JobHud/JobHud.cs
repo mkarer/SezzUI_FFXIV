@@ -153,6 +153,8 @@ namespace SezzUI.Modules.JobHud
 
         public void AddAlert(AuraAlert alert)
 		{
+            if (alert.Level > 1 && (Service.ClientState.LocalPlayer?.Level ?? 0) < alert.Level) return;
+
             _auraAlerts.Add(alert);
 		}
 

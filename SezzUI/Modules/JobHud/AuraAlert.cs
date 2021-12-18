@@ -43,6 +43,11 @@ namespace SezzUI.Modules.JobHud
 		private string? _imagePath;
 		private TextureWrap? _texture;
 
+		/// <summary>
+		/// Required job level to enable alert.
+		/// </summary>
+		public byte Level = 1;
+
 		public AuraAlert()
 		{
 			Animator.Timelines.OnShow.Data.DefaultOpacity = 0;
