@@ -13,6 +13,7 @@ namespace SezzUI
         private SezzUIPluginConfiguration configuration;
         private ImGuiScene.TextureWrap goatImage;
         private readonly Animator.Animator _animatorBanner;
+        public bool DisplayBanner = false;
 
         // this extra bool exists for ImGui, since you can't ref a property
         private bool visible = false;
@@ -80,7 +81,7 @@ namespace SezzUI
             var origin = ImGui.GetMainViewport().Size / 2f;
 
             // SezzUI
-            DrawBanner(origin);
+            if (DisplayBanner) DrawBanner(origin);
             DrawOverlay(origin);
 
             // Template stuff...
@@ -143,8 +144,6 @@ namespace SezzUI
         }
 
         #region Banner
-
-             
         private void DrawBanner(Vector2 origin)
         {
             if (!_animatorBanner.IsAnimating) // There's currently no option to toggle the banner!
@@ -187,7 +186,6 @@ namespace SezzUI
         #endregion
 
         #region Game Overlay
-
         protected unsafe bool ShouldShowOverlay()
         {
             if (Plugin.ClientState.LocalPlayer == null)
@@ -211,7 +209,6 @@ namespace SezzUI
 
             Plugin.SezzUIPlugin.Modules.JobHud.Draw(origin);
         }
-
         #endregion
     }
 }
