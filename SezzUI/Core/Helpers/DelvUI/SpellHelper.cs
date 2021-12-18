@@ -48,7 +48,14 @@ namespace DelvUI.Helpers
             _clientState = SezzUI.Plugin.ClientState;
             _actionAdjustments = new()
             {
+                // Hardcoded values for GetAdjustedActionId for actions that might get replaced by
+                // another plugin (combo plugins hook GetAdjustedActionId):
+
+                // RPR
                 { 24405, new() { { 72, 24405 } } }, // Arcane Circle
+                // PLD
+                { 3538, new() { { 54, 3538} } }, // Goring Blade
+                { 7383, new() { { 54, 7383 } } }, // Requiescat
             };
         }
 
