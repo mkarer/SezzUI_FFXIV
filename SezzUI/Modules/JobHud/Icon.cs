@@ -27,6 +27,12 @@ namespace SezzUI.Modules.JobHud
         /// Disables the duration text in the middle of the small status progress bar.
         /// </summary>
         NoStatusBarText = 1L << 1,
+
+        /// <summary>
+        /// Usually only icons that are ready/usable glow, use this to ignore the button state and allow it glow whenever the status is found.
+        /// Applies only when GlowBorderStatusId or GlowBorderStatusIds is defined.
+        /// </summary>
+        GlowIgnoresState = 1L << 2,
     }
 
     public sealed class Icon : IDisposable
@@ -98,7 +104,12 @@ namespace SezzUI.Modules.JobHud
         public float? MaxStatusDuration;
         public Enums.Unit? StatusTarget;
 
+        public bool GlowBorderUsable = false;
         public uint? GlowBorderStatusId;
+        public uint[]? GlowBorderStatusIds;
+
+        public Helpers.JobsHelper.PowerType? RequiredPowerType;
+        public int? RequiredPowerAmount;
 
         /// <summary>
         /// Required job level to show icon.
@@ -134,6 +145,7 @@ namespace SezzUI.Modules.JobHud
             float progressBarTotal = 0;
             float progressBarCurrent = 0;
             float progressBarTextRemaining = 0;
+            bool hasEnoughResources = true;
 
             Vector2 posInside = pos + Vector2.One;
             Vector2 sizeInside = size - 2 * Vector2.One;
@@ -178,6 +190,7 @@ namespace SezzUI.Modules.JobHud
                 if (status != null && status.StatusId == StatusId && status.SourceID == player.ObjectId)
 				{
                     float duration = status?.RemainingTime ?? -1;
+                    byte stacks = (duration > 0 && status != null && status.GameData.MaxStacks > 1) ? status.StackCount : (byte)0;
 
                     // State
                     if (shouldShowStatusAsCooldown)
@@ -205,6 +218,12 @@ namespace SezzUI.Modules.JobHud
                         cooldownSpiralRemaining = duration;
                         cooldownSpiralTotal = (float)MaxStatusDuration;
                     }
+
+                    // Stacks
+                    if (chargesTextAmount == -1 && stacks > 0)
+					{
+                        chargesTextAmount = stacks;
+                    }
                 }
                 else if (shouldShowStatusAsCooldown)
                 {
@@ -212,11 +231,35 @@ namespace SezzUI.Modules.JobHud
                 }
             }
 
+            // Resources
+            if (RequiredPowerType != null && RequiredPowerAmount != null)
+			{
+                (int current, int max) = Helpers.JobsHelper.GetPower((Helpers.JobsHelper.PowerType)RequiredPowerType);
+                hasEnoughResources = (current >= RequiredPowerAmount);
+			}
+
+            if (newState == IconState.Ready && !hasEnoughResources)
+			{
+                newState = IconState.ReadyOutOfResources;
+			}
+
             // Glow
-            if (GlowBorderStatusId != null && newState == IconState.Ready)
+            if (newState == IconState.Ready || Features.HasFlag(IconFeatures.GlowIgnoresState))
             {
-                Status? status = Helpers.SpellHelper.GetStatus((uint)GlowBorderStatusId, Enums.Unit.Player);
-                displayGlow = (status != null && (status?.RemainingTime ?? -1) > 0);
+                if (GlowBorderUsable)
+				{
+                    displayGlow = true;
+                }
+                else if (GlowBorderStatusId != null)
+				{
+                    Status? status = Helpers.SpellHelper.GetStatus((uint)GlowBorderStatusId, Enums.Unit.Player);
+                    displayGlow = (status != null && (status?.RemainingTime ?? -1) > 0);
+                }
+                else if (GlowBorderStatusIds != null)
+				{
+                    Status? status = Helpers.SpellHelper.GetStatus(GlowBorderStatusIds, Enums.Unit.Player);
+                    displayGlow = (status != null && (status?.RemainingTime ?? -1) > 0);
+                }
             }
 
             // --------------------------------------------------------------------------------
