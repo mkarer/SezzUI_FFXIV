@@ -179,6 +179,7 @@ namespace SezzUI.Animator
 
 		public void Dispose()
 		{
+			Stop(true);
 		}
 	}
 }

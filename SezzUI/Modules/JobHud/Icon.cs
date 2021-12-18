@@ -32,7 +32,8 @@ namespace SezzUI.Modules.JobHud
     public sealed class Icon : IDisposable
     {
         private Bar _parent;
-        private Animator.Animator _animator;
+        private Animator.Animator _animatorBorder;
+        private Animator.Animator _animatorTexture;
         public IconFeatures Features = IconFeatures.Default;
 
         /// <summary>
@@ -109,8 +110,15 @@ namespace SezzUI.Modules.JobHud
         public Icon(Bar parent)
 		{
             _parent = parent;
-            _animator = new();
-		}
+            _animatorBorder = new();
+            _animatorBorder.Timelines.OnShow.Data.DefaultColor = Defaults.StateColors[_state].Border;
+            _animatorBorder.Timelines.OnShow.Add(new Animator.ColorAnimation(_animatorBorder.Timelines.OnShow.Data.DefaultColor, _animatorBorder.Timelines.OnShow.Data.DefaultColor, 100));
+            _animatorBorder.Data.Reset(_animatorBorder.Timelines.OnShow.Data);
+            _animatorTexture = new();
+            _animatorTexture.Timelines.OnShow.Data.DefaultColor = Defaults.StateColors[_state].Icon;
+            _animatorTexture.Timelines.OnShow.Add(new Animator.ColorAnimation(_animatorTexture.Timelines.OnShow.Data.DefaultColor, _animatorTexture.Timelines.OnShow.Data.DefaultColor, 100));
+            _animatorTexture.Data.Reset(_animatorTexture.Timelines.OnShow.Data);
+        }
 
         public void Draw(Vector2 pos, Vector2 size, Animator.Animator animator, ImDrawListPtr drawList)
         {
@@ -218,8 +226,28 @@ namespace SezzUI.Modules.JobHud
             // Backdrop + Icon Texture
             if (_texture != null)
             {
-                Helpers.DrawHelper.DrawBackdrop(pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 0.5f * animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(Defaults.StateColors[newState].Border.AddTransparency(animator.Data.Opacity)), drawList);
-                drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, _parent.IconUV0, _parent.IconUV1, ImGui.ColorConvertFloat4ToU32(Defaults.StateColors[newState].Icon.AddTransparency(animator.Data.Opacity)));
+                if (newState != _state)
+				{
+                    Animator.ColorAnimation anim1 = (Animator.ColorAnimation)_animatorBorder.Timelines.OnShow.Animations[0];
+                    anim1.ColorFrom = _animatorBorder.Data.Color;
+                    anim1.ColorTo = Defaults.StateColors[newState].Border;
+                    _animatorBorder.Timelines.OnShow.Data.DefaultColor = anim1.ColorFrom;
+                    _animatorBorder.Timelines.Loop.Data.DefaultColor = anim1.ColorTo;
+                    _animatorBorder.Animate();
+
+                    Animator.ColorAnimation anim2 = (Animator.ColorAnimation)_animatorTexture.Timelines.OnShow.Animations[0];
+                    anim2.ColorFrom = _animatorTexture.Data.Color;
+                    anim2.ColorTo = Defaults.StateColors[newState].Icon;
+                    _animatorTexture.Timelines.OnShow.Data.DefaultColor = anim2.ColorFrom;
+                    _animatorTexture.Timelines.Loop.Data.DefaultColor = anim2.ColorTo;
+                    _animatorTexture.Animate();
+                }
+
+                _animatorBorder.Update();
+                _animatorTexture.Update();
+
+                Helpers.DrawHelper.DrawBackdrop(pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 0.5f * animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(_animatorBorder.Data.Color.AddTransparency(animator.Data.Opacity)), drawList);
+                drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, _parent.IconUV0, _parent.IconUV1, ImGui.ColorConvertFloat4ToU32(_animatorTexture.Data.Color.AddTransparency(animator.Data.Opacity)));
             }
             else
             {

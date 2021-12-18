@@ -23,6 +23,7 @@ namespace SezzUI.Animator
 
 		public void Dispose()
 		{
+			Stop();
 		}
 
 		public void SetData(ref AnimatorTransformData data)

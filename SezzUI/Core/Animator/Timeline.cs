@@ -9,6 +9,7 @@ namespace SezzUI.Animator
 		public AnimatorTransformData Data;
 
 		private List<BaseAnimation> _animations = new List<BaseAnimation>();
+		public List<BaseAnimation> Animations { get { return _animations; } }
 
 		public uint Duration { get { return _duration; } }
 		private uint _duration = 0;
@@ -115,6 +116,7 @@ namespace SezzUI.Animator
 
 		public void Dispose()
 		{
+			Stop();
 		}
 	}
 }
