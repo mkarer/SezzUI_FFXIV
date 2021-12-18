@@ -56,15 +56,7 @@ namespace SezzUI.Modules.JobHud
 
         public void Add(Icon icon, int index = -1)
 		{
-            if (icon.Level > 1)
-			{
-                PlayerCharacter? player = Service.ClientState.LocalPlayer;
-                byte level = (player != null ? player.Level : (byte)0);
-                if (level < icon.Level)
-				{
-                    return;
-                }
-            }
+            if (icon.Level > 1 && (Service.ClientState.LocalPlayer?.Level ?? 0) < icon.Level) return;
 
             if (index == -1)
 			{
