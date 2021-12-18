@@ -59,7 +59,7 @@ namespace SezzUI.Helpers
 			return null;
 		}
 
-		public unsafe static Status? GetStatus(uint statusId, Enums.Unit unit)
+		public unsafe static BattleChara? GetUnit(Enums.Unit unit)
 		{
 			PlayerCharacter? player = Service.ClientState.LocalPlayer;
 			if (player == null) return null;
@@ -74,11 +74,45 @@ namespace SezzUI.Helpers
 				_ => null
 			};
 
-			if (actor is BattleChara chara)
+			if (actor is BattleChara)
 			{
-				foreach (var status in chara.StatusList)
+				return (BattleChara)actor;
+			}
+
+			return null;
+		}
+
+		public unsafe static Status? GetStatus(uint statusId, Enums.Unit unit)
+		{
+			BattleChara? actor = GetUnit(unit);
+			if (actor != null)
+			{
+				PlayerCharacter? player = Service.ClientState.LocalPlayer;
+				if (player == null) return null;
+
+				foreach (var status in actor.StatusList)
 				{
 					if (status != null && status.StatusId == statusId && status.SourceID == player.ObjectId)
+					{
+						return status;
+					}
+				}
+			}
+
+			return null;
+		}
+
+		public unsafe static Status? GetStatus(uint[] statusIds, Enums.Unit unit)
+		{
+			BattleChara? actor = GetUnit(unit);
+			if (actor != null)
+			{
+				PlayerCharacter? player = Service.ClientState.LocalPlayer;
+				if (player == null) return null;
+
+				foreach (var status in actor.StatusList)
+				{
+					if (status != null && Array.IndexOf(statusIds, status.StatusId) > -1 && status.SourceID == player.ObjectId)
 					{
 						return status;
 					}
