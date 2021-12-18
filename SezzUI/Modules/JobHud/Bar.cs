@@ -54,7 +54,7 @@ namespace SezzUI.Modules.JobHud
             IconSize = new(38, 38); // 36px Icon + 1px Borders
         }
 
-        public void Add(Icon icon)
+        public void Add(Icon icon, int index = -1)
 		{
             if (icon.Level > 1)
 			{
@@ -66,7 +66,14 @@ namespace SezzUI.Modules.JobHud
                 }
             }
 
-            _icons.Add(icon);
+            if (index == -1)
+			{
+                _icons.Add(icon);
+            }
+            else
+			{
+                _icons.Insert(index, icon);
+            }
 
             Size.Y = IconSize.Y;
             Size.X = IconSize.X * _icons.Count() + (_icons.Count() - 1) * IconPadding;
