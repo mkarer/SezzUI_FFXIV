@@ -4,7 +4,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 {
     public sealed class BLM : BasePreset
     {
-        public override uint JobId => 25;
+        public override uint JobId => DelvUI.Helpers.JobIDs.BLM;
         
         public override void Configure(JobHud hud)
         {
@@ -17,6 +17,8 @@ namespace SezzUI.Modules.JobHud.Jobs
                 Position = new Vector2(0, -180),
                 MaxDuration = 30
             });
+
+            base.Configure(hud);
         }
     }
 }

@@ -4,7 +4,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 {
     public sealed class RPR : BasePreset
     {
-        public override uint JobId => 39;
+        public override uint JobId => DelvUI.Helpers.JobIDs.RPR;
         
         public override void Configure(JobHud hud)
         {
@@ -27,6 +27,8 @@ namespace SezzUI.Modules.JobHud.Jobs
                 Size = new Vector2(128, 256),
                 Position = new Vector2(-140, 50)
             });
+
+            base.Configure(hud);
         }
     }
 }

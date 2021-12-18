@@ -2,7 +2,7 @@
 {
     public sealed class DRK : BasePreset
     {
-        public override uint JobId => 32;
+        public override uint JobId => DelvUI.Helpers.JobIDs.DRK;
 
         public override void Configure(JobHud hud)
         {
@@ -25,6 +25,8 @@
                 bar.Add(new Icon(bar) { TextureActionId = 3638, CooldownActionId = 3638, StatusActionId = 3638, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 50 }); // Living Dead
                 hud.AddBar(bar);
             }
+         
+            base.Configure(hud);
         }
     }
 }

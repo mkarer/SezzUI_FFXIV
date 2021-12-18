@@ -2,7 +2,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 {
     public sealed class MCH : BasePreset
     {
-        public override uint JobId => 31;
+        public override uint JobId => DelvUI.Helpers.JobIDs.MCH;
         
         public override void Configure(JobHud hud)
         {
@@ -12,6 +12,8 @@ namespace SezzUI.Modules.JobHud.Jobs
                 bar.Add(new Icon(bar) { TextureActionId = 16500, CooldownActionId = 16500, Level = 4 }); // Air Anchor 76+
                 hud.AddBar(bar);
             }
+
+            base.Configure(hud);
         }
     }
 }
