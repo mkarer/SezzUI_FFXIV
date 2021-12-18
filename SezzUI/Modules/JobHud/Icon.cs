@@ -8,7 +8,6 @@ using ImGuiScene;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
 using Dalamud.Game.ClientState.Objects.SubKinds;
-using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Statuses;
 using XIVAuras.Helpers;
 
@@ -33,6 +32,7 @@ namespace SezzUI.Modules.JobHud
     public sealed class Icon : IDisposable
     {
         private Bar _parent;
+        private Animator.Animator _animator;
         public IconFeatures Features = IconFeatures.Default;
 
         /// <summary>
@@ -45,7 +45,8 @@ namespace SezzUI.Modules.JobHud
             {
                 if (value != null)
 				{
-                    LuminaAction? action = Helpers.SpellHelper.GetAction((uint)value);
+                    uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId((uint)value);
+                    LuminaAction? action = Helpers.SpellHelper.GetAction(actionIdAdjusted);
                     if (action != null)
                     {
                         _texture = DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId(action.Icon);
@@ -82,7 +83,8 @@ namespace SezzUI.Modules.JobHud
 
                 if (value != null)
                 {
-                    LuminaStatus? status = Helpers.SpellHelper.GetStatusByAction((uint)value);
+                    uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId((uint)value);
+                    LuminaStatus? status = Helpers.SpellHelper.GetStatusByAction(actionIdAdjusted);
                     if (status != null)
                     {
                         StatusId = status.RowId;
@@ -107,6 +109,7 @@ namespace SezzUI.Modules.JobHud
         public Icon(Bar parent)
 		{
             _parent = parent;
+            _animator = new();
 		}
 
         public void Draw(Vector2 pos, Vector2 size, Animator.Animator animator, ImDrawListPtr drawList)
@@ -114,169 +117,177 @@ namespace SezzUI.Modules.JobHud
             PlayerCharacter? player = Service.ClientState.LocalPlayer;
             if (player == null) return; // Stupid IDE, we're not drawing this without a player anyways...
 
+            IconState newState = _state;
+            float cooldownTextRemaining = 0;
+            float cooldownSpiralTotal = 0;
+            float cooldownSpiralRemaining = 0;
+            short chargesTextAmount = -1;
+            bool displayGlow = false;
+            float progressBarTotal = 0;
+            float progressBarCurrent = 0;
+            float progressBarTextRemaining = 0;
+
             Vector2 posInside = pos + Vector2.One;
             Vector2 sizeInside = size - 2 * Vector2.One;
 
-            // Backdrop + Icon Texture
-            if (_texture != null)
-			{
-                Helpers.DrawHelper.DrawBackdrop(pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 0.5f * animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(Defaults.StateColors[_state].Border.AddTransparency(animator.Data.Opacity)), drawList);
-                drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, _parent.IconUV0, _parent.IconUV1, ImGui.ColorConvertFloat4ToU32(Defaults.StateColors[_state].Icon.AddTransparency(animator.Data.Opacity)));
-            }
-            else
-			{
-                Helpers.DrawHelper.DrawPlaceholder("X", pos, size, animator.Data.Opacity, drawList);
-            }
+            // --------------------------------------------------------------------------------
+            // Conditions
+            // --------------------------------------------------------------------------------
 
             // Cooldown + Charges
+            // Will be used as IconState by default.
             if (CooldownActionId != null)
 			{
                 Helpers.CooldownData cooldown = Helpers.SpellHelper.GetCooldownData((uint)CooldownActionId);
 
                 if (cooldown.CooldownRemaining > 0)
 				{
-                    _state = cooldown.CooldownRemaining > 7 ? IconState.FadedOut : IconState.Soon;
+                    newState = cooldown.CooldownRemaining > 7 ? IconState.FadedOut : IconState.Soon;
 
-                    // Spiral
-                    DrawProgressSwipe(posInside, sizeInside, cooldown.CooldownRemaining, cooldown.CooldownPerCharge, animator.Data.Opacity, drawList);
-
-                    // Text
-                    // https://stackoverflow.com/questions/463642/what-is-the-best-way-to-convert-seconds-into-hourminutessecondsmilliseconds
-                    int cooldownRounded = (int)Math.Ceiling(cooldown.CooldownRemaining);
-                    int seconds = cooldownRounded % 60;
-                    if (cooldownRounded >= 60)
-					{
-                        int minutes = (cooldownRounded % 3600) / 60;
-                        Helpers.DrawHelper.DrawCenteredOutlineText("MyriadProLightCond_20", String.Format("{0:D1}:{1:D2}", minutes, seconds), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new Vector4(0.6f, 0.6f, 0.6f, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList);
-                    }
-                    else if (cooldown.CooldownRemaining > 3)
-					{
-                        Helpers.DrawHelper.DrawCenteredOutlineText("MyriadProLightCond_20", String.Format("{0:D1}", seconds), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList);
-                    }
-                    else
-					{
-                        Helpers.DrawHelper.DrawCenteredOutlineText("MyriadProLightCond_20", cooldown.CooldownRemaining.ToString("0.0", Plugin.NumberFormatInfo), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 0, 0, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList);
-                    }
+                    cooldownTextRemaining = cooldown.CooldownRemaining;
+                    cooldownSpiralRemaining = cooldown.CooldownRemaining;
+                    cooldownSpiralTotal = cooldown.CooldownPerCharge;
                 }
                 else
 				{
-                    _state = IconState.Ready;
+                    newState = IconState.Ready;
                 }
 
                 if (cooldown.ChargesMax > 1)
 				{
-                    Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_14", Enums.TextStyle.Outline, DelvUI.Enums.DrawAnchor.BottomRight, cooldown.ChargesCurrent.ToString(), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList, -2, -1);
-                }
-            }
-
-            // Glow
-            if (GlowBorderStatusId != null && _state == IconState.Ready)
-            {
-                Status? status = Helpers.SpellHelper.GetStatus((uint)GlowBorderStatusId, Enums.Unit.Player);
-                if (status != null && (status?.RemainingTime ?? -1) > 0)
-                {
-                    // Testing fake glow using images...
-                    // https://github.com/ocornut/imgui/issues/4706
-                    // https://kovart.github.io/dashed-border-generator/
-
-                    uint n = 8; // number of textures to cycle through
-                    uint dur = 250; // duration of one full cycle
-                    float frametime = dur / n; // display duration of 1 single frame
-                    uint step = Math.Min(n, Math.Max(1, (uint)Math.Ceiling((uint)(animator.TimeElapsed % dur) / frametime)));
-                    string image = Plugin.AssemblyLocation + "Media\\Images\\Animations\\DashedRect38_" + step + ".png";
-
-                    TextureWrap? tex = Helpers.ImageCache.Instance.GetImageFromPath(image);
-                    if (tex != null)
-					{
-                        uint glowColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.95f, 0.95f, 0.32f, animator.Data.Opacity));
-                        drawList.AddImage(tex.ImGuiHandle, pos, pos + size, Vector2.Zero, Vector2.One, glowColor);
-                    }
-                    else
-					{
-                        uint glowColor = ImGui.ColorConvertFloat4ToU32(new Vector4(206f / 255f, 1, 0, 1 * animator.Data.Opacity));
-                        drawList.AddRect(pos - Vector2.One, pos + size + Vector2.One, glowColor, 0, ImDrawFlags.None, 1);
-                    }
+                    chargesTextAmount = (short)cooldown.ChargesCurrent;
                 }
             }
 
             // Status
+            // Will be used as IconState if not checking any cooldowns.
             if (StatusId != null && StatusTarget != null && MaxStatusDuration != null)
 			{
-                bool shouldShowStatusBar = (CooldownActionId != null && !Features.HasFlag(IconFeatures.NoStatusBar));
+                bool shouldShowStatusBar = !Features.HasFlag(IconFeatures.NoStatusBar);
                 bool shouldShowStatusAsCooldown = (CooldownActionId == null);
                 Status? status = Helpers.SpellHelper.GetStatus((uint)StatusId, (Enums.Unit)StatusTarget);
 
                 if (status != null && status.StatusId == StatusId && status.SourceID == player.ObjectId)
 				{
                     float duration = status?.RemainingTime ?? -1;
+
+                    // State
+                    if (shouldShowStatusAsCooldown)
+                    {
+                        newState = (duration <= 7 ? IconState.Soon : IconState.FadedOut);
+                    }
+
                     // Progress Bar
                     if (shouldShowStatusBar)
 					{
-                        Vector2 progressSize = new(sizeInside.X, 2);
-                        Vector2 progressPos = new(posInside.X, posInside.Y + sizeInside.Y - progressSize.Y);
-
-                        Vector2 linePos = progressPos.AddY(-1);
-                        Vector2 lineSize = progressSize.AddY(-progressSize.Y);
-                        drawList.AddLine(linePos, linePos + lineSize, ImGui.ColorConvertFloat4ToU32(Defaults.IconBarSeparatorColor.AddTransparency(animator.Data.Opacity)), 1);
-
-                        Helpers.DrawHelper.DrawProgressBar(progressPos, progressSize, 0, (float)MaxStatusDuration, duration,
-                            ImGui.ColorConvertFloat4ToU32(Plugin.SezzUIPlugin.Modules.JobHud.AccentColor.AddTransparency(animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(Defaults.IconBarBGColor.AddTransparency(animator.Data.Opacity)),
-                            drawList);
+                        progressBarTotal = (float)MaxStatusDuration;
+                        progressBarCurrent = duration;
 
                         // Duration Text
-                        if (!Features.HasFlag(IconFeatures.NoStatusBarText))
+                        if (!shouldShowStatusAsCooldown && !Features.HasFlag(IconFeatures.NoStatusBarText))
                         {
-                            if (duration > 3)
-                            {
-                                Helpers.DrawHelper.DrawCenteredOutlineText("MyriadProLightCond_12", String.Format("{0:D1}", (int)Math.Ceiling(duration)), linePos, lineSize, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList);
-                            }
-                            else if (duration > 0)
-                            {
-                                Helpers.DrawHelper.DrawCenteredOutlineText("MyriadProLightCond_12", duration.ToString("0.0", Plugin.NumberFormatInfo), linePos, lineSize, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 0, 0, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList);
-                            }
+                            progressBarTextRemaining = (duration > 3 ? (int)Math.Ceiling(duration) : duration);
                         }
                     }
 
                     // Cooldown Spiral
                     if (shouldShowStatusAsCooldown)
                     {
+                        cooldownTextRemaining = duration;
+                        cooldownSpiralRemaining = duration;
+                        cooldownSpiralTotal = (float)MaxStatusDuration;
                     }
-				}
-            }
-        }
-
-        private void DrawProgressSwipe(Vector2 pos, Vector2 size, float triggeredValue, float startValue, float alpha, ImDrawListPtr drawList)
-        {
-            // TODO: HUD Clipping
-            if (startValue > 0)
-            {
-                bool invert = false; // this.IconStyleConfig.InvertSwipe;
-                float percent = (invert ? 0 : 1) - (startValue - triggeredValue) / startValue;
-
-                float radius = (float)Math.Sqrt(Math.Pow(Math.Max(size.X, size.Y), 2) * 2) / 2f;
-                float startAngle = -(float)Math.PI / 2;
-                float endAngle = startAngle - 2f * (float)Math.PI * percent;
-
-                ImGui.PushClipRect(pos, pos + size, false);
-                drawList.PathArcTo(pos + size / 2, radius / 2, startAngle, endAngle, (int)(100f * Math.Abs(percent)));
-                uint progressAlpha = (uint)(0.6f * 255 * alpha) << 24; //(uint)(this.IconStyleConfig.ProgressSwipeOpacity * 255 * alpha) << 24;
-                drawList.PathStroke(progressAlpha, ImDrawFlags.None, radius);
-                if (true && triggeredValue != 0) // if (this.IconStyleConfig.ShowSwipeLines && triggeredValue != 0)
-                {
-                    Vector2 vec = new Vector2((float)Math.Cos(endAngle), (float)Math.Sin(endAngle));
-                    Vector2 start = pos + size / 2;
-                    Vector2 end = start + vec * radius;
-                    float thickness = 1;// this.IconStyleConfig.ProgressLineThickness;
-                    Vector4 swipeLineColor = new Vector4(1, 1, 1, 0.3f * alpha); //this.IconStyleConfig.ProgressLineColor.Vector.AddTransparency(alpha);
-                    uint color = ImGui.ColorConvertFloat4ToU32(swipeLineColor);
-
-                    drawList.AddLine(start, end, color, thickness);
-                    drawList.AddLine(start, new(pos.X + size.X / 2, pos.Y), color, thickness);
-                    drawList.AddCircleFilled(start + new Vector2(thickness / 4, thickness / 4), thickness / 2, color);
                 }
-
-                ImGui.PopClipRect();
+                else if (shouldShowStatusAsCooldown)
+                {
+                    newState = IconState.Ready;
+                }
             }
+
+            // Glow
+            if (GlowBorderStatusId != null && newState == IconState.Ready)
+            {
+                Status? status = Helpers.SpellHelper.GetStatus((uint)GlowBorderStatusId, Enums.Unit.Player);
+                displayGlow = (status != null && (status?.RemainingTime ?? -1) > 0);
+            }
+
+            // --------------------------------------------------------------------------------
+            // Draw
+            // --------------------------------------------------------------------------------
+
+            // Backdrop + Icon Texture
+            if (_texture != null)
+            {
+                Helpers.DrawHelper.DrawBackdrop(pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 0.5f * animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(Defaults.StateColors[newState].Border.AddTransparency(animator.Data.Opacity)), drawList);
+                drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, _parent.IconUV0, _parent.IconUV1, ImGui.ColorConvertFloat4ToU32(Defaults.StateColors[newState].Icon.AddTransparency(animator.Data.Opacity)));
+            }
+            else
+            {
+                Helpers.DrawHelper.DrawPlaceholder("?", pos, size, animator.Data.Opacity, drawList);
+            }
+
+            // Cooldown + Charges
+            if (cooldownSpiralTotal > 0)
+			{
+                Helpers.DrawHelper.DrawProgressSwipe(posInside, sizeInside, cooldownSpiralRemaining, cooldownSpiralTotal, animator.Data.Opacity, drawList);
+                Helpers.DrawHelper.DrawCooldownText(posInside, sizeInside, cooldownTextRemaining, drawList, "MyriadProLightCond_20", animator.Data.Opacity);
+            }
+
+            if (chargesTextAmount >= 0)
+			{
+                Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_14", Enums.TextStyle.Outline, DelvUI.Enums.DrawAnchor.BottomRight, chargesTextAmount.ToString(), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList, -2, -1);
+            }
+
+            // Glow
+            if (displayGlow)
+			{
+                // Testing fake glow using images...
+                // https://github.com/ocornut/imgui/issues/4706
+                // https://kovart.github.io/dashed-border-generator/
+
+                uint n = 8; // number of textures to cycle through
+                uint dur = 250; // duration of one full cycle
+                float frametime = dur / n; // display duration of 1 single frame
+                uint step = Math.Min(n, Math.Max(1, (uint)Math.Ceiling((uint)(animator.TimeElapsed % dur) / frametime)));
+                string image = Plugin.AssemblyLocation + "Media\\Images\\Animations\\DashedRect38_" + step + ".png";
+
+                TextureWrap? tex = Helpers.ImageCache.Instance.GetImageFromPath(image);
+                if (tex != null)
+                {
+                    uint glowColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.95f, 0.95f, 0.32f, animator.Data.Opacity));
+                    drawList.AddImage(tex.ImGuiHandle, pos, pos + size, Vector2.Zero, Vector2.One, glowColor);
+                }
+                else
+                {
+                    uint glowColor = ImGui.ColorConvertFloat4ToU32(new Vector4(206f / 255f, 1, 0, 1 * animator.Data.Opacity));
+                    drawList.AddRect(pos - Vector2.One, pos + size + Vector2.One, glowColor, 0, ImDrawFlags.None, 1);
+                }
+            }
+
+            // Status Progress Bar
+            if (progressBarTotal > 0)
+			{
+                // Progress Bar
+                Vector2 progressSize = new(sizeInside.X, 2);
+                Vector2 progressPos = new(posInside.X, posInside.Y + sizeInside.Y - progressSize.Y);
+
+                Vector2 linePos = progressPos.AddY(-1);
+                Vector2 lineSize = progressSize.AddY(-progressSize.Y);
+                drawList.AddLine(linePos, linePos + lineSize, ImGui.ColorConvertFloat4ToU32(Defaults.IconBarSeparatorColor.AddTransparency(animator.Data.Opacity)), 1);
+
+                Helpers.DrawHelper.DrawProgressBar(progressPos, progressSize, 0, progressBarTotal, progressBarCurrent,
+					ImGui.ColorConvertFloat4ToU32(Plugin.SezzUIPlugin.Modules.JobHud.AccentColor.AddTransparency(animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(Defaults.IconBarBGColor.AddTransparency(animator.Data.Opacity)),
+                    drawList);
+
+                // Duration Text
+                if (progressBarTextRemaining > 0)
+                {
+                    Helpers.DrawHelper.DrawCooldownText(linePos, lineSize, progressBarTextRemaining, drawList, "MyriadProLightCond_12", animator.Data.Opacity);
+                }
+            }
+
+            // Done
+            _state = newState;
         }
 
         public void Dispose()

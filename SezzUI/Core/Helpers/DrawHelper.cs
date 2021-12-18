@@ -73,5 +73,57 @@ namespace SezzUI.Helpers
             float fillPercent = max == 0 ? 1f : Math.Clamp((current - min) / (max - min), 0f, 1f);
             drawList.AddRectFilled(pos, pos + new Vector2(size.X * fillPercent, size.Y), barColor, 0);
         }
+
+        public static void DrawProgressSwipe(Vector2 pos, Vector2 size, float remaining, float total, float opacity, ImDrawListPtr drawList)
+        {
+            // TODO: HUD Clipping
+            if (total > 0)
+            {
+                float percent = 1 - (total - remaining) / total;
+
+                float radius = (float)Math.Sqrt(Math.Pow(Math.Max(size.X, size.Y), 2) * 2) / 2f;
+                float startAngle = -(float)Math.PI / 2;
+                float endAngle = startAngle - 2f * (float)Math.PI * percent;
+
+                ImGui.PushClipRect(pos, pos + size, false);
+                drawList.PathArcTo(pos + size / 2, radius / 2, startAngle, endAngle, (int)(100f * Math.Abs(percent)));
+                uint progressAlpha = (uint)(0.6f * 255 * opacity) << 24;
+                drawList.PathStroke(progressAlpha, ImDrawFlags.None, radius);
+                if (remaining != 0)
+                {
+                    Vector2 vec = new Vector2((float)Math.Cos(endAngle), (float)Math.Sin(endAngle));
+                    Vector2 start = pos + size / 2;
+                    Vector2 end = start + vec * radius;
+                    Vector4 swipeLineColor = new Vector4(1, 1, 1, 0.3f * opacity);
+                    uint color = ImGui.ColorConvertFloat4ToU32(swipeLineColor);
+
+                    drawList.AddLine(start, end, color, 1);
+                    drawList.AddLine(start, new(pos.X + size.X / 2, pos.Y), color, 1);
+                    drawList.AddCircleFilled(start + new Vector2(1 / 4, 1 / 4), 1 / 2, color);
+                }
+
+                ImGui.PopClipRect();
+            }
+        }
+
+        public static void DrawCooldownText(Vector2 pos, Vector2 size, float cooldown, ImDrawListPtr drawList, string font = "MyriadProLightCond_20", float opacity = 1)
+		{
+            // https://stackoverflow.com/questions/463642/what-is-the-best-way-to-convert-seconds-into-hourminutessecondsmilliseconds
+            int cooldownRounded = (int)Math.Ceiling(cooldown);
+            int seconds = cooldownRounded % 60;
+            if (cooldownRounded >= 60)
+            {
+                int minutes = (cooldownRounded % 3600) / 60;
+                DrawCenteredOutlineText(font, String.Format("{0:D1}:{1:D2}", minutes, seconds), pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(0.6f, 0.6f, 0.6f, opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, opacity)), drawList);
+            }
+            else if (cooldown > 3)
+            {
+                DrawCenteredOutlineText(font, String.Format("{0:D1}", seconds), pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, opacity)), drawList);
+            }
+            else
+            {
+                DrawCenteredOutlineText(font, cooldown.ToString("0.0", Plugin.NumberFormatInfo), pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 0, 0, opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, opacity)), drawList);
+            }
+        }
     }
 }
