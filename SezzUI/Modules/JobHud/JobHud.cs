@@ -58,6 +58,7 @@ namespace SezzUI.Modules.JobHud
                 Service.ClientState.Logout += OnLogout;
 
                 Plugin.SezzUIPlugin.Events.Player.JobChanged += OnJobChanged;
+                Plugin.SezzUIPlugin.Events.Player.LevelChanged += OnLevelChanged;
                 Plugin.SezzUIPlugin.Events.Combat.EnteringCombat += OnEnteringCombat;
                 Plugin.SezzUIPlugin.Events.Combat.LeavingCombat += OnLeavingCombat;
 
@@ -85,6 +86,7 @@ namespace SezzUI.Modules.JobHud
                 Service.ClientState.Logout -= OnLogout;
 
                 Plugin.SezzUIPlugin.Events.Player.JobChanged -= OnJobChanged;
+                Plugin.SezzUIPlugin.Events.Player.LevelChanged -= OnLevelChanged;
                 Plugin.SezzUIPlugin.Events.Combat.EnteringCombat -= OnEnteringCombat;
                 Plugin.SezzUIPlugin.Events.Combat.LeavingCombat -= OnLeavingCombat;
 
@@ -178,36 +180,38 @@ namespace SezzUI.Modules.JobHud
             }
         }
 
-        private void OnLogin(object? sender, EventArgs e)
+		#region Events
+		private void OnLogin(object? sender, EventArgs e)
         {
-            PluginLog.Debug($"[{Name}] OnLogin");
         }
 
         private void OnLogout(object? sender, EventArgs e)
         {
-            PluginLog.Debug($"[{Name}] OnLogout");
             Hide(true);
         }
 
         private void OnEnteringCombat(object? sender, EventArgs e)
         {
-            PluginLog.Debug($"[{Name}] OnEnteringCombat");
             Show();
         }
 
         private void OnLeavingCombat(object? sender, EventArgs e)
         {
-            PluginLog.Debug($"[{Name}] OnLeavingCombat");
             Hide();
         }
 
         private void OnJobChanged(object? sender, GameEvents.JobChangedEventArgs e)
         {
-            PluginLog.Debug($"[{Name}] OnJobChanged: {e.JobId}");
             Configure();
         }
 
-        public override void Dispose()
+        private void OnLevelChanged(object? sender, GameEvents.LevelChangedEventArgs e)
+        {
+            Configure();
+        }
+		#endregion
+
+		public override void Dispose()
         {
             Reset();
             base.Dispose();
