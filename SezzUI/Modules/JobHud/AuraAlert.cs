@@ -13,6 +13,8 @@ namespace SezzUI.Modules.JobHud
 	{
 		public uint? StatusId;
 		public float? MaxDuration;
+		public byte? MinimumStacks;
+		public byte? ExactStacks;
 
 		private uint _id = 0;
 		public uint Id
@@ -86,6 +88,11 @@ namespace SezzUI.Modules.JobHud
 				{
 					status = player.StatusList.FirstOrDefault(o => o.StatusId == StatusId);
 					if ((!InvertCheck && status == null) || (InvertCheck && status != null))
+					{
+						conditionsFailed = true;
+						Hide();
+					}
+					if (!conditionsFailed && status != null && ((ExactStacks != null && status.StackCount != ExactStacks) || (MinimumStacks != null && status.StackCount < MinimumStacks)))
 					{
 						conditionsFailed = true;
 						Hide();
