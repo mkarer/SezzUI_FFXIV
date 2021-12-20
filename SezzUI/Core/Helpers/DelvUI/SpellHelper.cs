@@ -56,6 +56,8 @@ namespace DelvUI.Helpers
                 // PLD
                 { 3538, new() { { 54, 3538} } }, // Goring Blade
                 { 7383, new() { { 54, 7383 } } }, // Requiescat
+                // MCH
+                { 2864 , new() { { 40, 2864 }, { 80, 16501 } } }, // Rook Autoturret/Automation Queen
             };
         }
 
