@@ -23,6 +23,7 @@ namespace SezzUI.Modules.JobHud
         public static bool Initialized { get { return ev.IsValueCreated; } }
 
         internal Vector4 AccentColor;
+        public List<Bar> Bars { get { return _bars; } }
         private List<Bar> _bars = new();
         private List<AuraAlert> _auraAlerts = new();
         private Dictionary<uint, BasePreset> _presets = new();
