@@ -59,6 +59,18 @@ namespace SezzUI.Helpers
 			return null;
 		}
 
+		public static LuminaStatus? GetStatus(uint statusId)
+		{
+			ExcelSheet<LuminaStatus>? sheet = Plugin.DataManager.GetExcelSheet<LuminaStatus>();
+
+			if (sheet != null)
+			{
+				return sheet.FirstOrDefault(status => status.RowId.Equals(statusId));
+			}
+
+			return null;
+		}
+
 		public unsafe static BattleChara? GetUnit(Enums.Unit unit)
 		{
 			PlayerCharacter? player = Service.ClientState.LocalPlayer;
