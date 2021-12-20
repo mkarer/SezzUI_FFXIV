@@ -126,10 +126,16 @@ namespace SezzUI.Helpers
             }
         }
 
-        public static (Vector2, Vector2) CropSquaredTexture(Vector2 size, float clipOffset = 0f)
+        public static (Vector2, Vector2) GetTexCoordinates(Vector2 size, float clipOffset = 0f, bool isStatus = false)
         {
-            Vector2 uv0 = new(1f / size.X, 1f / size.Y);
-            Vector2 uv1 = new(1f - 1f / size.X, 1f - 1f / size.Y);
+            float uv0x = isStatus ? 4f : 1f;
+            float uv0y = isStatus ? 14f : 1f;
+
+            float uv1x = isStatus ? 4f : 1f;
+            float uv1y = isStatus ? 9f : 1f;
+
+            Vector2 uv0 = new(uv0x / size.X, uv0y / size.Y);
+            Vector2 uv1 = new(1f - uv1x / size.X, 1f - uv1y / size.Y);
 
             if (size.X != size.Y)
             {
