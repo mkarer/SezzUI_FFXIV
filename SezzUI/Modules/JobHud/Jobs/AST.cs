@@ -8,7 +8,7 @@ namespace SezzUI.Modules.JobHud.Jobs
         {
             using (Bar bar = new())
             {
-                bar.Add(new Icon(bar) { TextureActionId = 3599, StatusActionId = 838, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Target, Level = 4 }); // Combust
+                bar.Add(new Icon(bar) { TextureActionId = 3599, StatusActionId = 3599, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Target, Level = 4 }); // Combust
                 hud.AddBar(bar);
             }
 
