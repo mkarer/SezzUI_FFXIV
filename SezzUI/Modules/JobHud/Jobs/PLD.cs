@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace SezzUI.Modules.JobHud.Jobs
 {
     public sealed class PLD : BasePreset
@@ -29,6 +31,18 @@ namespace SezzUI.Modules.JobHud.Jobs
                 bar.Add(new Icon(bar) { TextureActionId = 30, CooldownActionId = 30, StatusId = 82, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 50 }); // Hallowed Ground
                 hud.AddBar(bar);
             }
+
+            // Confiteor
+            hud.AddAlert(new AuraAlert
+            {
+                StatusId = 1368,
+                ExactStacks = 1,
+                Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\hand_of_light.png",
+                Size = new Vector2(256, 128),
+                Position = new Vector2(0, -180),
+                Level = 80
+            });
+
 
             base.Configure(hud);
         }
