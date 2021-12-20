@@ -125,5 +125,33 @@ namespace SezzUI.Helpers
                 DrawCenteredOutlineText(font, cooldown.ToString("0.0", Plugin.NumberFormatInfo), pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 0, 0, opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, opacity)), drawList);
             }
         }
+
+        public static (Vector2, Vector2) CropSquaredTexture(Vector2 size, float clipOffset = 0f)
+        {
+            Vector2 uv0 = new(1f / size.X, 1f / size.Y);
+            Vector2 uv1 = new(1f - 1f / size.X, 1f - 1f / size.Y);
+
+            if (size.X != size.Y)
+            {
+                float ratio = Math.Max(size.X, size.Y) / Math.Min(size.X, size.Y);
+                float crop = (1 - (1 / ratio)) / 2;
+
+                if (size.X < size.Y)
+                {
+                    // Crop left/right parts
+                    uv0.X += crop * (1 + clipOffset);
+                    uv1.X -= crop * (1 - clipOffset);
+                }
+                else
+                {
+                    // Crop top/bottom parts
+                    uv0.Y += crop * (1 + clipOffset);
+                    uv1.Y -= crop * (1 - clipOffset);
+                }
+            }
+
+            return (uv0, uv1);
+        }
+
     }
 }

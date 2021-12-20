@@ -116,6 +116,20 @@ namespace SezzUI.Modules.JobHud
         /// </summary>
         public byte Level = 1;
 
+        /// <summary>
+        /// If the icon size is not 1:1 the visible area will be cropped.
+        /// You can specify a negative value to moves the visible area up or left, or a positive value to move it down or right.
+        /// </summary>
+        public float IconClipOffset {
+            set
+            {
+                if (_parent.IconSize.X == _parent.IconSize.Y) return;
+                (_iconUV0, _iconUV1) = Helpers.DrawHelper.CropSquaredTexture(_parent.IconSize, value);
+            }
+        }
+        private Vector2? _iconUV0;
+        private Vector2? _iconUV1;
+
         private IconState _state = IconState.Ready;
 
         public Icon(Bar parent)
@@ -290,7 +304,7 @@ namespace SezzUI.Modules.JobHud
                 _animatorTexture.Update();
 
                 Helpers.DrawHelper.DrawBackdrop(pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 0.5f * animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(_animatorBorder.Data.Color.AddTransparency(animator.Data.Opacity)), drawList);
-                drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, _parent.IconUV0, _parent.IconUV1, ImGui.ColorConvertFloat4ToU32(_animatorTexture.Data.Color.AddTransparency(animator.Data.Opacity)));
+                drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, _iconUV0 != null ? (Vector2)_iconUV0 : _parent.IconUV0, _iconUV1 != null ? (Vector2)_iconUV1 : _parent.IconUV1, ImGui.ColorConvertFloat4ToU32(_animatorTexture.Data.Color.AddTransparency(animator.Data.Opacity)));
             }
             else
             {
