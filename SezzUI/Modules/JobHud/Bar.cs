@@ -17,7 +17,7 @@ namespace SezzUI.Modules.JobHud
             set
 			{
                 _iconSize = value;
-                (IconUV0, IconUV1) = Helpers.DrawHelper.CropSquaredTexture(IconSize);
+                (IconUV0, IconUV1) = Helpers.DrawHelper.GetTexCoordinates(IconSize);
             }
         }
         public Vector2 IconUV0 = new Vector2(0, 0);

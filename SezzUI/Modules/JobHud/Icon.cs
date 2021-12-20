@@ -64,6 +64,27 @@ namespace SezzUI.Modules.JobHud
             }
         }
         private uint? _textureActionId;
+
+        public uint? TextureStatusId
+        {
+            get { return _textureStatusId; }
+            set
+            {
+                _textureStatusId = value;
+      
+                if (value != null)
+                {
+                    LuminaStatus? status = Helpers.SpellHelper.GetStatus((uint)value);
+                    if (status != null)
+                    {
+                        _texture = DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId(status.Icon);
+                        IconClipOffset = (_clipOffset != null) ? (float)_clipOffset : 0;
+                    }
+                }
+            }
+        }
+        private uint? _textureStatusId;
+
         private TextureWrap? _texture;
 
         /// <summary>
@@ -123,12 +144,14 @@ namespace SezzUI.Modules.JobHud
         public float IconClipOffset {
             set
             {
-                if (_parent.IconSize.X == _parent.IconSize.Y) return;
-                (_iconUV0, _iconUV1) = Helpers.DrawHelper.CropSquaredTexture(_parent.IconSize, value);
+                _clipOffset = value;
+                if (_parent.IconSize.X == _parent.IconSize.Y && _textureStatusId == null) return;
+                (_iconUV0, _iconUV1) = Helpers.DrawHelper.GetTexCoordinates(_parent.IconSize, value, _textureStatusId != null);
             }
         }
         private Vector2? _iconUV0;
         private Vector2? _iconUV1;
+        private float? _clipOffset;
 
         private IconState _state = IconState.Ready;
 
