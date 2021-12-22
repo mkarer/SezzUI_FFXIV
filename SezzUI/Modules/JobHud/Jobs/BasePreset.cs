@@ -8,7 +8,10 @@ namespace SezzUI.Modules.JobHud
 
 		public virtual void Configure(JobHud hud)
 		{
-			// Role Bar
+			// --------------------------------------------------------------------------------
+			// Role Actions
+			// --------------------------------------------------------------------------------
+
 			switch (DelvUI.Helpers.JobsHelper.RoleForJob(JobId))
 			{
 				case DelvUI.Helpers.JobRoles.Tank:
@@ -67,6 +70,22 @@ namespace SezzUI.Modules.JobHud
 					}
 					break;
 			}
+
+			// --------------------------------------------------------------------------------
+			// Generic Alerts
+			// --------------------------------------------------------------------------------
+
+			// Extreme Caution
+			hud.AddAlert(new AuraAlert
+			{
+				StatusIds = new[] { (uint)1132, (uint)1269 },
+				StatusTarget = Enums.Unit.Any,
+				Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\stop.png",
+				Size = new Vector2(128, 128),
+				Position = new Vector2(0, 50),
+				Level = 82
+			});
+
 		}
 	}
 }
