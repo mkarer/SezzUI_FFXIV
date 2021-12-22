@@ -38,7 +38,11 @@ namespace SezzUI.Helpers
 			switch (ptype)
 			{
 				case PowerType.Oath:
-					return (Plugin.JobGauges.Get<PLDGauge>()?.OathGauge ?? 0, 100);
+					if (jobLevel >= 35)
+					{
+						return (Plugin.JobGauges.Get<PLDGauge>()?.OathGauge ?? 0, 100);
+					}
+					return (0, 0);
 
 				case PowerType.WhiteMana:
 					return (Plugin.JobGauges.Get<RDMGauge>()?.WhiteMana ?? 0, 100);
@@ -50,10 +54,18 @@ namespace SezzUI.Helpers
 					return (Plugin.JobGauges.Get<RDMGauge>()?.ManaStacks ?? 0, 3);
 
 				case PowerType.Blood:
-					return (Plugin.JobGauges.Get<DRKGauge>()?.Blood ?? 0, 100);
+					if (jobLevel >= 62)
+					{
+						return (Plugin.JobGauges.Get<DRKGauge>()?.Blood ?? 0, 100);
+					}
+					return (0, 0);
 
 				case PowerType.Ammo:
-					return (Plugin.JobGauges.Get<GNBGauge>()?.Ammo ?? 0, jobLevel >= 88 ? 3 : 2);
+					if (jobLevel >= 30)
+					{
+						return (Plugin.JobGauges.Get<GNBGauge>()?.Ammo ?? 0, jobLevel >= 88 ? 3 : 2);
+					}
+					return (0, 0);
 
 				case PowerType.Heat:
 					return (Plugin.JobGauges.Get<MCHGauge>()?.Heat ?? 0, 100);
@@ -102,7 +114,11 @@ namespace SezzUI.Helpers
 					return (Plugin.JobGauges.Get<SAMGauge>()?.MeditationStacks ?? 0, 100);
 
 				case PowerType.Beast:
-					return (Plugin.JobGauges.Get<WARGauge>()?.BeastGauge ?? 0, 100);
+					if (jobLevel >= 35)
+					{
+						return (Plugin.JobGauges.Get<WARGauge>()?.BeastGauge ?? 0, 100);
+					}
+					return (0, 0);
 
 				case PowerType.Lily:
 					WHMGauge gauge2 = Plugin.JobGauges.Get<WHMGauge>();
