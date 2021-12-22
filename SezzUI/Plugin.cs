@@ -109,9 +109,7 @@ namespace SezzUI
 
             // you might normally want to embed resources and load them from the manifest stream
             var assemblyLocation = Assembly.GetExecutingAssembly().Location;
-            var imagePath = Path.Combine(Path.GetDirectoryName(assemblyLocation)!, "goat.png");
-            var goatImage = PluginInterface.UiBuilder.LoadImage(imagePath);
-            PluginUi = new PluginUI(Configuration, goatImage);
+            PluginUi = new PluginUI(Configuration);
 
             CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
             {

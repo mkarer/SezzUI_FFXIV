@@ -11,7 +11,6 @@ namespace SezzUI
     class PluginUI : IDisposable
     {
         private SezzUIPluginConfiguration configuration;
-        private ImGuiScene.TextureWrap goatImage;
         private readonly Animator.Animator _animatorBanner;
         public bool DisplayBanner = false;
 
@@ -31,10 +30,9 @@ namespace SezzUI
         }
 
         // passing in the image here just for simplicity
-        public PluginUI(SezzUIPluginConfiguration configuration, ImGuiScene.TextureWrap goatImage)
+        public PluginUI(SezzUIPluginConfiguration configuration)
         {
             this.configuration = configuration;
-            this.goatImage = goatImage;
 
             _animatorBanner = new();
             _animatorBanner.Timelines.OnShow.Chain(new Animator.FadeAnimation(0, 1, 2000));
@@ -45,7 +43,6 @@ namespace SezzUI
 
         public void Dispose()
         {
-            this.goatImage.Dispose();
         }
 
         public void Draw()
@@ -109,13 +106,6 @@ namespace SezzUI
                 {
                     SettingsVisible = true;
                 }
-
-                ImGui.Spacing();
-
-                ImGui.Text("Have a goat:");
-                ImGui.Indent(55);
-                ImGui.Image(this.goatImage.ImGuiHandle, new Vector2(this.goatImage.Width, this.goatImage.Height));
-                ImGui.Unindent(55);
             }
             ImGui.End();
         }
