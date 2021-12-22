@@ -96,17 +96,35 @@ namespace SezzUI.Helpers
 
 		public unsafe static Status? GetStatus(uint statusId, Enums.Unit unit)
 		{
-			BattleChara? actor = GetUnit(unit);
-			if (actor != null)
+			if (unit == Enums.Unit.Any)
 			{
-				PlayerCharacter? player = Service.ClientState.LocalPlayer;
-				if (player == null) return null;
-
-				foreach (var status in actor.StatusList)
+				Status? status;
+				foreach (Enums.Unit unitType in (Enums.Unit[])Enum.GetValues(typeof(Enums.Unit)))
 				{
-					if (status != null && status.StatusId == statusId && status.SourceID == player.ObjectId)
+					if (unitType != unit)
 					{
-						return status;
+						status = GetStatus(statusId, unitType);
+						if (status != null)
+						{
+							return status;
+						}
+					}
+				}
+			}
+			else
+			{
+				BattleChara? actor = GetUnit(unit);
+				if (actor != null)
+				{
+					PlayerCharacter? player = Service.ClientState.LocalPlayer;
+					if (player == null) return null;
+
+					foreach (var status in actor.StatusList)
+					{
+						if (status != null && status.StatusId == statusId && status.SourceID == player.ObjectId)
+						{
+							return status;
+						}
 					}
 				}
 			}
@@ -116,17 +134,35 @@ namespace SezzUI.Helpers
 
 		public unsafe static Status? GetStatus(uint[] statusIds, Enums.Unit unit)
 		{
-			BattleChara? actor = GetUnit(unit);
-			if (actor != null)
+			if (unit == Enums.Unit.Any)
 			{
-				PlayerCharacter? player = Service.ClientState.LocalPlayer;
-				if (player == null) return null;
-
-				foreach (var status in actor.StatusList)
+				Status? status;
+				foreach (Enums.Unit unitType in (Enums.Unit[])Enum.GetValues(typeof(Enums.Unit)))
 				{
-					if (status != null && Array.IndexOf(statusIds, status.StatusId) > -1 && status.SourceID == player.ObjectId)
+					if (unitType != unit)
 					{
-						return status;
+						status = GetStatus(statusIds, unitType);
+						if (status != null)
+						{
+							return status;
+						}
+					}
+				}
+			}
+			else
+			{
+				BattleChara? actor = GetUnit(unit);
+				if (actor != null)
+				{
+					PlayerCharacter? player = Service.ClientState.LocalPlayer;
+					if (player == null) return null;
+
+					foreach (var status in actor.StatusList)
+					{
+						if (status != null && Array.IndexOf(statusIds, status.StatusId) > -1 && status.SourceID == player.ObjectId)
+						{
+							return status;
+						}
 					}
 				}
 			}
