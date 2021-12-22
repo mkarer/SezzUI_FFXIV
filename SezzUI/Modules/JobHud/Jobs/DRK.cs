@@ -12,7 +12,6 @@
                 bar.Add(new Icon(bar) { TextureActionId = 7390, CooldownActionId = 7390, StatusActionId = 7390, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 68 }); // Delirium
                 bar.Add(new Icon(bar) { TextureActionId = 3640, CooldownActionId = 3640, Level = 56 }); // Plunge
                 bar.Add(new Icon(bar) { TextureActionId = 7393, CooldownActionId = 7393, StatusActionId = 7393, MaxStatusDuration = 7, StatusTarget = Enums.Unit.Player, Level = 70 }); // The Blackest Night
-                bar.Add(new Icon(bar) { TextureActionId = 7548, CooldownActionId = 7548, StatusId = 1209, MaxStatusDuration = 6, StatusTarget = Enums.Unit.Player, Level = 32 }); // Arm's Length
                 hud.AddBar(bar);
             }
 
