@@ -6,5 +6,6 @@
         Target,
         TargetOfTarget,
         FocusTarget,
+        Any
 	}
 }
