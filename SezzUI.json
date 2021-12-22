@@ -1,0 +1,12 @@
+{
+  "Author": "Sezz",
+  "Name": "SezzUI",
+  "Punchline": "Minimalistic job HUD. MIGHT CRASH!",
+  "Description": "",
+  "InternalName": "SezzUI",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "SezzUI",
+    "plugin"
+  ]
+}
