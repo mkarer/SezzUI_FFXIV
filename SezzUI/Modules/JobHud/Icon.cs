@@ -56,7 +56,26 @@ namespace SezzUI.Modules.JobHud
                     LuminaAction? action = Helpers.SpellHelper.GetAction(actionIdAdjusted);
                     if (action != null)
                     {
-                        _texture = DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId(action.Icon);
+                        bool useLocalTexture = false;
+                        try
+                        {
+                            string path = Plugin.AssemblyLocation + $"Media\\Icons\\{action.Icon / 1000 * 1000:000000}\\{action.Icon:000000}.png";
+                            if (System.IO.File.Exists(path))
+                            {
+                                _texture = Helpers.ImageCache.Instance.GetImageFromPath(path);
+                                if (_texture != null)
+                                {
+                                    useLocalTexture = true;
+                                    (_iconUV0, _iconUV1) = Helpers.DrawHelper.GetTexCoordinates(new Vector2(_texture.Width, _texture.Height), (_clipOffset != null) ? (float)_clipOffset : 0);
+                                }
+                            }
+                        }
+                        catch { }
+
+                        if (!useLocalTexture)
+                        {
+                            _texture = DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId(action.Icon);
+                        }
                     }
                 }
 
@@ -77,8 +96,27 @@ namespace SezzUI.Modules.JobHud
                     LuminaStatus? status = Helpers.SpellHelper.GetStatus((uint)value);
                     if (status != null)
                     {
-                        _texture = DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId(status.Icon);
-                        IconClipOffset = (_clipOffset != null) ? (float)_clipOffset : 0;
+                        bool useLocalTexture = false;
+                        try
+                        {
+                            string path = Plugin.AssemblyLocation + $"Media\\Icons\\{status.Icon / 1000 * 1000:000000}\\{status.Icon:000000}.png";
+                            if (System.IO.File.Exists(path))
+                            {
+                                _texture = Helpers.ImageCache.Instance.GetImageFromPath(path);
+                                if (_texture != null)
+								{
+                                    useLocalTexture = true;
+                                    (_iconUV0, _iconUV1) = Helpers.DrawHelper.GetTexCoordinates(new Vector2(_texture.Width, _texture.Height), 0);
+                                }
+                            }
+                        }
+                        catch { }
+
+                        if (!useLocalTexture)
+                        {
+                            _texture = DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId(status.Icon);
+                            IconClipOffset = (_clipOffset != null) ? (float)_clipOffset : 0;
+                        }
                     }
                 }
             }
