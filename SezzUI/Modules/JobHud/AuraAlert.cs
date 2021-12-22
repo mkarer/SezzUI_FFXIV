@@ -12,9 +12,11 @@ namespace SezzUI.Modules.JobHud
 	public sealed class AuraAlert : AnimatedHudElement
 	{
 		public uint? StatusId;
+		public uint[]? StatusIds;
 		public float? MaxDuration;
 		public byte? MinimumStacks;
 		public byte? ExactStacks;
+		public Enums.Unit StatusTarget = Enums.Unit.Player;
 
 		private uint _id = 0;
 		public uint Id
@@ -65,7 +67,7 @@ namespace SezzUI.Modules.JobHud
 
 		public override void Draw(Vector2 origin)
 		{
-			if (StatusId == null) return;
+			if (StatusId == null && StatusIds == null) return;
 
 			PlayerCharacter? player = Service.ClientState.LocalPlayer;
 			Status? status = null;
@@ -86,7 +88,16 @@ namespace SezzUI.Modules.JobHud
 
 				if (!conditionsFailed)
 				{
-					status = player.StatusList.FirstOrDefault(o => o.StatusId == StatusId);
+					if (StatusId != null)
+					{
+						status = Helpers.SpellHelper.GetStatus((uint)StatusId, StatusTarget);
+					}
+					else if (StatusIds != null)
+					{
+						status = Helpers.SpellHelper.GetStatus(StatusIds, StatusTarget);
+
+					}
+
 					if ((!InvertCheck && status == null) || (InvertCheck && status != null))
 					{
 						conditionsFailed = true;
