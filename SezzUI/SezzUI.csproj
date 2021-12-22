@@ -1,160 +1,113 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <Authors>Sezz</Authors>
-    <Company></Company>
-    <Version>0.0.0.2</Version>
-    <Description>SezzUI</Description>
-    <Copyright></Copyright>
-  </PropertyGroup>
+	<PropertyGroup>
+		<Authors>Sezz</Authors>
+		<Company></Company>
+		<Version>0.0.0.2</Version>
+		<Description>SezzUI</Description>
+		<Copyright></Copyright>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
-    <Platforms>x64</Platforms>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>$(AppData)\XIVLauncher\devPlugins\SezzUI\</OutputPath>
-  </PropertyGroup>
+	<PropertyGroup Label="Target">
+		<PlatformTarget>x64</PlatformTarget>
+		<TargetFramework>net5.0-windows</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Platforms>x64</Platforms>
+		<Configurations>Debug;Release</Configurations>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Media\Icons\012000\012926.png" />
-    <None Remove="Media\Images\Animations\DashedRect38_1.png" />
-    <None Remove="Media\Images\Animations\DashedRect38_2.png" />
-    <None Remove="Media\Images\Animations\DashedRect38_3.png" />
-    <None Remove="Media\Images\Animations\DashedRect38_4.png" />
-    <None Remove="Media\Images\Animations\DashedRect38_5.png" />
-    <None Remove="Media\Images\Animations\DashedRect38_6.png" />
-    <None Remove="Media\Images\Animations\DashedRect38_7.png" />
-    <None Remove="Media\Images\Animations\DashedRect38_8.png" />
-    <None Remove="Media\Images\Overlays\arcane_missiles.png" />
-    <None Remove="Media\Images\Overlays\arcane_missiles_1.png" />
-    <None Remove="Media\Images\Overlays\arcane_missiles_2.png" />
-    <None Remove="Media\Images\Overlays\arcane_missiles_3.png" />
-    <None Remove="Media\Images\Overlays\backlash.png" />
-    <None Remove="Media\Images\Overlays\backlash_green.png" />
-    <None Remove="Media\Images\Overlays\bandits_guile.png" />
-    <None Remove="Media\Images\Overlays\berserk.png" />
-    <None Remove="Media\Images\Overlays\blood_boil.png" />
-    <None Remove="Media\Images\Overlays\blood_surge.png" />
-    <None Remove="Media\Images\Overlays\brain_freeze.png" />
-    <None Remove="Media\Images\Overlays\dark_tiger.png" />
-    <None Remove="Media\Images\Overlays\dark_transformation.png" />
-    <None Remove="Media\Images\Overlays\daybreak.png" />
-    <None Remove="Media\Images\Overlays\demonic_core.png" />
-    <None Remove="Media\Images\Overlays\demonic_core_vertical.png" />
-    <None Remove="Media\Images\Overlays\denounce.png" />
-    <None Remove="Media\Images\Overlays\echo_of_the_elements.png" />
-    <None Remove="Media\Images\Overlays\feral_omenofclarity.png" />
-    <None Remove="Media\Images\Overlays\focus_fire.png" />
-    <None Remove="Media\Images\Overlays\frozen_fingers.png" />
-    <None Remove="Media\Images\Overlays\fulmination.png" />
-    <None Remove="Media\Images\Overlays\fury_of_stormrage.png" />
-    <None Remove="Media\Images\Overlays\genericarc_01.png" />
-    <None Remove="Media\Images\Overlays\genericarc_02.png" />
-    <None Remove="Media\Images\Overlays\genericarc_03.png" />
-    <None Remove="Media\Images\Overlays\genericarc_04.png" />
-    <None Remove="Media\Images\Overlays\genericarc_05.png" />
-    <None Remove="Media\Images\Overlays\genericarc_06.png" />
-    <None Remove="Media\Images\Overlays\generictop_01.png" />
-    <None Remove="Media\Images\Overlays\generictop_02.png" />
-    <None Remove="Media\Images\Overlays\hand_of_light.png" />
-    <None Remove="Media\Images\Overlays\high_tide.png" />
-    <None Remove="Media\Images\Overlays\hot_streak.png" />
-    <None Remove="Media\Images\Overlays\impact.png" />
-    <None Remove="Media\Images\Overlays\imp_empowerment.png" />
-    <None Remove="Media\Images\Overlays\imp_empowerment_green.png" />
-    <None Remove="Media\Images\Overlays\killing_machine.png" />
-    <None Remove="Media\Images\Overlays\lock_and_load.png" />
-    <None Remove="Media\Images\Overlays\maelstrom_weapon_1.png" />
-    <None Remove="Media\Images\Overlays\maelstrom_weapon_2.png" />
-    <None Remove="Media\Images\Overlays\maelstrom_weapon_3.png" />
-    <None Remove="Media\Images\Overlays\maelstrom_weapon_4.png" />
-    <None Remove="Media\Images\Overlays\master_marksman.png" />
-    <None Remove="Media\Images\Overlays\molten_core.png" />
-    <None Remove="Media\Images\Overlays\molten_core_green.png" />
-    <None Remove="Media\Images\Overlays\monk_blackoutkick.png" />
-    <None Remove="Media\Images\Overlays\monk_ox.png" />
-    <None Remove="Media\Images\Overlays\monk_serpent.png" />
-    <None Remove="Media\Images\Overlays\monk_tiger.png" />
-    <None Remove="Media\Images\Overlays\monk_tigerpalm.png" />
-    <None Remove="Media\Images\Overlays\necropolis.png" />
-    <None Remove="Media\Images\Overlays\nightfall.png" />
-    <None Remove="Media\Images\Overlays\predatory_swiftness.png" />
-    <None Remove="Media\Images\Overlays\predatory_swiftness_green.png" />
-    <None Remove="Media\Images\Overlays\raging_blow.png" />
-    <None Remove="Media\Images\Overlays\rime.png" />
-    <None Remove="Media\Images\Overlays\scythe_of_darkherald.png" />
-    <None Remove="Media\Images\Overlays\serendipity.png" />
-    <None Remove="Media\Images\Overlays\shadow_of_death.png" />
-    <None Remove="Media\Images\Overlays\shadow_word_insanity.png" />
-    <None Remove="Media\Images\Overlays\shooting_stars.png" />
-    <None Remove="Media\Images\Overlays\slice_and_dice.png" />
-    <None Remove="Media\Images\Overlays\stop.png" />
-    <None Remove="Media\Images\Overlays\sudden_death.png" />
-    <None Remove="Media\Images\Overlays\sudden_doom.png" />
-    <None Remove="Media\Images\Overlays\surge_of_darkness.png" />
-    <None Remove="Media\Images\Overlays\surge_of_light.png" />
-    <None Remove="Media\Images\Overlays\sword_and_board.png" />
-    <None Remove="Media\Images\Overlays\thrill_of_the_hunt_1.png" />
-    <None Remove="Media\Images\Overlays\thrill_of_the_hunt_2.png" />
-    <None Remove="Media\Images\Overlays\thrill_of_the_hunt_3.png" />
-    <None Remove="Media\Images\Overlays\tooth_and_claw.png" />
-    <None Remove="Media\Images\Overlays\ultimatum.png" />
-    <None Remove="Media\Images\Overlays\white_tiger.png" />
-    <None Remove="Media\MyriadProLightCond.ttf" />
-  </ItemGroup>
+	<PropertyGroup Label="Build">
+		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+		<OutputType>Library</OutputType>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>full</DebugType>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="..\SezzUI.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\**\*.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\**\*.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+	<PropertyGroup Label="Feature">
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Version>1.6.4.1</Version>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-  </PropertyGroup>
+	<PropertyGroup>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<AssemblyName>SezzUI</AssemblyName>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Colourful" Version="3.0.0" />
-    <PackageReference Include="DalamudPackager" Version="2.1.5" />
-    <PackageReference Include="XivCommon" Version="3.2.0" />
-    <Reference Include="FFXIVClientStructs">
-      <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Dalamud">
-      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="ImGui.NET">
-      <HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="ImGuiScene">
-      <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Lumina">
-      <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Lumina.Excel">
-      <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
+    <Target Name="ILRepack" AfterTargets="PostBuildEvent">
+        <ItemGroup>
+            <InputAssemblies Include="$(TargetPath)" />
+            <InputAssemblies Include="$(TargetDir)*.dll" Exclude="$(TargetPath)" />
+        </ItemGroup>
+		<Exec Command="$(Pkgilrepack)\tools\ilrepack.exe /lib:$(AppData)\XIVLauncher\addon\Hooks\dev /out:&quot;$(TargetDir)..\$(Configuration).ILMerge\$(TargetFileName)&quot; &quot;@(InputAssemblies, '&quot; &quot;')&quot;" />
+	</Target>
+
+	<Target Name="ILRepackCleanup" AfterTargets="ILRepack">
+		<Exec Command="DEL /Q &quot;$(TargetDir)*.dll&quot;" ContinueOnError="true" />
+		<Exec Command="MOVE /Y &quot;$(TargetDir)..\$(Configuration).ILMerge\*.*&quot; &quot;$(TargetDir)&quot;" ContinueOnError="false" />
+		<Exec Command="RD &quot;$(TargetDir)..\$(Configuration).ILMerge&quot;" ContinueOnError="true" />
+	</Target>
+
+	<Target Name="UpdateDevPlugin" AfterTargets="ILRepackCleanup" Condition=" '$(Configuration)' == 'Debug' ">
+		<ItemGroup>
+			<DevBuildFiles Include="$(TargetDir)**\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(DevBuildFiles)" DestinationFolder="$(AppData)\XIVLauncher\devPlugins\$(MSBuildProjectName)\%(RecursiveDir)" ContinueOnError="false" SkipUnchangedFiles="true" />
+	</Target>
+
+	<ItemGroup>
+		<Content Include="..\SezzUI.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Media\**\*.ttf" Visible="false">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Media\**\*.png" Visible="false">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<PropertyGroup>
+		<DalamudLibPath>$(AppData)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Colourful" Version="3.0.0" />
+		<PackageReference Include="DalamudPackager" Version="2.1.5" />
+		<PackageReference Include="ILRepack" Version="2.1.0-beta1" />
+		<PackageReference Include="XivCommon" Version="3.2.0" />
+		<Reference Include="FFXIVClientStructs">
+			<HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Dalamud">
+			<HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="ImGui.NET">
+			<HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="ImGuiScene">
+			<HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Lumina">
+			<HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Lumina.Excel">
+			<HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
 
 </Project>
