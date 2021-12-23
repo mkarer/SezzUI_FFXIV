@@ -9,7 +9,6 @@ using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Statuses;
-using XIVAuras.Helpers;
 
 namespace SezzUI.Modules.JobHud
 {
@@ -35,8 +34,9 @@ namespace SezzUI.Modules.JobHud
         GlowIgnoresState = 1L << 2,
     }
 
-    public sealed class Icon : IDisposable
+    public class Icon : IDisposable
     {
+        public Bar Parent { get { return _parent; } }
         private Bar _parent;
         private Animator.Animator _animatorBorder;
         private Animator.Animator _animatorTexture;
@@ -183,7 +183,7 @@ namespace SezzUI.Modules.JobHud
             set
             {
                 _clipOffset = value;
-                if (_parent.IconSize.X == _parent.IconSize.Y && _textureStatusId == null) return;
+                if (_parent.IconSize.X == _parent.IconSize.Y && _textureStatusId == null) { return; }
                 (_iconUV0, _iconUV1) = Helpers.DrawHelper.GetTexCoordinates(_parent.IconSize, value, _textureStatusId != null);
             }
         }
@@ -208,8 +208,8 @@ namespace SezzUI.Modules.JobHud
 
         public void Draw(Vector2 pos, Vector2 size, Animator.Animator animator, ImDrawListPtr drawList)
         {
-            PlayerCharacter? player = Service.ClientState.LocalPlayer;
-            if (player == null) return; // Stupid IDE, we're not drawing this without a player anyways...
+            PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+            if (player == null) { return; } // Stupid IDE, we're not drawing this without a player anyways...
 
             IconState newState = _state;
             float cooldownTextRemaining = 0;
@@ -381,7 +381,7 @@ namespace SezzUI.Modules.JobHud
 
             if (chargesTextAmount >= 0)
 			{
-                Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_14", Enums.TextStyle.Outline, DelvUI.Enums.DrawAnchor.BottomRight, chargesTextAmount.ToString(), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList, -2, -1);
+                Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_14", Enums.TextStyle.Outline, Enums.DrawAnchor.BottomRight, chargesTextAmount.ToString(), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, animator.Data.Opacity)), drawList, -2, -1);
             }
 
             // Glow
@@ -422,7 +422,7 @@ namespace SezzUI.Modules.JobHud
                 drawList.AddLine(linePos, linePos + lineSize, ImGui.ColorConvertFloat4ToU32(Defaults.IconBarSeparatorColor.AddTransparency(animator.Data.Opacity)), 1);
 
                 Helpers.DrawHelper.DrawProgressBar(progressPos, progressSize, 0, progressBarTotal, progressBarCurrent,
-					ImGui.ColorConvertFloat4ToU32(Plugin.SezzUIPlugin.Modules.JobHud.AccentColor.AddTransparency(animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(Defaults.IconBarBGColor.AddTransparency(animator.Data.Opacity)),
+                    ImGui.ColorConvertFloat4ToU32(Parent.Parent.AccentColor.AddTransparency(animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(Defaults.IconBarBGColor.AddTransparency(animator.Data.Opacity)),
                     drawList);
 
                 // Duration Text
@@ -436,8 +436,23 @@ namespace SezzUI.Modules.JobHud
             _state = newState;
         }
 
+        ~Icon()
+        {
+            Dispose(false);
+        }
+
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (!disposing)
+            {
+                return;
+            }
         }
     }
 }

@@ -8,7 +8,7 @@ namespace SezzUI.Modules.JobHud.Jobs
         
         public override void Configure(JobHud hud)
         {
-            using (Bar bar = new())
+            using (Bar bar = new(hud))
             {
                 bar.Add(new Icon(bar) { TextureStatusId = 2586, StatusId = 2586, MaxStatusDuration = 60, StatusTarget = Enums.Unit.Target, Level = 10 }); // Death's Design
                 bar.Add(new Icon(bar) { TextureActionId = 24393, CooldownActionId = 24393, Level = 76 }); // Gluttony

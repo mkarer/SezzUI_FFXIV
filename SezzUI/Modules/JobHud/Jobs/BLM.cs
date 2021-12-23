@@ -8,9 +8,9 @@ namespace SezzUI.Modules.JobHud.Jobs
         
         public override void Configure(JobHud hud)
         {
-            byte jobLevel = Service.ClientState.LocalPlayer?.Level ?? 0;
+            byte jobLevel = Plugin.ClientState.LocalPlayer?.Level ?? 0;
 
-            using (Bar bar = new())
+            using (Bar bar = new(hud))
             {
                 bar.Add(new Icon(bar) { TextureActionId = 144, StatusActionId = 144, MaxStatusDuration = jobLevel >= 45 ? 30 : jobLevel > 26 ? 18 : 21, StatusTarget = Enums.Unit.Target, GlowBorderStatusId = 164, Level = 4 }); // Thunder
                 hud.AddBar(bar);

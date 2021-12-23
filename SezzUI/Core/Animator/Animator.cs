@@ -157,12 +157,16 @@ namespace SezzUI.Animator
 		{
 			if (_isAnimating) {
 				if (Timelines.OnShow.IsPlaying)
-					Timelines.OnShow.Stop();
+                {
+                    Timelines.OnShow.Stop();
+                }
 
-				if (Timelines.Loop.IsPlaying)
-					Timelines.Loop.Stop();
+                if (Timelines.Loop.IsPlaying)
+                {
+                    Timelines.Loop.Stop();
+                }
 
-				if (!force)
+                if (!force)
 				{
 					if (!Timelines.OnHide.IsPlaying)
 					{
@@ -177,9 +181,25 @@ namespace SezzUI.Animator
 			}
 		}
 
-		public void Dispose()
-		{
-			Stop(true);
-		}
+        ~Animator()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (!disposing)
+            {
+                return;
+            }
+
+            Stop(true);
+        }
 	}
 }

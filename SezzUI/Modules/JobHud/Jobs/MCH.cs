@@ -8,7 +8,7 @@ namespace SezzUI.Modules.JobHud.Jobs
         
         public override void Configure(JobHud hud)
         {
-            using (Bar bar = new())
+            using (Bar bar = new(hud))
             {
                 bar.Add(new Icon(bar) { TextureActionId = 2876, CooldownActionId = 2876, StatusId = 851, MaxStatusDuration = 5, StatusTarget = Enums.Unit.Player, Level = 10 }); // Reassemble
                 bar.Add(new Icon(bar) { TextureActionId = 7414, CooldownActionId = 7414, Level = 66 }); // Barrel Stabilizer

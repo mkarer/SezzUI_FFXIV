@@ -2,14 +2,15 @@
 using ImGuiScene;
 using Lumina.Excel;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
+using Dalamud.Logging;
 
 namespace DelvUI.Helpers
 {
     public class TexturesCache : IDisposable
     {
-        private Dictionary<uint, TextureWrap> _cache = new();
-        private Dictionary<string, TextureWrap> _pathCache = new();
+        private ConcurrentDictionary<uint, TextureWrap> _cache = new();
+        private ConcurrentDictionary<string, TextureWrap> _pathCache = new();
 
         public TextureWrap? GetTexture<T>(uint rowId, uint stackCount = 0, bool hdIcon = true) where T : ExcelRow
         {
@@ -42,7 +43,7 @@ namespace DelvUI.Helpers
                 return null;
             }
 
-            _cache.Add(iconId + stackCount, newTexture);
+            if (!_cache.TryAdd(iconId + stackCount, newTexture)) { PluginLog.Debug($"{this.GetType().Name} Failed to cache texture #{iconId + stackCount}."); }
 
             return newTexture;
         }
@@ -60,7 +61,7 @@ namespace DelvUI.Helpers
                 return null;
             }
 
-            _pathCache.Add(path, newTexture);
+            if (!_pathCache.TryAdd(path, newTexture)) { PluginLog.Debug($"{this.GetType().Name} Failed to cache texture path {path}."); }
 
             return newTexture;
         }
@@ -122,7 +123,7 @@ namespace DelvUI.Helpers
         {
             if (_cache.ContainsKey(iconId))
             {
-                _cache.Remove(iconId);
+                if (!_cache.TryRemove(iconId, out _)) { PluginLog.Debug($"{this.GetType().Name} Failed to remove cached texture #{iconId}."); }
             }
         }
 
@@ -130,7 +131,7 @@ namespace DelvUI.Helpers
         {
             if (_pathCache.ContainsKey(path))
             {
-                _pathCache.Remove(path);
+                if (!_pathCache.TryRemove(path, out _)) { PluginLog.Debug($"{this.GetType().Name} Failed to remove cached texture path {path}."); }
             }
         }
 

@@ -1,5 +1,5 @@
 ﻿using Dalamud.Game.ClientState.Objects.Enums;
-using DelvUI.Enums;
+using SezzUI.Enums;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiScene;
 using Lumina.Excel;

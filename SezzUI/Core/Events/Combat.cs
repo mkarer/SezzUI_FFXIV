@@ -6,7 +6,7 @@ using Dalamud.Game.ClientState.Objects.Enums;
 
 namespace SezzUI.GameEvents
 {
-    public unsafe sealed class Combat : BaseGameEvent
+    internal sealed unsafe class Combat : BaseGameEvent
     {
         public event EventHandler? EnteringCombat;
         public event EventHandler? LeavingCombat;
@@ -24,7 +24,7 @@ namespace SezzUI.GameEvents
                 PluginLog.Debug($"[Event:{Name}] Enable");
                 Enabled = true;
 
-                Service.Framework.Update += FrameworkUpdate;
+                Plugin.Framework.Update += FrameworkUpdate;
             }
             else
             {
@@ -39,7 +39,7 @@ namespace SezzUI.GameEvents
                 PluginLog.Debug($"[Event:{Name}] Disable");
                 Enabled = false;
 
-                Service.Framework.Update -= FrameworkUpdate;
+                Plugin.Framework.Update -= FrameworkUpdate;
             }
             else
             {
@@ -64,7 +64,7 @@ namespace SezzUI.GameEvents
             bool state = lastState;
             try
             {
-                state = Service.Condition[ConditionFlag.InCombat] || (treatWeaponOutAsCombat && Service.ClientState.LocalPlayer != null && Service.ClientState.LocalPlayer.StatusFlags.HasFlag(StatusFlags.WeaponOut));
+                state = Plugin.Condition[ConditionFlag.InCombat] || (treatWeaponOutAsCombat && Plugin.ClientState.LocalPlayer != null && Plugin.ClientState.LocalPlayer.StatusFlags.HasFlag(StatusFlags.WeaponOut));
             }
             catch
             {

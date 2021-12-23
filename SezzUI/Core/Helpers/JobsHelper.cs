@@ -33,7 +33,7 @@ namespace SezzUI.Helpers
 
 		public static (int, int) GetPower(PowerType ptype)
 		{
-			byte jobLevel = Service.ClientState.LocalPlayer?.Level ?? 0;
+			byte jobLevel = Plugin.ClientState.LocalPlayer?.Level ?? 0;
 
 			switch (ptype)
 			{

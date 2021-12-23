@@ -3,7 +3,7 @@ using Dalamud.Logging;
 
 namespace SezzUI
 {
-    public abstract class BaseGameEvent : IDisposable
+    internal abstract class BaseGameEvent : IDisposable
     {
         public virtual string Name => GetType().Name;
         public virtual bool Enabled { get; protected set; }
@@ -36,17 +36,39 @@ namespace SezzUI
 
         protected BaseGameEvent()
         {
-            if (!Enabled) Enable();
+            if (!Enabled) { Enable(); }
         }
 
-        public virtual void Dispose()
+        ~BaseGameEvent()
         {
-            PluginLog.Debug($"[Event:{Name}] Dispose");
+            Dispose(false);
+        }
 
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (!disposing)
+            {
+                return;
+            }
+
+            PluginLog.Debug($"[Event:{Name}] Dispose");
             if (Enabled)
             {
                 Disable();
             }
+
+            InternalDispose();
+        }
+
+        protected virtual void InternalDispose()
+        {
+            // override
         }
     }
 }

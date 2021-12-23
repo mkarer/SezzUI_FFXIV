@@ -1,26 +1,26 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 using Dalamud.Logging;
 using System.Numerics;
 using System.Collections.Generic;
+using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using SezzUI.Config;
+using SezzUI.Interface;
+using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Modules.JobHud
 {
-    public sealed class JobHud : HudModule
+    public class JobHud : DraggableHudElement, IHudElementWithActor
     {
-        public override string Name => "Job HUD";
-        public override string Description => "Tracks cooldowns, buffs, debuff and proccs.";
+        private JobHudConfig Config => (JobHudConfig)_config;
+        public GameObject? Actor { get; set; } = null;
 
         private Animator.Animator _animator = new();
         public bool IsShown { get { return _isShown; } }
-        internal bool _isShown = false;
-        private Vector2 _positionOffset = new Vector2(0, 150);
-
-        private static readonly Lazy<JobHud> ev = new Lazy<JobHud>(() => new JobHud());
-        public static JobHud Instance { get { return ev.Value; } }
-        public static bool Initialized { get { return ev.IsValueCreated; } }
+        private bool _isShown = false;
+        private bool _isEnabled = false;
 
         internal Vector4 AccentColor;
         public List<Bar> Bars { get { return _bars; } }
@@ -28,8 +28,11 @@ namespace SezzUI.Modules.JobHud
         private List<AuraAlert> _auraAlerts = new();
         private Dictionary<uint, BasePreset> _presets = new();
 
-        public JobHud()
-		{
+        public JobHud(JobHudConfig config, string displayName) : base(config, displayName)
+        {
+            config.ValueChangeEvent += OnConfigPropertyChanged;
+            ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+
             _animator.Timelines.OnShow.Data.DefaultOpacity = 0;
             _animator.Timelines.OnShow.Data.DefaultOffset.Y = -20;
             _animator.Timelines.OnShow.Add(new Animator.FadeAnimation(0, 1, 150));
@@ -47,61 +50,53 @@ namespace SezzUI.Modules.JobHud
             {
                 PluginLog.Error(ex, "Error loading JobHud presets.");
             }
+
+            Toggle(Config.Enabled);
         }
 
-        public override void Enable()
+        protected override (List<Vector2>, List<Vector2>) ChildrenPositionsAndSizes()
         {
-            if (!Enabled)
+            return (new List<Vector2>() { Config.Position },
+                    new List<Vector2>() { new(300f, 72f) });
+        }
+
+        public void Toggle(bool enable = true)
+        {
+            PluginLog.Debug($"[{this.GetType().Name}] Toggle: {enable}");
+            if (enable && !_isEnabled)
             {
-                base.Enable();
+                PluginLog.Debug($"[{this.GetType().Name}] Enable");
+                _isEnabled = !_isEnabled;
+                Plugin.ClientState.Login += OnLogin;
+                Plugin.ClientState.Logout += OnLogout;
 
-                Service.ClientState.Login += OnLogin;
-                Service.ClientState.Logout += OnLogout;
-
-                Plugin.SezzUIPlugin.Events.Player.JobChanged += OnJobChanged;
-                Plugin.SezzUIPlugin.Events.Player.LevelChanged += OnLevelChanged;
-                Plugin.SezzUIPlugin.Events.Combat.EnteringCombat += OnEnteringCombat;
-                Plugin.SezzUIPlugin.Events.Combat.LeavingCombat += OnLeavingCombat;
+                EventManager.Player.JobChanged += OnJobChanged;
+                EventManager.Player.LevelChanged += OnLevelChanged;
+                EventManager.Combat.EnteringCombat += OnEnteringCombat;
+                EventManager.Combat.LeavingCombat += OnLeavingCombat;
 
                 Configure();
-
-                if (Plugin.SezzUIPlugin.Events.Combat.IsInCombat())
-				{
-                    Show();
-                }
             }
-            else
+            else if (!enable && _isEnabled)
             {
-                PluginLog.Debug($"[HudModule:{Name}] Enable skipped");
-            }
-
-        }
-
-        public override void Disable()
-        {
-            if (Enabled)
-            {
+                PluginLog.Debug($"[{this.GetType().Name}] Disable");
+                _isEnabled = !_isEnabled;
                 Reset();
 
-                Service.ClientState.Login -= OnLogin;
-                Service.ClientState.Logout -= OnLogout;
+                Plugin.ClientState.Login -= OnLogin;
+                Plugin.ClientState.Logout -= OnLogout;
 
-                Plugin.SezzUIPlugin.Events.Player.JobChanged -= OnJobChanged;
-                Plugin.SezzUIPlugin.Events.Player.LevelChanged -= OnLevelChanged;
-                Plugin.SezzUIPlugin.Events.Combat.EnteringCombat -= OnEnteringCombat;
-                Plugin.SezzUIPlugin.Events.Combat.LeavingCombat -= OnLeavingCombat;
+                EventManager.Player.JobChanged -= OnJobChanged;
+                EventManager.Player.LevelChanged -= OnLevelChanged;
+                EventManager.Combat.EnteringCombat -= OnEnteringCombat;
+                EventManager.Combat.LeavingCombat -= OnLeavingCombat;
 
                 OnLogout(null!, null!);
-                base.Disable();
-            }
-            else
-            {
-                PluginLog.Debug($"[HudModule:{Name}] Disable skipped");
             }
         }
 
         private void Reset()
-		{
+        {
             Hide(true);
             _bars.ForEach(bar => bar.Dispose());
             _bars.Clear();
@@ -110,22 +105,31 @@ namespace SezzUI.Modules.JobHud
         }
 
         private void Configure()
-		{
+        {
             Reset();
 
-            PlayerCharacter? player = Service.ClientState.LocalPlayer;
+            PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
             uint jobId = (player != null ? player.ClassJob.Id : 0);
 
             if (!Defaults.JobColors.TryGetValue(jobId, out AccentColor))
+            {
                 AccentColor = Defaults.IconBarColor;
+            }
 
             if (_presets.TryGetValue(jobId, out BasePreset? preset))
+            {
                 preset.Configure(this);
+            }
+
+            if (EventManager.Combat.IsInCombat()) { Show(); }
         }
 
-        public override void Draw(Vector2 origin)
+        public override void DrawChildren(Vector2 origin)
         {
-            if (!Enabled) return;
+            if (!Config.Enabled || Actor == null || Actor is not PlayerCharacter player)
+            {
+                return;
+            }
 
             // Bars
             if (IsShown || _animator.IsAnimating)
@@ -134,8 +138,8 @@ namespace SezzUI.Modules.JobHud
 
                 float yOffset = 0;
                 for (int i = 0; i < _bars.Count; i++)
-				{
-                    Vector2 pos = origin + _positionOffset + _animator.Data.Offset;
+                {
+                    Vector2 pos = origin + Config.Position + _animator.Data.Offset;
                     pos.Y += yOffset;
                     _bars[i].Draw(pos, _animator);
                     yOffset += _bars[i].IconSize.Y + _bars[i].IconPadding;
@@ -147,25 +151,25 @@ namespace SezzUI.Modules.JobHud
         }
 
         public void AddBar(Bar bar)
-		{
+        {
             if (bar.HasIcons)
-			{
+            {
                 _bars.Add(bar);
-			}
-		}
+            }
+        }
 
         public void AddAlert(AuraAlert alert)
-		{
-            if (alert.Level > 1 && (Service.ClientState.LocalPlayer?.Level ?? 0) < alert.Level) return;
+        {
+            if (alert.Level > 1 && (Plugin.ClientState.LocalPlayer?.Level ?? 0) < alert.Level) { return; }
 
             _auraAlerts.Add(alert);
-		}
+        }
 
         public void Show()
         {
             if (!IsShown)
             {
-                PluginLog.Debug($"[{Name}] Show");
+                PluginLog.Debug($"[{this.GetType().Name}] Show");
                 _isShown = !IsShown;
                 _animator.Animate();
             }
@@ -175,14 +179,46 @@ namespace SezzUI.Modules.JobHud
         {
             if (IsShown)
             {
-                PluginLog.Debug($"[{Name}] Hide");
+                PluginLog.Debug($"[{this.GetType().Name}] Hide {force}");
                 _isShown = !IsShown;
                 _animator.Stop(force);
             }
         }
 
-		#region Events
-		private void OnLogin(object? sender, EventArgs e)
+        protected override void InternalDispose()
+        {
+            Reset();
+
+            ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+            _config.ValueChangeEvent -= OnConfigPropertyChanged;
+        }
+
+        #region Configration Events
+        private void OnConfigPropertyChanged(object sender, OnChangeBaseArgs args)
+        {
+            switch (args.PropertyName)
+            {
+                case "Enabled":
+                    PluginLog.Debug($"[{this.GetType().Name}] OnConfigPropertyChanged Config.Enabled: {Config.Enabled}");
+                    Toggle(Config.Enabled);
+                    break;
+            }
+        }
+
+        private void OnConfigReset(ConfigurationManager sender)
+        {
+            // Configuration doesn't change on reset? 
+            PluginLog.Debug($"[{this.GetType().Name}] OnConfigReset");
+            _config.ValueChangeEvent -= OnConfigPropertyChanged;
+            _config = sender.GetConfigObject<JobHudConfig>();
+            _config.ValueChangeEvent += OnConfigPropertyChanged;
+            Toggle(Config.Enabled);
+            PluginLog.Debug($"[{this.GetType().Name}] Config.Enabled: {Config.Enabled}");
+        }
+        #endregion
+
+        #region Game Events
+        private void OnLogin(object? sender, EventArgs e)
         {
         }
 
@@ -210,12 +246,6 @@ namespace SezzUI.Modules.JobHud
         {
             Configure();
         }
-		#endregion
-
-		public override void Dispose()
-        {
-            Reset();
-            base.Dispose();
-        }
+        #endregion
     }
 }

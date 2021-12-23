@@ -15,7 +15,7 @@ namespace SezzUI.Modules.JobHud
 			switch (DelvUI.Helpers.JobsHelper.RoleForJob(JobId))
 			{
 				case DelvUI.Helpers.JobRoles.Tank:
-					using (Bar bar = new())
+					using (Bar bar = new(hud))
 					{
 						bar.IconSize = new Vector2(38, 26);
 						bar.Add(new Icon(bar) { TextureActionId = 7540, CooldownActionId = 7540, StatusId = 2, MaxStatusDuration = 5, StatusTarget = Enums.Unit.Target, Level = 12, IconClipOffset = 0.5f }); // Low Blow
@@ -26,7 +26,7 @@ namespace SezzUI.Modules.JobHud
 					break;
 
 				case DelvUI.Helpers.JobRoles.Healer:
-					using (Bar bar = new())
+					using (Bar bar = new(hud))
 					{
 						bar.IconSize = new Vector2(38, 26);
 						bar.Add(new Icon(bar) { TextureActionId = 7561, CooldownActionId = 7561, StatusId = 167, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 18 }); // Swiftcast
@@ -38,7 +38,7 @@ namespace SezzUI.Modules.JobHud
 					break;
 
 				case DelvUI.Helpers.JobRoles.DPSMelee:
-					using (Bar bar = new())
+					using (Bar bar = new(hud))
 					{
 						bar.IconSize = new Vector2(38, 26);
 						bar.Add(new Icon(bar) { TextureActionId = 7863, CooldownActionId = 7863, StatusId = 2, MaxStatusDuration = 3, StatusTarget = Enums.Unit.Target, Level = 10, IconClipOffset = 0.7f }); // Leg Sweep
@@ -50,7 +50,7 @@ namespace SezzUI.Modules.JobHud
 					break;
 
 				case DelvUI.Helpers.JobRoles.DPSRanged:
-					using (Bar bar = new())
+					using (Bar bar = new(hud))
 					{
 						bar.IconSize = new Vector2(38, 26);
 						bar.Add(new Icon(bar) { TextureActionId = 7551, CooldownActionId = 7551, Level = 24, IconClipOffset = -0.7f }); // Head Gaze
@@ -61,7 +61,7 @@ namespace SezzUI.Modules.JobHud
 					break;
 
 				case DelvUI.Helpers.JobRoles.DPSCaster:
-					using (Bar bar = new())
+					using (Bar bar = new(hud))
 					{
 						bar.IconSize = new Vector2(38, 26);
 						bar.Add(new Icon(bar) { TextureActionId = 7561, CooldownActionId = 7561, StatusId = 167, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 18 }); // Swiftcast

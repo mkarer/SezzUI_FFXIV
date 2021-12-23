@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace SezzUI.Animator
 {
-	class ColorAnimation : BaseAnimation
+	public class ColorAnimation : BaseAnimation
 	{
 		public Vector4 ColorFrom;
 		public Vector4 ColorTo;

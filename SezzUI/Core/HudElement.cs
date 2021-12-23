@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Dalamud.Logging;
-using Dalamud.Plugin;
 using System.Numerics;
 
 namespace SezzUI.Core
@@ -37,8 +31,31 @@ namespace SezzUI.Core
         {
         }
 
-        public virtual void Dispose()
+        ~AnimatedHudElement()
         {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (!disposing)
+            {
+                return;
+            }
+
+            Animator.Dispose();
+            InternalDispose();
+        }
+
+        protected virtual void InternalDispose()
+        {
+            // override
         }
     }
 }

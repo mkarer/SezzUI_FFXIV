@@ -8,7 +8,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		public override void Configure(JobHud hud)
 		{
-            using (Bar bar = new())
+            using (Bar bar = new(hud))
             {
                 bar.Add(new Icon(bar) { TextureActionId = 16138, CooldownActionId = 16138, StatusId = 1831, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 2 }); // No Mercy
                 bar.Add(new Icon(bar) { TextureActionId = 16154, CooldownActionId = 16154, Level = 56 }); // Rough Divide
@@ -18,7 +18,7 @@ namespace SezzUI.Modules.JobHud.Jobs
                 hud.AddBar(bar);
             }
 
-            using (Bar bar = new())
+            using (Bar bar = new(hud))
             {
                 bar.Add(new Icon(bar) { TextureActionId = 7531, CooldownActionId = 7531, StatusId = 1191, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 8 }); // Rampart
                 bar.Add(new Icon(bar) { TextureActionId = 16140, CooldownActionId = 16140, StatusId = 1832, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 6 }); // Camouflage

@@ -1,3 +1,5 @@
+using SezzUI.Config;
+using SezzUI.Interface.GeneralElements;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using System;
@@ -12,8 +14,8 @@ namespace DelvUI.Helpers
         #region Singleton
         private ClipRectsHelper()
         {
-            //ConfigurationManager.Instance.ResetEvent += OnConfigReset;
-            //OnConfigReset(ConfigurationManager.Instance);
+            ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+            OnConfigReset(ConfigurationManager.Instance);
         }
 
         public static void Initialize() { Instance = new ClipRectsHelper(); }
@@ -38,38 +40,38 @@ namespace DelvUI.Helpers
                 return;
             }
 
-            //ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
-            //_config.ValueChangeEvent -= OnConfigPropertyChanged;
+            ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+            _config.ValueChangeEvent -= OnConfigPropertyChanged;
 
             Instance = null!;
         }
         #endregion
 
-        //private HUDOptionsConfig _config = null!;
+        private HUDOptionsConfig _config = null!;
 
-        //private void OnConfigReset(ConfigurationManager sender)
-        //{
-        //    if (_config != null)
-        //    {
-        //        _config.ValueChangeEvent -= OnConfigPropertyChanged;
-        //    }
+        private void OnConfigReset(ConfigurationManager sender)
+        {
+            if (_config != null)
+            {
+                _config.ValueChangeEvent -= OnConfigPropertyChanged;
+            }
 
-        //    _config = sender.GetConfigObject<HUDOptionsConfig>();
-        //    _config.ValueChangeEvent += OnConfigPropertyChanged;
-        //}
+            _config = sender.GetConfigObject<HUDOptionsConfig>();
+            _config.ValueChangeEvent += OnConfigPropertyChanged;
+        }
 
-        //private void OnConfigPropertyChanged(object sender, OnChangeBaseArgs args)
-        //{
-        //    if (args.PropertyName == "EnableClipRects" && !_config.EnableClipRects)
-        //    {
-        //        _clipRects.Clear();
-        //    }
-        //}
+        private void OnConfigPropertyChanged(object sender, OnChangeBaseArgs args)
+        {
+            if (args.PropertyName == "EnableClipRects" && !_config.EnableClipRects)
+            {
+                _clipRects.Clear();
+            }
+        }
 
-        public bool Enabled => true;
-        public bool ClippingEnabled => true;
+        public bool Enabled => _config.EnableClipRects;
+        public bool ClippingEnabled => _config.EnableClipRects && !_config.HideInsteadOfClip;
 
-        // these are ordered by priority, if 2 game windows are on top of a DelvUI element
+        // these are ordered by priority, if 2 game windows are on top of a ui element
         // the one that comes first in this list is the one that will be clipped around
         internal static string[] AddonNames = new string[]
         {
@@ -107,6 +109,8 @@ namespace DelvUI.Helpers
             "InventoryEvent",
             "InventoryBuddy",
             "Buddy",
+            "BuddyEquipList",
+            "BuddyInspect",
             "Currency",
             "Macro",
             "PcSearchDetail",
@@ -115,6 +119,9 @@ namespace DelvUI.Helpers
             "SocialDetailB",
             "LookingForGroup",
             "LookingForGroupSearch",
+            "LookingForGroupCondition",
+            "LookingForGroupDetail",
+            "ReadyCheck",
             "Marker",
             "FieldMarker",
             "CountdownSettingDialog",
@@ -123,6 +130,7 @@ namespace DelvUI.Helpers
             "CircleNameInputString",
             "Emote",
             "FreeCompany",
+            "FreeCompanyProfile",
             "HousingMenu",
             "HousingSubmenu",
             "HousingSignBoard",
@@ -170,14 +178,15 @@ namespace DelvUI.Helpers
             "LinkShell",
             "ChatConfig",
             "ColorPicker",
-            "PlayGuide"
+            "PlayGuide",
+            "SelectYesno"
         };
 
         private List<ClipRect> _clipRects = new List<ClipRect>();
 
         public unsafe void Update()
         {
-            //if (!_config.EnableClipRects) { return; }
+            if (!_config.EnableClipRects) { return; }
 
             _clipRects.Clear();
 

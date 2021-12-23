@@ -6,7 +6,7 @@
 
         public override void Configure(JobHud hud)
         {
-            using (Bar bar = new())
+            using (Bar bar = new(hud))
             {
                 bar.Add(new Icon(bar) { TextureActionId = 3625, CooldownActionId = 3625, StatusActionId = 3625, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 35 }); // Blood Weapon
                 bar.Add(new Icon(bar) { TextureActionId = 7390, CooldownActionId = 7390, StatusActionId = 7390, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 68 }); // Delirium
@@ -15,7 +15,7 @@
                 hud.AddBar(bar);
             }
 
-            using (Bar bar = new())
+            using (Bar bar = new(hud))
             {
                 bar.Add(new Icon(bar) { TextureActionId = 7531, CooldownActionId = 7531, StatusId = 1191, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 8 }); // Rampart
                 bar.Add(new Icon(bar) { TextureActionId = 3636, CooldownActionId = 3636, StatusActionId = 3636, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 38 }); // Shadow Wall

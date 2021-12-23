@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Globalization;
 using Dalamud.Data;
@@ -13,25 +11,22 @@ using Dalamud.Game.ClientState.JobGauge;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Party;
 using Dalamud.Game.Command;
-using Dalamud.Interface;
-using Dalamud.Interface.Windowing;
 using Dalamud.Game.Gui;
-using Dalamud.Plugin;
-using SigScanner = Dalamud.Game.SigScanner;
+using Dalamud.Interface;
 using Dalamud.Logging;
+using Dalamud.Plugin;
+using SezzUI.Config;
+using SezzUI.Config.Profiles;
+using SezzUI.Interface;
+using SezzUI.Interface.GeneralElements;
 using ImGuiNET;
+using ImGuiScene;
+using SigScanner = Dalamud.Game.SigScanner;
 
 namespace SezzUI
 {
-    public sealed class Plugin : IDalamudPlugin
+    public class Plugin : IDalamudPlugin
     {
-        public static string AssemblyLocation { get; private set; } = "";
-        public string Name => "SezzUI";
-
-        private const string commandName = "/sezz";
-
-        public static Plugin SezzUIPlugin { get; private set; } = null!;
-     
         public static BuddyList BuddyList { get; private set; } = null!;
         public static ClientState ClientState { get; private set; } = null!;
         public static CommandManager CommandManager { get; private set; } = null!;
@@ -47,12 +42,14 @@ namespace SezzUI
         public static UiBuilder UiBuilder { get; private set; } = null!;
         public static PartyList PartyList { get; private set; } = null!;
 
-        private SezzUIPluginConfiguration Configuration { get; init; }
-        private PluginUI PluginUi { get; init; }
-        //public static Plugin Plugin { get; private set; }
+        public static TextureWrap? BannerTexture;
 
-        public AvailableEvents Events = new AvailableEvents();
-        public AvailableModules Modules = new AvailableModules();
+        public static string AssemblyLocation { get; private set; } = "";
+        public string Name => "SezzUI";
+
+        public static string Version { get; private set; } = "";
+
+        private HudManager _hudManager = null!;
         public static NumberFormatInfo NumberFormatInfo = CultureInfo.GetCultureInfo("en-GB").NumberFormat;
 
         public Plugin(
@@ -68,7 +65,8 @@ namespace SezzUI
             ObjectTable objectTable,
             PartyList partyList,
             SigScanner sigScanner,
-            TargetManager targetManager)
+            TargetManager targetManager
+        )
         {
             BuddyList = buddyList;
             ClientState = clientState;
@@ -94,69 +92,144 @@ namespace SezzUI
                 AssemblyLocation = Assembly.GetExecutingAssembly().Location;
             }
 
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.6.1.1";
+
             DelvUI.Helpers.FontsManager.Initialize(AssemblyLocation);
+            LoadBanner();
+
+            // initialize a not-necessarily-defaults configuration
+            ConfigurationManager.Initialize();
+            ProfilesManager.Initialize();
+            ConfigurationManager.Instance.LoadOrInitializeFiles();
+
+            DelvUI.Helpers.FontsManager.Instance.LoadConfig();
+
+            DelvUI.Helpers.ClipRectsHelper.Initialize();
+            GlobalColors.Initialize();
             DelvUI.Helpers.TexturesCache.Initialize();
             Helpers.ImageCache.Initialize();
+            DelvUI.Helpers.TooltipsHelper.Initialize();
+            EventManager.Initialize();
+            ModuleManager.Initialize();
 
-            pluginInterface.Create<Service>();
-            DelvUI.Helpers.ClipRectsHelper.Initialize();
+            _hudManager = new HudManager();
 
-            PluginInterface = pluginInterface;
-            SezzUIPlugin = this;
-            CommandManager = commandManager;
-            Configuration = PluginInterface.GetPluginConfig() as SezzUIPluginConfiguration ?? new SezzUIPluginConfiguration();
-            Configuration.Initialize(PluginInterface);
-
-            // you might normally want to embed resources and load them from the manifest stream
-            var assemblyLocation = Assembly.GetExecutingAssembly().Location;
-            PluginUi = new PluginUI(Configuration);
-
-            CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
-            {
-                HelpMessage = "Open Configuration"
-            });
-
-            PluginInterface.UiBuilder.Draw += Draw;
-            PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+            UiBuilder.Draw += Draw;
             UiBuilder.BuildFonts += BuildFont;
-            
-            Modules.JobHud.Enable();
+            UiBuilder.OpenConfigUi += OpenConfigUi;
+
+            CommandManager.AddHandler("/sezzui", new(PluginCommand)
+            {
+                HelpMessage = "Opens the SezzUI configuration window.",
+                ShowInHelp = true
+            });
+            CommandManager.AddHandler("/sezz", new CommandInfo(PluginCommand));
+            CommandManager.AddHandler("/sui", new CommandInfo(PluginCommand));
+
+            var configManager = ConfigurationManager.Instance;
+            var config = configManager.GetConfigObject<DeveloperConfig>();
+            if (config != null && config.ShowConfigurationOnLogin)
+            {
+                ConfigurationManager.Instance.ToggleConfigWindow();
+            }
         }
 
         public void Dispose()
         {
-            PluginLog.Debug(string.Format("[Core] Dispose"));
-
-            Modules.Dispose();
-            Events.Dispose();
-
-            PluginUi.Dispose();
-            CommandManager.RemoveHandler(commandName);
-
-            PluginInterface.UiBuilder.Draw -= Draw;
-            PluginInterface.UiBuilder.OpenConfigUi -= DrawConfigUI;
-            UiBuilder.BuildFonts -= BuildFont;
-            UiBuilder.RebuildFonts();
-
-            DelvUI.Helpers.ClipRectsHelper.Instance.Dispose();
-            DelvUI.Helpers.FontsManager.Instance.Dispose();
-            DelvUI.Helpers.TexturesCache.Instance.Dispose();
-            Helpers.ImageCache.Instance.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        private void OnCommand(string command, string args)
+        private void BuildFont()
         {
-            // in response to the slash command, just display our main ui
-            PluginUi.Visible = true;
+            DelvUI.Helpers.FontsManager.Instance.BuildFonts();
+        }
+
+        private void LoadBanner()
+        {
+            string bannerImage = Path.Combine(Path.GetDirectoryName(AssemblyLocation) ?? "", "Media", "Images", "banner_short_x150.png");
+
+            if (File.Exists(bannerImage))
+            {
+                try
+                {
+                    BannerTexture = UiBuilder.LoadImage(bannerImage);
+                }
+                catch (Exception ex)
+                {
+                    PluginLog.Log($"Image failed to load. {bannerImage}");
+                    PluginLog.Log(ex.ToString());
+                }
+            }
+            else
+            {
+                PluginLog.Log($"Image doesn't exist. {bannerImage}");
+            }
+        }
+
+        private void PluginCommand(string command, string arguments)
+        {
+            var configManager = ConfigurationManager.Instance;
+
+            if (configManager.IsConfigWindowOpened && !configManager.LockHUD)
+            {
+                configManager.LockHUD = true;
+            }
+            else
+            {
+                switch (arguments)
+                {
+                    case "toggle":
+                        ConfigurationManager.Instance.ShowHUD = !ConfigurationManager.Instance.ShowHUD;
+                        break;
+
+                    case "show":
+                        ConfigurationManager.Instance.ShowHUD = true;
+                        break;
+
+                    case "hide":
+                        ConfigurationManager.Instance.ShowHUD = false;
+                        break;
+
+                    case { } argument when argument.StartsWith("profile"):
+                        // TODO: Turn this into a helper function?
+                        var profile = argument.Split(" ", 2);
+
+                        if (profile.Length > 0)
+                        {
+                            ProfilesManager.Instance.CheckUpdateSwitchCurrentProfile(profile[1]);
+                        }
+
+                        break;
+
+                    default:
+                        configManager.ToggleConfigWindow();
+                        break;
+                }
+            }
         }
 
         private void Draw()
         {
+            bool hudState =
+                Condition[ConditionFlag.WatchingCutscene] ||
+                Condition[ConditionFlag.WatchingCutscene78] ||
+                Condition[ConditionFlag.OccupiedInCutSceneEvent] ||
+                Condition[ConditionFlag.CreatingCharacter] ||
+                Condition[ConditionFlag.BetweenAreas] ||
+                Condition[ConditionFlag.BetweenAreas51] ||
+                Condition[ConditionFlag.OccupiedSummoningBell];
+
             UiBuilder.OverrideGameCursor = false;
+
+            ConfigurationManager.Instance.Draw();
 
             var fontPushed = DelvUI.Helpers.FontsManager.Instance.PushDefaultFont();
 
-            PluginUi.Draw();
+            if (!hudState)
+            {
+                _hudManager?.Draw();
+            }
 
             if (fontPushed)
             {
@@ -164,14 +237,45 @@ namespace SezzUI
             }
         }
 
-        private void DrawConfigUI()
+        private void OpenConfigUi()
         {
-            PluginUi.SettingsVisible = true;
+            ConfigurationManager.Instance.ToggleConfigWindow();
         }
 
-        private void BuildFont()
+        protected virtual void Dispose(bool disposing)
         {
-            DelvUI.Helpers.FontsManager.Instance.BuildFonts();
+            if (!disposing)
+            {
+                return;
+            }
+
+            _hudManager.Dispose();
+
+            ConfigurationManager.Instance.SaveConfigurations(true);
+            ConfigurationManager.Instance.CloseConfigWindow();
+
+            CommandManager.RemoveHandler("/sezzui");
+            CommandManager.RemoveHandler("/sezz");
+            CommandManager.RemoveHandler("/sui");
+
+            UiBuilder.Draw -= Draw;
+            UiBuilder.BuildFonts -= BuildFont;
+            UiBuilder.OpenConfigUi -= OpenConfigUi;
+            UiBuilder.RebuildFonts();
+
+            ModuleManager.Instance.Dispose();
+            EventManager.Instance.Dispose();
+            DelvUI.Helpers.ClipRectsHelper.Instance.Dispose();
+            DelvUI.Helpers.FontsManager.Instance.Dispose();
+            GlobalColors.Instance.Dispose();
+            ProfilesManager.Instance.Dispose();
+            DelvUI.Helpers.SpellHelper.Instance.Dispose();
+            DelvUI.Helpers.TexturesCache.Instance.Dispose();
+            Helpers.ImageCache.Instance.Dispose();
+            DelvUI.Helpers.TooltipsHelper.Instance.Dispose();
+
+            // This needs to remain last to avoid race conditions
+            ConfigurationManager.Instance.Dispose();
         }
     }
 }

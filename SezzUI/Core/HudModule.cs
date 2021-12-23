@@ -46,14 +46,37 @@ namespace SezzUI
         {
         }
 
-        public virtual void Dispose()
+        ~HudModule()
         {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (!disposing)
+            {
+                return;
+            }
+
             PluginLog.Debug($"[HudModule:{Name}] Dispose");
 
             if (Enabled)
             {
                 Disable();
             }
+
+            InternalDispose();
+        }
+
+        protected virtual void InternalDispose()
+        {
+            // override
         }
     }
 }

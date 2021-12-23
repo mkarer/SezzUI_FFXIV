@@ -1,4 +1,6 @@
-﻿using ImGuiNET;
+﻿using SezzUI.Config;
+using SezzUI.Interface.GeneralElements;
+using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,6 +22,23 @@ namespace DelvUI.Helpers
         }
 
         public static FontsManager Instance { get; private set; } = null!;
+        private FontsConfig? _config;
+
+        public void LoadConfig()
+        {
+            if (_config != null)
+            {
+                return;
+            }
+
+            _config = ConfigurationManager.Instance.GetConfigObject<FontsConfig>();
+            ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+        }
+
+        private void OnConfigReset(ConfigurationManager sender)
+        {
+            _config = sender.GetConfigObject<FontsConfig>();
+        }
 
         ~FontsManager()
         {
@@ -39,6 +58,7 @@ namespace DelvUI.Helpers
                 return;
             }
 
+            ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
             Instance = null!;
         }
         #endregion
@@ -48,7 +68,8 @@ namespace DelvUI.Helpers
         public bool DefaultFontBuilt { get; private set; }
         public ImFontPtr DefaultFont { get; private set; } = null;
 
-        public Dictionary<String, ImFontPtr> Fonts = new Dictionary<string, ImFontPtr>();
+        private List<ImFontPtr> _fonts = new List<ImFontPtr>();
+        public IReadOnlyCollection<ImFontPtr> Fonts => _fonts.AsReadOnly();
 
         public bool PushDefaultFont()
         {
@@ -63,55 +84,86 @@ namespace DelvUI.Helpers
 
         public bool PushFont(string? fontId)
         {
-            if (fontId == null || !Fonts.ContainsKey(fontId))
+            if (fontId == null || _config == null || !_config.Fonts.ContainsKey(fontId))
             {
                 return false;
             }
 
-            ImGui.PushFont(Fonts[fontId]);
+            var index = _config.Fonts.IndexOfKey(fontId);
+            if (index < 0 || index >= _fonts.Count)
+            {
+                return false;
+            }
+
+            ImGui.PushFont(_fonts[index]);
             return true;
         }
 
         public unsafe void BuildFonts()
         {
-            Fonts.Clear();
+            _fonts.Clear();
             DefaultFontBuilt = false;
 
+            var config = ConfigurationManager.Instance.GetConfigObject<FontsConfig>();
             ImGuiIOPtr io = ImGui.GetIO();
+            var ranges = GetCharacterRanges(config, io);
 
-            string path = DefaultFontsPath + "MyriadProLightCond.ttf";
-            try
+            foreach (var fontData in config.Fonts)
             {
-                //PluginLog.Verbose($"Loading font MyriadProLightCond_24 from path: {path}");
-                ImFontPtr fontBig = io.Fonts.AddFontFromFileTTF(path, 24);
-                Fonts.Add("MyriadProLightCond_24", fontBig);
-                DefaultFont = fontBig;
-                DefaultFontBuilt = true;
+                var path = DefaultFontsPath + fontData.Value.Name + ".ttf";
+                if (!File.Exists(path))
+                {
+                    path = config.ValidatedFontsPath + fontData.Value.Name + ".ttf";
+                    if (!File.Exists(path))
+                    {
+                        continue;
+                    }
+                }
 
-                //PluginLog.Verbose($"Loading font MyriadProLightCond_20 from path: {path}");
-                ImFontPtr fontMedium = io.Fonts.AddFontFromFileTTF(path, 20);
-                Fonts.Add("MyriadProLightCond_20", fontMedium);
+                try
+                {
+                    ImFontPtr font = ranges == null ? io.Fonts.AddFontFromFileTTF(path, fontData.Value.Size)
+                        : io.Fonts.AddFontFromFileTTF(path, fontData.Value.Size, null, ranges.Value.Data);
+                    _fonts.Add(font);
 
-                //PluginLog.Verbose($"Loading font MyriadProLightCond_18 from path: {path}");
-                ImFontPtr fontNormal = io.Fonts.AddFontFromFileTTF(path, 18);
-                Fonts.Add("MyriadProLightCond_18", fontNormal);
-
-                //PluginLog.Verbose($"Loading font MyriadProLightCond_16 from path: {path}");
-                ImFontPtr fontSmall = io.Fonts.AddFontFromFileTTF(path, 16);
-                Fonts.Add("MyriadProLightCond_16", fontSmall);
-
-                //PluginLog.Verbose($"Loading font MyriadProLightCond_14 from path: {path}");
-                ImFontPtr fontSmaller = io.Fonts.AddFontFromFileTTF(path, 14);
-                Fonts.Add("MyriadProLightCond_14", fontSmaller);
-
-                //PluginLog.Verbose($"Loading font MyriadProLightCond_12 from path: {path}");
-                ImFontPtr fontTiny = io.Fonts.AddFontFromFileTTF(path, 12);
-                Fonts.Add("MyriadProLightCond_12", fontTiny);
+                    if (fontData.Key == FontsConfig.DefaultMediumFontKey)
+                    {
+                        DefaultFont = font;
+                        DefaultFontBuilt = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    PluginLog.Log($"Font failed to load: {path}");
+                    PluginLog.Log(ex.ToString());
+                }
             }
-            catch (Exception ex)
+        }
+
+        private unsafe ImVector? GetCharacterRanges(FontsConfig config, ImGuiIOPtr io)
+        {
+            if (!config.SupportChineseCharacters && !config.SupportKoreanCharacters)
             {
-                PluginLog.Error(ex, $"Font failed to load: {path}");
+                return null;
             }
+
+            var builder = new ImFontGlyphRangesBuilderPtr(ImGuiNative.ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder());
+
+            if (config.SupportChineseCharacters)
+            {
+                // GetGlyphRangesChineseFull() includes Default + Hiragana, Katakana, Half-Width, Selection of 1946 Ideographs
+                // https://skia.googlesource.com/external/github.com/ocornut/imgui/+/v1.53/extra_fonts/README.txt
+                builder.AddRanges(io.Fonts.GetGlyphRangesChineseFull());
+            }
+
+            if (config.SupportKoreanCharacters)
+            {
+                builder.AddRanges(io.Fonts.GetGlyphRangesKorean());
+            }
+
+            builder.BuildRanges(out ImVector ranges);
+
+            return ranges;
         }
     }
 }

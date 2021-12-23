@@ -1,9 +1,5 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game;
 using System;
-using System.Linq;
-using System.Collections.Generic;
-using Dalamud.Game.ClientState;
-using Dalamud.Game.ClientState.Objects.SubKinds;
 
 namespace DelvUI.Helpers
 {
@@ -37,35 +33,13 @@ namespace DelvUI.Helpers
         #endregion
 
         private readonly unsafe ActionManager* _actionManager;
-        private readonly ClientState _clientState;
 
-        private readonly Dictionary<uint, Dictionary<uint, uint>> _actionAdjustments;
-
-        public unsafe SpellHelper() 
-        { 
+        public unsafe SpellHelper()
+        {
             _actionManager = ActionManager.Instance();
-
-            _clientState = SezzUI.Plugin.ClientState;
-            _actionAdjustments = new()
-            {
-                // Hardcoded values for GetAdjustedActionId for actions that might get replaced by
-                // another plugin (combo plugins hook GetAdjustedActionId):
-
-                // RPR
-                { 24405, new() { { 72, 24405 } } }, // Arcane Circle
-                // PLD
-                { 3538, new() { { 54, 3538} } }, // Goring Blade
-                { 7383, new() { { 54, 7383 } } }, // Requiescat
-                // MCH
-                { 2864 , new() { { 40, 2864 }, { 80, 16501 } } }, // Rook Autoturret/Automation Queen
-            };
         }
 
-        public unsafe uint GetSpellActionId(uint actionId) {
-            byte level = _clientState.LocalPlayer?.Level ?? 0;
-            uint actionIdAdjusted = _actionAdjustments.TryGetValue(actionId, out var actionAdjustments) ? actionAdjustments.Where(a => level >= a.Key).OrderByDescending(a => a.Key).Select(a => a.Value).FirstOrDefault() : 0;
-            return actionIdAdjusted > 0 ? actionIdAdjusted : _actionManager->GetAdjustedActionId(actionId);
-        }
+        public unsafe uint GetSpellActionId(uint actionId) => _actionManager->GetAdjustedActionId(actionId);
 
         public unsafe float GetRecastTimeElapsed(uint actionId) => _actionManager->GetRecastTimeElapsed(ActionType.Spell, GetSpellActionId(actionId));
 
@@ -75,32 +49,26 @@ namespace DelvUI.Helpers
 
         public int GetSpellCooldownInt(uint actionId)
         {
-            if ((int)Math.Ceiling(GetSpellCooldown(actionId) % GetRecastTime(actionId)) <= 0)
-            {
-                return 0;
-            }
-
-            return (int)Math.Ceiling(GetSpellCooldown(actionId) % GetRecastTime(actionId));
+            int cooldown = (int)Math.Ceiling(GetSpellCooldown(actionId) % GetRecastTime(actionId));
+            return Math.Max(0, cooldown);
         }
 
         public int GetStackCount(int maxStacks, uint actionId)
         {
-            if (GetSpellCooldownInt(actionId) == 0 || GetSpellCooldownInt(actionId) < 0)
+            int cooldown = GetSpellCooldownInt(actionId);
+            float recastTime = GetRecastTime(actionId);
+
+            if (cooldown <= 0 || recastTime == 0)
             {
                 return maxStacks;
             }
 
-            return maxStacks - (int)Math.Ceiling(GetSpellCooldownInt(actionId) / (GetRecastTime(actionId) / maxStacks));
+            return maxStacks - (int)Math.Ceiling(cooldown / (recastTime / maxStacks));
         }
 
         public unsafe ushort GetMaxCharges(uint actionId, uint level)
         {
             return ActionManager.GetMaxCharges(actionId, level);
         }
-
-        /*public unsafe uint CheckActionResources(uint ActionID)
-        {
-            return _actionManager->CheckActionResources(ActionType.Spell, ActionID);
-        }*/
     }
 }

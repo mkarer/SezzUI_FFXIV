@@ -40,8 +40,14 @@ namespace SezzUI.Modules.JobHud
 			{
 				_imagePath = value;
 				if (value != null)
-					_texture = Helpers.ImageCache.Instance.GetImageFromPath(value);
-			}
+                {
+                    _texture = Helpers.ImageCache.Instance.GetImageFromPath(value);
+                }
+                else
+                {
+                    _texture = null;
+                }
+            }
 		}
 
 		private string? _imagePath;
@@ -67,9 +73,9 @@ namespace SezzUI.Modules.JobHud
 
 		public override void Draw(Vector2 origin)
 		{
-			if (StatusId == null && StatusIds == null) return;
+            if (StatusId == null && StatusIds == null) { return; }
 
-			PlayerCharacter? player = Service.ClientState.LocalPlayer;
+			PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
 			Status? status = null;
 			bool conditionsFailed = false;
 			if (player == null)
@@ -79,7 +85,7 @@ namespace SezzUI.Modules.JobHud
 			}
 			else
 			{
-				bool inCombat = Plugin.SezzUIPlugin.Events.Combat.IsInCombat(TreatWeaponOutAsCombat);
+				bool inCombat = EventManager.Combat.IsInCombat(TreatWeaponOutAsCombat);
 				if ((inCombat && !EnableInCombat) || (!inCombat && !EnableOutOfCombat))
 				{
 					conditionsFailed = true;
@@ -122,7 +128,7 @@ namespace SezzUI.Modules.JobHud
 	
 				// Draw aura alert
 				Vector2 elementSize = Size * Animator.Data.Scale;
-				Vector2 elementPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(origin, elementSize, DelvUI.Enums.DrawAnchor.Center);
+				Vector2 elementPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(origin, elementSize, Enums.DrawAnchor.Center);
 				elementPosition.X += Position.X + Animator.Data.Offset.X;
 				elementPosition.Y += Position.Y + Animator.Data.Offset.Y;
 
@@ -142,7 +148,7 @@ namespace SezzUI.Modules.JobHud
 
 						bool fontPushed = DelvUI.Helpers.FontsManager.Instance.PushFont("MyriadProLightCond_16");
 						Vector2 textSize = ImGui.CalcTextSize(windowId);
-						Vector2 textPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(elementPosition + elementSize / 2, textSize, DelvUI.Enums.DrawAnchor.Center);
+						Vector2 textPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(elementPosition + elementSize / 2, textSize, Enums.DrawAnchor.Center);
 						DelvUI.Helpers.DrawHelper.DrawShadowText(windowId, textPosition, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, Animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, Animator.Data.Opacity)), drawList, 1);
 						if (fontPushed) { ImGui.PopFont(); }
 					}
@@ -161,17 +167,12 @@ namespace SezzUI.Modules.JobHud
 						string textDuration = duration.ToString("0.00", Plugin.NumberFormatInfo);
 						bool fontPushed = DelvUI.Helpers.FontsManager.Instance.PushFont("MyriadProLightCond_20");
 						Vector2 textSize = ImGui.CalcTextSize(textDuration);
-						Vector2 textPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(elementPosition + elementSize / 2, textSize, DelvUI.Enums.DrawAnchor.Center);
+						Vector2 textPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(elementPosition + elementSize / 2, textSize, Enums.DrawAnchor.Center);
 						DelvUI.Helpers.DrawHelper.DrawOutlinedText(textDuration, textPosition, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, 1)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)), drawList, 1);
 						if (fontPushed) { ImGui.PopFont(); }
 					}
 				});
 			}
-		}
-
-		public override void Dispose()
-		{
-			base.Dispose();
 		}
 	}
 }

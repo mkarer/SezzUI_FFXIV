@@ -15,12 +15,12 @@ namespace SezzUI.Helpers
             drawList.AddRect(pos, pos + size, borderColor, 0, ImDrawFlags.None, 1);
         }
 
-        public static void DrawAnchoredText(string font, Enums.TextStyle style, DelvUI.Enums.DrawAnchor anchor, string text, Vector2 pos, Vector2 size, uint color, uint effectColor, ImDrawListPtr drawList, float xOffset = 0, float yOffset = 0, string textPosCalc = "")
+        public static void DrawAnchoredText(string font, Enums.TextStyle style, Enums.DrawAnchor anchor, string text, Vector2 pos, Vector2 size, uint color, uint effectColor, ImDrawListPtr drawList, float xOffset = 0, float yOffset = 0, string textPosCalc = "")
 		{
             bool fontPushed = DelvUI.Helpers.FontsManager.Instance.PushFont(font);
 
             Vector2 textSize = ImGui.CalcTextSize(textPosCalc != "" ? textPosCalc : text);
-            Vector2 textPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(anchor == DelvUI.Enums.DrawAnchor.Center ? pos + size / 2 : pos + size, textSize, anchor);
+            Vector2 textPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(anchor == Enums.DrawAnchor.Center ? pos + size / 2 : pos + size, textSize, anchor);
             textPosition.X += xOffset;
             textPosition.Y += 1 + yOffset;
 
@@ -44,12 +44,12 @@ namespace SezzUI.Helpers
 
         public static void DrawCenteredShadowText(string font, string text, Vector2 pos, Vector2 size, uint color, uint shadowColor, ImDrawListPtr drawList)
         {
-            DrawAnchoredText(font, Enums.TextStyle.Shadowed, DelvUI.Enums.DrawAnchor.Center, text, pos, size, color, shadowColor, drawList);
+            DrawAnchoredText(font, Enums.TextStyle.Shadowed, Enums.DrawAnchor.Center, text, pos, size, color, shadowColor, drawList);
         }
 
         public static void DrawCenteredOutlineText(string font, string text, Vector2 pos, Vector2 size, uint color, uint outlineColor, ImDrawListPtr drawList)
         {
-            DrawAnchoredText(font, Enums.TextStyle.Outline, DelvUI.Enums.DrawAnchor.Center, text, pos, size, color, outlineColor, drawList);
+            DrawAnchoredText(font, Enums.TextStyle.Outline, Enums.DrawAnchor.Center, text, pos, size, color, outlineColor, drawList);
         }
 
         public static void DrawPlaceholder(string text, Vector2 pos, Vector2 size, float opacity, ImDrawListPtr drawList)

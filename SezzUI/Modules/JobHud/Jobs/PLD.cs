@@ -8,9 +8,9 @@ namespace SezzUI.Modules.JobHud.Jobs
         
         public override void Configure(JobHud hud)
         {
-            byte jobLevel = Service.ClientState.LocalPlayer?.Level ?? 0;
+            byte jobLevel = Plugin.ClientState.LocalPlayer?.Level ?? 0;
 
-            using (Bar bar = new())
+            using (Bar bar = new(hud))
             {
                 bar.Add(new Icon(bar) { TextureActionId = 20, CooldownActionId = 20, StatusId = 76, MaxStatusDuration = 25, StatusTarget = Enums.Unit.Player, Level = 2 }); // Fight of Flight
                 bar.Add(new Icon(bar) { TextureActionId = 3538, StatusId = 725, MaxStatusDuration = 21, StatusTarget = Enums.Unit.Target, Level = 54 }); // Goring Blade
@@ -22,7 +22,7 @@ namespace SezzUI.Modules.JobHud.Jobs
                 hud.AddBar(bar);
             }
 
-            using (Bar bar = new())
+            using (Bar bar = new(hud))
             {
                 bar.Add(new Icon(bar) { TextureActionId = 7531, CooldownActionId = 7531, StatusId = 1191, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 8 }); // Rampart
                 bar.Add(new Icon(bar) { TextureActionId = 17, CooldownActionId = 17, StatusId = 74, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 38 }); // Sentinel

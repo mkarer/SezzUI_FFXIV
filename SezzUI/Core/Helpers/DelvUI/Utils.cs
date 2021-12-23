@@ -4,7 +4,9 @@ using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Statuses;
 using Dalamud.Logging;
-using DelvUI.Enums;
+using SezzUI.Config;
+using SezzUI.Enums;
+using SezzUI.Interface.GeneralElements;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -24,6 +26,11 @@ namespace DelvUI.Helpers
                 return null;
             }
 
+            return GetBuddy(player.ObjectId, BattleNpcSubKind.Chocobo);
+        }
+
+        public static GameObject? GetBuddy(uint ownerId, BattleNpcSubKind kind)
+        {
             // only the first 200 elements in the array are relevant due to the order in which SE packs data into the array
             // we do a step of 2 because its always an actor followed by its companion
             for (var i = 0; i < 200; i += 2)
@@ -35,7 +42,7 @@ namespace DelvUI.Helpers
                     continue;
                 }
 
-                if (battleNpc.BattleNpcKind == BattleNpcSubKind.Chocobo && battleNpc.OwnerId == player.ObjectId)
+                if (battleNpc.BattleNpcKind == kind && battleNpc.OwnerId == ownerId)
                 {
                     return gameObject;
                 }
@@ -142,217 +149,221 @@ namespace DelvUI.Helpers
         private static float LinearInterpolation(float left, float right, float t)
             => left + ((right - left) * t);
 
-        //public static PluginConfigColor GetColorByScale(float i, ColorByHealthValueConfig config) =>
-        //    GetColorByScale(i, config.LowHealthColorThreshold / 100f, config.FullHealthColorThreshold / 100f, config.LowHealthColor, config.FullHealthColor, config.BlendMode);
+        public static PluginConfigColor GetColorByScale(float i, ColorByHealthValueConfig config) =>
+            GetColorByScale(i, config.LowHealthColorThreshold / 100f, config.FullHealthColorThreshold / 100f, config.LowHealthColor, config.FullHealthColor, config.MaxHealthColor, config.UseMaxHealthColor, config.BlendMode);
 
         //Method used to interpolate two PluginConfigColors
         //i is scale [0 , 1]
         //min and max are used for color thresholds. for instance return colorLeft if i < min or return ColorRight if i > max
-        //public static PluginConfigColor GetColorByScale(float i, float min, float max, PluginConfigColor colorLeft, PluginConfigColor colorRight, BlendMode blendMode)
-        //{
-        //    //Set our thresholds where the ratio is the range of values we will use for interpolation. 
-        //    //Values outside this range will either return colorLeft or colorRight
-        //    float ratio = i;
-        //    if (min > 0 || max < 1)
-        //    {
-        //        if (i < min)
-        //        {
-        //            ratio = 0;
-        //        }
-        //        else if (i > max)
-        //        {
-        //            ratio = 1;
-        //        }
-        //        else
-        //        {
-        //            float range = max - min;
-        //            ratio = (i - min) / range;
-        //        }
-        //    }
+        public static PluginConfigColor GetColorByScale(float i, float min, float max, PluginConfigColor colorLeft, PluginConfigColor colorRight, PluginConfigColor colorMax, bool useMaxColor, BlendMode blendMode)
+        {
+            //Set our thresholds where the ratio is the range of values we will use for interpolation. 
+            //Values outside this range will either return colorLeft or colorRight
+            float ratio = i;
+            if (min > 0 || max < 1)
+            {
+                if (i < min)
+                {
+                    ratio = 0;
+                }
+                else if (i > max)
+                {
+                    ratio = 1;
+                }
+                else
+                {
+                    float range = max - min;
+                    ratio = (i - min) / range;
+                }
+            }
 
-        //    //Convert our PluginConfigColor to RGBColor
-        //    RGBColor rgbColorLeft = new RGBColor(colorLeft.Vector.X, colorLeft.Vector.Y, colorLeft.Vector.Z);
-        //    RGBColor rgbColorRight = new RGBColor(colorRight.Vector.X, colorRight.Vector.Y, colorRight.Vector.Z);
+            //Convert our PluginConfigColor to RGBColor
+            RGBColor rgbColorLeft = new RGBColor(colorLeft.Vector.X, colorLeft.Vector.Y, colorLeft.Vector.Z);
+            RGBColor rgbColorRight = new RGBColor(colorRight.Vector.X, colorRight.Vector.Y, colorRight.Vector.Z);
 
-        //    //Interpolate our Alpha now
-        //    float alpha = LinearInterpolation(colorLeft.Vector.W, colorRight.Vector.W, ratio);
+            //Interpolate our Alpha now
+            float alpha = LinearInterpolation(colorLeft.Vector.W, colorRight.Vector.W, ratio);
 
-        //    //Allow the users to select different blend modes since interpolating between two colors can result in different blending depending on the color space
-        //    //We convert our RGBColor values into different color spaces. We then interpolate each channel before converting the color back into RGBColor space
-        //    switch (blendMode)
-        //    {
-        //        case BlendMode.LAB:
-        //            {
-        //                //convert RGB to LAB
-        //                LabColor LabLeft = _rgbToLab.Convert(rgbColorLeft);
-        //                LabColor LabRight = _rgbToLab.Convert(rgbColorRight);
+            if (ratio >= 1 && useMaxColor)
+            {
+                return new PluginConfigColor(new Vector4((float)colorMax.Vector.X, (float)colorMax.Vector.Y, (float)colorMax.Vector.Z, colorMax.Vector.W));
+            }
 
-        //                RGBColor Lab2RGB = _labToRgb.Convert(
-        //                    new LabColor(
-        //                        LinearInterpolation((float)LabLeft.L, (float)LabRight.L, ratio),
-        //                        LinearInterpolation((float)LabLeft.a, (float)LabRight.a, ratio),
-        //                        LinearInterpolation((float)LabLeft.b, (float)LabRight.b, ratio)
-        //                    )
-        //                );
+            //Allow the users to select different blend modes since interpolating between two colors can result in different blending depending on the color space
+            //We convert our RGBColor values into different color spaces. We then interpolate each channel before converting the color back into RGBColor space
+            switch (blendMode)
+            {
+                case BlendMode.LAB:
+                    {
+                        //convert RGB to LAB
+                        LabColor LabLeft = _rgbToLab.Convert(rgbColorLeft);
+                        LabColor LabRight = _rgbToLab.Convert(rgbColorRight);
 
-        //                Lab2RGB.NormalizeIntensity();
+                        RGBColor Lab2RGB = _labToRgb.Convert(
+                            new LabColor(
+                                LinearInterpolation((float)LabLeft.L, (float)LabRight.L, ratio),
+                                LinearInterpolation((float)LabLeft.a, (float)LabRight.a, ratio),
+                                LinearInterpolation((float)LabLeft.b, (float)LabRight.b, ratio)
+                            )
+                        );
 
-        //                return new PluginConfigColor(new Vector4((float)Lab2RGB.R, (float)Lab2RGB.G, (float)Lab2RGB.B, alpha));
-        //            }
+                        Lab2RGB.NormalizeIntensity();
+                        return new PluginConfigColor(new Vector4((float)Lab2RGB.R, (float)Lab2RGB.G, (float)Lab2RGB.B, alpha));
+                    }
 
-        //        case BlendMode.LChab:
-        //            {
-        //                //convert RGB to LChab
-        //                LChabColor LChabLeft = _rgbToLChab.Convert(rgbColorLeft);
-        //                LChabColor LChabRight = _rgbToLChab.Convert(rgbColorRight);
+                case BlendMode.LChab:
+                    {
+                        //convert RGB to LChab
+                        LChabColor LChabLeft = _rgbToLChab.Convert(rgbColorLeft);
+                        LChabColor LChabRight = _rgbToLChab.Convert(rgbColorRight);
 
-        //                RGBColor LChab2RGB = _lchabToRgb.Convert(
-        //                    new LChabColor(
-        //                        LinearInterpolation((float)LChabLeft.L, (float)LChabRight.L, ratio),
-        //                        LinearInterpolation((float)LChabLeft.C, (float)LChabRight.C, ratio),
-        //                        LinearInterpolation((float)LChabLeft.h, (float)LChabRight.h, ratio)
-        //                    )
-        //                );
+                        RGBColor LChab2RGB = _lchabToRgb.Convert(
+                            new LChabColor(
+                                LinearInterpolation((float)LChabLeft.L, (float)LChabRight.L, ratio),
+                                LinearInterpolation((float)LChabLeft.C, (float)LChabRight.C, ratio),
+                                LinearInterpolation((float)LChabLeft.h, (float)LChabRight.h, ratio)
+                            )
+                        );
 
-        //                LChab2RGB.NormalizeIntensity();
+                        LChab2RGB.NormalizeIntensity();
 
-        //                return new PluginConfigColor(new Vector4((float)LChab2RGB.R, (float)LChab2RGB.G, (float)LChab2RGB.B, alpha));
-        //            }
-        //        case BlendMode.XYZ:
-        //            {
-        //                //convert RGB to XYZ
-        //                XYZColor XYZLeft = _rgbToXyz.Convert(rgbColorLeft);
-        //                XYZColor XYZRight = _rgbToXyz.Convert(rgbColorRight);
+                        return new PluginConfigColor(new Vector4((float)LChab2RGB.R, (float)LChab2RGB.G, (float)LChab2RGB.B, alpha));
+                    }
+                case BlendMode.XYZ:
+                    {
+                        //convert RGB to XYZ
+                        XYZColor XYZLeft = _rgbToXyz.Convert(rgbColorLeft);
+                        XYZColor XYZRight = _rgbToXyz.Convert(rgbColorRight);
 
-        //                RGBColor XYZ2RGB = _xyzToRgb.Convert(
-        //                    new XYZColor(
-        //                        LinearInterpolation((float)XYZLeft.X, (float)XYZRight.X, ratio),
-        //                        LinearInterpolation((float)XYZLeft.Y, (float)XYZRight.Y, ratio),
-        //                        LinearInterpolation((float)XYZLeft.Z, (float)XYZRight.Z, ratio)
-        //                    )
-        //                );
+                        RGBColor XYZ2RGB = _xyzToRgb.Convert(
+                            new XYZColor(
+                                LinearInterpolation((float)XYZLeft.X, (float)XYZRight.X, ratio),
+                                LinearInterpolation((float)XYZLeft.Y, (float)XYZRight.Y, ratio),
+                                LinearInterpolation((float)XYZLeft.Z, (float)XYZRight.Z, ratio)
+                            )
+                        );
 
-        //                XYZ2RGB.NormalizeIntensity();
+                        XYZ2RGB.NormalizeIntensity();
 
-        //                return new PluginConfigColor(new Vector4((float)XYZ2RGB.R, (float)XYZ2RGB.G, (float)XYZ2RGB.B, alpha));
-        //            }
-        //        case BlendMode.RGB:
-        //            {
-        //                //No conversion needed here because we are already working in RGB space
-        //                RGBColor newRGB = new RGBColor(
-        //                    LinearInterpolation((float)rgbColorLeft.R, (float)rgbColorRight.R, ratio),
-        //                    LinearInterpolation((float)rgbColorLeft.G, (float)rgbColorRight.G, ratio),
-        //                    LinearInterpolation((float)rgbColorLeft.B, (float)rgbColorRight.B, ratio)
-        //                );
+                        return new PluginConfigColor(new Vector4((float)XYZ2RGB.R, (float)XYZ2RGB.G, (float)XYZ2RGB.B, alpha));
+                    }
+                case BlendMode.RGB:
+                    {
+                        //No conversion needed here because we are already working in RGB space
+                        RGBColor newRGB = new RGBColor(
+                            LinearInterpolation((float)rgbColorLeft.R, (float)rgbColorRight.R, ratio),
+                            LinearInterpolation((float)rgbColorLeft.G, (float)rgbColorRight.G, ratio),
+                            LinearInterpolation((float)rgbColorLeft.B, (float)rgbColorRight.B, ratio)
+                        );
 
-        //                return new PluginConfigColor(new Vector4((float)newRGB.R, (float)newRGB.G, (float)newRGB.B, alpha));
-        //            }
-        //        case BlendMode.LChuv:
-        //            {
-        //                //convert RGB to LChuv
-        //                LChuvColor LChuvLeft = _rgbToLChuv.Convert(rgbColorLeft);
-        //                LChuvColor LChuvRight = _rgbToLChuv.Convert(rgbColorRight);
+                        return new PluginConfigColor(new Vector4((float)newRGB.R, (float)newRGB.G, (float)newRGB.B, alpha));
+                    }
+                case BlendMode.LChuv:
+                    {
+                        //convert RGB to LChuv
+                        LChuvColor LChuvLeft = _rgbToLChuv.Convert(rgbColorLeft);
+                        LChuvColor LChuvRight = _rgbToLChuv.Convert(rgbColorRight);
 
-        //                RGBColor LChuv2RGB = _lchuvToRgb.Convert(
-        //                    new LChuvColor(
-        //                        LinearInterpolation((float)LChuvLeft.L, (float)LChuvRight.L, ratio),
-        //                        LinearInterpolation((float)LChuvLeft.C, (float)LChuvRight.C, ratio),
-        //                        LinearInterpolation((float)LChuvLeft.h, (float)LChuvRight.h, ratio)
-        //                    )
-        //                );
+                        RGBColor LChuv2RGB = _lchuvToRgb.Convert(
+                            new LChuvColor(
+                                LinearInterpolation((float)LChuvLeft.L, (float)LChuvRight.L, ratio),
+                                LinearInterpolation((float)LChuvLeft.C, (float)LChuvRight.C, ratio),
+                                LinearInterpolation((float)LChuvLeft.h, (float)LChuvRight.h, ratio)
+                            )
+                        );
 
-        //                LChuv2RGB.NormalizeIntensity();
+                        LChuv2RGB.NormalizeIntensity();
 
-        //                return new PluginConfigColor(new Vector4((float)LChuv2RGB.R, (float)LChuv2RGB.G, (float)LChuv2RGB.B, alpha));
-        //            }
+                        return new PluginConfigColor(new Vector4((float)LChuv2RGB.R, (float)LChuv2RGB.G, (float)LChuv2RGB.B, alpha));
+                    }
 
-        //        case BlendMode.Luv:
-        //            {
-        //                //convert RGB to Luv
-        //                LuvColor LuvLeft = _rgbToLuv.Convert(rgbColorLeft);
-        //                LuvColor LuvRight = _rgbToLuv.Convert(rgbColorRight);
+                case BlendMode.Luv:
+                    {
+                        //convert RGB to Luv
+                        LuvColor LuvLeft = _rgbToLuv.Convert(rgbColorLeft);
+                        LuvColor LuvRight = _rgbToLuv.Convert(rgbColorRight);
 
-        //                RGBColor Luv2RGB = _luvToRgb.Convert(
-        //                    new LuvColor(
-        //                        LinearInterpolation((float)LuvLeft.L, (float)LuvRight.L, ratio),
-        //                        LinearInterpolation((float)LuvLeft.u, (float)LuvRight.u, ratio),
-        //                        LinearInterpolation((float)LuvLeft.v, (float)LuvRight.v, ratio)
-        //                    )
-        //                );
+                        RGBColor Luv2RGB = _luvToRgb.Convert(
+                            new LuvColor(
+                                LinearInterpolation((float)LuvLeft.L, (float)LuvRight.L, ratio),
+                                LinearInterpolation((float)LuvLeft.u, (float)LuvRight.u, ratio),
+                                LinearInterpolation((float)LuvLeft.v, (float)LuvRight.v, ratio)
+                            )
+                        );
 
-        //                Luv2RGB.NormalizeIntensity();
+                        Luv2RGB.NormalizeIntensity();
 
-        //                return new PluginConfigColor(new Vector4((float)Luv2RGB.R, (float)Luv2RGB.G, (float)Luv2RGB.B, alpha));
+                        return new PluginConfigColor(new Vector4((float)Luv2RGB.R, (float)Luv2RGB.G, (float)Luv2RGB.B, alpha));
 
-        //            }
-        //        case BlendMode.Jzazbz:
-        //            {
-        //                //convert RGB to Jzazbz
-        //                JzazbzColor JzazbzLeft = _rgbToJzazbz.Convert(rgbColorLeft);
-        //                JzazbzColor JzazbzRight = _rgbToJzazbz.Convert(rgbColorRight);
+                    }
+                case BlendMode.Jzazbz:
+                    {
+                        //convert RGB to Jzazbz
+                        JzazbzColor JzazbzLeft = _rgbToJzazbz.Convert(rgbColorLeft);
+                        JzazbzColor JzazbzRight = _rgbToJzazbz.Convert(rgbColorRight);
 
-        //                RGBColor Jzazbz2RGB = _jzazbzToRgb.Convert(
-        //                    new JzazbzColor(
-        //                        LinearInterpolation((float)JzazbzLeft.Jz, (float)JzazbzRight.Jz, ratio),
-        //                        LinearInterpolation((float)JzazbzLeft.az, (float)JzazbzRight.az, ratio),
-        //                        LinearInterpolation((float)JzazbzLeft.bz, (float)JzazbzRight.bz, ratio)
-        //                    )
-        //                );
+                        RGBColor Jzazbz2RGB = _jzazbzToRgb.Convert(
+                            new JzazbzColor(
+                                LinearInterpolation((float)JzazbzLeft.Jz, (float)JzazbzRight.Jz, ratio),
+                                LinearInterpolation((float)JzazbzLeft.az, (float)JzazbzRight.az, ratio),
+                                LinearInterpolation((float)JzazbzLeft.bz, (float)JzazbzRight.bz, ratio)
+                            )
+                        );
 
-        //                Jzazbz2RGB.NormalizeIntensity();
+                        Jzazbz2RGB.NormalizeIntensity();
 
-        //                return new PluginConfigColor(new Vector4((float)Jzazbz2RGB.R, (float)Jzazbz2RGB.G, (float)Jzazbz2RGB.B, alpha));
-        //            }
-        //        case BlendMode.JzCzhz:
-        //            {
-        //                //convert RGB to JzCzhz
-        //                JzCzhzColor JzCzhzLeft = _rgbToJzCzhz.Convert(rgbColorLeft);
-        //                JzCzhzColor JzCzhzRight = _rgbToJzCzhz.Convert(rgbColorRight);
+                        return new PluginConfigColor(new Vector4((float)Jzazbz2RGB.R, (float)Jzazbz2RGB.G, (float)Jzazbz2RGB.B, alpha));
+                    }
+                case BlendMode.JzCzhz:
+                    {
+                        //convert RGB to JzCzhz
+                        JzCzhzColor JzCzhzLeft = _rgbToJzCzhz.Convert(rgbColorLeft);
+                        JzCzhzColor JzCzhzRight = _rgbToJzCzhz.Convert(rgbColorRight);
 
-        //                RGBColor JzCzhz2RGB = _jzCzhzToRgb.Convert(
-        //                    new JzCzhzColor(
-        //                        LinearInterpolation((float)JzCzhzLeft.Jz, (float)JzCzhzRight.Jz, ratio),
-        //                        LinearInterpolation((float)JzCzhzLeft.Cz, (float)JzCzhzRight.Cz, ratio),
-        //                        LinearInterpolation((float)JzCzhzLeft.hz, (float)JzCzhzRight.hz, ratio)
-        //                    )
-        //                );
+                        RGBColor JzCzhz2RGB = _jzCzhzToRgb.Convert(
+                            new JzCzhzColor(
+                                LinearInterpolation((float)JzCzhzLeft.Jz, (float)JzCzhzRight.Jz, ratio),
+                                LinearInterpolation((float)JzCzhzLeft.Cz, (float)JzCzhzRight.Cz, ratio),
+                                LinearInterpolation((float)JzCzhzLeft.hz, (float)JzCzhzRight.hz, ratio)
+                            )
+                        );
 
-        //                JzCzhz2RGB.NormalizeIntensity();
+                        JzCzhz2RGB.NormalizeIntensity();
 
-        //                return new PluginConfigColor(new Vector4((float)JzCzhz2RGB.R, (float)JzCzhz2RGB.G, (float)JzCzhz2RGB.B, alpha));
-        //            }
-        //    }
+                        return new PluginConfigColor(new Vector4((float)JzCzhz2RGB.R, (float)JzCzhz2RGB.G, (float)JzCzhz2RGB.B, alpha));
+                    }
+            }
+            return new(Vector4.One);
+        }
 
-        //    return new(Vector4.One);
-        //}
+        public static PluginConfigColor ColorForActor(GameObject? actor)
+        {
+            if (actor == null || actor is not Character character)
+            {
+                return GlobalColors.Instance.NPCNeutralColor;
+            }
 
-        //public static PluginConfigColor ColorForActor(GameObject? actor)
-        //{
-        //    if (actor == null || actor is not Character character)
-        //    {
-        //        return GlobalColors.Instance.NPCNeutralColor;
-        //    }
+            if (character.ObjectKind == ObjectKind.Player)
+            {
+                return GlobalColors.Instance.SafeColorForJobId(character.ClassJob.Id);
+            }
 
-        //    if (character.ObjectKind == ObjectKind.Player)
-        //    {
-        //        return GlobalColors.Instance.SafeColorForJobId(character.ClassJob.Id);
-        //    }
+            return character switch
+            {
+                BattleNpc { SubKind: 9 } battleNpc when battleNpc.ClassJob.Id > 0 => GlobalColors.Instance.SafeColorForJobId(character.ClassJob.Id), // Trust/Squadron NPCs
+                BattleNpc battleNpc when battleNpc.BattleNpcKind is BattleNpcSubKind.Chocobo or BattleNpcSubKind.Pet || !IsHostileMemory(battleNpc) => GlobalColors.Instance
+                    .NPCFriendlyColor,
+                BattleNpc battleNpc when battleNpc.BattleNpcKind == BattleNpcSubKind.Enemy || (battleNpc.StatusFlags & StatusFlags.InCombat) == StatusFlags.InCombat => GlobalColors
+                    .Instance.NPCHostileColor, // I still don't think we should be defaulting to "in combat = hostile", but whatever
+                _ => GlobalColors.Instance.NPCNeutralColor
+            };
+        }
 
-        //    return character switch
-        //    {
-        //        BattleNpc { SubKind: 9 } battleNpc when battleNpc.ClassJob.Id > 0 => GlobalColors.Instance.SafeColorForJobId(character.ClassJob.Id), // Trust/Squadron NPCs
-        //        BattleNpc battleNpc when battleNpc.BattleNpcKind is BattleNpcSubKind.Chocobo or BattleNpcSubKind.Pet || !IsHostileMemory(battleNpc) => GlobalColors.Instance
-        //            .NPCFriendlyColor,
-        //        BattleNpc battleNpc when battleNpc.BattleNpcKind == BattleNpcSubKind.Enemy || (battleNpc.StatusFlags & StatusFlags.InCombat) == StatusFlags.InCombat => GlobalColors
-        //            .Instance.NPCHostileColor, // I still don't think we should be defaulting to "in combat = hostile", but whatever
-        //        _ => GlobalColors.Instance.NPCNeutralColor
-        //    };
-        //}
-
-        public static Status HasTankInvulnerability(BattleChara actor)
+        public static Status? GetTankInvulnerabilityID(BattleChara actor)
         {
             Status? tankInvulnBuff = actor.StatusList.FirstOrDefault(o => o.StatusId is 810 or 811 or 1302 or 409 or 1836 or 82);
-            return tankInvulnBuff!;
+
+            return tankInvulnBuff;
         }
 
         public static bool IsOnCleanseJob()

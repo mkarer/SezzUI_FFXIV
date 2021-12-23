@@ -6,8 +6,10 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 
 namespace SezzUI.Modules.JobHud
 {
-    public sealed class Bar : IDisposable
+    public class Bar : IDisposable
     {
+        public JobHud Parent { get { return _parent; } }
+        private JobHud _parent;
         private List<Icon> _icons;
         public bool HasIcons { get { return _icons.Count > 0; } }
 
@@ -27,15 +29,16 @@ namespace SezzUI.Modules.JobHud
 
         public Vector2 Size = Vector2.Zero;
 
-        public Bar()
+        public Bar(JobHud hud)
 		{
+            _parent = hud;
             _icons = new();
             IconSize = new(38, 38); // 36px Icon + 1px Borders
         }
 
         public void Add(Icon icon, int index = -1)
 		{
-            if (icon.Level > 1 && (Service.ClientState.LocalPlayer?.Level ?? 0) < icon.Level) return;
+            if (icon.Level > 1 && (Plugin.ClientState.LocalPlayer?.Level ?? 0) < icon.Level) { return; }
 
             if (index == -1)
 			{
@@ -50,16 +53,11 @@ namespace SezzUI.Modules.JobHud
             Size.X = IconSize.X * _icons.Count() + (_icons.Count() - 1) * IconPadding;
         }
 
-        public void Dispose()
-        {
-            _icons.ForEach(i => i.Dispose());
-        }
-
         public void Draw(Vector2 origin, Animator.Animator animator)
         {
-            if (!HasIcons) return;
+            if (!HasIcons) { return; }
 
-            Vector2 pos = DelvUI.Helpers.Utils.GetAnchoredPosition(origin, Size, DelvUI.Enums.DrawAnchor.Top);
+            Vector2 pos = DelvUI.Helpers.Utils.GetAnchoredPosition(origin, Size, Enums.DrawAnchor.Top);
 
             DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_JobHudBar", pos, Size, false, false, (drawList) => {
                 Vector2 iconPos = Vector2.Zero;
@@ -73,6 +71,27 @@ namespace SezzUI.Modules.JobHud
                     _icons[i].Draw(iconPos, IconSize, animator, drawList);
                 }
             });
+        }
+
+        ~Bar()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (!disposing)
+            {
+                return;
+            }
+     
+            _icons.ForEach(i => i.Dispose());
         }
     }
 }

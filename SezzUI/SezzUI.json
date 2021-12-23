@@ -1,12 +1,14 @@
-{
-  "Author": "Sezz",
-  "Name": "SezzUI",
-  "Punchline": "Minimalistic job HUD. MIGHT CRASH!",
-  "Description": "",
-  "InternalName": "SezzUI",
-  "ApplicableVersion": "any",
-  "Tags": [
-    "UI",
-    "plugin"
-  ]
+﻿{
+	"Author": "Sezz",
+	"Name": "SezzUI",
+	"InternalName": "SezzUI",
+	"AssemblyVersion": "0.0.0.3",
+	"Punchline": "Minimalistic UI\nWARNING: This is still in alpha and very likely to crash!",
+	"Description": "A port of my World of Warcraft UI for Final Fantasy XIV.\nThis is a work in progress, currently the main focus is on the job HUD!",
+	"ApplicableVersion": "any",
+	"Tags": [
+		"UI"
+	],
+	"DalamudApiLevel": 5,
+	"LoadPriority": 0
 }

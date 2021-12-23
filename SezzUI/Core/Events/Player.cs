@@ -5,7 +5,7 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 
 namespace SezzUI.GameEvents
 {
-    public class JobChangedEventArgs : EventArgs
+    internal class JobChangedEventArgs : EventArgs
     {
         public JobChangedEventArgs(uint jobId)
         {
@@ -15,7 +15,7 @@ namespace SezzUI.GameEvents
         public uint JobId { get; set; }
     }
 
-    public class LevelChangedEventArgs : EventArgs
+    internal class LevelChangedEventArgs : EventArgs
     {
         public LevelChangedEventArgs(byte level)
         {
@@ -25,11 +25,11 @@ namespace SezzUI.GameEvents
         public byte Level { get; set; }
     }
 
-    public unsafe sealed class Player : BaseGameEvent
+    internal sealed unsafe class Player : BaseGameEvent
     {
         public event EventHandler<JobChangedEventArgs>? JobChanged;
         public event EventHandler<LevelChangedEventArgs>? LevelChanged;
-
+       
         private static readonly Lazy<Player> ev = new Lazy<Player>(() => new Player());
         public static Player Instance { get { return ev.Value; } }
         public static bool Initialized { get { return ev.IsValueCreated; } }
@@ -44,7 +44,7 @@ namespace SezzUI.GameEvents
                 PluginLog.Debug($"[Event:{Name}] Enable");
                 Enabled = true;
 
-                Service.Framework.Update += FrameworkUpdate;
+                Plugin.Framework.Update += FrameworkUpdate;
             }
             else
             {
@@ -59,7 +59,7 @@ namespace SezzUI.GameEvents
                 PluginLog.Debug($"[Event:{Name}] Disable");
                 Enabled = false;
 
-                Service.Framework.Update -= FrameworkUpdate;
+                Plugin.Framework.Update -= FrameworkUpdate;
             }
             else
             {
@@ -75,7 +75,6 @@ namespace SezzUI.GameEvents
             }
             catch
             {
-                // 
             }
         }
 
@@ -83,7 +82,7 @@ namespace SezzUI.GameEvents
         {
             try
             {
-                PlayerCharacter? player = Service.ClientState.LocalPlayer;
+                PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
       
                 // Job
                 uint jobId = (player != null ? player.ClassJob.Id : 0);
@@ -105,7 +104,6 @@ namespace SezzUI.GameEvents
             }
             catch
             {
-                // 
             }
         }
     }

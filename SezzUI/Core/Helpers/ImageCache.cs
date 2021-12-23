@@ -1,13 +1,14 @@
 ﻿using ImGuiScene;
 using System;
 using System.IO;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
+using Dalamud.Logging;
 
 namespace SezzUI.Helpers
 {
     public class ImageCache : IDisposable
     {
-        private Dictionary<string, TextureWrap> _pathCache = new();
+        private ConcurrentDictionary<string, TextureWrap> _pathCache = new();
 
         public TextureWrap? GetImageFromPath(string path)
         {
@@ -22,7 +23,7 @@ namespace SezzUI.Helpers
                 return null;
             }
 
-            _pathCache.Add(path, newTexture);
+            if (!_pathCache.TryAdd(path, newTexture)) { PluginLog.Debug($"{this.GetType().Name} Failed to cache texture path {path}."); }
 
             return newTexture;
         }

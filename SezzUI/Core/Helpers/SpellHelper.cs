@@ -71,10 +71,10 @@ namespace SezzUI.Helpers
 			return null;
 		}
 
-		public unsafe static BattleChara? GetUnit(Enums.Unit unit)
+		public static unsafe BattleChara? GetUnit(Enums.Unit unit)
 		{
-			PlayerCharacter? player = Service.ClientState.LocalPlayer;
-			if (player == null) return null;
+			PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+            if (player == null) { return null; }
 
 			GameObject? target = Plugin.TargetManager.SoftTarget ?? Plugin.TargetManager.Target;
 			GameObject? actor = unit switch
@@ -94,7 +94,7 @@ namespace SezzUI.Helpers
 			return null;
 		}
 
-		public unsafe static Status? GetStatus(uint statusId, Enums.Unit unit)
+        public static unsafe Status? GetStatus(uint statusId, Enums.Unit unit)
 		{
 			if (unit == Enums.Unit.Any)
 			{
@@ -116,8 +116,8 @@ namespace SezzUI.Helpers
 				BattleChara? actor = GetUnit(unit);
 				if (actor != null)
 				{
-					PlayerCharacter? player = Service.ClientState.LocalPlayer;
-					if (player == null) return null;
+					PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+                    if (player == null) { return null; }
 
 					foreach (var status in actor.StatusList)
 					{
@@ -132,7 +132,7 @@ namespace SezzUI.Helpers
 			return null;
 		}
 
-		public unsafe static Status? GetStatus(uint[] statusIds, Enums.Unit unit)
+        public static unsafe Status? GetStatus(uint[] statusIds, Enums.Unit unit)
 		{
 			if (unit == Enums.Unit.Any)
 			{
@@ -154,8 +154,8 @@ namespace SezzUI.Helpers
 				BattleChara? actor = GetUnit(unit);
 				if (actor != null)
 				{
-					PlayerCharacter? player = Service.ClientState.LocalPlayer;
-					if (player == null) return null;
+					PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+                    if (player == null) { return null; }
 
 					foreach (var status in actor.StatusList)
 					{
@@ -170,12 +170,12 @@ namespace SezzUI.Helpers
 			return null;
 		}
 
-		public unsafe static CooldownData GetCooldownData(uint actionId)
+        public static unsafe CooldownData GetCooldownData(uint actionId)
 		{
 			CooldownData data = new();
 
-			PlayerCharacter? player = Service.ClientState.LocalPlayer;
-			if (player == null) return data;
+			PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+            if (player == null) { return data; }
 
 			uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
 

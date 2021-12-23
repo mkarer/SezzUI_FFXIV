@@ -1,4 +1,4 @@
-﻿namespace DelvUI.Enums
+﻿namespace SezzUI.Enums
 {
     public enum DamageType
     {
