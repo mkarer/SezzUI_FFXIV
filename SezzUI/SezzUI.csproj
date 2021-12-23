@@ -38,11 +38,11 @@
 		<AssemblyName>SezzUI</AssemblyName>
 	</PropertyGroup>
 
-    <Target Name="ILRepack" AfterTargets="PostBuildEvent">
-        <ItemGroup>
-            <InputAssemblies Include="$(TargetPath)" />
-            <InputAssemblies Include="$(TargetDir)*.dll" Exclude="$(TargetPath)" />
-        </ItemGroup>
+	<Target Name="ILRepack" AfterTargets="PostBuildEvent">
+		<ItemGroup>
+			<InputAssemblies Include="$(TargetPath)" />
+			<InputAssemblies Include="$(TargetDir)*.dll" Exclude="$(TargetPath)" />
+		</ItemGroup>
 		<Exec Command="$(Pkgilrepack)\tools\ilrepack.exe /lib:$(AppData)\XIVLauncher\addon\Hooks\dev /out:&quot;$(TargetDir)..\$(Configuration).ILMerge\$(TargetFileName)&quot; &quot;@(InputAssemblies, '&quot; &quot;')&quot;" />
 	</Target>
 
@@ -60,15 +60,8 @@
 	</Target>
 
 	<ItemGroup>
-		<Content Include="..\SezzUI.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="Media\**\*.ttf" Visible="false">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="Media\**\*.png" Visible="false">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
+		<Content Include="Media\**\*.ttf" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+		<Content Include="Media\**\*.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />
 	</ItemGroup>
 
 	<PropertyGroup>
