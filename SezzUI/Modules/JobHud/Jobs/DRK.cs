@@ -8,10 +8,11 @@
         {
             using (Bar bar = new(hud))
             {
-                bar.Add(new Icon(bar) { TextureActionId = 3625, CooldownActionId = 3625, StatusActionId = 3625, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 35 }); // Blood Weapon
-                bar.Add(new Icon(bar) { TextureActionId = 7390, CooldownActionId = 7390, StatusActionId = 7390, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 68 }); // Delirium
+                bar.Add(new Icon(bar) { TextureActionId = 3625, CooldownActionId = 3625, StatusId = 742, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 35 }); // Blood Weapon
+                bar.Add(new Icon(bar) { TextureActionId = 7390, CooldownActionId = 7390, StatusId = 1972, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, GlowBorderStatusId = 1972, Features = IconFeatures.GlowIgnoresState, Level = 68 }); // Delirium
                 bar.Add(new Icon(bar) { TextureActionId = 3640, CooldownActionId = 3640, Level = 56 }); // Plunge
-                bar.Add(new Icon(bar) { TextureActionId = 7393, CooldownActionId = 7393, StatusActionId = 7393, MaxStatusDuration = 7, StatusTarget = Enums.Unit.Player, Level = 70 }); // The Blackest Night
+                bar.Add(new Icon(bar) { TextureActionId = 7393, CooldownActionId = 7393, StatusId = 1178, MaxStatusDuration = 7, StatusTarget = Enums.Unit.Player, RequiredPowerType = Helpers.JobsHelper.PowerType.MP, RequiredPowerAmount = 3000, Level = 70 }); // The Blackest Night
+                bar.Add(new Icon(bar) { TextureActionId = 16472, CooldownActionId = 16472, Level = 80 }); // Living Shadow
                 hud.AddBar(bar);
             }
 
