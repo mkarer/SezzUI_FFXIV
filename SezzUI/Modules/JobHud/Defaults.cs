@@ -23,7 +23,7 @@ namespace SezzUI.Modules.JobHud
 		// Icon State Colors
 		public static readonly Dictionary<IconState, IconColor> StateColors = new()
 		{
-			{ IconState.FadedOut, new IconColor { Icon = new Vector4(1f, 1f, 1f, 0.4f), Border = new Vector4(1f, 1f, 1f, 0.3f), Gloss = new Vector4(1f, 1f, 1f, 0.25f) } },
+			{ IconState.FadedOut, new IconColor { Icon = new Vector4(1f, 1f, 1f, 0.45f), Border = new Vector4(1f, 1f, 1f, 0.3f), Gloss = new Vector4(1f, 1f, 1f, 0.25f) } },
 			{ IconState.Soon, new IconColor { Icon = new Vector4(0.7f, 0.9f, 1f, 0.8f), Border = new Vector4(1f, 0f, 0f, 0.6f), Gloss = new Vector4(1f, 1f, 1f, 0.25f) } },
 			{ IconState.Ready, new IconColor { Icon = new Vector4(1f, 1f, 1f, 1f), Border = new Vector4(1f, 0f, 0f, 0.6f), Gloss = new Vector4(1f, 1f, 1f, 0.25f) } },
 			{ IconState.ReadyOutOfResources, new IconColor { Icon = new Vector4(0.7f, 0.7f, 1f, 0.9f), Border = new Vector4(1f, 0f, 0f, 0.6f), Gloss = new Vector4(1f, 1f, 1f, 0.25f) } }
