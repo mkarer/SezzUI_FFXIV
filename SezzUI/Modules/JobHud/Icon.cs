@@ -264,7 +264,7 @@ namespace SezzUI.Modules.JobHud
 
                 if (status != null && status.StatusId == StatusId && status.SourceID == player.ObjectId)
 				{
-                    float duration = status?.RemainingTime ?? -1;
+                    float duration = Math.Abs(status?.RemainingTime ?? 0f); // TODO: Initial Surging Tempest status returns -30, but feels more like 31.
                     byte stacks = (duration > 0 && status != null && status.GameData.MaxStacks > 1) ? status.StackCount : (byte)0;
 
                     // State
