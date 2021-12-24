@@ -39,10 +39,9 @@ namespace SezzUI.Modules.JobHud.Jobs
                 ExactStacks = 1,
                 Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\hand_of_light.png",
                 Size = new Vector2(256, 128),
-                Position = new Vector2(0, -180),
+                Position = new Vector2(0, -120),
                 Level = 80
             });
-
 
             base.Configure(hud);
         }

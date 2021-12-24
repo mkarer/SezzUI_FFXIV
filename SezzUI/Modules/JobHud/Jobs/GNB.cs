@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace SezzUI.Modules.JobHud.Jobs
+﻿namespace SezzUI.Modules.JobHud.Jobs
 {
     public sealed class GNB : BasePreset
     {
