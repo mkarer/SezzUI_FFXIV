@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Dalamud.Game.ClientState.JobGauge.Types;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 
 namespace SezzUI.Helpers
 {
 	public static class JobsHelper
 	{
 		public enum PowerType {
+            MP,
 			Oath,
 			WhiteMana,
 			BlackMana,
@@ -33,10 +31,18 @@ namespace SezzUI.Helpers
 
 		public static (int, int) GetPower(PowerType ptype)
 		{
-			byte jobLevel = Plugin.ClientState.LocalPlayer?.Level ?? 0;
+            PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+			byte jobLevel = player?.Level ?? 0;
 
 			switch (ptype)
 			{
+                case PowerType.MP:
+                    if (player != null)
+                    {
+                        return ((int)player.CurrentMp, (int)player.MaxMp);
+                    }
+                    return (0, 0);
+
 				case PowerType.Oath:
 					if (jobLevel >= 35)
 					{
