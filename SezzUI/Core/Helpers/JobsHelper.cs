@@ -26,8 +26,9 @@ namespace SezzUI.Helpers
 			MeditationStacks,
 			Beast,
 			Lily,
-			BloodLily
-		}
+			BloodLily,
+            PolyglotStacks
+        }
 
 		public static (int, int) GetPower(PowerType ptype)
 		{
@@ -139,9 +140,20 @@ namespace SezzUI.Helpers
 
 				case PowerType.BloodLily:
 					return (Plugin.JobGauges.Get<WHMGauge>()?.BloodLily ?? 0, 3);
-			}
 
-			return (0, 0);
+                case PowerType.PolyglotStacks:
+                    if (jobLevel >= 70)
+                    {
+                        BLMGauge gauge4 = Plugin.JobGauges.Get<BLMGauge>();
+                        if (gauge4 != null)
+                        {
+                            return (gauge4.PolyglotStacks, jobLevel >= 80 ? 2 : 1);
+                        }
+                    }
+                    return (0, 0);
+            }
+
+            return (0, 0);
 		}
 	}
 }
