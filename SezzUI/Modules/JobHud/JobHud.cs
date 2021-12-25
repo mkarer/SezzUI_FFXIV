@@ -28,6 +28,11 @@ namespace SezzUI.Modules.JobHud
         private List<AuraAlert> _auraAlerts = new();
         private Dictionary<uint, BasePreset> _presets = new();
 
+        public int LastDrawTick { get { return _lastDrawTick;  } }
+        public int LastDrawElapsed { get { return _lastDrawElapsed;  } }
+        private int _lastDrawTick = 0;
+        private int _lastDrawElapsed = 0;
+
         public JobHud(JobHudConfig config, string displayName) : base(config, displayName)
         {
             config.ValueChangeEvent += OnConfigPropertyChanged;
@@ -126,10 +131,17 @@ namespace SezzUI.Modules.JobHud
 
         public override void DrawChildren(Vector2 origin)
         {
-            if (!Config.Enabled || Actor == null || Actor is not PlayerCharacter player)
+            if (!Config.Enabled || Actor == null || Actor is not PlayerCharacter player || Helpers.SpellHelper.GetStatus(1534, Enums.Unit.Player) != null)
             {
+                // 1534: Role-playing
+                _lastDrawTick = 0;
                 return;
             }
+
+            // Remember last draw time - if too much time has passed skip hide animations!
+            int ticksNow = Environment.TickCount;
+            _lastDrawElapsed = ticksNow - _lastDrawTick;
+            _lastDrawTick = ticksNow;
 
             // Bars
             if (IsShown || _animator.IsAnimating)
@@ -147,7 +159,7 @@ namespace SezzUI.Modules.JobHud
             }
 
             // Aura Alerts
-            _auraAlerts.ForEach(aa => aa.Draw(origin));
+            _auraAlerts.ForEach(aa => aa.Draw(origin, LastDrawElapsed));
         }
 
         public void AddBar(Bar bar)
@@ -171,6 +183,7 @@ namespace SezzUI.Modules.JobHud
             {
                 PluginLog.Debug($"[{this.GetType().Name}] Show");
                 _isShown = !IsShown;
+                _lastDrawTick = 0;
                 _animator.Animate();
             }
         }
@@ -181,7 +194,7 @@ namespace SezzUI.Modules.JobHud
             {
                 PluginLog.Debug($"[{this.GetType().Name}] Hide {force}");
                 _isShown = !IsShown;
-                _animator.Stop(force);
+                _animator.Stop(force || LastDrawElapsed > 2000);
             }
         }
 
