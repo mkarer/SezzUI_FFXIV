@@ -81,9 +81,8 @@ namespace SezzUI.Modules.JobHud
 				StatusIds = new[] { (uint)1132, (uint)1269 },
 				StatusTarget = Enums.Unit.Any,
 				Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\stop.png",
-				Size = new Vector2(128, 128),
-				Position = new Vector2(0, 50),
-				Level = 82
+				Size = new Vector2(128, 128) * 0.7f,
+				Position = new Vector2(0, 0)
 			});
 
 		}
