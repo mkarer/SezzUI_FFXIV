@@ -123,8 +123,9 @@ namespace SezzUI
                 HelpMessage = "Opens the SezzUI configuration window.",
                 ShowInHelp = true
             });
-            CommandManager.AddHandler("/sezz", new CommandInfo(PluginCommand));
-            CommandManager.AddHandler("/sui", new CommandInfo(PluginCommand));
+            CommandInfo alias = new(PluginCommand) { ShowInHelp = false };
+            CommandManager.AddHandler("/sezz", alias);
+            CommandManager.AddHandler("/sui", alias);
 
             var configManager = ConfigurationManager.Instance;
             var config = configManager.GetConfigObject<DeveloperConfig>();
