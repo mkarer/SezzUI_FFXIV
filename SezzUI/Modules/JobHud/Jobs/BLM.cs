@@ -37,7 +37,7 @@ namespace SezzUI.Modules.JobHud.Jobs
                 ExactPowerAmount = 1,
                 Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\arcane_missiles_1.png",
                 Size = new Vector2(128, 256),
-                Position = new Vector2(-170, 50),
+                Position = new Vector2(-200, 50),
                 Level = 70
             });
 
@@ -48,7 +48,7 @@ namespace SezzUI.Modules.JobHud.Jobs
                 ExactPowerAmount = 2,
                 Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\arcane_missiles_2.png",
                 Size = new Vector2(128, 256),
-                Position = new Vector2(-190, 50),
+                Position = new Vector2(-220, 50),
                 Level = 80
             });
 
@@ -58,7 +58,7 @@ namespace SezzUI.Modules.JobHud.Jobs
                 CustomCondition = IsParadoxActive,
                 Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\echo_of_the_elements.png",
                 Size = new Vector2(128, 256),
-                Position = new Vector2(190, 50),
+                Position = new Vector2(200, 50),
                 FlipImageHorizontally = true,
                 Level = 90
             });
