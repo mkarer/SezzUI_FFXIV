@@ -57,6 +57,8 @@ namespace DelvUI.Helpers
                 { 7383, new() { { 54, 7383 } } }, // Requiescat
                 // MCH
                 { 2864, new() { { 40, 2864 }, { 80, 16501 } } }, // Rook Autoturret/Automation Queen
+                // BLM
+                { 3573, new() { { 52, 3573 } } }, // Ley Lines
             };
         }
 
