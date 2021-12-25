@@ -136,6 +136,7 @@ namespace SezzUI.Modules.JobHud
         /// When not specifying a cooldown action the duration will be displayed like a cooldown.
         /// </summary>
         public uint? StatusId;
+        public uint[]? StatusIds;
 
         /// <summary>
         /// Action ID to lookup Status ID by name.
@@ -161,14 +162,31 @@ namespace SezzUI.Modules.JobHud
         }
         private uint? _statusActionId;
         public float? MaxStatusDuration;
+        public float[]? MaxStatusDurations;
         public Enums.Unit? StatusTarget;
 
-        public bool GlowBorderUsable = false;
         public uint? GlowBorderStatusId;
         public uint[]? GlowBorderStatusIds;
 
+        /// <summary>
+        /// Additional status check when GlowBorderUsable is true AND GlowBorderInvertCheck is true AND GlowBorderStatusId(s) is set.
+        /// Only show the glowing border when this status is found on the player (in addition to all the other conditions).
+        /// </summary>
+        public uint? GlowBorderStatusIdForced;
+
+        /// <summary>
+        /// Show glowing border if the action is usable instead of checking for a status.
+        /// </summary>
+        public bool GlowBorderUsable = false;
+
+        /// <summary>
+        /// Show glowing border if the status is not found/the action is not usable.
+        /// </summary>
+        public bool GlowBorderInvertCheck = false;
+
         public Helpers.JobsHelper.PowerType? RequiredPowerType;
         public int? RequiredPowerAmount;
+        public Func<bool>? CustomPowerCondition;
 
         /// <summary>
         /// Required job level to show icon.
@@ -256,16 +274,39 @@ namespace SezzUI.Modules.JobHud
 
             // Status
             // Will be used as IconState if not checking any cooldowns.
-            if (StatusId != null && StatusTarget != null && MaxStatusDuration != null)
+            if ((StatusId != null || StatusIds != null) && StatusTarget != null && (MaxStatusDuration != null || MaxStatusDurations != null))
 			{
                 bool shouldShowStatusBar = !Features.HasFlag(IconFeatures.NoStatusBar);
                 bool shouldShowStatusAsCooldown = (CooldownActionId == null);
-                Status? status = Helpers.SpellHelper.GetStatus((uint)StatusId, (Enums.Unit)StatusTarget);
+                Status? status = null;
+                if (StatusId != null)
+                {
+                    status = Helpers.SpellHelper.GetStatus((uint)StatusId, (Enums.Unit)StatusTarget);
+                }
+                else if (StatusIds != null)
+                {
+                    status = Helpers.SpellHelper.GetStatus(StatusIds, (Enums.Unit)StatusTarget);
 
-                if (status != null && status.StatusId == StatusId && status.SourceID == player.ObjectId)
+                }
+
+                if (status != null && status.SourceID == player.ObjectId)
 				{
                     float duration = Math.Abs(status?.RemainingTime ?? 0f); // TODO: Initial Surging Tempest status returns -30, but feels more like 31.
                     byte stacks = (duration > 0 && status != null && status.GameData.MaxStacks > 1) ? status.StackCount : (byte)0;
+
+                    float durationMax = 0f;
+                    if (MaxStatusDuration != null)
+                    {
+                        durationMax = (float)MaxStatusDuration;
+                    }
+                    else if (StatusIds != null && MaxStatusDurations != null && status != null)
+                    {
+                        int index = Array.IndexOf(StatusIds, status.StatusId);
+                        if (index >= 0 && index < MaxStatusDurations.Length)
+                        {
+                            durationMax = MaxStatusDurations[index];
+                        }
+                    }
 
                     // State
                     if (shouldShowStatusAsCooldown)
@@ -276,7 +317,7 @@ namespace SezzUI.Modules.JobHud
                     // Progress Bar
                     if (shouldShowStatusBar)
 					{
-                        progressBarTotal = (float)MaxStatusDuration;
+                        progressBarTotal = durationMax;
                         progressBarCurrent = duration;
 
                         // Duration Text
@@ -291,7 +332,7 @@ namespace SezzUI.Modules.JobHud
                     {
                         cooldownTextRemaining = duration;
                         cooldownSpiralRemaining = duration;
-                        cooldownSpiralTotal = (float)MaxStatusDuration;
+                        cooldownSpiralTotal = durationMax;
                     }
 
                     // Stacks
@@ -311,7 +352,10 @@ namespace SezzUI.Modules.JobHud
 			{
                 (int current, int max) = Helpers.JobsHelper.GetPower((Helpers.JobsHelper.PowerType)RequiredPowerType);
                 hasEnoughResources = (current >= RequiredPowerAmount);
-			}
+			} else if (CustomPowerCondition !=  null)
+            {
+                hasEnoughResources = CustomPowerCondition();
+            }
 
             if (newState == IconState.Ready && !hasEnoughResources)
 			{
@@ -323,17 +367,46 @@ namespace SezzUI.Modules.JobHud
             {
                 if (GlowBorderUsable)
 				{
-                    displayGlow = true;
+                    if (!GlowBorderInvertCheck)
+                    {
+                        displayGlow = true;
+                    }
                 }
                 else if (GlowBorderStatusId != null)
 				{
                     Status? status = Helpers.SpellHelper.GetStatus((uint)GlowBorderStatusId, Enums.Unit.Player);
                     displayGlow = (status != null && (status?.RemainingTime ?? -1) > 0);
+                    if (GlowBorderInvertCheck) { displayGlow = !displayGlow; };
                 }
                 else if (GlowBorderStatusIds != null)
 				{
                     Status? status = Helpers.SpellHelper.GetStatus(GlowBorderStatusIds, Enums.Unit.Player);
                     displayGlow = (status != null && (status?.RemainingTime ?? -1) > 0);
+                    if (GlowBorderInvertCheck) { displayGlow = !displayGlow; };
+                }
+            } else if (GlowBorderUsable && GlowBorderInvertCheck && newState != IconState.Ready)
+            {
+                if (GlowBorderStatusId != null)
+                {
+                    bool hasForcedStatus = GlowBorderStatusIdForced == null || Helpers.SpellHelper.GetStatus((uint)GlowBorderStatusIdForced, Enums.Unit.Player) != null;
+                    if (hasForcedStatus)
+                    {
+                        Status? status = Helpers.SpellHelper.GetStatus((uint)GlowBorderStatusId, Enums.Unit.Player);
+                        displayGlow = (status == null);
+                    }
+                }
+                else if (GlowBorderStatusIds != null)
+                {
+                    bool hasForcedStatus = GlowBorderStatusIdForced == null || Helpers.SpellHelper.GetStatus((uint)GlowBorderStatusIdForced, Enums.Unit.Player) != null;
+                    if (hasForcedStatus)
+                    {
+                        Status? status = Helpers.SpellHelper.GetStatus(GlowBorderStatusIds, Enums.Unit.Player);
+                        displayGlow = (status == null);
+                    }
+                }
+                else
+                {
+                    displayGlow = true;
                 }
             }
 
