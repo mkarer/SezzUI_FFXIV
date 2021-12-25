@@ -135,6 +135,10 @@ namespace SezzUI.Modules.JobHud
                     {
                         bool result = CustomCondition();
                         conditionsFailed = (!InvertCheck && !result) || (InvertCheck && result);
+                        if (conditionsFailed)
+                        {
+                            Hide(elapsed > 2000);
+                        }
                     }
                 }
 
