@@ -1,7 +1,6 @@
 ﻿using System;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Statuses;
-using System.Linq;
 using SezzUI.Core;
 using System.Numerics;
 using ImGuiNET;
@@ -18,14 +17,13 @@ namespace SezzUI.Modules.JobHud
 		public byte? ExactStacks;
 		public Enums.Unit StatusTarget = Enums.Unit.Player;
 
-		private uint _id = 0;
-		public uint Id
-		{
-			get { return _id != 0 ? _id : (StatusId != null ? (uint)StatusId : _id); }
-			set { _id = value; }
-		}
+        public Helpers.JobsHelper.PowerType? PowerType;
+        public int? MinimumPowerAmount;
+        public int? ExactPowerAmount;
 
-		public bool InvertCheck = false;
+        public Func<bool>? CustomCondition;
+
+        public bool InvertCheck = false;
 		public bool EnableInCombat = true;
 		public bool EnableOutOfCombat = true;
 		public bool TreatWeaponOutAsCombat = true;
@@ -71,9 +69,9 @@ namespace SezzUI.Modules.JobHud
 			Animator.Timelines.OnHide.Add(new Animator.ScaleAnimation(1, 1.5f, 250));
 		}
 
-		public override void Draw(Vector2 origin)
+		public override void Draw(Vector2 origin, int elapsed = 0)
 		{
-            if (StatusId == null && StatusIds == null) { return; }
+            if (StatusId == null && StatusIds == null && PowerType == null && CustomCondition == null) { return; }
 
 			PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
 			Status? status = null;
@@ -81,7 +79,7 @@ namespace SezzUI.Modules.JobHud
 			if (player == null)
 			{
 				conditionsFailed = true;
-				Hide();
+				Hide(elapsed > 2000);
 			}
 			else
 			{
@@ -89,32 +87,54 @@ namespace SezzUI.Modules.JobHud
 				if ((inCombat && !EnableInCombat) || (!inCombat && !EnableOutOfCombat))
 				{
 					conditionsFailed = true;
-					Hide();
+					Hide(elapsed > 2000);
 				}
 
 				if (!conditionsFailed)
 				{
-					if (StatusId != null)
-					{
-						status = Helpers.SpellHelper.GetStatus((uint)StatusId, StatusTarget);
-					}
-					else if (StatusIds != null)
-					{
-						status = Helpers.SpellHelper.GetStatus(StatusIds, StatusTarget);
+                    // Status Condition
+                    if (StatusId != null || StatusIds != null)
+                    {
+					    if (StatusId != null)
+					    {
+						    status = Helpers.SpellHelper.GetStatus((uint)StatusId, StatusTarget);
+					    }
+					    else if (StatusIds != null)
+					    {
+						    status = Helpers.SpellHelper.GetStatus(StatusIds, StatusTarget);
 
-					}
+					    }
 
-					if ((!InvertCheck && status == null) || (InvertCheck && status != null))
-					{
-						conditionsFailed = true;
-						Hide();
-					}
-					if (!conditionsFailed && status != null && ((ExactStacks != null && status.StackCount != ExactStacks) || (MinimumStacks != null && status.StackCount < MinimumStacks)))
-					{
-						conditionsFailed = true;
-						Hide();
-					}
-				}
+					    if ((!InvertCheck && status == null) || (InvertCheck && status != null))
+					    {
+						    conditionsFailed = true;
+						    Hide(elapsed > 2000);
+					    }
+					    if (!conditionsFailed && status != null && ((ExactStacks != null && status.StackCount != ExactStacks) || (MinimumStacks != null && status.StackCount < MinimumStacks)))
+					    {
+						    conditionsFailed = true;
+						    Hide(elapsed > 2000);
+					    }
+                    }
+
+                    // Power Condition
+                    if (PowerType != null)
+                    {
+                        (int current, int max) = Helpers.JobsHelper.GetPower((Helpers.JobsHelper.PowerType)PowerType);
+                        conditionsFailed = (ExactPowerAmount != null && current != ExactPowerAmount) || (MinimumPowerAmount != null && current < MinimumPowerAmount);
+                        if (conditionsFailed)
+                        {
+                            Hide(elapsed > 2000);
+                        }
+                    }
+
+                    // Custom Condition
+                    if (CustomCondition != null)
+                    {
+                        bool result = CustomCondition();
+                        conditionsFailed = (!InvertCheck && !result) || (InvertCheck && result);
+                    }
+                }
 
 				if (!conditionsFailed)
 				{
@@ -132,7 +152,7 @@ namespace SezzUI.Modules.JobHud
 				elementPosition.X += Position.X + Animator.Data.Offset.X;
 				elementPosition.Y += Position.Y + Animator.Data.Offset.Y;
 
-				string windowId = $"SezzUI_AuraAlert{Id}";
+                string windowId = "SezzUI_AuraAlert";
 				DelvUI.Helpers.DrawHelper.DrawInWindow(windowId, elementPosition, elementSize, false, false, (drawList) =>
 				{
 					if (_texture != null)
@@ -153,7 +173,7 @@ namespace SezzUI.Modules.JobHud
 						if (fontPushed) { ImGui.PopFont(); }
 					}
 
-					// Duration
+					// Status Duration
 					float duration = status?.RemainingTime ?? 0;
 					if (duration <= 0 && status != null && MaxDuration != null && Animator.TimeElapsed < 3000)
 					{
