@@ -18,16 +18,16 @@ namespace SezzUI.Core
 			}
 		}
 
-        public virtual void Hide()
+        public virtual void Hide(bool force = false)
         {
 			if (IsShown)
 			{
                 _isShown = !IsShown;
-				Animator.Stop();
+				Animator.Stop(force);
 			}
 		}
 
-		public virtual void Draw(Vector2 origin)
+		public virtual void Draw(Vector2 origin, int elapsed = 0)
         {
         }
 
