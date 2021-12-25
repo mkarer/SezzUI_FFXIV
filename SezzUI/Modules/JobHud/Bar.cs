@@ -63,8 +63,6 @@ namespace SezzUI.Modules.JobHud
                 Vector2 iconPos = Vector2.Zero;
                 iconPos.Y = pos.Y;
 
-                //Helpers.DrawHelper.DrawPlaceholder("Bar", pos, Size, drawList, animator.Data.Opacity);
-
                 for (int i = 0; i < _icons.Count; i++)
                 {
                     iconPos.X = pos.X + i * (IconPadding + IconSize.X);
