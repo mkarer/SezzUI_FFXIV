@@ -50,11 +50,13 @@ namespace SezzUI.Modules.JobHud
 
 		private string? _imagePath;
 		private TextureWrap? _texture;
+        public bool FlipImageHorizontally = false;
+        public bool FlipImageVertically = false;
 
-		/// <summary>
-		/// Required job level to enable alert.
-		/// </summary>
-		public byte Level = 1;
+        /// <summary>
+        /// Required job level to enable alert.
+        /// </summary>
+        public byte Level = 1;
 
 		public AuraAlert()
 		{
@@ -157,8 +159,23 @@ namespace SezzUI.Modules.JobHud
 				{
 					if (_texture != null)
 					{
-						// Texture
-						drawList.AddImage(_texture.ImGuiHandle, elementPosition, elementPosition + elementSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, Animator.Data.Opacity)));
+                        // Texture
+                        Vector2 uv0 = Vector2.Zero;
+                        Vector2 uv1 = Vector2.One;
+
+                        if (FlipImageHorizontally)
+                        {
+                            uv0.X = 1;
+                            uv1.X = 0;
+                        }
+
+                        if (FlipImageVertically)
+                        {
+                            uv0.Y = 1;
+                            uv1.Y = 0;
+                        }
+
+                        drawList.AddImage(_texture.ImGuiHandle, elementPosition, elementPosition + elementSize, uv0, uv1, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, Animator.Data.Opacity)));
 					}
 					else
 					{
