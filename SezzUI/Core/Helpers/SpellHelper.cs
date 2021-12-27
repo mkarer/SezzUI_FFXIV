@@ -94,7 +94,7 @@ namespace SezzUI.Helpers
 			return null;
 		}
 
-        public static unsafe Status? GetStatus(uint statusId, Enums.Unit unit)
+        public static unsafe Status? GetStatus(uint statusId, Enums.Unit unit, bool mustMatchPlayerSource = true)
 		{
 			if (unit == Enums.Unit.Any)
 			{
@@ -103,7 +103,7 @@ namespace SezzUI.Helpers
 				{
 					if (unitType != unit)
 					{
-						status = GetStatus(statusId, unitType);
+						status = GetStatus(statusId, unitType, mustMatchPlayerSource);
 						if (status != null)
 						{
 							return status;
@@ -121,7 +121,7 @@ namespace SezzUI.Helpers
 
 					foreach (var status in actor.StatusList)
 					{
-						if (status != null && status.StatusId == statusId && status.SourceID == player.ObjectId)
+						if (status != null && status.StatusId == statusId && (!mustMatchPlayerSource || (mustMatchPlayerSource && status.SourceID == player.ObjectId)))
 						{
 							return status;
 						}
@@ -132,7 +132,7 @@ namespace SezzUI.Helpers
 			return null;
 		}
 
-        public static unsafe Status? GetStatus(uint[] statusIds, Enums.Unit unit)
+        public static unsafe Status? GetStatus(uint[] statusIds, Enums.Unit unit, bool mustMatchPlayerSource = true)
 		{
 			if (unit == Enums.Unit.Any)
 			{
@@ -141,7 +141,7 @@ namespace SezzUI.Helpers
 				{
 					if (unitType != unit)
 					{
-						status = GetStatus(statusIds, unitType);
+						status = GetStatus(statusIds, unitType, mustMatchPlayerSource);
 						if (status != null)
 						{
 							return status;
@@ -159,8 +159,8 @@ namespace SezzUI.Helpers
 
 					foreach (var status in actor.StatusList)
 					{
-						if (status != null && Array.IndexOf(statusIds, status.StatusId) > -1 && status.SourceID == player.ObjectId)
-						{
+						if (status != null && Array.IndexOf(statusIds, status.StatusId) > -1 && (!mustMatchPlayerSource || (mustMatchPlayerSource && status.SourceID == player.ObjectId)))
+                        {
 							return status;
 						}
 					}
