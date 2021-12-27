@@ -4,6 +4,7 @@ Actions will automatically be adjusted to the level-appropiate one by [GetAdjust
 There are plugins (XIVCombo and similar ones) that hook into GetAdjustedActionId and mess with the result, those actions can be manually added to the SpellHelper class.
 
 All the datamined IDs for actions and spells can be found here:
+- <https://zeffuro.github.io/SimpleTriggernometryTriggerCreator/>
 - <https://github.com/xivapi/ffxiv-datamining/blob/master/csv/Action.csv>
 - <https://github.com/xivapi/ffxiv-datamining/blob/master/csv/Status.csv>
 
