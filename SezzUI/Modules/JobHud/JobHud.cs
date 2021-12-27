@@ -131,7 +131,7 @@ namespace SezzUI.Modules.JobHud
 
         public override void DrawChildren(Vector2 origin)
         {
-            if (!Config.Enabled || Actor == null || Actor is not PlayerCharacter player || Helpers.SpellHelper.GetStatus(1534, Enums.Unit.Player) != null)
+            if (!Config.Enabled || Actor == null || Actor is not PlayerCharacter player || Helpers.SpellHelper.GetStatus(1534, Enums.Unit.Player, false) != null)
             {
                 // 1534: Role-playing
                 _lastDrawTick = 0;
