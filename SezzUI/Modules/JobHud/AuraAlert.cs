@@ -54,6 +54,10 @@ namespace SezzUI.Modules.JobHud
         private TextureWrap? _texture;
         public byte BorderSize = 0;
 
+        public bool GlowBackdrop = false;
+        public uint GlowBackdropSize = 8;
+        public Vector4 GlowColor = Vector4.One;
+
         public Vector4 Color = Vector4.One;
         public Vector2 ImageUV0 = Vector2.Zero;
         public Vector2 ImageUV1 = Vector2.One;
@@ -233,6 +237,12 @@ namespace SezzUI.Modules.JobHud
                 string windowId = "SezzUI_AuraAlert";
                 DelvUI.Helpers.DrawHelper.DrawInWindow(windowId, elementPosition, elementSize, false, false, (drawList) =>
                 {
+                    if (GlowBackdrop)
+                    {
+                        // Glow Backdrop
+                        Helpers.DrawHelper.DrawBackdropEdgeGlow(elementPosition, elementSize, ImGui.ColorConvertFloat4ToU32(GlowColor.AddTransparency(Animator.Data.Opacity)), drawList, GlowBackdropSize, (short)-GlowBackdropSize);
+                    }
+
                     if (_texture != null)
                     {
                         // Texture
