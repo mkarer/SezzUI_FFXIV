@@ -54,6 +54,7 @@ namespace SezzUI.Modules.JobHud
         private TextureWrap? _texture;
         public byte BorderSize = 0;
 
+        public Vector4 Color = Vector4.One;
         public Vector2 ImageUV0 = Vector2.Zero;
         public Vector2 ImageUV1 = Vector2.One;
         public bool FlipImageHorizontally
@@ -235,7 +236,7 @@ namespace SezzUI.Modules.JobHud
                     if (_texture != null)
                     {
                         // Texture
-                        drawList.AddImage(_texture.ImGuiHandle, elementPosition, elementPosition + elementSize, ImageUV0, ImageUV1, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, Animator.Data.Opacity)));
+                        drawList.AddImage(_texture.ImGuiHandle, elementPosition, elementPosition + elementSize, ImageUV0, ImageUV1, ImGui.ColorConvertFloat4ToU32(Color.AddTransparency(Animator.Data.Opacity)));
 
                         // Border
                         if (BorderSize > 0)
