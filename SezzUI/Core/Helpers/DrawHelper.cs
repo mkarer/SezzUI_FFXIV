@@ -1,5 +1,6 @@
 ﻿using System;
 using ImGuiNET;
+using ImGuiScene;
 using System.Numerics;
 
 namespace SezzUI.Helpers
@@ -13,6 +14,71 @@ namespace SezzUI.Helpers
 
             // Border
             drawList.AddRect(pos, pos + size, borderColor, 0, ImDrawFlags.None, 1);
+        }
+
+        private static readonly Vector2[] _edgeUV0s = {
+            new(0, 0), // Left
+            new(1f / 8f, 0), // Right
+            new(2f /8f + 0.005f, 0), // Top
+            new(3f / 8f + 0.005f, 0), // Bottom
+            new(4f / 8f, 0), // Top Left
+            new(5f / 8f, 0), // Top Right
+            new(6f / 8f, 0), // Bottom Left
+            new(7f / 8f, 0), // Bottom Right
+        };
+
+        private static readonly Vector2[] _edgeUV1s = {
+            new(1f / 8f, 1), // Left
+            new(2f / 8f, 1), // Left
+            new(3f / 8f - 0.005f, 1), // Top
+            new(4f / 8f - 0.005f, 1), // Bottom
+            new(5f / 8f, 1), // Top Left
+            new(6f / 8f, 1), // Top Right
+            new(7f / 8f, 1), // Bottom Left
+            new(1, 1), // Bottom Right
+        };
+
+        /// <summary>
+        /// Draws an edgefile from World of Warcraft around another element.
+        /// See: https://wowpedia.fandom.com/wiki/EdgeFiles
+        /// Please note: Currently you need to rotate the top and bottom (3rd and 4th segment) correctly until i figure out how to rotate textures using Dear ImGui.
+        /// </summary>
+        public static void DrawBackdropEdge(String edgeFile, Vector2 backdropPos, Vector2 backdropSize, uint glowColor, ImDrawListPtr drawList, uint size = 8, short inset = -8)
+        {
+            TextureWrap? _texture = ImageCache.Instance.GetImageFromPath(edgeFile);
+            if (_texture != null)
+            {
+                float leftX = backdropPos.X + inset;
+                float rightX = backdropPos.X + backdropSize.X - inset - size;
+                float horizontalX1 = backdropPos.X + (inset > 0 ? inset : inset + size);
+                float horizontalX2 = backdropPos.X + backdropSize.X - (inset > 0 ? inset : inset + size);
+                float topY = backdropPos.Y + inset;
+                float bottomY = backdropPos.Y + backdropSize.Y - inset - size;
+                float verticalY1 = backdropPos.Y + (inset > 0 ? inset : inset + size);
+                float verticalY2 = backdropPos.Y + backdropSize.Y - (inset > 0 ? inset : inset + size);
+
+                // Left
+                drawList.AddImage(_texture.ImGuiHandle, new Vector2(leftX, verticalY1), new Vector2(leftX + size, verticalY2), _edgeUV0s[inset < 0 ? 0 : 1], _edgeUV1s[inset < 0 ? 0 : 1], glowColor);
+                // Right
+                drawList.AddImage(_texture.ImGuiHandle, new Vector2(rightX, verticalY1), new Vector2(rightX + size, verticalY2), _edgeUV0s[inset < 0 ? 1 : 0], _edgeUV1s[inset < 0 ? 1 : 0], glowColor);
+                // Top
+                drawList.AddImage(_texture.ImGuiHandle, new Vector2(horizontalX1, topY), new Vector2(horizontalX2, topY + size), _edgeUV0s[inset < 0 ? 2 : 3], _edgeUV1s[inset < 0 ? 2 : 3], glowColor);
+                // Bottom
+                drawList.AddImage(_texture.ImGuiHandle, new Vector2(horizontalX1, bottomY), new Vector2(horizontalX2, bottomY + size), _edgeUV0s[inset < 0 ? 3 : 2], _edgeUV1s[inset < 0 ? 3 : 2], glowColor);
+                // Top Left
+                drawList.AddImage(_texture.ImGuiHandle, new Vector2(leftX, topY), new Vector2(leftX + size, topY + size), _edgeUV0s[inset < 0 ? 4 : 7], _edgeUV1s[inset < 0 ? 4 : 7], glowColor);
+                // Top Right
+                drawList.AddImage(_texture.ImGuiHandle, new Vector2(rightX, topY), new Vector2(rightX + size, topY + size), _edgeUV0s[inset < 0 ? 5 : 6], _edgeUV1s[inset < 0 ? 5 : 6], glowColor);
+                // Bottom Left
+                drawList.AddImage(_texture.ImGuiHandle, new Vector2(leftX, bottomY), new Vector2(leftX + size, bottomY + size), _edgeUV0s[inset < 0 ? 6 : 5], _edgeUV1s[inset < 0 ? 6 : 5], glowColor);
+                // Bottom Right
+                drawList.AddImage(_texture.ImGuiHandle, new Vector2(rightX, bottomY), new Vector2(rightX + size, bottomY + size), _edgeUV0s[inset < 0 ? 7 : 4], _edgeUV1s[inset < 0 ? 7 : 4], glowColor);
+            }
+        }
+
+        public static void DrawBackdropEdgeGlow(Vector2 backdropPos, Vector2 backdropSize, uint glowColor, ImDrawListPtr drawList, uint size = 8, short inset = -8)
+        {
+            DrawBackdropEdge(Plugin.AssemblyLocation + "Media\\Images\\GlowTex.png", backdropPos, backdropSize, glowColor, drawList, size, inset);
         }
 
         public static void DrawAnchoredText(string font, Enums.TextStyle style, Enums.DrawAnchor anchor, string text, Vector2 pos, Vector2 size, uint color, uint effectColor, ImDrawListPtr drawList, float xOffset = 0, float yOffset = 0, string textPosCalc = "")
