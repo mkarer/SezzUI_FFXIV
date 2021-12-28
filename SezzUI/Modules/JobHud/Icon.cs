@@ -137,6 +137,7 @@ namespace SezzUI.Modules.JobHud
         /// </summary>
         public uint? StatusId;
         public uint[]? StatusIds;
+        public bool StatusSourcePlayer = true;
 
         /// <summary>
         /// Action ID to lookup Status ID by name.
@@ -279,14 +280,18 @@ namespace SezzUI.Modules.JobHud
                 bool shouldShowStatusBar = !Features.HasFlag(IconFeatures.NoStatusBar);
                 bool shouldShowStatusAsCooldown = (CooldownActionId == null);
                 Status? status = null;
+
                 if (StatusId != null)
                 {
-                    status = Helpers.SpellHelper.GetStatus((uint)StatusId, (Enums.Unit)StatusTarget);
+                    status = (StatusTarget is Enums.Unit.TargetOrPlayer) ?
+                        Helpers.SpellHelper.GetStatus((uint)StatusId, Enums.Unit.Target, StatusSourcePlayer) ?? Helpers.SpellHelper.GetStatus((uint)StatusId, Enums.Unit.Player, StatusSourcePlayer) :
+                        Helpers.SpellHelper.GetStatus((uint)StatusId, (Enums.Unit)StatusTarget, StatusSourcePlayer);
                 }
                 else if (StatusIds != null)
                 {
-                    status = Helpers.SpellHelper.GetStatus(StatusIds, (Enums.Unit)StatusTarget);
-
+                    status = (StatusTarget is Enums.Unit.TargetOrPlayer) ?
+                        Helpers.SpellHelper.GetStatus(StatusIds, Enums.Unit.Target, StatusSourcePlayer) ?? Helpers.SpellHelper.GetStatus(StatusIds, Enums.Unit.Player, StatusSourcePlayer) :
+                        Helpers.SpellHelper.GetStatus(StatusIds, (Enums.Unit)StatusTarget, StatusSourcePlayer);
                 }
 
                 if (status != null && status.SourceID == player.ObjectId)

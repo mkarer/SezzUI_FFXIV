@@ -4,6 +4,7 @@
 	{
         Player,
         Target,
+        TargetOrPlayer,
         TargetOfTarget,
         FocusTarget,
         Any
