@@ -59,6 +59,11 @@ namespace DelvUI.Helpers
                 { 2864, new() { { 40, 2864 }, { 80, 16501 } } }, // Rook Autoturret/Automation Queen
                 // BLM
                 { 3573, new() { { 52, 3573 } } }, // Ley Lines
+                // DNC
+                { 15997 , new() { { 15, 15997 } } }, // Standard Step
+                { 15998, new() { { 70, 15998 } } }, // Technical Step
+                // SGE
+                { 24293, new() { { 30, 24293 }, { 72, 24308 }, { 82, 24314 } } }, // Eukrasian Dosis
             };
         }
 
