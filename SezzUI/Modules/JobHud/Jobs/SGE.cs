@@ -11,7 +11,7 @@ namespace SezzUI.Modules.JobHud.Jobs
         {
             using (Bar bar = new(hud))
             {
-                bar.Add(new Icon(bar) { TextureActionId = 24293, StatusIds = new[] { (uint)2614, (uint)2615, (uint)2616 }, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Target, Level = 30 }); // Eukrasian Dosis
+                bar.Add(new Icon(bar) { TextureActionId = 24293, StatusIds = new[] { (uint)2614, (uint)2615, (uint)2616 }, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Target, RequiredPowerAmount = 400, RequiredPowerType = Helpers.JobsHelper.PowerType.MP, Level = 30 }); // Eukrasian Dosis
                 bar.Add(new Icon(bar) { TextureActionId = 24298, CooldownActionId = 24298, StatusIds = new[] { (uint)2618, (uint)2938, (uint)3003 }, MaxStatusDurations = new[] { 15f, 15f, 20f }, StatusTarget = Enums.Unit.Player, RequiredPowerType = Helpers.JobsHelper.PowerType.Addersgall, RequiredPowerAmount = 1, Level = 50 }); // Kerachole/Holos
                 bar.Add(new Icon(bar) { TextureActionId = 24310, CooldownActionId = 24310, StatusIds = new[] { (uint)2618, (uint)2938, (uint)3003 }, MaxStatusDurations = new[] { 15f, 15f, 20f }, StatusTarget = Enums.Unit.Player, Level = 76 }); // Holos
                 //bar.Add(new Icon(bar) { TextureActionId = 24288, CooldownActionId = 24288, StatusActionId = 24288, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 20 }); // Physis
@@ -26,8 +26,8 @@ namespace SezzUI.Modules.JobHud.Jobs
                 bar.Add(new Icon(bar) { TextureActionId = 24295, CooldownActionId = 24295, Level = 40 }); // Icarus
                 //bar.Add(new Icon(bar) { TextureActionId = 24300, CooldownActionId = 24300, StatusId = 2611, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, Level = 56 }); // Zoe
                 bar.Add(new Icon(bar) { TextureActionId = 24317, CooldownActionId = 24317, StatusId = 2622, MaxStatusDuration = 10, StatusTarget = Enums.Unit.TargetOrPlayer, Level = 86 }); // Krasis
-                bar.Add(new Icon(bar) { TextureActionId = 24289, CooldownActionId = 24289, Level = 26 }); // Phlegma
-                bar.Add(new Icon(bar) { TextureActionId = 24318, CooldownActionId = 24318, Level = 90 }); // Pneuma
+                bar.Add(new Icon(bar) { TextureActionId = 24289, CooldownActionId = 24289, RequiredPowerAmount = 400, RequiredPowerType = Helpers.JobsHelper.PowerType.MP, Level = 26 }); // Phlegma
+                bar.Add(new Icon(bar) { TextureActionId = 24318, CooldownActionId = 24318, RequiredPowerAmount = 700, RequiredPowerType = Helpers.JobsHelper.PowerType.MP, Level = 90 }); // Pneuma
                 hud.AddBar(bar);
             }
 
