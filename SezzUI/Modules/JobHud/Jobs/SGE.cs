@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Linq;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {
@@ -11,8 +12,9 @@ namespace SezzUI.Modules.JobHud.Jobs
             using (Bar bar = new(hud))
             {
                 bar.Add(new Icon(bar) { TextureActionId = 24293, StatusIds = new[] { (uint)2614, (uint)2615, (uint)2616 }, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Target, Level = 30 }); // Eukrasian Dosis
-                bar.Add(new Icon(bar) { TextureActionId = 24298, CooldownActionId = 24298, StatusIds = new[] { (uint)2618, (uint)2938, (uint)3003 }, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, RequiredPowerType = Helpers.JobsHelper.PowerType.Addersgall, RequiredPowerAmount = 1, Level = 50 }); // Kerachole/Holos
-                bar.Add(new Icon(bar) { TextureActionId = 24288, CooldownActionId = 24288, StatusActionId = 24288, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 20 }); // Physis
+                bar.Add(new Icon(bar) { TextureActionId = 24298, CooldownActionId = 24298, StatusIds = new[] { (uint)2618, (uint)2938, (uint)3003 }, MaxStatusDurations = new[] { 15f, 15f, 20f }, StatusTarget = Enums.Unit.Player, RequiredPowerType = Helpers.JobsHelper.PowerType.Addersgall, RequiredPowerAmount = 1, Level = 50 }); // Kerachole/Holos
+                bar.Add(new Icon(bar) { TextureActionId = 24310, CooldownActionId = 24310, StatusIds = new[] { (uint)2618, (uint)2938, (uint)3003 }, MaxStatusDurations = new[] { 15f, 15f, 20f }, StatusTarget = Enums.Unit.Player, Level = 76 }); // Holos
+                //bar.Add(new Icon(bar) { TextureActionId = 24288, CooldownActionId = 24288, StatusActionId = 24288, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 20 }); // Physis
                 bar.Add(new Icon(bar) { TextureActionId = 24305, CooldownActionId = 24305, StatusId = 2612, MaxStatusDuration = 15, StatusTarget = Enums.Unit.TargetOrPlayer, Level = 70 }); // Haima
                 bar.Add(new Icon(bar) { TextureActionId = 24311, CooldownActionId = 24311, StatusId = 2613, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 80 }); // Panhaima
                 hud.AddBar(bar);
@@ -22,9 +24,10 @@ namespace SezzUI.Modules.JobHud.Jobs
             {
                 bar.Add(new Icon(bar) { TextureActionId = 24294, CooldownActionId = 24294, StatusId = 2610, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 35 }); // Soteria
                 bar.Add(new Icon(bar) { TextureActionId = 24295, CooldownActionId = 24295, Level = 40 }); // Icarus
-                bar.Add(new Icon(bar) { TextureActionId = 24300, CooldownActionId = 24300, StatusId = 2611, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, Level = 56 }); // Zoe
-                bar.Add(new Icon(bar) { TextureActionId = 24309, CooldownActionId = 24309, Level = 74 }); // Rhizomata
+                //bar.Add(new Icon(bar) { TextureActionId = 24300, CooldownActionId = 24300, StatusId = 2611, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, Level = 56 }); // Zoe
                 bar.Add(new Icon(bar) { TextureActionId = 24317, CooldownActionId = 24317, StatusId = 2622, MaxStatusDuration = 10, StatusTarget = Enums.Unit.TargetOrPlayer, Level = 86 }); // Krasis
+                bar.Add(new Icon(bar) { TextureActionId = 24289, CooldownActionId = 24289, Level = 26 }); // Phlegma
+                bar.Add(new Icon(bar) { TextureActionId = 24318, CooldownActionId = 24318, Level = 90 }); // Pneuma
                 hud.AddBar(bar);
             }
 
@@ -34,10 +37,13 @@ namespace SezzUI.Modules.JobHud.Jobs
                 aa.StatusId = 2604;
                 aa.InvertCheck = true;
                 aa.Size = new Vector2(48, 48);
-                aa.Position = new Vector2(100, 20);
+                aa.Position = new Vector2(0, -220);
                 aa.Level = 4;
                 aa.BorderSize = 1;
                 aa.UseActionIcon(24285);
+                aa.GlowBackdrop = true;
+                aa.GlowColor = new Vector4(74f / 255f, 137f / 255f, 214f / 255f, 0.5f);
+                aa.GlowBackdropSize = 4;
                 hud.AddAlert(aa);
             };
 
@@ -53,6 +59,9 @@ namespace SezzUI.Modules.JobHud.Jobs
             });
 
             base.Configure(hud);
+
+            Bar roleBar = hud.Bars.Last();
+            roleBar.Add(new Icon(roleBar) { TextureActionId = 24309, CooldownActionId = 24309, Level = 74 }, 2); // Rhizomata
         }
     }
 }
