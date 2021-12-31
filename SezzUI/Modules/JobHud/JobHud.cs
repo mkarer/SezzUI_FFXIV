@@ -134,6 +134,7 @@ namespace SezzUI.Modules.JobHud
             if (!Config.Enabled || Actor == null || Actor is not PlayerCharacter player || Helpers.SpellHelper.GetStatus(1534, Enums.Unit.Player, false) != null)
             {
                 // 1534: Role-playing
+                // Condition.RolePlaying ?
                 _lastDrawTick = 0;
                 return;
             }
@@ -206,7 +207,7 @@ namespace SezzUI.Modules.JobHud
             _config.ValueChangeEvent -= OnConfigPropertyChanged;
         }
 
-        #region Configration Events
+        #region Configuration Events
         private void OnConfigPropertyChanged(object sender, OnChangeBaseArgs args)
         {
             switch (args.PropertyName)
