@@ -179,23 +179,26 @@ namespace SezzUI.Interface
             _updateAddonPosition(manager, addon, 0);
         }
 
-        public static unsafe void SetAddonVisibleTemporary(IntPtr addonptr, bool? visible)
+        public static unsafe void SetAddonVisibleTemporary(IntPtr addonptr, bool visible, bool modifyNodeList = true)
         {
             AtkUnitBase* addon = (AtkUnitBase*)addonptr;
             if (addon != null && addon->RootNode != null && addon->UldManager.LoadedState == 3)
             {
-                if (visible == null || visible != addon->RootNode->IsVisible)
+                if (visible != addon->RootNode->IsVisible)
                 {
                     addon->RootNode->Flags ^= 0x10;
                 }
 
-                if (addon->RootNode->IsVisible && addon->UldManager.NodeListCount == 0)
+                if (modifyNodeList)
                 {
-                    addon->UldManager.UpdateDrawNodeList();
-                }
-                else if (!addon->RootNode->IsVisible && addon->UldManager.NodeListCount != 0)
-                {
-                    addon->UldManager.NodeListCount = 0;
+                    if (addon->RootNode->IsVisible && addon->UldManager.NodeListCount == 0)
+                    {
+                        addon->UldManager.UpdateDrawNodeList();
+                    }
+                    else if (!addon->RootNode->IsVisible && addon->UldManager.NodeListCount != 0)
+                    {
+                        addon->UldManager.NodeListCount = 0;
+                    }
                 }
             }
         }

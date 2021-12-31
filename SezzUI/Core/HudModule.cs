@@ -6,39 +6,55 @@ using System.Threading.Tasks;
 using Dalamud.Logging;
 using Dalamud.Plugin;
 using System.Numerics;
+using SezzUI.Config;
 
 namespace SezzUI
 {
     public abstract class HudModule : IDisposable
     {
-        public abstract string Name { get; }
-        public virtual string Key => GetType().Name;
-        public virtual string? Description => null;
-        public virtual bool Enabled { get; protected set; }
+        protected PluginConfigObject _config;
+        public PluginConfigObject GetConfig() { return _config; }
 
-        public virtual void Enable()
+        public HudModule(PluginConfigObject config)
         {
-            if (!Enabled)
+            _config = config;
+        }
+
+        public virtual bool Enabled {
+            get
             {
-                PluginLog.Debug($"[HudModule:{Name}] Enable");
-                Enabled = true;
+                return _isEnabled;
+            }
+        }
+        private bool _isEnabled = false;
+
+        public virtual bool Enable()
+        {
+            if (!_isEnabled)
+            {
+                PluginLog.Debug($"[HudModule:{GetType().Name}] Enable");
+                _isEnabled = true;
+                return true;
             }
             else
             {
-                PluginLog.Debug($"[HudModule:{Name}] Enable skipped");
+                PluginLog.Debug($"[HudModule:{GetType().Name}] Enable skipped");
+                return false;
             }
         }
 
-        public virtual void Disable()
+        public virtual bool Disable()
         {
-            if (Enabled)
+            if (_isEnabled)
             {
-                PluginLog.Debug($"[HudModule:{Name}] Disable");
-                Enabled = false;
+                PluginLog.Debug($"[HudModule:{GetType().Name}] Disable");
+                _isEnabled = false;
+                return true;
             }
             else
             {
-                PluginLog.Debug($"[HudModule:{Name}] Disable skipped");
+                PluginLog.Debug($"[HudModule:{GetType().Name}] Disable skipped");
+                return false;
             }
         }
 
@@ -64,9 +80,9 @@ namespace SezzUI
                 return;
             }
 
-            PluginLog.Debug($"[HudModule:{Name}] Dispose");
+            PluginLog.Debug($"[HudModule:{GetType().Name}] Dispose");
 
-            if (Enabled)
+            if (_isEnabled)
             {
                 Disable();
             }

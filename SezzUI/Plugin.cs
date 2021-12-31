@@ -27,6 +27,8 @@ namespace SezzUI
 {
     public class Plugin : IDalamudPlugin
     {
+        public const byte MAX_PLAYER_LEVEL = 90;
+
         public static BuddyList BuddyList { get; private set; } = null!;
         public static ClientState ClientState { get; private set; } = null!;
         public static CommandManager CommandManager { get; private set; } = null!;
@@ -203,6 +205,11 @@ namespace SezzUI
 
                         break;
 
+                    case "test":
+                        PluginLog.LogDebug(">>>>>>>> TEST >>>>>>>>");
+                        PluginLog.LogDebug("<<<<<<<< TEST <<<<<<<<");
+                        break;
+
                     default:
                         configManager.ToggleConfigWindow();
                         break;
@@ -226,6 +233,8 @@ namespace SezzUI
             ConfigurationManager.Instance.Draw();
 
             var fontPushed = DelvUI.Helpers.FontsManager.Instance.PushDefaultFont();
+
+            ModuleManager.Draw();
 
             if (!hudState)
             {
@@ -251,6 +260,8 @@ namespace SezzUI
             }
 
             _hudManager.Dispose();
+            ModuleManager.Instance.Dispose();
+            EventManager.Instance.Dispose();
 
             ConfigurationManager.Instance.SaveConfigurations(true);
             ConfigurationManager.Instance.CloseConfigWindow();
@@ -264,8 +275,6 @@ namespace SezzUI
             UiBuilder.OpenConfigUi -= OpenConfigUi;
             UiBuilder.RebuildFonts();
 
-            ModuleManager.Instance.Dispose();
-            EventManager.Instance.Dispose();
             DelvUI.Helpers.ClipRectsHelper.Instance.Dispose();
             DelvUI.Helpers.FontsManager.Instance.Dispose();
             GlobalColors.Instance.Dispose();

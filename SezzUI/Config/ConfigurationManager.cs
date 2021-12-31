@@ -423,6 +423,7 @@ namespace SezzUI.Config
 
             // Modules
             typeof(JobHudConfig),
+            typeof(HoverConfig),
 
             typeof(TanksColorConfig),
             typeof(HealersColorConfig),
