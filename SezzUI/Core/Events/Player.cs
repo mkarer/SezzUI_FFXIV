@@ -78,7 +78,7 @@ namespace SezzUI.GameEvents
             }
             catch (Exception ex)
             {
-                PluginLog.Error(ex, $"While invoking {nameof(this.LevelChanged)}, an exception was thrown.");
+                PluginLog.Error(ex, $"While invoking {nameof(this.JobChanged)}, an exception was thrown.");
             }
 
             try
