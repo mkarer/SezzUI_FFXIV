@@ -132,7 +132,7 @@ namespace SezzUI.Helpers
 			return null;
 		}
 
-        public static unsafe Status? GetStatus(uint[] statusIds, Enums.Unit unit, bool mustMatchPlayerSource = true)
+        public static unsafe Status? GetStatus(uint[] statusIds, Enums.Unit unit, bool mustMatchPlayerSource = true, bool priorizedByOrder = true)
 		{
 			if (unit == Enums.Unit.Any)
 			{
@@ -141,7 +141,7 @@ namespace SezzUI.Helpers
 				{
 					if (unitType != unit)
 					{
-						status = GetStatus(statusIds, unitType, mustMatchPlayerSource);
+						status = GetStatus(statusIds, unitType, mustMatchPlayerSource, priorizedByOrder);
 						if (status != null)
 						{
 							return status;
@@ -157,13 +157,28 @@ namespace SezzUI.Helpers
 					PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
                     if (player == null) { return null; }
 
+                    int bestIndex = -1;
+                    Status? bestStatus = null;
+
 					foreach (var status in actor.StatusList)
 					{
-						if (status != null && Array.IndexOf(statusIds, status.StatusId) > -1 && (!mustMatchPlayerSource || (mustMatchPlayerSource && status.SourceID == player.ObjectId)))
+                        if (status != null)
                         {
-							return status;
-						}
+                            int foundIndex = Array.IndexOf(statusIds, status.StatusId);
+                            if (foundIndex > -1 && (!mustMatchPlayerSource || (mustMatchPlayerSource && status.SourceID == player.ObjectId)) && (bestIndex == -1 || foundIndex < bestIndex))
+                            {
+                                bestIndex = foundIndex;
+                                bestStatus = status;
+
+                                if (!priorizedByOrder)
+                                {
+                                    return bestStatus;
+                                }
+                            }
+                        }
 					}
+
+                    return bestStatus;
 				}
 			}
 
