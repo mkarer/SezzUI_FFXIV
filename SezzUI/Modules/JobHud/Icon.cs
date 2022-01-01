@@ -140,6 +140,12 @@ namespace SezzUI.Modules.JobHud
         public bool StatusSourcePlayer = true;
 
         /// <summary>
+        /// Status (NOT Action) ID used for displaying stacks only.
+        /// Overrides other stack counters!
+        /// </summary>
+        public uint? StacksStatusId;
+
+        /// <summary>
         /// Action ID to lookup Status ID by name.
         /// </summary>
         public uint? StatusActionId
@@ -294,7 +300,7 @@ namespace SezzUI.Modules.JobHud
                         Helpers.SpellHelper.GetStatus(StatusIds, (Enums.Unit)StatusTarget, StatusSourcePlayer);
                 }
 
-                if (status != null && status.SourceID == player.ObjectId)
+                if (status != null)
 				{
                     float duration = Math.Abs(status?.RemainingTime ?? 0f); // TODO: Initial Surging Tempest status returns -30, but feels more like 31.
                     byte stacks = (duration > 0 && status != null && status.GameData.MaxStacks > 1) ? status.StackCount : (byte)0;
@@ -349,6 +355,20 @@ namespace SezzUI.Modules.JobHud
                 else if (shouldShowStatusAsCooldown)
                 {
                     newState = IconState.Ready;
+                }
+            }
+
+            if (StacksStatusId != null)
+            {
+                Status? status = Helpers.SpellHelper.GetStatus((uint)StacksStatusId, Enums.Unit.Player);
+                if (status != null)
+                {
+                    float duration = Math.Abs(status?.RemainingTime ?? 0f);
+                    byte stacks = (duration > 0 && status!.GameData.MaxStacks > 1) ? status.StackCount : (byte)0;
+                    if (stacks > 0)
+                    {
+                        chargesTextAmount = stacks;
+                    }
                 }
             }
 
