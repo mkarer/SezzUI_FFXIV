@@ -195,12 +195,6 @@ namespace SezzUI.Helpers
 
             data.ChargesCurrent = data.CooldownTotalElapsed > 0 ? (int)Math.Floor(data.CooldownTotalElapsed / data.CooldownPerCharge) : data.ChargesMax;
 
-            //if (actionId == 7386)
-            //{
-            //    int currentCharges = data.CooldownTotalRemaining > 0 ? (int)Math.Ceiling(data.CooldownTotalRemaining / data.CooldownPerCharge) : data.ChargesMax;
-            //    Dalamud.Logging.PluginLog.Debug($"data.CooldownTotal {data.CooldownTotal} data.CooldownTotalElapsed {data.CooldownTotalElapsed} data.GetRecastTimeElapsed {DelvUI.Helpers.SpellHelper.Instance.GetRecastTimeElapsed(actionIdAdjusted)}");
-            //}
-
             return data;
 		}
 	}
