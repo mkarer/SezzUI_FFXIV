@@ -195,10 +195,10 @@ namespace SezzUI.Helpers
 			uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
             ushort maxChargesMaxLevel = DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, Plugin.MAX_PLAYER_LEVEL);
             ushort maxChargesCurrentLevel = player.Level < Plugin.MAX_PLAYER_LEVEL ? DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, player.Level) : maxChargesMaxLevel;
-            float chargesMod = 1f / maxChargesMaxLevel * maxChargesCurrentLevel;
+            float chargesMod = maxChargesCurrentLevel > 1 ? 1f / maxChargesMaxLevel * maxChargesCurrentLevel : 1;
 
             data.ChargesMax = maxChargesCurrentLevel;
-            data.CooldownTotal = DelvUI.Helpers.SpellHelper.Instance.GetRecastTime(actionIdAdjusted) * chargesMod; // GetRecastTime returns total cooldown for max level charges
+            data.CooldownTotal = DelvUI.Helpers.SpellHelper.Instance.GetRecastTime(actionIdAdjusted) * chargesMod; // GetRecastTime returns total cooldown for max level charges (but only if we have multiple charges right now?)
 
             if (data.CooldownTotal > 0)
             {
@@ -209,6 +209,12 @@ namespace SezzUI.Helpers
             }
 
             data.ChargesCurrent = data.CooldownTotalElapsed > 0 ? (int)Math.Floor(data.CooldownTotalElapsed / data.CooldownPerCharge) : data.ChargesMax;
+
+            //if (actionId == 3640)
+            //{
+            //    Dalamud.Logging.PluginLog.Debug($"CooldownTotal {data.CooldownTotal} CooldownRemaining {data.CooldownRemaining} chargesMod {chargesMod} " +
+            //        $"GetRecastTime {DelvUI.Helpers.SpellHelper.Instance.GetRecastTime(actionIdAdjusted)} GetRecastTimeElapsed {DelvUI.Helpers.SpellHelper.Instance.GetRecastTimeElapsed(actionIdAdjusted)}");
+            //}
 
             return data;
 		}
