@@ -178,20 +178,11 @@ namespace SezzUI.Helpers
             if (player == null) { return data; }
 
 			uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
+            ushort maxLevelCharges = DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, Plugin.MAX_PLAYER_LEVEL);
 
-			//if (actionId != actionIdAdjusted)
-			//{
-			//	LuminaAction? original = GetAction(actionId);
-			//	LuminaAction? adj = GetAction(actionIdAdjusted);
-			//	string nameorig = (original != null ? original.Name.ToString() : "Unknown");
-			//	string namead = (adj != null ? adj.Name.ToString() : "Unknown");
-
-			//	Dalamud.Logging.PluginLog.Debug($"Adjusting action: #{actionId} {nameorig} -> #{actionIdAdjusted} {namead} ");
-			//}
-
-			data.ChargesMax = DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, player.Level);
-			data.ChargesCurrent = DelvUI.Helpers.SpellHelper.Instance.GetStackCount(data.ChargesMax, actionIdAdjusted);
-			data.CooldownTotal = DelvUI.Helpers.SpellHelper.Instance.GetRecastTime(actionIdAdjusted);
+            data.ChargesMax = player.Level < Plugin.MAX_PLAYER_LEVEL ? DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, player.Level) : maxLevelCharges;
+			data.ChargesCurrent = DelvUI.Helpers.SpellHelper.Instance.GetStackCount(maxLevelCharges, actionIdAdjusted);
+			data.CooldownTotal = DelvUI.Helpers.SpellHelper.Instance.GetRecastTime(actionIdAdjusted) / maxLevelCharges * data.ChargesMax;
 			data.CooldownTotalElapsed = DelvUI.Helpers.SpellHelper.Instance.GetRecastTimeElapsed(actionIdAdjusted);
 			data.CooldownPerCharge = data.CooldownTotal / data.ChargesMax;
 
