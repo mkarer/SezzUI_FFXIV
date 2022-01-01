@@ -40,7 +40,7 @@ namespace SezzUI.Modules.GameUI
             // TODO: Add to configuration UI with placeholders
             using (InteractableArea area = new(new InteractableAreaConfig()))
             {
-                area.Elements.AddRange(new List<Element> { Element.MainMenu, Element.ActionBar04 });
+                area.Elements.AddRange(new List<Element> { Element.MainMenu, Element.ActionBar4 });
                 area.Position = new Vector2(4, ImGui.GetMainViewport().Size.Y - 4);
                 area.Anchor = Enums.DrawAnchor.BottomLeft;
                 area.Size = new Vector2(780, 50); // TODO: Automatic sizing ? Node.Width * Node.ScaleX, Node.Height * Node.ScaleY
@@ -49,7 +49,7 @@ namespace SezzUI.Modules.GameUI
 
             using (InteractableArea area = new(new InteractableAreaConfig()))
             {
-                area.Elements.AddRange(new List<Element> { Element.ActionBar05, Element.ActionBar10 });
+                area.Elements.AddRange(new List<Element> { Element.ActionBar5, Element.ActionBar10 });
                 area.Position = new Vector2(ImGui.GetMainViewport().Size.X / 2, ImGui.GetMainViewport().Size.Y - 4);
                 area.Anchor = Enums.DrawAnchor.Bottom;
                 area.Size = new Vector2(500, 90);
@@ -58,7 +58,7 @@ namespace SezzUI.Modules.GameUI
 
             using (InteractableArea area = new(new InteractableAreaConfig()))
             {
-                area.Elements.AddRange(new List<Element> { Element.ActionBar07, Element.ActionBar08, Element.ActionBar09 });
+                area.Elements.AddRange(new List<Element> { Element.ActionBar7, Element.ActionBar8, Element.ActionBar9 });
                 area.Position = new Vector2(ImGui.GetMainViewport().Size.X - 4, 710);
                 area.Anchor = Enums.DrawAnchor.Right;
                 area.Size = new Vector2(176, 670);
@@ -78,6 +78,7 @@ namespace SezzUI.Modules.GameUI
             if (Config.HideActionBarLock) { _expectedVisibility[Element.ActionBarLock] = false; }
 
             Plugin.Framework.Update += FrameworkUpdate;
+            Plugin.Condition.ConditionChange += OnConditionChange;
             return true;
         }
 
@@ -86,6 +87,7 @@ namespace SezzUI.Modules.GameUI
             if (!base.Disable()) { return false; }
 
             Plugin.Framework.Update -= FrameworkUpdate;
+            Plugin.Condition.ConditionChange -= OnConditionChange;
             UpdateAddons(_expectedVisibility, !_hudHidden);
             _areas.Clear();
             _expectedVisibility.Clear();
@@ -154,6 +156,14 @@ namespace SezzUI.Modules.GameUI
             _initialUpdate = false;
         }
 
+        public void OnConditionChange(ConditionFlag flag, bool value)
+        {
+            if (flag == ConditionFlag.CreatingCharacter && !value) {
+                // Force update after visiting the aesthetician!
+                _initialUpdate = true;
+            }
+        }
+
         public void Draw()
         {
             if (!Enabled) { return; }
@@ -179,15 +189,15 @@ namespace SezzUI.Modules.GameUI
         #region Addons
         private static Dictionary<Element, string> _elementAddonNames = new()
         {
-            { Element.ActionBar01, "_ActionBar" },
-            { Element.ActionBar02, "_ActionBar01" },
-            { Element.ActionBar03, "_ActionBar02" },
-            { Element.ActionBar04, "_ActionBar03" },
-            { Element.ActionBar05, "_ActionBar04" },
-            { Element.ActionBar06, "_ActionBar05" },
-            { Element.ActionBar07, "_ActionBar06" },
-            { Element.ActionBar08, "_ActionBar07" },
-            { Element.ActionBar09, "_ActionBar08" },
+            { Element.ActionBar1, "_ActionBar" },
+            { Element.ActionBar2, "_ActionBar01" },
+            { Element.ActionBar3, "_ActionBar02" },
+            { Element.ActionBar4, "_ActionBar03" },
+            { Element.ActionBar5, "_ActionBar04" },
+            { Element.ActionBar6, "_ActionBar05" },
+            { Element.ActionBar7, "_ActionBar06" },
+            { Element.ActionBar8, "_ActionBar07" },
+            { Element.ActionBar9, "_ActionBar08" },
             { Element.ActionBar10, "_ActionBar09" },
             { Element.CastBar, "_CastBar" },
             { Element.ExperienceBar, "_Exp" },
@@ -370,12 +380,12 @@ namespace SezzUI.Modules.GameUI
             switch (args.PropertyName)
             {
                 case "Enabled":
-                    PluginLog.Debug($"[{this.GetType().Name}] OnConfigPropertyChanged Config.Enabled: {Config.Enabled}");
+                    PluginLog.Debug($"[{this.GetType().Name}] OnConfigPropertyChanged {args.PropertyName}: {Config.Enabled}");
                     Toggle(Config.Enabled);
                     break;
 
                 case "HideActionBarLock":
-                    PluginLog.Debug($"[{this.GetType().Name}] OnConfigPropertyChanged HideActionBarLock: {Config.HideActionBarLock}");
+                    PluginLog.Debug($"[{this.GetType().Name}] OnConfigPropertyChanged {args.PropertyName}: {Config.HideActionBarLock}");
                     if (Config.Enabled)
                     {
                         _expectedVisibility[Element.ActionBarLock] = !Config.HideActionBarLock;

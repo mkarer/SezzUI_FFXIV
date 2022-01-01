@@ -2,16 +2,18 @@
 {
     public enum Element
     {
+        Unknown,
+
         ActionBarLock,
-        ActionBar01,
-        ActionBar02,
-        ActionBar03,
-        ActionBar04,
-        ActionBar05,
-        ActionBar06,
-        ActionBar07,
-        ActionBar08,
-        ActionBar09,
+        ActionBar1,
+        ActionBar2,
+        ActionBar3,
+        ActionBar4,
+        ActionBar5,
+        ActionBar6,
+        ActionBar7,
+        ActionBar8,
+        ActionBar9,
         ActionBar10,
         CrossHotbar,
 
