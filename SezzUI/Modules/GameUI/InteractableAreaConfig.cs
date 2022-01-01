@@ -5,13 +5,11 @@ using System.Numerics;
 
 namespace SezzUI.Interface.GeneralElements
 {
-    [Section("Hover")]
-    [SubSection("General", 0)]
-    public class HoverConfig : PluginConfigObject
+    public class InteractableAreaConfig : AnchorablePluginConfigObject
     {
-        public new static HoverConfig DefaultConfig()
+        public new static InteractableAreaConfig DefaultConfig()
         {
-            return new HoverConfig()
+            return new InteractableAreaConfig()
             {
                 Enabled = true,
             };

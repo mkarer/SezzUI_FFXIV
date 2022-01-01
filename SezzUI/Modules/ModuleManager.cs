@@ -8,7 +8,7 @@ namespace SezzUI
 {
     internal class ModuleManager : IDisposable
     {
-        internal static Modules.Hover.Hover Hover { get { return Modules.Hover.Hover.Instance; } }
+        internal static Modules.GameUI.ElementHider ElementHider { get { return Modules.GameUI.ElementHider.Instance; } }
 
         public static void Draw()
         {
@@ -42,7 +42,7 @@ namespace SezzUI
                 return;
             }
 
-            Hover.Draw();
+            ElementHider.Draw();
      
             ImGui.End();
         }
@@ -54,7 +54,7 @@ namespace SezzUI
 
         public ModuleManager()
         {
-            Modules.Hover.Hover.Initialize();
+            Modules.GameUI.ElementHider.Initialize();
         }
 
         ~ModuleManager()
@@ -75,7 +75,7 @@ namespace SezzUI
                 return;
             }
 
-            if (Hover != null) { Hover.Dispose(); }
+            if (ElementHider != null) { ElementHider.Dispose(); }
 
             Instance = null!;
         }

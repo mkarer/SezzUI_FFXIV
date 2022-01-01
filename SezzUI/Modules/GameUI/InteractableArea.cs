@@ -1,35 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SezzUI.Interface.GeneralElements;
 using System.Numerics;
 using ImGuiNET;
+using SezzUI.Interface;
 using SezzUI.Enums;
 
-namespace SezzUI.Modules.Hover
+namespace SezzUI.Modules.GameUI
 {
-    public class InteractableArea : IDisposable
+    public class InteractableArea : ParentAnchoredDraggableHudElement
     {
+        private InteractableAreaConfig Config => (InteractableAreaConfig)_config;
+     
         public bool Enabled = true;
         public Vector2 Position = Vector2.Zero;
         public Vector2 Size = Vector2.Zero;
         public DrawAnchor Anchor = DrawAnchor.Center;
-        public List<String> Elements = new();
-        public string ID = $"SezzUI_InteractableArea_{Guid.NewGuid()}";
+        public List<Element> Elements = new();
         public bool IsHovered = false;
         public bool DrawPlaceholder = false;
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
 
         public void Draw()
         {
             Vector2 pos = DelvUI.Helpers.Utils.GetAnchoredPosition(Position, Size, Anchor);
-            IsHovered = ImGui.IsMouseHoveringRect(pos, pos + Size);
+            IsHovered = ImGui.IsMouseHoveringRect(pos, pos + Size); // TODO: Check if window is active?
 
             if (DrawPlaceholder)
             {
@@ -64,12 +58,8 @@ namespace SezzUI.Modules.Hover
             }
         }
 
-        protected void Dispose(bool disposing)
+        public InteractableArea(InteractableAreaConfig config) : base(config)
         {
-            if (!disposing)
-            {
-                return;
-            }
         }
     }
 }
