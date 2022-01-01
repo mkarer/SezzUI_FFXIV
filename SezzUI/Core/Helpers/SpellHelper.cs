@@ -178,21 +178,30 @@ namespace SezzUI.Helpers
             if (player == null) { return data; }
 
 			uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
-            ushort maxLevelCharges = DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, Plugin.MAX_PLAYER_LEVEL);
+            ushort maxChargesMaxLevel = DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, Plugin.MAX_PLAYER_LEVEL);
+            ushort maxChargesCurrentLevel = player.Level < Plugin.MAX_PLAYER_LEVEL ? DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, player.Level) : maxChargesMaxLevel;
+            float chargesMod = 1f / maxChargesMaxLevel * maxChargesCurrentLevel;
 
-            data.ChargesMax = player.Level < Plugin.MAX_PLAYER_LEVEL ? DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, player.Level) : maxLevelCharges;
-			data.ChargesCurrent = DelvUI.Helpers.SpellHelper.Instance.GetStackCount(maxLevelCharges, actionIdAdjusted);
-			data.CooldownTotal = DelvUI.Helpers.SpellHelper.Instance.GetRecastTime(actionIdAdjusted) / maxLevelCharges * data.ChargesMax;
-			data.CooldownTotalElapsed = DelvUI.Helpers.SpellHelper.Instance.GetRecastTimeElapsed(actionIdAdjusted);
-			data.CooldownPerCharge = data.CooldownTotal / data.ChargesMax;
+            data.ChargesMax = maxChargesCurrentLevel;
+            data.CooldownTotal = DelvUI.Helpers.SpellHelper.Instance.GetRecastTime(actionIdAdjusted) * chargesMod; // GetRecastTime returns total cooldown for max level charges
 
-			float remaining = (data.CooldownTotal - data.CooldownTotalElapsed) % data.CooldownPerCharge;
-			if (remaining > 0)
-			{
-				data.CooldownRemaining = remaining;
-			}
+            if (data.CooldownTotal > 0)
+            {
+                data.CooldownPerCharge = data.CooldownTotal / maxChargesCurrentLevel;
+                data.CooldownTotalElapsed = Math.Min(data.CooldownTotal, DelvUI.Helpers.SpellHelper.Instance.GetRecastTimeElapsed(actionIdAdjusted)); // GetRecastTimeElapsed is weird when maxChargesCurrentLevel differs from maxChargesMaxLevel
+                data.CooldownTotalRemaining = (data.CooldownTotal - data.CooldownTotalElapsed);
+                data.CooldownRemaining = data.CooldownTotalRemaining % data.CooldownPerCharge;
+            }
 
-			return data;
+            data.ChargesCurrent = data.CooldownTotalElapsed > 0 ? (int)Math.Floor(data.CooldownTotalElapsed / data.CooldownPerCharge) : data.ChargesMax;
+
+            //if (actionId == 7386)
+            //{
+            //    int currentCharges = data.CooldownTotalRemaining > 0 ? (int)Math.Ceiling(data.CooldownTotalRemaining / data.CooldownPerCharge) : data.ChargesMax;
+            //    Dalamud.Logging.PluginLog.Debug($"data.CooldownTotal {data.CooldownTotal} data.CooldownTotalElapsed {data.CooldownTotalElapsed} data.GetRecastTimeElapsed {DelvUI.Helpers.SpellHelper.Instance.GetRecastTimeElapsed(actionIdAdjusted)}");
+            //}
+
+            return data;
 		}
 	}
 }
