@@ -5,30 +5,13 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 
 namespace SezzUI.GameEvents
 {
-    internal class JobChangedEventArgs : EventArgs
-    {
-        public JobChangedEventArgs(uint jobId)
-        {
-            JobId = jobId;
-        }
-
-        public uint JobId { get; set; }
-    }
-
-    internal class LevelChangedEventArgs : EventArgs
-    {
-        public LevelChangedEventArgs(byte level)
-        {
-            Level = level;
-        }
-
-        public byte Level { get; set; }
-    }
-
     internal sealed unsafe class Player : BaseGameEvent
     {
-        public event EventHandler<JobChangedEventArgs>? JobChanged;
-        public event EventHandler<LevelChangedEventArgs>? LevelChanged;
+        public delegate void JobChangedDelegate(uint jobId);
+        public event JobChangedDelegate? JobChanged;
+        
+        public delegate void LevelChangedDelegate(byte level);
+        public event LevelChangedDelegate? LevelChanged;
        
         private static readonly Lazy<Player> ev = new Lazy<Player>(() => new Player());
         public static Player Instance { get { return ev.Value; } }
@@ -80,30 +63,38 @@ namespace SezzUI.GameEvents
 
         private void Update()
         {
+            PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+
             try
             {
-                PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
-      
                 // Job
                 uint jobId = (player != null ? player.ClassJob.Id : 0);
                 if (jobId != lastJobId)
                 {
                     lastJobId = jobId;
                     PluginLog.Debug($"[{Name}::JobChanged] Job ID: {jobId}");
-                    JobChanged?.Invoke(this, new JobChangedEventArgs(jobId));
+                    JobChanged?.Invoke(jobId);
                 }
+            }
+            catch (Exception ex)
+            {
+                PluginLog.Error(ex, $"While invoking {nameof(this.LevelChanged)}, an exception was thrown.");
+            }
 
+            try
+            {
                 // Level
                 byte level = (player != null ? player.Level : (byte)0);
                 if (level != lastLevel)
                 {
                     lastLevel = level;
                     PluginLog.Debug($"[{Name}::LevelChanged] Level: {level}");
-                    LevelChanged?.Invoke(this, new LevelChangedEventArgs(level));
+                    LevelChanged?.Invoke(level);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                PluginLog.Error(ex, $"While invoking {nameof(this.LevelChanged)}, an exception was thrown.");
             }
         }
     }

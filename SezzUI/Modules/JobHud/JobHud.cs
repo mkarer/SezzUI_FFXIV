@@ -251,12 +251,12 @@ namespace SezzUI.Modules.JobHud
             Hide();
         }
 
-        private void OnJobChanged(object? sender, GameEvents.JobChangedEventArgs e)
+        private void OnJobChanged(uint jobId)
         {
             Configure();
         }
 
-        private void OnLevelChanged(object? sender, GameEvents.LevelChangedEventArgs e)
+        private void OnLevelChanged(byte level)
         {
             Configure();
         }
