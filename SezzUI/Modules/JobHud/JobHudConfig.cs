@@ -6,7 +6,7 @@ using System.Numerics;
 namespace SezzUI.Interface.GeneralElements
 {
     [DisableParentSettings("Size")]
-    [Section("Job Hud")]
+    [Section("Job HUD")]
     [SubSection("General", 0)]
     public class JobHudConfig : MovablePluginConfigObject
     {
