@@ -669,7 +669,6 @@ namespace SezzUI.Config.Attributes
         public NestedConfigAttribute(string friendlyName, int pos) : base(pos)
         {
             this.friendlyName = friendlyName;
-
         }
     }
 
