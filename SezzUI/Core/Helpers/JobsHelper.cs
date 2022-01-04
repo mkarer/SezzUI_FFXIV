@@ -24,6 +24,7 @@ namespace SezzUI.Helpers
 			Addersting,
 			Kenki,
 			MeditationStacks,
+            Sen,
 			Beast,
 			Lily,
 			BloodLily,
@@ -120,7 +121,15 @@ namespace SezzUI.Helpers
 				case PowerType.MeditationStacks:
 					return (Plugin.JobGauges.Get<SAMGauge>()?.MeditationStacks ?? 0, 100);
 
-				case PowerType.Beast:
+                case PowerType.Sen:
+                    SAMGauge gauge5 = Plugin.JobGauges.Get<SAMGauge>();
+				    if (gauge5 != null)
+                    {
+                        return (0 + (gauge5.HasSetsu ? 1 : 0) + (gauge5.HasGetsu ? 1 : 0) + (gauge5.HasKa ? 1 : 0), 3);
+                    }
+                    return (0, 3);
+
+                case PowerType.Beast:
 					if (jobLevel >= 35)
 					{
 						return (Plugin.JobGauges.Get<WARGauge>()?.BeastGauge ?? 0, 100);
