@@ -193,7 +193,9 @@ namespace SezzUI.Modules.JobHud
 
         public Helpers.JobsHelper.PowerType? RequiredPowerType;
         public int? RequiredPowerAmount;
+        public int? RequiredPowerAmountMax;
         public Func<bool>? CustomPowerCondition;
+        public Helpers.JobsHelper.PowerType? StacksPowerType;
 
         /// <summary>
         /// Required job level to show icon.
@@ -373,11 +375,23 @@ namespace SezzUI.Modules.JobHud
             }
 
             // Resources
-            if (RequiredPowerType != null && RequiredPowerAmount != null)
+            if (RequiredPowerType != null)
 			{
                 (int current, int max) = Helpers.JobsHelper.GetPower((Helpers.JobsHelper.PowerType)RequiredPowerType);
-                hasEnoughResources = (current >= RequiredPowerAmount);
-			} else if (CustomPowerCondition !=  null)
+                if (RequiredPowerAmountMax != null)
+                {
+                    hasEnoughResources = (current <= RequiredPowerAmountMax);
+                }
+                else
+                {
+                    hasEnoughResources = (current >= (RequiredPowerAmount ?? 1));
+                }
+
+                if (StacksPowerType != null && current > 0)
+                {
+                    chargesTextAmount = (short)Math.Floor((float)current);
+                }
+            } else if (CustomPowerCondition !=  null)
             {
                 hasEnoughResources = CustomPowerCondition();
             }
@@ -386,6 +400,15 @@ namespace SezzUI.Modules.JobHud
 			{
                 newState = IconState.ReadyOutOfResources;
 			}
+
+            if (RequiredPowerType == null && StacksPowerType != null)
+            {
+                (int current, int max) = Helpers.JobsHelper.GetPower((Helpers.JobsHelper.PowerType)StacksPowerType);
+                if (current > 0)
+                {
+                    chargesTextAmount = (short)Math.Floor((float)current);
+                }
+            }
 
             // Glow
             if (newState == IconState.Ready || Features.HasFlag(IconFeatures.GlowIgnoresState))
