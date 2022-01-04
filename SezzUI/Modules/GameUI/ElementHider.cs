@@ -1,9 +1,7 @@
-﻿using Dalamud.Game.ClientState.Conditions;
-using System;
+﻿using System;
 using Dalamud.Logging;
 using SezzUI.Interface.GeneralElements;
 using SezzUI.Config;
-using Dalamud.Game;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -18,7 +16,6 @@ namespace SezzUI.Modules.GameUI
         private List<InteractableArea> _areas = new();
 
         private bool _initialUpdate = true;
-        private bool _hudHidden = false;
 
         /// <summary>
         /// Contains the current (assumed) visiblity state of default game elements.
@@ -77,8 +74,8 @@ namespace SezzUI.Modules.GameUI
 
             if (Config.HideActionBarLock) { _expectedVisibility[Element.ActionBarLock] = false; }
 
-            Plugin.Framework.Update += FrameworkUpdate;
-            Plugin.Condition.ConditionChange += OnConditionChange;
+            EventManager.Game.AddonsLoaded += OnAddonsLoaded;
+            EventManager.Game.AddonVisibilityChanged += OnAddonVisibilityChanged;
             return true;
         }
 
@@ -86,9 +83,9 @@ namespace SezzUI.Modules.GameUI
         {
             if (!base.Disable()) { return false; }
 
-            Plugin.Framework.Update -= FrameworkUpdate;
-            Plugin.Condition.ConditionChange -= OnConditionChange;
-            UpdateAddons(_expectedVisibility, !_hudHidden);
+            EventManager.Game.AddonsLoaded -= OnAddonsLoaded;
+            EventManager.Game.AddonVisibilityChanged -= OnAddonVisibilityChanged;
+            UpdateAddons(_expectedVisibility, EventManager.Game.AreAddonsShown());
             _areas.Clear();
             _expectedVisibility.Clear();
             _currentVisibility.Clear();
@@ -101,25 +98,9 @@ namespace SezzUI.Modules.GameUI
             return enable ? Enable() : Disable();
         }
 
-        public void FrameworkUpdate(Framework framework)
+        private void OnAddonVisibilityChanged(bool visible)
         {
-            if (!Plugin.ClientState.IsLoggedIn) { return; }
-
-            bool hudHidden =
-                Plugin.Condition[ConditionFlag.WatchingCutscene] ||
-                Plugin.Condition[ConditionFlag.WatchingCutscene78] ||
-                Plugin.Condition[ConditionFlag.OccupiedInCutSceneEvent] ||
-                Plugin.Condition[ConditionFlag.CreatingCharacter] ||
-                Plugin.Condition[ConditionFlag.BetweenAreas] ||
-                Plugin.Condition[ConditionFlag.BetweenAreas51] ||
-                Plugin.Condition[ConditionFlag.OccupiedSummoningBell] ||
-                Plugin.Condition[ConditionFlag.OccupiedInQuestEvent] ||
-                Plugin.Condition[ConditionFlag.OccupiedInEvent];
-
-            if (!_initialUpdate && _hudHidden == hudHidden) { return; }
-
-            _hudHidden = hudHidden;
-            PluginLog.LogDebug($"[{GetType().Name}] Game UI visibility: {(hudHidden ? "HIDDEN" : "VISIBLE")}");
+            if (!Plugin.ClientState.IsLoggedIn || !_initialUpdate) { return; }
 
             if (_initialUpdate)
             {
@@ -131,7 +112,7 @@ namespace SezzUI.Modules.GameUI
                 }
             }
 
-            if (hudHidden)
+            if (!visible)
             {
                 // Hide all, ignore expected states
                 UpdateAddons(_expectedVisibility, false);
@@ -156,15 +137,17 @@ namespace SezzUI.Modules.GameUI
             _initialUpdate = false;
         }
 
-        public void OnConditionChange(ConditionFlag flag, bool value)
+        private void OnAddonsLoaded(bool loaded)
         {
-            if (flag == ConditionFlag.CreatingCharacter && !value) {
+            if (loaded)
+            {
                 // Force update after visiting the aesthetician!
                 _initialUpdate = true;
+                OnAddonVisibilityChanged(EventManager.Game.AreAddonsShown()); // TODO: Test
             }
         }
 
-        public void Draw()
+        public override void Draw(Vector2 origin)
         {
             if (!Enabled) { return; }
 
@@ -177,7 +160,7 @@ namespace SezzUI.Modules.GameUI
                     area.Draw();
                     foreach (Element element in area.Elements)
                     {
-                        _expectedVisibility[element] = _hudHidden ? false : area.IsHovered; // TOOD: AtkEvent: MouseOver, MouseOut
+                        _expectedVisibility[element] = area.IsHovered && EventManager.Game.AreAddonsShown(); // TOOD: AtkEvent: MouseOver, MouseOut
                         updateNeeded = updateNeeded || (!_currentVisibility.ContainsKey(element) || _currentVisibility[element] != _expectedVisibility[element]);
                     }
                 }
@@ -367,6 +350,12 @@ namespace SezzUI.Modules.GameUI
         }
 
         public static ElementHider Instance { get; private set; } = null!;
+
+        protected override void InternalDispose()
+        {
+            _config.ValueChangeEvent -= OnConfigPropertyChanged;
+            ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+        }
 
         ~ElementHider()
         {

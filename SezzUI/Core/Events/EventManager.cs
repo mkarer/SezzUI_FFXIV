@@ -4,6 +4,7 @@ namespace SezzUI
 {
     internal class EventManager : IDisposable
     {
+        internal static GameEvents.Game Game { get { return GameEvents.Game.Instance; } }
         internal static GameEvents.Player Player { get { return GameEvents.Player.Instance; } }
         internal static GameEvents.Combat Combat { get { return GameEvents.Combat.Instance; } }
 
@@ -30,6 +31,7 @@ namespace SezzUI
                 return;
             }
 
+            if (GameEvents.Game.Initialized) { Game.Dispose(); }
             if (GameEvents.Player.Initialized) { Player.Dispose(); }
             if (GameEvents.Combat.Initialized) { Combat.Dispose(); }
 
