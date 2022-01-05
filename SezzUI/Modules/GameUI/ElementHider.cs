@@ -137,7 +137,7 @@ namespace SezzUI.Modules.GameUI
             _initialUpdate = false;
         }
 
-        private void OnAddonsLoaded(bool loaded)
+        private void OnAddonsLoaded(bool loaded, bool ready)
         {
             if (loaded)
             {
@@ -170,35 +170,6 @@ namespace SezzUI.Modules.GameUI
         }
 
         #region Addons
-        private static Dictionary<Element, string> _elementAddonNames = new()
-        {
-            { Element.ActionBar1, "_ActionBar" },
-            { Element.ActionBar2, "_ActionBar01" },
-            { Element.ActionBar3, "_ActionBar02" },
-            { Element.ActionBar4, "_ActionBar03" },
-            { Element.ActionBar5, "_ActionBar04" },
-            { Element.ActionBar6, "_ActionBar05" },
-            { Element.ActionBar7, "_ActionBar06" },
-            { Element.ActionBar8, "_ActionBar07" },
-            { Element.ActionBar9, "_ActionBar08" },
-            { Element.ActionBar10, "_ActionBar09" },
-            { Element.CastBar, "_CastBar" },
-            { Element.ExperienceBar, "_Exp" },
-            { Element.InventoryGrid, "_BagWidget" },
-            { Element.Currency, "_Money" },
-            { Element.ScenarioGuide, "ScenarioTree" },
-            { Element.QuestLog, "_ToDoList" },
-            { Element.MainMenu, "_MainCommand" },
-            { Element.Minimap, "_NaviMap" },
-            { Element.PartyList, "_PartyList" },
-            { Element.LimitBreak, "_LimitBreak" },
-            { Element.Parameters, "_ParameterWidget" },
-            { Element.Status, "_Status" },
-            { Element.StatusEnhancements, "_StatusCustom0" },
-            { Element.StatusEnfeeblements, "_StatusCustom1" },
-            { Element.StatusOther, "_StatusCustom2" },
-        };
-
         private unsafe void UpdateAddonVisibility(Element element, AtkUnitBase* addon, bool shouldShow, bool modifyNodeList = true)
         {
             _currentVisibility[element] = shouldShow; // Assume the update went as expected...
@@ -252,7 +223,7 @@ namespace SezzUI.Modules.GameUI
                 {
                     bool shouldShow = forcedVisibility ?? kvp.Value;
 
-                    if (_elementAddonNames.TryGetValue(kvp.Key, out string? value))
+                    if (Addons.Names.TryGetValue(kvp.Key, out string? value))
                     {
                         if (name == value)
                         {
@@ -389,7 +360,10 @@ namespace SezzUI.Modules.GameUI
             // Configuration doesn't change on reset? 
             PluginLog.Debug($"[{this.GetType().Name}] OnConfigReset");
             Disable();
-            _config.ValueChangeEvent -= OnConfigPropertyChanged;
+            if (_config != null)
+            {
+                _config.ValueChangeEvent -= OnConfigPropertyChanged;
+            }
             _config = sender.GetConfigObject<ElementHiderConfig>();
             _config.ValueChangeEvent += OnConfigPropertyChanged;
             Toggle(Config.Enabled);
