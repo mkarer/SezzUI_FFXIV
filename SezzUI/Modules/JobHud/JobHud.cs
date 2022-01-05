@@ -223,7 +223,10 @@ namespace SezzUI.Modules.JobHud
         {
             // Configuration doesn't change on reset? 
             PluginLog.Debug($"[{this.GetType().Name}] OnConfigReset");
-            _config.ValueChangeEvent -= OnConfigPropertyChanged;
+            if (_config != null)
+            {
+                _config.ValueChangeEvent -= OnConfigPropertyChanged;
+            }
             _config = sender.GetConfigObject<JobHudConfig>();
             _config.ValueChangeEvent += OnConfigPropertyChanged;
             Toggle(Config.Enabled);
