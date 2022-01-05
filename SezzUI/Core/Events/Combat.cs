@@ -17,34 +17,26 @@ namespace SezzUI.GameEvents
 
         private bool lastState = false;
 
-        public override void Enable()
+        public override bool Enable()
         {
-            if (!Enabled)
+            if (base.Enable())
             {
-                PluginLog.Debug($"[Event:{Name}] Enable");
-                Enabled = true;
-
                 Plugin.Framework.Update += FrameworkUpdate;
+                return true;
             }
-            else
-            {
-                PluginLog.Debug($"[Event:{Name}] Enable skipped");
-            }
+            
+            return false;
         }
 
-        public override void Disable()
+        public override bool Disable()
         {
-            if (Enabled)
+            if (base.Disable())
             {
-                PluginLog.Debug($"[Event:{Name}] Disable");
-                Enabled = false;
-
                 Plugin.Framework.Update -= FrameworkUpdate;
+                return true;
             }
-            else
-            {
-                PluginLog.Debug($"[Event:{Name}] Disable skipped");
-            }
+
+            return false;
         }
 
         private void FrameworkUpdate(Framework framework)
@@ -84,12 +76,26 @@ namespace SezzUI.GameEvents
                     lastState = state;
                     if (state)
                     {
-                        PluginLog.Debug($"[Event:{Name}] EnteringCombat");
-                        EnteringCombat?.Invoke(this, EventArgs.Empty);
+                        PluginLog.Debug($"[Event:{GetType().Name}] EnteringCombat");
+                        try
+                        {
+                            EnteringCombat?.Invoke(this, EventArgs.Empty);
+                        }
+                        catch (Exception ex)
+                        {
+                            PluginLog.Error(ex, $"[Event:{GetType().Name}::EnteringCombat] Failed invoking {nameof(this.EnteringCombat)}: {ex}");
+                        }
                     } else
                     {
-                        PluginLog.Debug($"[Event:{Name}] LeavingCombat");
-                        LeavingCombat?.Invoke(this, EventArgs.Empty);
+                        PluginLog.Debug($"[Event:{GetType().Name}] LeavingCombat");
+                        try
+                        {
+                            LeavingCombat?.Invoke(this, EventArgs.Empty);
+                        }
+                        catch (Exception ex)
+                        {
+                            PluginLog.Error(ex, $"[Event:{GetType().Name}::LeavingCombat] Failed invoking {nameof(this.LeavingCombat)}: {ex}");
+                        }
                     }
                 }
             }
