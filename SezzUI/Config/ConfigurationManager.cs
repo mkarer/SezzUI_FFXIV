@@ -424,6 +424,7 @@ namespace SezzUI.Config
             // Modules
             typeof(JobHudConfig),
             typeof(ElementHiderConfig),
+            typeof(ActionBarConfig),
 
             typeof(TanksColorConfig),
             typeof(HealersColorConfig),

@@ -9,6 +9,7 @@ namespace SezzUI
     internal class ModuleManager : IDisposable
     {
         internal static Modules.GameUI.ElementHider ElementHider { get { return Modules.GameUI.ElementHider.Instance; } }
+        internal static Modules.GameUI.ActionBar ActionBar { get { return Modules.GameUI.ActionBar.Instance; } }
 
         public static void Draw()
         {
@@ -42,8 +43,9 @@ namespace SezzUI
                 return;
             }
 
-            ElementHider.Draw();
-     
+            ElementHider.Draw(Vector2.Zero);
+            ActionBar.Draw(Vector2.Zero);
+
             ImGui.End();
         }
 
@@ -54,6 +56,7 @@ namespace SezzUI
 
         public ModuleManager()
         {
+            Modules.GameUI.ActionBar.Initialize(); // Load this module before ActionBars are getting hidden.
             Modules.GameUI.ElementHider.Initialize();
         }
 
@@ -68,14 +71,15 @@ namespace SezzUI
             GC.SuppressFinalize(this);
         }
 
-        protected void Dispose(bool disposing)
+        protected static void Dispose(bool disposing)
         {
             if (!disposing)
             {
                 return;
             }
 
-            if (ElementHider != null) { ElementHider.Dispose(); }
+            ElementHider?.Dispose();
+            ActionBar?.Dispose();
 
             Instance = null!;
         }
