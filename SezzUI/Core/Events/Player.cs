@@ -13,41 +13,35 @@ namespace SezzUI.GameEvents
         public delegate void LevelChangedDelegate(byte level);
         public event LevelChangedDelegate? LevelChanged;
        
-        private static readonly Lazy<Player> ev = new Lazy<Player>(() => new Player());
-        public static Player Instance { get { return ev.Value; } }
-        public static bool Initialized { get { return ev.IsValueCreated; } }
-
         private uint lastJobId = 0;
         private byte lastLevel = 0;
 
-        public override void Enable()
-        {
-            if (!Enabled)
-            {
-                PluginLog.Debug($"[Event:{Name}] Enable");
-                Enabled = true;
+        #region Singleton
+        private static readonly Lazy<Player> ev = new Lazy<Player>(() => new Player());
+        public static Player Instance { get { return ev.Value; } }
+        public static bool Initialized { get { return ev.IsValueCreated; } }
+        #endregion
 
-                Plugin.Framework.Update += FrameworkUpdate;
-            }
-            else
+        public override bool Enable()
+        {
+            if (base.Enable())
             {
-                PluginLog.Debug($"[Event:{Name}] Enable skipped");
+                Plugin.Framework.Update += FrameworkUpdate;
+                return true;
             }
+        
+            return false;
         }
 
-        public override void Disable()
+        public override bool Disable()
         {
-            if (Enabled)
+            if (base.Disable())
             {
-                PluginLog.Debug($"[Event:{Name}] Disable");
-                Enabled = false;
-
                 Plugin.Framework.Update -= FrameworkUpdate;
+                return true;
             }
-            else
-            {
-                PluginLog.Debug($"[Event:{Name}] Disable skipped");
-            }
+
+            return false;
         }
 
         private void FrameworkUpdate(Framework framework)
@@ -72,13 +66,13 @@ namespace SezzUI.GameEvents
                 if (jobId != lastJobId)
                 {
                     lastJobId = jobId;
-                    PluginLog.Debug($"[{Name}::JobChanged] Job ID: {jobId}");
+                    PluginLog.Debug($"[Event:{GetType().Name}::JobChanged] Job ID: {jobId}");
                     JobChanged?.Invoke(jobId);
                 }
             }
             catch (Exception ex)
             {
-                PluginLog.Error(ex, $"While invoking {nameof(this.JobChanged)}, an exception was thrown.");
+                PluginLog.Error(ex, $"[Event:{GetType().Name}::JobChanged] Failed invoking {nameof(this.JobChanged)}: {ex}");
             }
 
             try
@@ -88,13 +82,13 @@ namespace SezzUI.GameEvents
                 if (level != lastLevel)
                 {
                     lastLevel = level;
-                    PluginLog.Debug($"[{Name}::LevelChanged] Level: {level}");
+                    PluginLog.Debug($"[Event:{GetType().Name}::LevelChanged] Level: {level}");
                     LevelChanged?.Invoke(level);
                 }
             }
             catch (Exception ex)
             {
-                PluginLog.Error(ex, $"While invoking {nameof(this.LevelChanged)}, an exception was thrown.");
+                PluginLog.Error(ex, $"[Event:{GetType().Name}::LevelChanged] Failed invoking {nameof(this.LevelChanged)}: {ex}");
             }
         }
     }
