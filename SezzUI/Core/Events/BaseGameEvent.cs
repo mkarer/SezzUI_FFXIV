@@ -5,37 +5,46 @@ namespace SezzUI
 {
     internal abstract class BaseGameEvent : IDisposable
     {
-        public virtual string Name => GetType().Name;
         public virtual bool Enabled { get; protected set; }
 
-        public virtual void Enable()
+        public virtual bool Enable()
         {
             if (!Enabled)
             {
-                PluginLog.Debug($"[Event:{Name}] Enable");
+                PluginLog.Debug($"[Event:{GetType().Name}] Enable");
                 Enabled = true;
+                return true;
             }
             else
             {
-                PluginLog.Debug($"[Event:{Name}] Enable skipped");
+                PluginLog.Debug($"[Event:{GetType().Name}] Enable skipped");
+                return false;
             }
         }
 
-        public virtual void Disable()
+        public virtual bool Disable()
         {
             if (Enabled)
             {
-                PluginLog.Debug($"[Event:{Name}] Disable");
+                PluginLog.Debug($"[Event:{GetType().Name}] Disable");
                 Enabled = false;
+                return true;
             }
             else
             {
-                PluginLog.Debug($"[Event:{Name}] Disable skipped");
+                PluginLog.Debug($"[Event:{GetType().Name}] Disable skipped");
+                return false;
             }
         }
 
         protected BaseGameEvent()
         {
+            Initialize();
+        }
+
+        protected virtual void Initialize()
+        {
+            // override
             if (!Enabled) { Enable(); }
         }
 
@@ -57,7 +66,7 @@ namespace SezzUI
                 return;
             }
 
-            PluginLog.Debug($"[Event:{Name}] Dispose");
+            PluginLog.Debug($"[Event:{GetType().Name}] Dispose");
             if (Enabled)
             {
                 Disable();
