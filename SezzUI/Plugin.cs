@@ -205,11 +205,6 @@ namespace SezzUI
 
                         break;
 
-                    case "test":
-                        PluginLog.LogDebug(">>>>>>>> TEST >>>>>>>>");
-                        PluginLog.LogDebug("<<<<<<<< TEST <<<<<<<<");
-                        break;
-
                     default:
                         configManager.ToggleConfigWindow();
                         break;
