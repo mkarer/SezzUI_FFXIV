@@ -31,7 +31,7 @@ namespace SezzUI.Modules.JobHud
 						bar.IconSize = new Vector2(38, 26);
 						bar.Add(new Icon(bar) { TextureActionId = 7561, CooldownActionId = 7561, StatusId = 167, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 18 }); // Swiftcast
 						bar.Add(new Icon(bar) { TextureActionId = 7562, CooldownActionId = 7562, StatusId = 1204, MaxStatusDuration = 21, StatusTarget = Enums.Unit.Player, Level = 24 }); // Lucid Dreaming
-						bar.Add(new Icon(bar) { TextureActionId = 7571, CooldownActionId = 7571, Level = 48 }); // Rescue
+						bar.Add(new Icon(bar) { TextureActionId = 7571, CooldownActionId = 7571, RequiresCombat = true, Level = 48 }); // Rescue
 						bar.Add(new Icon(bar) { TextureActionId = 7559, CooldownActionId = 7559, StatusId = 160, MaxStatusDuration = 6, StatusTarget = Enums.Unit.Player, Level = 44, IconClipOffset = 0.8f }); // Surecast
 						hud.AddBar(bar);
 					}

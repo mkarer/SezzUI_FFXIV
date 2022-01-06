@@ -206,6 +206,11 @@ namespace SezzUI.Modules.JobHud
         public byte Level = 1;
 
         /// <summary>
+        /// Action can only be executed while in combat.
+        /// </summary>
+        public bool RequiresCombat = false;
+
+        /// <summary>
         /// If the icon size is not 1:1 the visible area will be cropped.
         /// You can specify a negative value to moves the visible area up or left, or a positive value to move it down or right.
         /// </summary>
@@ -250,6 +255,7 @@ namespace SezzUI.Modules.JobHud
             float progressBarTotal = 0;
             float progressBarTextRemaining = 0;
             bool hasEnoughResources = true;
+            bool failedCombatCondition = RequiresCombat && !EventManager.Combat.IsInCombat(false);
 
             Vector2 posInside = pos + Vector2.One;
             Vector2 sizeInside = size - 2 * Vector2.One;
@@ -258,21 +264,29 @@ namespace SezzUI.Modules.JobHud
             // Conditions
             // --------------------------------------------------------------------------------
 
+            // Combat
+            if (failedCombatCondition)
+            {
+                newState = IconState.FadedOut;
+            }
+
             // Cooldown + Charges
-            // Will be used as IconState by default.
             if (CooldownActionId != null)
 			{
                 Helpers.CooldownData cooldown = Helpers.SpellHelper.GetCooldownData((uint)CooldownActionId);
 
                 if (cooldown.CooldownRemaining > 0)
 				{
-                    newState = cooldown.CooldownRemaining > CooldownWarningThreshold ? IconState.FadedOut : IconState.Soon;
+                    if (!failedCombatCondition)
+                    {
+                        newState = cooldown.CooldownRemaining > CooldownWarningThreshold ? IconState.FadedOut : IconState.Soon;
+                    }
 
                     cooldownTextRemaining = cooldown.CooldownRemaining;
                     cooldownSpiralRemaining = cooldown.CooldownRemaining;
                     cooldownSpiralTotal = cooldown.CooldownPerCharge;
                 }
-                else
+                else if (!failedCombatCondition)
 				{
                     newState = IconState.Ready;
                 }
@@ -325,7 +339,7 @@ namespace SezzUI.Modules.JobHud
                     }
 
                     // State
-                    if (shouldShowStatusAsCooldown)
+                    if (shouldShowStatusAsCooldown && !failedCombatCondition)
                     {
                         newState = (duration <= StatusWarningThreshold && duration >= 0 ? IconState.Soon : IconState.FadedOut);
                     }
@@ -357,7 +371,7 @@ namespace SezzUI.Modules.JobHud
                         chargesTextAmount = stacks;
                     }
                 }
-                else if (shouldShowStatusAsCooldown)
+                else if (shouldShowStatusAsCooldown && !failedCombatCondition)
                 {
                     newState = IconState.Ready;
                 }
