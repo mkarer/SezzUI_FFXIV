@@ -193,8 +193,8 @@ namespace SezzUI.Helpers
             if (player == null) { return data; }
 
 			uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
-            ushort maxChargesMaxLevel = DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, Plugin.MAX_PLAYER_LEVEL);
-            ushort maxChargesCurrentLevel = player.Level < Plugin.MAX_PLAYER_LEVEL ? DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, player.Level) : maxChargesMaxLevel;
+            ushort maxChargesMaxLevel = DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, Constants.MAX_PLAYER_LEVEL);
+            ushort maxChargesCurrentLevel = player.Level < Constants.MAX_PLAYER_LEVEL ? DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, player.Level) : maxChargesMaxLevel;
             float chargesMod = maxChargesCurrentLevel > 1 ? 1f / maxChargesMaxLevel * maxChargesCurrentLevel : 1;
 
             data.ChargesMax = maxChargesCurrentLevel;

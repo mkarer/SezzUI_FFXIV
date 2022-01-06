@@ -27,8 +27,6 @@ namespace SezzUI
 {
     public class Plugin : IDalamudPlugin
     {
-        public const byte MAX_PLAYER_LEVEL = 90;
-
         public static BuddyList BuddyList { get; private set; } = null!;
         public static ClientState ClientState { get; private set; } = null!;
         public static CommandManager CommandManager { get; private set; } = null!;
