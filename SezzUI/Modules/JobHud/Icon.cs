@@ -235,8 +235,7 @@ namespace SezzUI.Modules.JobHud
 
         public void Draw(Vector2 pos, Vector2 size, Animator.Animator animator, ImDrawListPtr drawList)
         {
-            PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
-            if (player == null) { return; } // Stupid IDE, we're not drawing this without a player anyways...
+            PlayerCharacter player = Plugin.ClientState.LocalPlayer!;
 
             IconState newState = _state;
             float cooldownTextRemaining = 0;
@@ -304,17 +303,18 @@ namespace SezzUI.Modules.JobHud
 
                 if (status != null)
 				{
-                    float duration = Math.Abs(status?.RemainingTime ?? 0f); // TODO: Initial Surging Tempest status returns -30, but feels more like 31.
-                    byte stacks = (duration > 0 && status != null && status.GameData.MaxStacks > 1) ? status.StackCount : (byte)0;
+                    // Permanent is either really permanent or a status that hasn't ticked yet.
+                    float duration = ((MaxStatusDuration ?? 0) == Constants.PERMANENT_STATUS_DURATION ? Constants.PERMANENT_STATUS_DURATION : Math.Max(Constants.PERMANENT_STATUS_DURATION, status.RemainingTime));
+                    byte stacks = ((duration > 0 || duration == Constants.PERMANENT_STATUS_DURATION) && status!.GameData.MaxStacks > 1) ? status.StackCount : (byte)0;
 
                     float durationMax = 0f;
                     if (MaxStatusDuration != null)
                     {
                         durationMax = (float)MaxStatusDuration;
                     }
-                    else if (StatusIds != null && MaxStatusDurations != null && status != null)
+                    else if (StatusIds != null && MaxStatusDurations != null)
                     {
-                        int index = Array.IndexOf(StatusIds, status.StatusId);
+                        int index = Array.IndexOf(StatusIds, status!.StatusId);
                         if (index >= 0 && index < MaxStatusDurations.Length)
                         {
                             durationMax = MaxStatusDurations[index];
@@ -324,24 +324,24 @@ namespace SezzUI.Modules.JobHud
                     // State
                     if (shouldShowStatusAsCooldown)
                     {
-                        newState = (duration <= 7 ? IconState.Soon : IconState.FadedOut);
+                        newState = (duration <= 7 && duration >= 0 ? IconState.Soon : IconState.FadedOut);
                     }
 
                     // Progress Bar
                     if (shouldShowStatusBar)
 					{
-                        progressBarTotal = durationMax;
-                        progressBarCurrent = duration;
+                        progressBarTotal = duration == Constants.PERMANENT_STATUS_DURATION ? 1 : durationMax;
+                        progressBarCurrent = duration == Constants.PERMANENT_STATUS_DURATION ? 1 : duration;
 
                         // Duration Text
-                        if (!shouldShowStatusAsCooldown && !Features.HasFlag(IconFeatures.NoStatusBarText))
+                        if (!shouldShowStatusAsCooldown && !Features.HasFlag(IconFeatures.NoStatusBarText) && duration != Constants.PERMANENT_STATUS_DURATION)
                         {
                             progressBarTextRemaining = (duration > 3 ? (int)Math.Ceiling(duration) : duration);
                         }
                     }
 
                     // Cooldown Spiral
-                    if (shouldShowStatusAsCooldown)
+                    if (shouldShowStatusAsCooldown && duration >= 0)
                     {
                         cooldownTextRemaining = duration;
                         cooldownSpiralRemaining = duration;
@@ -349,7 +349,7 @@ namespace SezzUI.Modules.JobHud
                     }
 
                     // Stacks
-                    if (chargesTextAmount == -1 && stacks > 0)
+                    if (chargesTextAmount == Constants.PERMANENT_STATUS_DURATION && stacks > 0)
 					{
                         chargesTextAmount = stacks;
                     }
@@ -423,13 +423,15 @@ namespace SezzUI.Modules.JobHud
                 else if (GlowBorderStatusId != null)
 				{
                     Status? status = Helpers.SpellHelper.GetStatus((uint)GlowBorderStatusId, Enums.Unit.Player);
-                    displayGlow = (status != null && (status?.RemainingTime ?? -1) > 0);
+                    float remaining = status?.RemainingTime ?? 0f;
+                    displayGlow = (status != null && (remaining == Constants.PERMANENT_STATUS_DURATION || remaining > 0));
                     if (GlowBorderInvertCheck) { displayGlow = !displayGlow; };
                 }
                 else if (GlowBorderStatusIds != null)
 				{
                     Status? status = Helpers.SpellHelper.GetStatus(GlowBorderStatusIds, Enums.Unit.Player);
-                    displayGlow = (status != null && (status?.RemainingTime ?? -1) > 0);
+                    float remaining = status?.RemainingTime ?? 0f;
+                    displayGlow = (status != null && (remaining == Constants.PERMANENT_STATUS_DURATION || remaining > 0));
                     if (GlowBorderInvertCheck) { displayGlow = !displayGlow; };
                 }
             } else if (GlowBorderUsable && GlowBorderInvertCheck && newState != IconState.Ready)
