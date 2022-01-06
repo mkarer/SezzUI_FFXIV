@@ -129,6 +129,7 @@ namespace SezzUI.Modules.JobHud
         /// Action ID that will be used to display cooldown spiral and text.
         /// </summary>
         public uint? CooldownActionId;
+        public float CooldownWarningThreshold = 7f;
 
         /// <summary>
         /// Status (NOT Action) ID for tracking the duration of a buff/debuff on a unit.
@@ -171,6 +172,8 @@ namespace SezzUI.Modules.JobHud
         public float? MaxStatusDuration;
         public float[]? MaxStatusDurations;
         public Enums.Unit? StatusTarget;
+        public float StatusWarningThreshold = 7f;
+        public Func<(float, float)>? CustomDuration;
 
         public uint? GlowBorderStatusId;
         public uint[]? GlowBorderStatusIds;
@@ -243,8 +246,8 @@ namespace SezzUI.Modules.JobHud
             float cooldownSpiralRemaining = 0;
             short chargesTextAmount = -1;
             bool displayGlow = false;
-            float progressBarTotal = 0;
             float progressBarCurrent = 0;
+            float progressBarTotal = 0;
             float progressBarTextRemaining = 0;
             bool hasEnoughResources = true;
 
@@ -263,7 +266,7 @@ namespace SezzUI.Modules.JobHud
 
                 if (cooldown.CooldownRemaining > 0)
 				{
-                    newState = cooldown.CooldownRemaining > 7 ? IconState.FadedOut : IconState.Soon;
+                    newState = cooldown.CooldownRemaining > CooldownWarningThreshold ? IconState.FadedOut : IconState.Soon;
 
                     cooldownTextRemaining = cooldown.CooldownRemaining;
                     cooldownSpiralRemaining = cooldown.CooldownRemaining;
@@ -324,14 +327,14 @@ namespace SezzUI.Modules.JobHud
                     // State
                     if (shouldShowStatusAsCooldown)
                     {
-                        newState = (duration <= 7 && duration >= 0 ? IconState.Soon : IconState.FadedOut);
+                        newState = (duration <= StatusWarningThreshold && duration >= 0 ? IconState.Soon : IconState.FadedOut);
                     }
 
                     // Progress Bar
                     if (shouldShowStatusBar)
 					{
-                        progressBarTotal = duration == Constants.PERMANENT_STATUS_DURATION ? 1 : durationMax;
                         progressBarCurrent = duration == Constants.PERMANENT_STATUS_DURATION ? 1 : duration;
+                        progressBarTotal = duration == Constants.PERMANENT_STATUS_DURATION ? 1 : durationMax;
 
                         // Duration Text
                         if (!shouldShowStatusAsCooldown && !Features.HasFlag(IconFeatures.NoStatusBarText) && duration != Constants.PERMANENT_STATUS_DURATION)
@@ -371,6 +374,20 @@ namespace SezzUI.Modules.JobHud
                     {
                         chargesTextAmount = stacks;
                     }
+                }
+            }
+
+            if (CustomDuration != null)
+            {
+                (float duration, float durationMax) = CustomDuration();
+
+                progressBarCurrent = duration == Constants.PERMANENT_STATUS_DURATION ? 1 : duration;
+                progressBarTotal = duration == Constants.PERMANENT_STATUS_DURATION ? 1 : durationMax;
+
+                // Duration Text
+                if (duration != Constants.PERMANENT_STATUS_DURATION)
+                {
+                    progressBarTextRemaining = (duration > 3 ? (int)Math.Ceiling(duration) : duration);
                 }
             }
 
