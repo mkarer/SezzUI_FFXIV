@@ -33,6 +33,9 @@ namespace SezzUI.Modules.JobHud
         public Vector2 Position = Vector2.Zero;
         public Vector2 Size = Vector2.Zero;
 
+        public Enums.DrawAnchor TextAnchor = Enums.DrawAnchor.Center;
+        public Vector2 TextOffset = Vector2.Zero;
+
         public string? Image
         {
             get { return _imagePath; }
@@ -283,7 +286,7 @@ namespace SezzUI.Modules.JobHud
                             string textDuration = duration.ToString("0.00", Plugin.NumberFormatInfo);
                             bool fontPushed = DelvUI.Helpers.FontsManager.Instance.PushFont("MyriadProLightCond_20");
                             Vector2 textSize = ImGui.CalcTextSize(textDuration);
-                            Vector2 textPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(elementPosition + elementSize / 2, textSize, Enums.DrawAnchor.Center);
+                            Vector2 textPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(elementPosition + elementSize / 2, textSize, TextAnchor) + TextOffset;
                             DelvUI.Helpers.DrawHelper.DrawOutlinedText(textDuration, textPosition, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, 1)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)), drawList, 1);
                             if (fontPushed) { ImGui.PopFont(); }
                         }
