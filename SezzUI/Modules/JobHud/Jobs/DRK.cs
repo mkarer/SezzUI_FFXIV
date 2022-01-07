@@ -1,5 +1,4 @@
-﻿using System;
-using Dalamud.Game.ClientState.JobGauge.Types;
+﻿using Dalamud.Game.ClientState.JobGauge.Types;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {

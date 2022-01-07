@@ -11,7 +11,7 @@ namespace SezzUI.Modules.JobHud.Jobs
             using (Bar bar = new(hud))
             {
                 bar.Add(new Icon(bar) { TextureActionId = 2876, CooldownActionId = 2876, StatusId = 851, MaxStatusDuration = 5, StatusTarget = Enums.Unit.Player, Level = 10 }); // Reassemble
-                bar.Add(new Icon(bar) { TextureActionId = 7414, CooldownActionId = 7414, Level = 66 }); // Barrel Stabilizer
+                bar.Add(new Icon(bar) { TextureActionId = 7414, CooldownActionId = 7414, RequiresCombat = true, Level = 66 }); // Barrel Stabilizer
                 bar.Add(new Icon(bar) { TextureActionId = 2864, CooldownActionId = 2864, RequiredPowerAmount = 60, RequiredPowerType = Helpers.JobsHelper.PowerType.Battery, Level = 66 }); // Rook Autoturret/Automation Queen
                 bar.Add(new Icon(bar) { TextureActionId = 2878, CooldownActionId = 2878, StatusId = 861, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Target, Level = 45 }); // Wildfire
                 hud.AddBar(bar);
