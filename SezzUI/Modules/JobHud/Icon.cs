@@ -209,6 +209,8 @@ namespace SezzUI.Modules.JobHud
         /// Action can only be executed while in combat.
         /// </summary>
         public bool RequiresCombat = false;
+        public bool RequiresPet = false;
+        public Func<bool>? CustomCondition;
 
         /// <summary>
         /// If the icon size is not 1:1 the visible area will be cropped.
@@ -255,7 +257,11 @@ namespace SezzUI.Modules.JobHud
             float progressBarTotal = 0;
             float progressBarTextRemaining = 0;
             bool hasEnoughResources = true;
+
             bool failedCombatCondition = RequiresCombat && !EventManager.Combat.IsInCombat(false);
+            bool failedPetCondition = RequiresPet && !Plugin.BuddyList.PetBuddyPresent;
+            bool failedCustomCondition = CustomCondition != null && !CustomCondition();
+            bool failedInitialCondition = failedCombatCondition || failedPetCondition || failedCustomCondition;
 
             Vector2 posInside = pos + Vector2.One;
             Vector2 sizeInside = size - 2 * Vector2.One;
@@ -264,8 +270,8 @@ namespace SezzUI.Modules.JobHud
             // Conditions
             // --------------------------------------------------------------------------------
 
-            // Combat
-            if (failedCombatCondition)
+            // Initial
+            if (failedInitialCondition)
             {
                 newState = IconState.FadedOut;
             }
@@ -277,7 +283,7 @@ namespace SezzUI.Modules.JobHud
 
                 if (cooldown.CooldownRemaining > 0)
 				{
-                    if (!failedCombatCondition)
+                    if (!failedInitialCondition)
                     {
                         newState = cooldown.CooldownRemaining > CooldownWarningThreshold ? IconState.FadedOut : IconState.Soon;
                     }
@@ -286,7 +292,7 @@ namespace SezzUI.Modules.JobHud
                     cooldownSpiralRemaining = cooldown.CooldownRemaining;
                     cooldownSpiralTotal = cooldown.CooldownPerCharge;
                 }
-                else if (!failedCombatCondition)
+                else if (!failedInitialCondition)
 				{
                     newState = IconState.Ready;
                 }
@@ -339,7 +345,7 @@ namespace SezzUI.Modules.JobHud
                     }
 
                     // State
-                    if (shouldShowStatusAsCooldown && !failedCombatCondition)
+                    if (shouldShowStatusAsCooldown && !failedInitialCondition)
                     {
                         newState = (duration <= StatusWarningThreshold && duration >= 0 ? IconState.Soon : IconState.FadedOut);
                     }
@@ -371,7 +377,7 @@ namespace SezzUI.Modules.JobHud
                         chargesTextAmount = stacks;
                     }
                 }
-                else if (shouldShowStatusAsCooldown && !failedCombatCondition)
+                else if (shouldShowStatusAsCooldown && !failedInitialCondition)
                 {
                     newState = IconState.Ready;
                 }
