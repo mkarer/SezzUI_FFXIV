@@ -64,6 +64,8 @@ namespace DelvUI.Helpers
                 { 15998, new() { { 70, 15998 } } }, // Technical Step
                 // SGE
                 { 24293, new() { { 30, 24293 }, { 72, 24308 }, { 82, 24314 } } }, // Eukrasian Dosis
+                // SMN
+                { 3581, new() { { 58, 3581 }, { 70, 7427 } } }
             };
         }
 
@@ -77,6 +79,25 @@ namespace DelvUI.Helpers
         public unsafe float GetRecastTimeElapsed(uint actionId) => _actionManager->GetRecastTimeElapsed(ActionType.Spell, GetSpellActionId(actionId));
 
         public unsafe float GetRecastTime(uint actionId) => _actionManager->GetRecastTime(ActionType.Spell, GetSpellActionId(actionId));
+
+        public unsafe void GetRecastTimes(uint actionId, out float total, out float elapsed)
+        {
+            total = 0f;
+            elapsed = 0f;
+
+            int recastGroup = _actionManager->GetRecastGroup((int)ActionType.Spell, actionId);
+            RecastDetail* recastDetail = _actionManager->GetRecastGroupDetail(recastGroup);
+            if (recastDetail != null)
+            {
+                total = recastDetail->Total;
+                elapsed = total > 0 ? recastDetail->Elapsed : 0;
+            }
+            else
+            {
+                total = GetRecastTime(actionId);
+                elapsed = total > 0 ? GetRecastTimeElapsed(actionId) : 0;
+            }
+        }
 
         public float GetSpellCooldown(uint actionId) => Math.Abs(GetRecastTime(GetSpellActionId(actionId)) - GetRecastTimeElapsed(GetSpellActionId(actionId)));
 
