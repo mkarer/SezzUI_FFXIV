@@ -174,6 +174,18 @@ namespace SezzUI.Modules.GameUI
         {
             _currentVisibility[element] = shouldShow; // Assume the update went as expected...
 
+            // This hides them from the HUD layout manager aswell and showing doesn't work on the Scenario Guide.
+            // Also it makes them fade out and in (although not really smooth).
+            //if (shouldShow)
+            //{
+            //    addon->Show(0, false);
+            //}
+            //else
+            //{
+            //    addon->Hide(false);
+            //}
+
+            // This seems fine but doesn't trigger MouseOut I guess.
             if (shouldShow != addon->RootNode->IsVisible)
             {
                 addon->RootNode->Flags ^= 0x10;
