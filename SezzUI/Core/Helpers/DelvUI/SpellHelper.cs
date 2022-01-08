@@ -52,6 +52,7 @@ namespace DelvUI.Helpers
 
                 // RPR
                 { 24405, new() { { 72, 24405 } } }, // Arcane Circle
+                { 24394, new() { { 80, 24394 } } }, // Enshroud
                 // PLD
                 { 3538, new() { { 54, 3538 } } }, // Goring Blade
                 { 7383, new() { { 54, 7383 } } }, // Requiescat
@@ -65,7 +66,9 @@ namespace DelvUI.Helpers
                 // SGE
                 { 24293, new() { { 30, 24293 }, { 72, 24308 }, { 82, 24314 } } }, // Eukrasian Dosis
                 // SMN
-                { 3581, new() { { 58, 3581 }, { 70, 7427 } } }
+                { 3581, new() { { 58, 3581 }, { 70, 7427 } } },
+                // BRD
+                { 3559, new() { { 52, 3559 } } }, // The Wanderer's Minuet
             };
         }
 
