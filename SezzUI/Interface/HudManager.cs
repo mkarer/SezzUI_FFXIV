@@ -28,8 +28,15 @@ namespace SezzUI.Interface
 
         internal static Modules.JobHud.JobHud? JobHud;
         internal static Modules.CooldownHud.CooldownHud? CooldownHud;
+        internal static Modules.GameUI.ElementHider? ElementHider;
+        internal static Modules.GameUI.ActionBar? ActionBar;
 
         private HudHelper _hudHelper = new HudHelper();
+
+        #region Singleton
+        public static void Initialize() { Instance = new HudManager(); }
+
+        public static HudManager Instance { get; private set; } = null!;
 
         public HudManager()
         {
@@ -60,7 +67,7 @@ namespace SezzUI.Interface
 
             _hudHelper.Dispose();
 
-            if (JobHud != null) { JobHud.Dispose(); }
+            JobHud?.Dispose();
 
             _hudModules.ForEach(module => module.Dispose());
             _hudModules.Clear();
@@ -73,7 +80,10 @@ namespace SezzUI.Interface
 
             ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
             ConfigurationManager.Instance.LockEvent -= OnHUDLockChanged;
+
+            Instance = null!;
         }
+        #endregion
 
         private void OnConfigReset(ConfigurationManager sender)
         {
@@ -140,6 +150,7 @@ namespace SezzUI.Interface
 
         private void CreateMiscElements()
         {
+            // Job HUD
             if (JobHud == null)
             {
                 JobHud = new(ConfigurationManager.Instance.GetConfigObject<JobHudConfig>(), "Job HUD");
@@ -150,11 +161,28 @@ namespace SezzUI.Interface
 
         private void CreateModules()
         {
+            // Cooldown HUD
             if (CooldownHud == null)
             {
                 CooldownHud = Modules.CooldownHud.CooldownHud.Initialize();
             }
             _hudModules.Add(CooldownHud);
+
+            // Game UI Tweaks
+            if (ActionBar == null)
+            {
+                // Load this module before ActionBars are getting hidden.
+                Modules.GameUI.ActionBar.Initialize();
+                ActionBar = Modules.GameUI.ActionBar.Instance;
+            }
+            _hudModules.Add(ActionBar);
+
+            if (ElementHider == null)
+            {
+                Modules.GameUI.ElementHider.Initialize();
+                ElementHider = Modules.GameUI.ElementHider.Instance;
+            }
+            _hudModules.Add(ElementHider);
         }
 
         public void Draw(DrawState drawState)

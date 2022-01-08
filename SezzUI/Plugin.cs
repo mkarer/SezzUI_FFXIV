@@ -51,7 +51,6 @@ namespace SezzUI
 
         public static string Version { get; private set; } = "";
 
-        private HudManager _hudManager = null!;
         public static NumberFormatInfo NumberFormatInfo = CultureInfo.GetCultureInfo("en-GB").NumberFormat;
 
         public Plugin(
@@ -112,9 +111,7 @@ namespace SezzUI
             Helpers.ImageCache.Initialize();
             DelvUI.Helpers.TooltipsHelper.Initialize();
             EventManager.Initialize();
-            ModuleManager.Initialize();
-
-            _hudManager = new HudManager();
+            HudManager.Initialize();
 
             UiBuilder.Draw += Draw;
             UiBuilder.BuildFonts += BuildFont;
@@ -219,18 +216,18 @@ namespace SezzUI
         private void Draw()
         {
             UiBuilder.OverrideGameCursor = false;
-
             ConfigurationManager.Instance.Draw();
 
-            var fontPushed = DelvUI.Helpers.FontsManager.Instance.PushDefaultFont();
-
-            DrawState drawState = GetDrawState();
-            ModuleManager.Draw(drawState);
-            _hudManager?.Draw(drawState);
-
-            if (fontPushed)
+            if (HudManager.Instance != null)
             {
-                ImGui.PopFont();
+                bool fontPushed = DelvUI.Helpers.FontsManager.Instance.PushDefaultFont();
+
+                HudManager.Instance.Draw(GetDrawState());
+
+                if (fontPushed)
+                {
+                    ImGui.PopFont();
+                }
             }
         }
 
@@ -307,8 +304,7 @@ namespace SezzUI
                 return;
             }
 
-            _hudManager.Dispose();
-            ModuleManager.Instance.Dispose();
+            HudManager.Instance.Dispose();
             EventManager.Instance.Dispose();
 
             ConfigurationManager.Instance.SaveConfigurations(true);
