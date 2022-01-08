@@ -15,6 +15,7 @@ using Dalamud.Game.Gui;
 using Dalamud.Interface;
 using Dalamud.Logging;
 using Dalamud.Plugin;
+using SezzUI.Enums;
 using SezzUI.Config;
 using SezzUI.Config.Profiles;
 using SezzUI.Interface;
@@ -22,6 +23,7 @@ using SezzUI.Interface.GeneralElements;
 using ImGuiNET;
 using ImGuiScene;
 using SigScanner = Dalamud.Game.SigScanner;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace SezzUI
 {
@@ -216,33 +218,82 @@ namespace SezzUI
 
         private void Draw()
         {
-            bool hudState =
-                Condition[ConditionFlag.WatchingCutscene] ||
-                Condition[ConditionFlag.WatchingCutscene78] ||
-                Condition[ConditionFlag.OccupiedInCutSceneEvent] ||
-                Condition[ConditionFlag.CreatingCharacter] ||
-                Condition[ConditionFlag.BetweenAreas] ||
-                Condition[ConditionFlag.BetweenAreas51] ||
-                Condition[ConditionFlag.OccupiedSummoningBell];
-
             UiBuilder.OverrideGameCursor = false;
 
             ConfigurationManager.Instance.Draw();
 
             var fontPushed = DelvUI.Helpers.FontsManager.Instance.PushDefaultFont();
 
-            ModuleManager.Draw();
-
-            if (!hudState)
-            {
-                _hudManager?.Draw();
-            }
+            DrawState drawState = GetDrawState();
+            ModuleManager.Draw(drawState);
+            _hudManager?.Draw(drawState);
 
             if (fontPushed)
             {
                 ImGui.PopFont();
             }
         }
+
+        #region Draw State
+        private static double _occupiedInQuestStartTime = -1;
+
+        public static unsafe DrawState GetDrawState()
+        {
+            if (!ClientState.IsLoggedIn || Condition[ConditionFlag.CreatingCharacter] || Condition[ConditionFlag.BetweenAreas] || Condition[ConditionFlag.BetweenAreas51] || ClientState.LocalPlayer == null)
+            {
+                return DrawState.HiddenNotInGame;
+            }
+            else if (!ConfigurationManager.Instance.ShowHUD)
+            {
+                return DrawState.HiddenDisabled;
+            }
+            else if (Condition[ConditionFlag.WatchingCutscene] || Condition[ConditionFlag.WatchingCutscene78] || Condition[ConditionFlag.OccupiedInCutSceneEvent])
+            {
+                return DrawState.HiddenCutscene;
+            }
+            else if (Condition[ConditionFlag.OccupiedSummoningBell])
+            {
+                return DrawState.PartiallyInteraction;
+            }
+            else if (Condition[ConditionFlag.OccupiedInQuestEvent] || Condition[ConditionFlag.OccupiedInEvent])
+            {
+                try
+                {
+                    var parameterWidget = (AtkUnitBase*)GameGui.GetAddonByName("_ParameterWidget", 1);
+                    var fadeMiddleWidget = (AtkUnitBase*)GameGui.GetAddonByName("FadeMiddle", 1);
+
+                    if ((parameterWidget != null && !parameterWidget->IsVisible) || (fadeMiddleWidget != null && fadeMiddleWidget->IsVisible))
+                    {
+                        // we have to wait a bit to avoid weird flickering when clicking shiny stuff
+                        // we hide the ui after half a second passed in this state
+                        // interestingly enough, default hotbars seem to do something similar
+                        var time = ImGui.GetTime();
+                        if (_occupiedInQuestStartTime > 0)
+                        {
+                            if (time - _occupiedInQuestStartTime > 0.5)
+                            {
+                                return DrawState.PartiallyInteraction;
+                            }
+                        }
+                        else
+                        {
+                            _occupiedInQuestStartTime = time;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    PluginLog.Error(ex, $"[GetDrawState] Error: {ex}");
+                }
+            }
+            else
+            {
+                _occupiedInQuestStartTime = -1;
+            }
+
+            return DrawState.Visible;
+        }
+        #endregion
 
         private void OpenConfigUi()
         {

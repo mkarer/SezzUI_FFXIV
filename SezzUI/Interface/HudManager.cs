@@ -1,5 +1,6 @@
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
+using SezzUI.Enums;
 using SezzUI.Config;
 using DelvUI.Helpers;
 using SezzUI.Interface.GeneralElements;
@@ -17,6 +18,7 @@ namespace SezzUI.Interface
         private HUDOptionsConfig? _hudOptions;
         private DraggableHudElement? _selectedElement = null;
 
+        private List<HudModule> _hudModules = null!;
         private List<DraggableHudElement> _hudElements = null!;
         private List<IHudElementWithActor> _hudElementsUsingPlayer = null!;
         private List<IHudElementWithActor> _hudElementsUsingTarget = null!;
@@ -25,8 +27,7 @@ namespace SezzUI.Interface
         private List<IHudElementWithPreview> _hudElementsWithPreview = null!;
 
         internal static Modules.JobHud.JobHud? JobHud;
-
-        private double _occupiedInQuestStartTime = -1;
+        internal static Modules.CooldownHud.CooldownHud? CooldownHud;
 
         private HudHelper _hudHelper = new HudHelper();
 
@@ -60,6 +61,9 @@ namespace SezzUI.Interface
             _hudHelper.Dispose();
 
             if (JobHud != null) { JobHud.Dispose(); }
+
+            _hudModules.ForEach(module => module.Dispose());
+            _hudModules.Clear();
 
             _hudElements.Clear();
             _hudElementsUsingPlayer.Clear();
@@ -117,6 +121,7 @@ namespace SezzUI.Interface
             _gridConfig = ConfigurationManager.Instance.GetConfigObject<GridConfig>();
             _hudOptions = ConfigurationManager.Instance.GetConfigObject<HUDOptionsConfig>();
 
+            _hudModules = new();
             _hudElements = new List<DraggableHudElement>();
             _hudElementsUsingPlayer = new List<IHudElementWithActor>();
             _hudElementsUsingTarget = new List<IHudElementWithActor>();
@@ -124,6 +129,7 @@ namespace SezzUI.Interface
             _hudElementsUsingFocusTarget = new List<IHudElementWithActor>();
             _hudElementsWithPreview = new List<IHudElementWithPreview>();
 
+            CreateModules();
             CreateMiscElements();
 
             foreach (var element in _hudElements)
@@ -134,14 +140,24 @@ namespace SezzUI.Interface
 
         private void CreateMiscElements()
         {
-            if (JobHud == null) {
+            if (JobHud == null)
+            {
                 JobHud = new(ConfigurationManager.Instance.GetConfigObject<JobHudConfig>(), "Job HUD");
             }
             _hudElements.Add(JobHud);
             _hudElementsUsingPlayer.Add(JobHud);
         }
 
-        public void Draw()
+        private void CreateModules()
+        {
+            if (CooldownHud == null)
+            {
+                CooldownHud = Modules.CooldownHud.CooldownHud.Initialize();
+            }
+            _hudModules.Add(CooldownHud);
+        }
+
+        public void Draw(DrawState drawState)
         {
             if (!FontsManager.Instance.DefaultFontBuilt)
             {
@@ -150,8 +166,10 @@ namespace SezzUI.Interface
 
             TooltipsHelper.Instance.RemoveTooltip(); // remove tooltip from previous frame
 
-            if (!ShouldBeVisible())
+            // don't draw hud when it's not supposed to be visible
+            if (drawState == DrawState.HiddenNotInGame || drawState == DrawState.HiddenDisabled)
             {
+                _hudModules.ForEach(module => module.Draw(drawState, null));
                 return;
             }
 
@@ -188,18 +206,22 @@ namespace SezzUI.Interface
                 origin += _hudOptions.HudOffset;
             }
 
-            // show only castbar during quest events
-            if (ShouldOnlyShowCastbar())
+            // don't draw grid during cutscenes or quest events
+            if (drawState == DrawState.HiddenCutscene || drawState == DrawState.PartiallyInteraction)
             {
+                _hudModules.ForEach(module => module.Draw(drawState, null));
                 ImGui.End();
                 return;
             }
 
-            // grid
+            // draw grid
             if (_gridConfig is not null && _gridConfig.Enabled)
             {
                 DraggablesHelper.DrawGrid(_gridConfig, _hudOptions, _selectedElement);
             }
+
+            // draw modules
+            _hudModules.ForEach(module => module.Draw(drawState, origin));
 
             // draw elements
             lock (_hudElements)
@@ -207,57 +229,10 @@ namespace SezzUI.Interface
                 DraggablesHelper.DrawElements(origin, _hudHelper, _hudElements, _selectedElement);
             }
 
-            // tooltip
+            // draw tooltip
             TooltipsHelper.Instance.Draw();
 
             ImGui.End();
-        }
-
-        protected unsafe bool ShouldBeVisible()
-        {
-            if (!ConfigurationManager.Instance.ShowHUD || Plugin.ClientState.LocalPlayer == null)
-            {
-                return false;
-            }
-
-            var parameterWidget = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("_ParameterWidget", 1);
-            var fadeMiddleWidget = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("FadeMiddle", 1);
-
-            var paramenterVisible = parameterWidget != null && parameterWidget->IsVisible;
-            var fadeMiddleVisible = fadeMiddleWidget != null && fadeMiddleWidget->IsVisible;
-
-            return paramenterVisible && !fadeMiddleVisible;
-        }
-
-        protected bool ShouldOnlyShowCastbar()
-        {
-            // when in quest dialogs and events, hide everything except castbars
-            // this includes talking to npcs or interacting with quest related stuff
-            if (Plugin.Condition[ConditionFlag.OccupiedInQuestEvent] ||
-                Plugin.Condition[ConditionFlag.OccupiedInEvent])
-            {
-                // we have to wait a bit to avoid weird flickering when clicking shiny stuff
-                // we hide the ui after half a second passed in this state
-                // interestingly enough, default hotbars seem to do something similar
-                var time = ImGui.GetTime();
-                if (_occupiedInQuestStartTime > 0)
-                {
-                    if (time - _occupiedInQuestStartTime > 0.5)
-                    {
-                        return true;
-                    }
-                }
-                else
-                {
-                    _occupiedInQuestStartTime = time;
-                }
-            }
-            else
-            {
-                _occupiedInQuestStartTime = -1;
-            }
-
-            return false;
         }
 
         private void AssignActors()

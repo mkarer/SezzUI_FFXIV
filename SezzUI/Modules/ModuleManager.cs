@@ -1,6 +1,7 @@
 ﻿using Dalamud.Interface;
 using DelvUI.Helpers;
 using ImGuiNET;
+using SezzUI.Enums;
 using System;
 using System.Numerics;
 
@@ -11,7 +12,7 @@ namespace SezzUI
         internal static Modules.GameUI.ElementHider ElementHider { get { return Modules.GameUI.ElementHider.Instance; } }
         internal static Modules.GameUI.ActionBar ActionBar { get { return Modules.GameUI.ActionBar.Instance; } }
 
-        public static void Draw()
+        public static void Draw(DrawState drawState)
         {
             if (!FontsManager.Instance.DefaultFontBuilt)
             {
@@ -43,8 +44,8 @@ namespace SezzUI
                 return;
             }
 
-            ElementHider.Draw(Vector2.Zero);
-            ActionBar.Draw(Vector2.Zero);
+            ElementHider.Draw(drawState, Vector2.Zero);
+            ActionBar.Draw(drawState, Vector2.Zero);
 
             ImGui.End();
         }

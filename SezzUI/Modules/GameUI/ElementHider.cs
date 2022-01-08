@@ -1,5 +1,6 @@
 ﻿using System;
 using Dalamud.Logging;
+using SezzUI.Enums;
 using SezzUI.Interface.GeneralElements;
 using SezzUI.Config;
 using System.Collections.Generic;
@@ -142,9 +143,9 @@ namespace SezzUI.Modules.GameUI
             }
         }
 
-        public override void Draw(Vector2 origin)
+        public override void Draw(DrawState drawState, Vector2? origin)
         {
-            if (!Enabled) { return; }
+            if (!Enabled || drawState != DrawState.Visible) { return; }
 
             bool updateNeeded = false;
 
