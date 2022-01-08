@@ -192,6 +192,10 @@ namespace SezzUI
                         ConfigurationManager.Instance.ShowHUD = false;
                         break;
 
+                    case "test":
+                        Core.Test.RunTest();
+                        break;
+
                     case { } argument when argument.StartsWith("profile"):
                         // TODO: Turn this into a helper function?
                         var profile = argument.Split(" ", 2);
