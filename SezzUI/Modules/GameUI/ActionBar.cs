@@ -269,6 +269,7 @@ namespace SezzUI.Modules.GameUI
         private void OnHudLayoutActivated(uint hudLayout, bool ready)
         {
             // Discard cache and update, switching HUD layout resets positions.
+            // TODO: This also happens right after logging in (OnAddonsLoaded)?
             _originalPositions.Clear();
 
             if (ready)
