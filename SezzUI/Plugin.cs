@@ -222,7 +222,14 @@ namespace SezzUI
             {
                 bool fontPushed = DelvUI.Helpers.FontsManager.Instance.PushDefaultFont();
 
-                HudManager.Instance.Draw(GetDrawState());
+                DrawState drawState = GetDrawState();
+                if (_lastDrawState != drawState)
+                {
+                    _lastDrawState = drawState;
+                    PluginLog.Debug($"DrawState: {drawState}");
+                }
+
+                HudManager.Instance.Draw(drawState);
 
                 if (fontPushed)
                 {
@@ -232,10 +239,12 @@ namespace SezzUI
         }
 
         #region Draw State
-        private static double _occupiedInQuestStartTime = -1;
+        //private static double _occupiedInQuestStartTime = -1;
+        private DrawState _lastDrawState = DrawState.Unknown;
 
         public static unsafe DrawState GetDrawState()
         {
+            // Dalamud conditions
             if (!ClientState.IsLoggedIn || Condition[ConditionFlag.CreatingCharacter] || Condition[ConditionFlag.BetweenAreas] || Condition[ConditionFlag.BetweenAreas51] || ClientState.LocalPlayer == null)
             {
                 return DrawState.HiddenNotInGame;
@@ -252,41 +261,61 @@ namespace SezzUI
             {
                 return DrawState.PartiallyInteraction;
             }
-            else if (Condition[ConditionFlag.OccupiedInQuestEvent] || Condition[ConditionFlag.OccupiedInEvent])
-            {
-                try
-                {
-                    var parameterWidget = (AtkUnitBase*)GameGui.GetAddonByName("_ParameterWidget", 1);
-                    var fadeMiddleWidget = (AtkUnitBase*)GameGui.GetAddonByName("FadeMiddle", 1);
 
-                    if ((parameterWidget != null && !parameterWidget->IsVisible) || (fadeMiddleWidget != null && fadeMiddleWidget->IsVisible))
-                    {
-                        // we have to wait a bit to avoid weird flickering when clicking shiny stuff
-                        // we hide the ui after half a second passed in this state
-                        // interestingly enough, default hotbars seem to do something similar
-                        var time = ImGui.GetTime();
-                        if (_occupiedInQuestStartTime > 0)
-                        {
-                            if (time - _occupiedInQuestStartTime > 0.5)
-                            {
-                                return DrawState.PartiallyInteraction;
-                            }
-                        }
-                        else
-                        {
-                            _occupiedInQuestStartTime = time;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    PluginLog.Error(ex, $"[GetDrawState] Error: {ex}");
-                }
-            }
-            else
+            // Quest interaction
+            if (Condition[ConditionFlag.OccupiedInQuestEvent] || Condition[ConditionFlag.OccupiedInEvent])
             {
-                _occupiedInQuestStartTime = -1;
+                return DrawState.PartiallyInteraction;
             }
+
+            try
+            {
+                var parameterWidget = (AtkUnitBase*)GameGui.GetAddonByName("_ParameterWidget", 1);
+                if (parameterWidget != null && !parameterWidget->IsVisible)
+                {
+                    return DrawState.PartiallyInteraction;
+                }
+
+                var fadeMiddleWidget = (AtkUnitBase*)GameGui.GetAddonByName("FadeMiddle", 1);
+                if (fadeMiddleWidget != null && fadeMiddleWidget->IsVisible)
+                {
+                    return DrawState.PartiallyInteraction;
+                }
+
+                // TODO: Test if this is good enough, remove if a timer is really needed.
+                var actionBarWidget = (AtkUnitBase*)GameGui.GetAddonByName("_ActionBar", 1);
+                if (actionBarWidget != null && !actionBarWidget->IsVisible)
+                {
+                    return DrawState.PartiallyInteraction;
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginLog.Error(ex, $"[GetDrawState] Error: {ex}");
+            }
+
+            //if (Condition[ConditionFlag.OccupiedInQuestEvent] || Condition[ConditionFlag.OccupiedInEvent])
+            //{
+            //    // We have to wait a bit to avoid weird flickering when clicking shiny stuff
+            //    // and hide the ui after half a second passed in this state.
+            //    // Interestingly enough, default hotbars seem to do something similar.
+            //    var time = ImGui.GetTime();
+            //    if (_occupiedInQuestStartTime > 0)
+            //    {
+            //        if (time - _occupiedInQuestStartTime >= 0.25) // TODO: Exact duration might be related to ping or other events!
+            //        {
+            //            return DrawState.PartiallyInteraction;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        _occupiedInQuestStartTime = time;
+            //    }
+            //}
+            //else
+            //{
+            //    _occupiedInQuestStartTime = -1;
+            //}
 
             return DrawState.Visible;
         }
