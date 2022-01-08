@@ -20,6 +20,7 @@ namespace SezzUI.Helpers
 			Ninki,
 			Soul,
 			Shroud,
+            Lemure,
 			Addersgall,
 			Addersting,
 			Kenki,
@@ -93,7 +94,10 @@ namespace SezzUI.Helpers
 				case PowerType.Shroud:
 					return (Plugin.JobGauges.Get<RPRGauge>()?.Shroud ?? 0, 100);
 
-				case PowerType.Addersgall:
+                case PowerType.Lemure:
+                    return (Plugin.JobGauges.Get<RPRGauge>()?.LemureShroud ?? 0, 5);
+
+                case PowerType.Addersgall:
 					if (jobLevel >= 45)
 					{
 						SGEGauge gauge1 = Plugin.JobGauges.Get<SGEGauge>();
