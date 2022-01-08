@@ -7,6 +7,7 @@ using Dalamud.Logging;
 using Dalamud.Plugin;
 using System.Numerics;
 using SezzUI.Config;
+using SezzUI.Enums;
 
 namespace SezzUI
 {
@@ -58,7 +59,12 @@ namespace SezzUI
             }
         }
 
-        public virtual void Draw(Vector2 origin)
+        public virtual bool Toggle(bool enable)
+        {
+            return enable ? Enable() : Disable();
+        }
+
+        public virtual void Draw(DrawState state, Vector2? origin)
         {
         }
 

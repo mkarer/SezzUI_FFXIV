@@ -93,11 +93,6 @@ namespace SezzUI.Modules.GameUI
             return true;
         }
 
-        public bool Toggle(bool enable)
-        {
-            return enable ? Enable() : Disable();
-        }
-
         private void OnAddonVisibilityChanged(bool visible)
         {
             if (!Plugin.ClientState.IsLoggedIn || !_initialUpdate) { return; }
