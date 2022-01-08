@@ -106,16 +106,19 @@ namespace SezzUI.Modules.JobHud
         /// </summary>
         public byte Level = 1;
 
+        private readonly float _opacityMax = 0.95f;
+        private readonly float _opacityMin = 0.65f;
+
         public AuraAlert()
         {
             Animator.Timelines.OnShow.Data.DefaultOpacity = 0;
             Animator.Timelines.OnShow.Data.DefaultScale = 1.5f;
-            Animator.Timelines.OnShow.Add(new Animator.FadeAnimation(0, 0.8f, 250));
+            Animator.Timelines.OnShow.Add(new Animator.FadeAnimation(0, _opacityMax, 250));
             Animator.Timelines.OnShow.Add(new Animator.ScaleAnimation(1.5f, 1, 250));
-            Animator.Timelines.Loop.Chain(new Animator.FadeAnimation(0.8f, 0.6f, 250));
-            Animator.Timelines.Loop.Chain(new Animator.FadeAnimation(0.6f, 0.8f, 250));
+            Animator.Timelines.Loop.Chain(new Animator.FadeAnimation(_opacityMax, _opacityMin, 250));
+            Animator.Timelines.Loop.Chain(new Animator.FadeAnimation(_opacityMin, _opacityMax, 250));
             Animator.Timelines.OnHide.Data.DefaultOpacity = 1;
-            Animator.Timelines.OnHide.Add(new Animator.FadeAnimation(0.8f, 0, 250));
+            Animator.Timelines.OnHide.Add(new Animator.FadeAnimation(_opacityMax, 0, 250));
             Animator.Timelines.OnHide.Add(new Animator.ScaleAnimation(1, 1.5f, 250));
         }
 
