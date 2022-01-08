@@ -259,13 +259,13 @@ namespace SezzUI
             }
             else if (Condition[ConditionFlag.OccupiedSummoningBell])
             {
-                return DrawState.PartiallyInteraction;
+                return DrawState.Partially;
             }
 
             // Quest interaction
             if (Condition[ConditionFlag.OccupiedInQuestEvent] || Condition[ConditionFlag.OccupiedInEvent])
             {
-                return DrawState.PartiallyInteraction;
+                return DrawState.Partially;
             }
 
             try
@@ -273,20 +273,20 @@ namespace SezzUI
                 var parameterWidget = (AtkUnitBase*)GameGui.GetAddonByName("_ParameterWidget", 1);
                 if (parameterWidget != null && !parameterWidget->IsVisible)
                 {
-                    return DrawState.PartiallyInteraction;
+                    return DrawState.Partially;
                 }
 
                 var fadeMiddleWidget = (AtkUnitBase*)GameGui.GetAddonByName("FadeMiddle", 1);
                 if (fadeMiddleWidget != null && fadeMiddleWidget->IsVisible)
                 {
-                    return DrawState.PartiallyInteraction;
+                    return DrawState.Partially;
                 }
 
                 // TODO: Test if this is good enough, remove if a timer is really needed.
                 var actionBarWidget = (AtkUnitBase*)GameGui.GetAddonByName("_ActionBar", 1);
                 if (actionBarWidget != null && !actionBarWidget->IsVisible)
                 {
-                    return DrawState.PartiallyInteraction;
+                    return DrawState.Partially;
                 }
             }
             catch (Exception ex)

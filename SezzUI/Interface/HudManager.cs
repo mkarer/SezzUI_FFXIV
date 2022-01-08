@@ -235,7 +235,7 @@ namespace SezzUI.Interface
             }
 
             // don't draw grid during cutscenes or quest events
-            if (drawState == DrawState.HiddenCutscene || drawState == DrawState.PartiallyInteraction)
+            if (drawState == DrawState.HiddenCutscene || drawState == DrawState.Partially)
             {
                 _hudModules.ForEach(module => module.Draw(drawState, null));
                 ImGui.End();

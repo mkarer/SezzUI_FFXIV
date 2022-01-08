@@ -318,11 +318,7 @@ namespace SezzUI.Modules.GameUI
         {
             config.ValueChangeEvent += OnConfigPropertyChanged;
             ConfigurationManager.Instance.ResetEvent += OnConfigReset;
-
-            if (Config.Enabled)
-            {
-                Enable();
-            }
+            Toggle(Config.Enabled);
         }
 
         public static void Initialize() {
