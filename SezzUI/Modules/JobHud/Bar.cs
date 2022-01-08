@@ -38,6 +38,8 @@ namespace SezzUI.Modules.JobHud
 
         public void Add(Icon icon, int index = -1)
 		{
+            // TODO: Hotbar->IsActionUnlocked
+            // https://github.com/aers/FFXIVClientStructs/blob/cf63160d5202f41e99c26afc42574f0bfbad3d4c/FFXIVClientStructs/FFXIV/Client/Game/UI/Hotbar.cs
             if (icon.Level > 1 && (Plugin.ClientState.LocalPlayer?.Level ?? 0) < icon.Level) { return; }
 
             if (index == -1)
