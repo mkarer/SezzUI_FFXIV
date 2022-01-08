@@ -70,13 +70,13 @@ namespace SezzUI.Modules.JobHud.Jobs
             roleBar.Add(new Icon(roleBar) { TextureActionId = 7421, CooldownActionId = 7421, StatusId = 1211, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 66 }, 1); // Triplecast
         }
 
-        public static bool IsInAstralFireOrIsInUmbralIce()
+        private static bool IsInAstralFireOrIsInUmbralIce()
         {
             BLMGauge gauge = Plugin.JobGauges.Get<BLMGauge>();
             return (gauge != null && (gauge.InAstralFire || gauge.InUmbralIce));
         }
 
-        public static bool IsParadoxActive()
+        private static bool IsParadoxActive()
         {
             BLMGauge gauge = Plugin.JobGauges.Get<BLMGauge>();
             return (gauge != null && gauge.IsParadoxActive);

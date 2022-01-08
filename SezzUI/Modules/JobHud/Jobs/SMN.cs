@@ -40,17 +40,17 @@ namespace SezzUI.Modules.JobHud.Jobs
         // Titan-Egi: 28
         // Garuda-Egi: 29
 
-        public static bool IsCarbuncleSummoned()
+        private static bool IsCarbuncleSummoned()
         {
             return (Plugin.BuddyList.PetBuddy != null && Plugin.BuddyList.PetBuddy.PetData.Id == 23);
         }
 
-        public static bool IsDemiBahamutSummoned()
+        private static bool IsDemiBahamutSummoned()
         {
             return (Plugin.BuddyList.PetBuddy != null && Plugin.BuddyList.PetBuddy.PetData.Id == 10);
         }
 
-        public static (float, float) GetDemiBahamutDuration()
+        private static (float, float) GetDemiBahamutDuration()
         {
             if (IsDemiBahamutSummoned())
             {

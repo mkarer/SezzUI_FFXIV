@@ -65,7 +65,7 @@ namespace SezzUI.Modules.JobHud.Jobs
             roleBar.Add(new Icon(roleBar) { TextureActionId = 25857, CooldownActionId = 25857, StatusId = 2707, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, Level = 86 }, 1); // Magick Barrier
         }
 
-        public static bool IsManaficationNotOvercapping()
+        private static bool IsManaficationNotOvercapping()
         {
             RDMGauge gauge = Plugin.JobGauges.Get<RDMGauge>();
             return (gauge != null && gauge.BlackMana <= 50 && gauge.WhiteMana <= 50);

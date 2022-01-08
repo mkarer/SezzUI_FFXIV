@@ -31,7 +31,7 @@ namespace SezzUI.Modules.JobHud.Jobs
             roleBar.Add(new Icon(roleBar) { TextureActionId = 7498, CooldownActionId = 7498, StatusId = 1232, MaxStatusDuration = 3, StatusTarget = Enums.Unit.Player, Level = 6 }, 1); // Third Eye
         }
 
-        public static bool CanUseHiganbana()
+        private static bool CanUseHiganbana()
         {
             return Helpers.JobsHelper.GetPower(Helpers.JobsHelper.PowerType.Sen).Item1 == 1;
         }
