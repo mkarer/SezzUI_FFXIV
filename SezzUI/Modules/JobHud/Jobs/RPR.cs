@@ -40,6 +40,7 @@ namespace SezzUI.Modules.JobHud.Jobs
             {
                 StatusId = 2592,
                 MaxDuration = 30,
+                CustomCondition = HasNoBloodsownCircle,
                 Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\predatory_swiftness.png",
                 Size = new Vector2(256, 128) * 1.1f,
                 Position = new Vector2(0, -180),
@@ -118,6 +119,11 @@ namespace SezzUI.Modules.JobHud.Jobs
         {
             RPRGauge gauge = Plugin.JobGauges.Get<RPRGauge>();
             return (gauge != null && gauge.EnshroudedTimeRemaining > 0 && gauge.LemureShroud == 1 && gauge.VoidShroud == 0);
+        }
+
+        private static bool HasNoBloodsownCircle()
+        {
+            return Helpers.SpellHelper.GetStatus(2972, Enums.Unit.Player) == null;
         }
     }
 }
