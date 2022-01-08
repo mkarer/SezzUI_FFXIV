@@ -32,6 +32,11 @@ namespace SezzUI.Modules.JobHud
         /// Applies only when GlowBorderStatusId or GlowBorderStatusIds is defined.
         /// </summary>
         GlowIgnoresState = 1L << 2,
+
+        /// <summary>
+        /// Disables displaying big status duration when no cooldown is specified.
+        /// </summary>
+        NoStatusCooldownDisplay = 1L << 3,
     }
 
     public class Icon : IDisposable
@@ -139,6 +144,7 @@ namespace SezzUI.Modules.JobHud
         public uint? StatusId;
         public uint[]? StatusIds;
         public bool StatusSourcePlayer = true;
+        public bool StatusRequired = false;
 
         /// <summary>
         /// Status (NOT Action) ID used for displaying stacks only.
@@ -308,7 +314,7 @@ namespace SezzUI.Modules.JobHud
             if ((StatusId != null || StatusIds != null) && StatusTarget != null && (MaxStatusDuration != null || MaxStatusDurations != null))
 			{
                 bool shouldShowStatusBar = !Features.HasFlag(IconFeatures.NoStatusBar);
-                bool shouldShowStatusAsCooldown = (CooldownActionId == null);
+                bool shouldShowStatusAsCooldown = (CooldownActionId == null && !Features.HasFlag(IconFeatures.NoStatusCooldownDisplay));
                 Status? status = null;
 
                 if (StatusId != null)
@@ -379,7 +385,11 @@ namespace SezzUI.Modules.JobHud
                 }
                 else if (shouldShowStatusAsCooldown && !failedInitialCondition)
                 {
-                    newState = IconState.Ready;
+                    newState = StatusRequired ? IconState.FadedOut : IconState.Ready;
+                }
+                else if (StatusRequired)
+                {
+                    newState = IconState.FadedOut;
                 }
             }
 
@@ -411,13 +421,21 @@ namespace SezzUI.Modules.JobHud
                 }
             }
 
+            // No conditions...
+            if (!failedInitialCondition && CooldownActionId == null && StatusId == null && StatusIds == null)
+            {
+                newState = IconState.Ready;
+            }
+
             // Resources
             if (RequiredPowerType != null)
 			{
                 (int current, int max) = Helpers.JobsHelper.GetPower((Helpers.JobsHelper.PowerType)RequiredPowerType);
                 if (RequiredPowerAmountMax != null)
                 {
-                    hasEnoughResources = (current <= RequiredPowerAmountMax);
+                    hasEnoughResources = RequiredPowerAmount != null ?
+                        (current >= RequiredPowerAmount && current <= RequiredPowerAmountMax):
+                        (current <= RequiredPowerAmountMax);
                 }
                 else
                 {
@@ -428,7 +446,7 @@ namespace SezzUI.Modules.JobHud
                 {
                     chargesTextAmount = (short)Math.Floor((float)current);
                 }
-            } else if (CustomPowerCondition !=  null)
+            } else if (CustomPowerCondition != null)
             {
                 hasEnoughResources = CustomPowerCondition();
             }
