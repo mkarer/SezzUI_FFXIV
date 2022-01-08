@@ -199,7 +199,7 @@ namespace SezzUI.Modules.JobHud
                     }
 
                     // Power Condition
-                    if (PowerType != null)
+                    if (!conditionsFailed && PowerType != null)
                     {
                         (int current, int max) = Helpers.JobsHelper.GetPower((Helpers.JobsHelper.PowerType)PowerType);
                         conditionsFailed = (ExactPowerAmount != null && current != ExactPowerAmount) || (MinimumPowerAmount != null && current < MinimumPowerAmount);
@@ -210,7 +210,7 @@ namespace SezzUI.Modules.JobHud
                     }
 
                     // Custom Condition
-                    if (CustomCondition != null)
+                    if (!conditionsFailed && CustomCondition != null)
                     {
                         bool result = CustomCondition();
                         conditionsFailed = (!InvertCheck && !result) || (InvertCheck && result);
