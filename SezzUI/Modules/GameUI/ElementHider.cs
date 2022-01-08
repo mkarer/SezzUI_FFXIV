@@ -160,6 +160,7 @@ namespace SezzUI.Modules.GameUI
                     area.Draw();
                     foreach (Element element in area.Elements)
                     {
+                        // TODO: Some addons (MainMenu) are shown while others are not, AreAddonsShown() needs to be changed.
                         _expectedVisibility[element] = area.IsHovered && EventManager.Game.AreAddonsShown(); // TOOD: AtkEvent: MouseOver, MouseOut
                         updateNeeded = updateNeeded || (!_currentVisibility.ContainsKey(element) || _currentVisibility[element] != _expectedVisibility[element]);
                     }
