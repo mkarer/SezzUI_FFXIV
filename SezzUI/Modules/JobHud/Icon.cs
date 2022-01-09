@@ -255,7 +255,11 @@ namespace SezzUI.Modules.JobHud
         /// <returns></returns>
         public bool ShouldShow()
         {
-            if (CooldownActionId != null)
+            if (Level > 0)
+            {
+                return Level >= (Plugin.ClientState.LocalPlayer?.Level ?? 0);
+            }
+            else if (CooldownActionId != null)
             {
                 return Helpers.JobsHelper.IsActionUnlocked((uint)CooldownActionId);
             }
@@ -263,12 +267,10 @@ namespace SezzUI.Modules.JobHud
             {
                 return Helpers.JobsHelper.IsActionUnlocked((uint)TextureActionId);
             }
-            else if (Level > 0)
+            else
             {
-                return Level >= (Plugin.ClientState.LocalPlayer?.Level ?? 0);
+                return true;
             }
-
-            return true;
         }
 
         public void Draw(Vector2 pos, Vector2 size, Animator.Animator animator, ImDrawListPtr drawList)
