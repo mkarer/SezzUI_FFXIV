@@ -126,11 +126,10 @@ namespace SezzUI
             CommandManager.AddHandler("/sezz", alias);
             CommandManager.AddHandler("/sui", alias);
 
-            var configManager = ConfigurationManager.Instance;
-            var config = configManager.GetConfigObject<DeveloperConfig>();
+            var config = ConfigurationManager.Instance.GetConfigObject<DeveloperConfig>();
             if (config != null && config.ShowConfigurationOnLogin)
             {
-                ConfigurationManager.Instance.ToggleConfigWindow();
+                OpenConfigUi();
             }
         }
 

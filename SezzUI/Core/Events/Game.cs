@@ -120,7 +120,10 @@ namespace SezzUI.GameEvents
                 try
                 {
                     _addonsReady = loaded && (_addonsReady || AreActionBarsLoaded());
-                    PluginLog.Debug($"[Event:{GetType().Name}::AddonsLoaded] Loaded: {loaded} Ready: {_addonsReady}");
+                    if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameAddonsLoaded)
+                    {
+                        PluginLog.Debug($"[Event:{GetType().Name}::AddonsLoaded] Loaded: {loaded} Ready: {_addonsReady}");
+                    }
                     AddonsLoaded?.Invoke(loaded, _addonsReady);
                 }
                 catch (Exception ex)
@@ -204,7 +207,10 @@ namespace SezzUI.GameEvents
 
                 try
                 {
-                    PluginLog.Debug($"[Event:{GetType().Name}::AddonVisibilityChanged] State: {addonVisibility}");
+                    if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameAddonVisibilityChanged)
+                    {
+                        PluginLog.Debug($"[Event:{GetType().Name}::AddonVisibilityChanged] State: {addonVisibility}");
+                    }
                     AddonVisibilityChanged?.Invoke(addonVisibility);
                 }
                 catch (Exception ex)
@@ -219,7 +225,10 @@ namespace SezzUI.GameEvents
             try
             {
                 _hudLayoutReady = _addonsReady && AreActionBarsLoaded();
-                PluginLog.Debug($"[Event:{GetType().Name}::HudLayoutActivated] Layout: {hudLayout} LayoutReady: {_hudLayoutReady}");
+                if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameHudLayoutActivated)
+                {
+                    PluginLog.Debug($"[Event:{GetType().Name}::HudLayoutActivated] Layout: {hudLayout} LayoutReady: {_hudLayoutReady}");
+                }
                 HudLayoutActivated?.Invoke(hudLayout, _hudLayoutReady);
             }
             catch (Exception ex)
