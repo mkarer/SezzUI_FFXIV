@@ -53,7 +53,7 @@ namespace SezzUI.Modules.JobHud
             }
             catch (Exception ex)
             {
-                PluginLog.Error(ex, "Error loading JobHud presets.");
+                PluginLog.Error(ex, $"[{GetType().Name}] Error loading presets: {ex}");
             }
 
             Toggle(Config.Enabled);
@@ -67,10 +67,10 @@ namespace SezzUI.Modules.JobHud
 
         public void Toggle(bool enable = true)
         {
-            PluginLog.Debug($"[{this.GetType().Name}] Toggle: {enable}");
+            PluginLog.Debug($"[{GetType().Name}] Toggle: {enable}");
             if (enable && !_isEnabled)
             {
-                PluginLog.Debug($"[{this.GetType().Name}] Enable");
+                PluginLog.Debug($"[{GetType().Name}] Enable");
                 _isEnabled = !_isEnabled;
                 Plugin.ClientState.Login += OnLogin;
                 Plugin.ClientState.Logout += OnLogout;
@@ -84,7 +84,7 @@ namespace SezzUI.Modules.JobHud
             }
             else if (!enable && _isEnabled)
             {
-                PluginLog.Debug($"[{this.GetType().Name}] Disable");
+                PluginLog.Debug($"[{GetType().Name}] Disable");
                 _isEnabled = !_isEnabled;
                 Reset();
 
@@ -113,8 +113,7 @@ namespace SezzUI.Modules.JobHud
         {
             Reset();
 
-            PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
-            uint jobId = (player != null ? player.ClassJob.Id : 0);
+            uint jobId = Plugin.ClientState.LocalPlayer?.ClassJob.Id ?? 0;
 
             if (!Defaults.JobColors.TryGetValue(jobId, out AccentColor))
             {
@@ -182,7 +181,7 @@ namespace SezzUI.Modules.JobHud
         {
             if (!IsShown)
             {
-                PluginLog.Debug($"[{this.GetType().Name}] Show");
+                PluginLog.Debug($"[{GetType().Name}] Show");
                 _isShown = !IsShown;
                 _lastDrawTick = 0;
                 _animator.Animate();
@@ -193,7 +192,7 @@ namespace SezzUI.Modules.JobHud
         {
             if (IsShown)
             {
-                PluginLog.Debug($"[{this.GetType().Name}] Hide {force}");
+                PluginLog.Debug($"[{GetType().Name}] Hide {force}");
                 _isShown = !IsShown;
                 _animator.Stop(force || LastDrawElapsed > 2000);
             }
@@ -213,7 +212,7 @@ namespace SezzUI.Modules.JobHud
             switch (args.PropertyName)
             {
                 case "Enabled":
-                    PluginLog.Debug($"[{this.GetType().Name}] OnConfigPropertyChanged Config.Enabled: {Config.Enabled}");
+                    PluginLog.Debug($"[{GetType().Name}] OnConfigPropertyChanged Config.Enabled: {Config.Enabled}");
                     Toggle(Config.Enabled);
                     break;
             }
@@ -222,7 +221,7 @@ namespace SezzUI.Modules.JobHud
         private void OnConfigReset(ConfigurationManager sender)
         {
             // Configuration doesn't change on reset? 
-            PluginLog.Debug($"[{this.GetType().Name}] OnConfigReset");
+            PluginLog.Debug($"[{GetType().Name}] OnConfigReset");
             if (_config != null)
             {
                 _config.ValueChangeEvent -= OnConfigPropertyChanged;
@@ -230,7 +229,7 @@ namespace SezzUI.Modules.JobHud
             _config = sender.GetConfigObject<JobHudConfig>();
             _config.ValueChangeEvent += OnConfigPropertyChanged;
             Toggle(Config.Enabled);
-            PluginLog.Debug($"[{this.GetType().Name}] Config.Enabled: {Config.Enabled}");
+            PluginLog.Debug($"[{GetType().Name}] Config.Enabled: {Config.Enabled}");
         }
         #endregion
 
