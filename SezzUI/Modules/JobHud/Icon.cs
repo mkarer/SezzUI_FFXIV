@@ -209,7 +209,7 @@ namespace SezzUI.Modules.JobHud
         /// <summary>
         /// Required job level to show icon.
         /// </summary>
-        public byte Level = 1;
+        public byte Level = 0;
 
         /// <summary>
         /// Action can only be executed while in combat.
@@ -247,6 +247,28 @@ namespace SezzUI.Modules.JobHud
             _animatorTexture.Timelines.OnShow.Data.DefaultColor = Defaults.StateColors[_state].Icon;
             _animatorTexture.Timelines.OnShow.Add(new Animator.ColorAnimation(_animatorTexture.Timelines.OnShow.Data.DefaultColor, _animatorTexture.Timelines.OnShow.Data.DefaultColor, 100));
             _animatorTexture.Data.Reset(_animatorTexture.Timelines.OnShow.Data);
+        }
+
+        /// <summary>
+        /// Checks level, cooldown action and texture action (in this priority) to decide if this should be shown.
+        /// </summary>
+        /// <returns></returns>
+        public bool ShouldShow()
+        {
+            if (CooldownActionId != null)
+            {
+                return Helpers.JobsHelper.IsActionUnlocked((uint)CooldownActionId);
+            }
+            else if (TextureActionId != null)
+            {
+                return Helpers.JobsHelper.IsActionUnlocked((uint)TextureActionId);
+            }
+            else if (Level > 0)
+            {
+                return Level >= (Plugin.ClientState.LocalPlayer?.Level ?? 0);
+            }
+
+            return true;
         }
 
         public void Draw(Vector2 pos, Vector2 size, Animator.Animator animator, ImDrawListPtr drawList)

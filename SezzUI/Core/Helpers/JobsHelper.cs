@@ -1,6 +1,8 @@
 ﻿using System;
 using Dalamud.Game.ClientState.JobGauge.Types;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 
 namespace SezzUI.Helpers
 {
@@ -32,7 +34,33 @@ namespace SezzUI.Helpers
             PolyglotStacks
         }
 
-		public static (int, int) GetPower(PowerType ptype)
+        public static unsafe byte GetUnsyncedLevel()
+        {
+            if (Plugin.ClientState.LocalPlayer == null) { return 0; }
+
+            UIState* uiState = UIState.Instance();
+            if (uiState != null && uiState->PlayerState.SyncedLevel != 0)
+            {
+                int index = Plugin.ClientState.LocalPlayer.ClassJob.GameData.ExpArrayIndex & 0xff;
+                return (byte)uiState->PlayerState.ClassJobLevelArray[index];
+            }
+
+            return Plugin.ClientState.LocalPlayer.Level;
+        }
+
+        public static bool IsActionUnlocked(uint actionId)
+        {
+            LuminaAction? action = SpellHelper.GetAction(actionId);
+            if (action != null)
+            {
+			    byte jobLevel = action.IsRoleAction ? GetUnsyncedLevel() : Plugin.ClientState.LocalPlayer?.Level ?? 0;
+                return (action.ClassJobLevel <= jobLevel);
+            }
+
+            return false;
+        }
+
+        public static (int, int) GetPower(PowerType ptype)
 		{
             PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
 			byte jobLevel = player?.Level ?? 0;
