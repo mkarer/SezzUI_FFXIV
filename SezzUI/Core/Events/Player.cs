@@ -66,10 +66,12 @@ namespace SezzUI.GameEvents
                 if (jobId != lastJobId)
                 {
                     lastJobId = jobId;
+#if DEBUG
                     if (EventManager.Config.LogEvents && EventManager.Config.LogEventPlayerJobChanged)
                     {
                         PluginLog.Debug($"[Event:{GetType().Name}::JobChanged] Job ID: {jobId}");
                     }
+#endif
                     JobChanged?.Invoke(jobId);
                 }
             }
@@ -85,10 +87,12 @@ namespace SezzUI.GameEvents
                 if (level != lastLevel)
                 {
                     lastLevel = level;
+#if DEBUG
                     if (EventManager.Config.LogEvents && EventManager.Config.LogEventPlayerLevelChanged)
                     {
                         PluginLog.Debug($"[Event:{GetType().Name}::LevelChanged] Level: {level}");
                     }
+#endif
                     LevelChanged?.Invoke(level);
                 }
             }

@@ -42,7 +42,9 @@ namespace SezzUI.GameEvents
                 if (Plugin.SigScanner.TryScanText("E8 ?? ?? ?? ?? 33 C0 EB 15", out var setHudLayoutPtr))
                 {
                     _setHudLayoutHook = new(setHudLayoutPtr, SetHudLayoutDetour);
+#if DEBUG
                     PluginLog.Debug($"[Event:{GetType().Name}] Hooked: SetHudLayout (ptr = {setHudLayoutPtr.ToInt64():X})");
+#endif
                 }
                 else
                 {
@@ -120,10 +122,12 @@ namespace SezzUI.GameEvents
                 try
                 {
                     _addonsReady = loaded && (_addonsReady || AreActionBarsLoaded());
+#if DEBUG
                     if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameAddonsLoaded)
                     {
                         PluginLog.Debug($"[Event:{GetType().Name}::AddonsLoaded] Loaded: {loaded} Ready: {_addonsReady}");
                     }
+#endif
                     AddonsLoaded?.Invoke(loaded, _addonsReady);
                 }
                 catch (Exception ex)
@@ -207,10 +211,12 @@ namespace SezzUI.GameEvents
 
                 try
                 {
+#if DEBUG
                     if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameAddonsVisibilityChanged)
                     {
                         PluginLog.Debug($"[Event:{GetType().Name}::AddonVisibilityChanged] State: {addonVisibility}");
                     }
+#endif
                     AddonsVisibilityChanged?.Invoke(addonVisibility);
                 }
                 catch (Exception ex)
@@ -225,10 +231,12 @@ namespace SezzUI.GameEvents
             try
             {
                 _hudLayoutReady = _addonsReady && AreActionBarsLoaded();
+#if DEBUG
                 if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameHudLayoutActivated)
                 {
                     PluginLog.Debug($"[Event:{GetType().Name}::HudLayoutActivated] Layout: {hudLayout} LayoutReady: {_hudLayoutReady}");
                 }
+#endif
                 HudLayoutActivated?.Invoke(hudLayout, _hudLayoutReady);
             }
             catch (Exception ex)
@@ -250,7 +258,9 @@ namespace SezzUI.GameEvents
                 PluginLog.Error(ex, $"[Event:{GetType().Name}::HudLayoutActivated] Hooked SetHudLayout({filePtr.ToInt64():X}, {hudLayout}, {unk0}, {unk1}) failed: {ex}");
             }
 
+#if DEBUG
             PluginLog.Debug($"[Event:{GetType().Name}::SetHudLayoutDetour] Layout: {hudLayout} Result: {ret}");
+#endif
             if (ret == 0)
             {
                 _hudLayout = hudLayout;

@@ -3,6 +3,7 @@ using SezzUI.Config.Attributes;
 
 namespace SezzUI.Interface.GeneralElements
 {
+#if DEBUG
     [Disableable(false)]
     [Section("General")]
     [SubSection("Developer", 0)]
@@ -26,6 +27,10 @@ namespace SezzUI.Interface.GeneralElements
         [Checkbox("Enable Event Logging [LogLevel: Debug]", spacing = true)]
         [Order(100)]
         public bool LogEvents = false;
+
+        [Checkbox("Plugin: DrawStateChanged*")]
+        [Order(110, collapseWith = nameof(LogEvents))]
+        public bool LogEventPluginDrawStateChanged = false;
 
         [Checkbox("Game: AddonsLoaded")]
         [Order(110, collapseWith = nameof(LogEvents))]
@@ -55,4 +60,5 @@ namespace SezzUI.Interface.GeneralElements
         [Order(131, collapseWith = nameof(LogEvents))]
         public bool LogEventCombatLeavingCombat = false;
     }
+#endif
 }

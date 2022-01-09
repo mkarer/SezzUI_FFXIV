@@ -126,11 +126,13 @@ namespace SezzUI
             CommandManager.AddHandler("/sezz", alias);
             CommandManager.AddHandler("/sui", alias);
 
+#if DEBUG
             var config = ConfigurationManager.Instance.GetConfigObject<DeveloperConfig>();
             if (config != null && config.ShowConfigurationOnLogin)
             {
                 OpenConfigUi();
             }
+#endif
         }
 
         public void Dispose()
@@ -225,7 +227,13 @@ namespace SezzUI
                 if (_lastDrawState != drawState)
                 {
                     _lastDrawState = drawState;
-                    PluginLog.Debug($"DrawState: {drawState}");
+#if DEBUG
+                    var config = ConfigurationManager.Instance.GetConfigObject<DeveloperConfig>();
+                    if (config != null && config.LogEvents && config.LogEventPluginDrawStateChanged)
+                    {
+                        PluginLog.Debug($"[Plugin::DrawStateChanged] State: {drawState}");
+                    }
+#endif
                 }
 
                 HudManager.Instance.Draw(drawState);
@@ -237,7 +245,7 @@ namespace SezzUI
             }
         }
 
-        #region Draw State
+#region Draw State
         //private static double _occupiedInQuestStartTime = -1;
         private DrawState _lastDrawState = DrawState.Unknown;
 
@@ -318,7 +326,7 @@ namespace SezzUI
 
             return DrawState.Visible;
         }
-        #endregion
+#endregion
 
         private void OpenConfigUi()
         {

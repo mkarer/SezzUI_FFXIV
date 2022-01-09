@@ -76,10 +76,12 @@ namespace SezzUI.GameEvents
                     lastState = state;
                     if (state)
                     {
+#if DEBUG
                         if (EventManager.Config.LogEvents && EventManager.Config.LogEventCombatEnteringCombat)
                         {
                             PluginLog.Debug($"[Event:{GetType().Name}] EnteringCombat");
                         }
+#endif
                         try
                         {
                             EnteringCombat?.Invoke(this, EventArgs.Empty);
@@ -90,10 +92,12 @@ namespace SezzUI.GameEvents
                         }
                     } else
                     {
+#if DEBUG
                         if (EventManager.Config.LogEvents && EventManager.Config.LogEventCombatLeavingCombat)
                         {
                             PluginLog.Debug($"[Event:{GetType().Name}] LeavingCombat");
                         }
+#endif
                         try
                         {
                             LeavingCombat?.Invoke(this, EventArgs.Empty);

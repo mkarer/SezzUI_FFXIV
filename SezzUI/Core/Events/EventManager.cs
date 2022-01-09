@@ -10,16 +10,20 @@ namespace SezzUI
         internal static GameEvents.Player Player { get { return GameEvents.Player.Instance; } }
         internal static GameEvents.Combat Combat { get { return GameEvents.Combat.Instance; } }
 
+#if DEBUG
         protected static PluginConfigObject _config = null!;
         public static DeveloperConfig Config => (DeveloperConfig)_config;
+#endif
 
-        #region Singleton
+#region Singleton
         public static void Initialize() { Instance = new EventManager(); }
 
         public EventManager()
         {
+#if DEBUG
             _config = ConfigurationManager.Instance.GetConfigObject<DeveloperConfig>();
             ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+#endif
         }
 
         public static EventManager Instance { get; private set; } = null!;
@@ -45,16 +49,20 @@ namespace SezzUI
             if (GameEvents.Game.Initialized) { Game.Dispose(); }
             if (GameEvents.Player.Initialized) { Player.Dispose(); }
             if (GameEvents.Combat.Initialized) { Combat.Dispose(); }
-            
+
+#if DEBUG
             ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+#endif
 
             Instance = null!;
         }
-        #endregion
+#endregion
 
+#if DEBUG
         private void OnConfigReset(ConfigurationManager sender)
         {
             _config = sender.GetConfigObject<DeveloperConfig>();
         }
+#endif
     }
 }
