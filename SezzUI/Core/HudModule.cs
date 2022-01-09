@@ -12,11 +12,13 @@ namespace SezzUI
         protected PluginConfigObject _config;
         public PluginConfigObject GetConfig() { return _config; }
         protected string _logPrefix;
+        protected string _logPrefixBase;
 
         public HudModule(PluginConfigObject config)
         {
             _config = config;
-            _logPrefix = new StringBuilder("[HudModule:").Append(GetType().Name).Append("] ").ToString();
+            _logPrefixBase = new StringBuilder("HudModule:").Append(GetType().Name).ToString();
+            _logPrefix = new StringBuilder("[").Append(_logPrefixBase).Append("] ").ToString();
         }
 
         public virtual bool Enabled {
@@ -74,10 +76,24 @@ namespace SezzUI
 #endif
         }
 
+        protected void LogDebug(string messagePrefix, string messageTemplate, params object[] values)
+        {
+#if DEBUG
+            PluginLog.Debug(new StringBuilder("[").Append(_logPrefixBase).Append("::").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
+#endif
+        }
+
         protected void LogDebug(Exception exception, string messageTemplate, params object[] values)
         {
 #if DEBUG
             PluginLog.Debug(exception, new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
+#endif
+        }
+
+        protected void LogDebug(Exception exception, string messagePrefix, string messageTemplate, params object[] values)
+        {
+#if DEBUG
+            PluginLog.Debug(exception, new StringBuilder("[").Append(_logPrefixBase).Append("::").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
 #endif
         }
 
@@ -86,9 +102,19 @@ namespace SezzUI
             PluginLog.Error(new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
         }
 
+        protected void LogError(string messagePrefix, string messageTemplate, params object[] values)
+        {
+            PluginLog.Error(new StringBuilder("[").Append(_logPrefixBase).Append("::").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
+        }
+
         protected void LogError(Exception exception, string messageTemplate, params object[] values)
         {
             PluginLog.Error(exception, new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
+        }
+
+        protected void LogError(Exception exception, string messagePrefix, string messageTemplate, params object[] values)
+        {
+            PluginLog.Error(exception, new StringBuilder("[").Append(_logPrefixBase).Append("::").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
         }
         #endregion
 
