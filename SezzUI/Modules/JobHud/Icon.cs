@@ -257,7 +257,7 @@ namespace SezzUI.Modules.JobHud
         {
             if (Level > 0)
             {
-                return Level >= (Plugin.ClientState.LocalPlayer?.Level ?? 0);
+                return Level <= (Plugin.ClientState.LocalPlayer?.Level ?? 0);
             }
             else if (CooldownActionId != null)
             {
