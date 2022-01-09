@@ -16,11 +16,11 @@ namespace SezzUI.GameEvents
         public bool AreAddonsLoaded => _addonsLoaded;
         public bool AreAddonsReady => AreAddonsLoaded && _addonsReady;
 
-        public delegate void AddonVisibilityChangedDelegate(bool visible);
-        public event AddonVisibilityChangedDelegate? AddonVisibilityChanged;
-        private bool _addonVisibility = false;
-        private bool _addonVisibilityCached = false;
-        public bool AreAddonsVisible => _addonVisibility;
+        public delegate void AddonsVisibilityChangedDelegate(bool visible);
+        public event AddonsVisibilityChangedDelegate? AddonsVisibilityChanged;
+        private bool _addonsVisibility = false;
+        private bool _addonsVisibilityCached = false;
+        public bool AreAddonsVisible => _addonsVisibility;
 
         public delegate void HudLayoutActivatedDelegate(uint hudLayout, bool ready);
         public event HudLayoutActivatedDelegate? HudLayoutActivated;
@@ -92,8 +92,8 @@ namespace SezzUI.GameEvents
 
                 _addonsLoaded = false;
                 _addonsReady = false;
-                _addonVisibility = false;
-                _addonVisibilityCached = false;
+                _addonsVisibility = false;
+                _addonsVisibilityCached = false;
                 _hudLayoutReady = false;
                 _hudLayout = UNKNOWN_HUD_LAYOUT;
             }
@@ -154,9 +154,9 @@ namespace SezzUI.GameEvents
 
         public bool AreAddonsShown(bool cached = true)
         {
-            if (_addonVisibilityCached && cached)
+            if (_addonsVisibilityCached && cached)
             {
-                return _addonVisibility;
+                return _addonsVisibility;
             }
             else
             {
@@ -200,22 +200,22 @@ namespace SezzUI.GameEvents
                 }
             }
 
-            if (_addonVisibility != addonVisibility)
+            if (_addonsVisibility != addonVisibility)
             {
-                _addonVisibility = addonVisibility;
-                _addonVisibilityCached = true;
+                _addonsVisibility = addonVisibility;
+                _addonsVisibilityCached = true;
 
                 try
                 {
-                    if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameAddonVisibilityChanged)
+                    if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameAddonsVisibilityChanged)
                     {
                         PluginLog.Debug($"[Event:{GetType().Name}::AddonVisibilityChanged] State: {addonVisibility}");
                     }
-                    AddonVisibilityChanged?.Invoke(addonVisibility);
+                    AddonsVisibilityChanged?.Invoke(addonVisibility);
                 }
                 catch (Exception ex)
                 {
-                    PluginLog.Error(ex, $"[Event:{GetType().Name}::AddonVisibilityChanged] Failed invoking {nameof(this.AddonVisibilityChanged)}: {ex}");
+                    PluginLog.Error(ex, $"[Event:{GetType().Name}::AddonVisibilityChanged] Failed invoking {nameof(this.AddonsVisibilityChanged)}: {ex}");
                 }
             }
         }

@@ -31,9 +31,9 @@ namespace SezzUI.Interface.GeneralElements
         [Order(110, collapseWith = nameof(LogEvents))]
         public bool LogEventGameAddonsLoaded = false;
 
-        [Checkbox("Game: AddonVisibilityChanged")]
+        [Checkbox("Game: AddonsVisibilityChanged")]
         [Order(111, collapseWith = nameof(LogEvents))]
-        public bool LogEventGameAddonVisibilityChanged = false;
+        public bool LogEventGameAddonsVisibilityChanged = false;
 
         [Checkbox("Game: HudLayoutActivated")]
         [Order(112, collapseWith = nameof(LogEvents))]

@@ -76,7 +76,7 @@ namespace SezzUI.Modules.GameUI
             if (Config.HideActionBarLock) { _expectedVisibility[Element.ActionBarLock] = false; }
 
             EventManager.Game.AddonsLoaded += OnAddonsLoaded;
-            EventManager.Game.AddonVisibilityChanged += OnAddonVisibilityChanged;
+            EventManager.Game.AddonsVisibilityChanged += OnAddonsVisibilityChanged;
             return true;
         }
 
@@ -85,7 +85,7 @@ namespace SezzUI.Modules.GameUI
             if (!base.Disable()) { return false; }
 
             EventManager.Game.AddonsLoaded -= OnAddonsLoaded;
-            EventManager.Game.AddonVisibilityChanged -= OnAddonVisibilityChanged;
+            EventManager.Game.AddonsVisibilityChanged -= OnAddonsVisibilityChanged;
             UpdateAddons(_expectedVisibility, EventManager.Game.AreAddonsShown());
             _areas.Clear();
             _expectedVisibility.Clear();
@@ -94,7 +94,7 @@ namespace SezzUI.Modules.GameUI
             return true;
         }
 
-        private void OnAddonVisibilityChanged(bool visible)
+        private void OnAddonsVisibilityChanged(bool visible)
         {
             if (!Plugin.ClientState.IsLoggedIn || !_initialUpdate) { return; }
 
@@ -139,7 +139,7 @@ namespace SezzUI.Modules.GameUI
             {
                 // Force update after visiting the aesthetician!
                 _initialUpdate = true;
-                OnAddonVisibilityChanged(EventManager.Game.AreAddonsShown()); // TODO: Test
+                OnAddonsVisibilityChanged(EventManager.Game.AreAddonsShown()); // TODO: Test
             }
         }
 
