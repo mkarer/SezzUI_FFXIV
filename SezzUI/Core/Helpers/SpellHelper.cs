@@ -197,7 +197,7 @@ namespace SezzUI.Helpers
 
             ushort maxChargesMaxLevel = DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, Constants.MAX_PLAYER_LEVEL);
             ushort maxChargesCurrentLevel = player.Level < Constants.MAX_PLAYER_LEVEL ? DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, player.Level) : maxChargesMaxLevel;
-            float chargesMod = maxChargesCurrentLevel > 1 ? 1f / maxChargesMaxLevel * maxChargesCurrentLevel : 1;
+            float chargesMod = maxChargesCurrentLevel != maxChargesMaxLevel ? 1f / maxChargesMaxLevel * maxChargesCurrentLevel : 1;
 
             data.ChargesMax = maxChargesCurrentLevel;
             data.CooldownTotal = totalCooldown * chargesMod; // GetRecastTime returns total cooldown for max level charges (but only if we have multiple charges right now?)
@@ -212,11 +212,11 @@ namespace SezzUI.Helpers
 
             data.ChargesCurrent = data.CooldownTotalElapsed > 0 ? (int)Math.Floor(data.CooldownTotalElapsed / data.CooldownPerCharge) : data.ChargesMax;
 
-            //if (actionId == 38)
+            //if (actionId == 16151)
             //{
-            //    Dalamud.Logging.PluginLog.Debug($"CooldownTotal {data.CooldownTotal} CooldownRemaining {data.CooldownRemaining} chargesMod {chargesMod} " +
-            //        $"GetRecastTime {DelvUI.Helpers.SpellHelper.Instance.GetRecastTime(actionIdAdjusted)} GetAdjustedRecastTime {DelvUI.Helpers.SpellHelper.Instance.GetAdjustedRecastTime(actionId)}" +
-            //        $"GetRecastTimeElapsed {DelvUI.Helpers.SpellHelper.Instance.GetRecastTimeElapsed(actionIdAdjusted)} GetAdjustedRecastTimeElapsed {DelvUI.Helpers.SpellHelper.Instance.GetAdjustedRecastTimeElapsed(actionId)}");
+            //    Dalamud.Logging.PluginLog.Debug($"Level {player.Level} CooldownTotal {data.CooldownTotal} CooldownRemaining {data.CooldownRemaining} chargesMod {chargesMod} " +
+            //        $"GetRecastTime {DelvUI.Helpers.SpellHelper.Instance.GetRecastTime(actionIdAdjusted)} GetAdjustedRecastTime {totalCooldown}" +
+            //        $"GetRecastTimeElapsed {DelvUI.Helpers.SpellHelper.Instance.GetRecastTimeElapsed(actionIdAdjusted)} GetAdjustedRecastTimeElapsed {elapsedCooldown}");
             //}
 
             return data;
