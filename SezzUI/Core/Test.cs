@@ -7,6 +7,11 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using Dalamud.Game.ClientState.Statuses;
 using Dalamud.Game.ClientState.JobGauge.Types;
 using Dalamud.Logging;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using FFXIVClientStructs.FFXIV.Client.Game.Group;
+using System.Runtime.InteropServices;
 
 namespace SezzUI.Core
 {
@@ -16,16 +21,6 @@ namespace SezzUI.Core
         {
             try
             {
-                //ActionManager* _actionManager = ActionManager.Instance();
-                //PluginLog.Debug($"Action: 24383 (Gallows) Status: {_actionManager->GetActionStatus(ActionType.Spell, 24383)}");
-                //PluginLog.Debug($"Action: 24382 (Gibbet) Status: {_actionManager->GetActionStatus(ActionType.Spell, 24382)}");
-
-                RPRGauge gauge = Plugin.JobGauges.Get<RPRGauge>();
-                PluginLog.Debug($"LemureShroud: {gauge?.LemureShroud ?? 0}");
-
-                // 572 ready
-                // 582 gcd
-                // 579 ?! in cutscene
             }
             catch (Exception ex)
             {
