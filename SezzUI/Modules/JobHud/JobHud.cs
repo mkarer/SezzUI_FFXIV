@@ -33,6 +33,9 @@ namespace SezzUI.Modules.JobHud
         private int _lastDrawTick = 0;
         private int _lastDrawElapsed = 0;
 
+        private uint _currentJobId = 0;
+        private byte _currentLevel = 0;
+
         public JobHud(JobHudConfig config, string displayName) : base(config, displayName)
         {
             config.ValueChangeEvent += OnConfigPropertyChanged;
@@ -107,20 +110,26 @@ namespace SezzUI.Modules.JobHud
             _bars.Clear();
             _auraAlerts.ForEach(aa => aa.Dispose());
             _auraAlerts.Clear();
+            _currentJobId = 0;
+            _currentLevel = 0;
         }
 
         private void Configure()
         {
             Reset();
 
-            uint jobId = Plugin.ClientState.LocalPlayer?.ClassJob.Id ?? 0;
+            PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+            _currentJobId = player?.ClassJob.Id ?? 0;
+            _currentLevel = player?.Level ?? 0;
 
-            if (!Defaults.JobColors.TryGetValue(jobId, out AccentColor))
+            if (_currentJobId == 0 || _currentLevel == 0) { return; }
+
+            if (!Defaults.JobColors.TryGetValue(_currentJobId, out AccentColor))
             {
                 AccentColor = Defaults.IconBarColor;
             }
 
-            if (_presets.TryGetValue(jobId, out BasePreset? preset))
+            if (_presets.TryGetValue(_currentJobId, out BasePreset? preset))
             {
                 preset.Configure(this);
             }
@@ -255,12 +264,16 @@ namespace SezzUI.Modules.JobHud
 
         private void OnJobChanged(uint jobId)
         {
-            Configure();
+            // We're caching current level and job in Configure()
+            // to avoid resetting/configuring twice.
+            if (_currentJobId != jobId) { Configure(); }
         }
 
         private void OnLevelChanged(byte level)
         {
-            Configure();
+            // We're caching current level and job in Configure()
+            // to avoid resetting/configuring twice.
+            if (_currentLevel != level) { Configure(); }
         }
         #endregion
     }
