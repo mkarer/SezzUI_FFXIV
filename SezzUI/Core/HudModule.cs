@@ -11,10 +11,12 @@ namespace SezzUI
     {
         protected PluginConfigObject _config;
         public PluginConfigObject GetConfig() { return _config; }
+        protected string _logPrefix;
 
         public HudModule(PluginConfigObject config)
         {
             _config = config;
+            _logPrefix = new StringBuilder("[HudModule:").Append(GetType().Name).Append("] ").ToString();
         }
 
         public virtual bool Enabled {
@@ -64,19 +66,31 @@ namespace SezzUI
             return false;
         }
 
+        #region Logging
         protected void LogDebug(string messageTemplate, params object[] values)
         {
 #if DEBUG
-            PluginLog.Debug(new StringBuilder("[HudModule:").Append(GetType().Name).Append("] ").Append(messageTemplate).ToString(), values);
+            PluginLog.Debug(new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
 #endif
         }
 
         protected void LogDebug(Exception exception, string messageTemplate, params object[] values)
         {
 #if DEBUG
-            PluginLog.Debug(exception, new StringBuilder("[HudModule:").Append(GetType().Name).Append("] ").Append(messageTemplate).ToString(), values);
+            PluginLog.Debug(exception, new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
 #endif
         }
+
+        protected void LogError(string messageTemplate, params object[] values)
+        {
+            PluginLog.Error(new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
+        }
+
+        protected void LogError(Exception exception, string messageTemplate, params object[] values)
+        {
+            PluginLog.Error(exception, new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
+        }
+        #endregion
 
         public virtual void Draw(DrawState state, Vector2? origin)
         {
