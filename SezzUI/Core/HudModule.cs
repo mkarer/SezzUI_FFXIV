@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Dalamud.Logging;
-using Dalamud.Plugin;
 using System.Numerics;
 using SezzUI.Config;
 using SezzUI.Enums;
@@ -33,13 +29,13 @@ namespace SezzUI
         {
             if (!_isEnabled)
             {
-                PluginLog.Debug($"[HudModule:{GetType().Name}] Enable");
+                LogDebug("Enable");
                 _isEnabled = true;
                 return true;
             }
             else
             {
-                PluginLog.Debug($"[HudModule:{GetType().Name}] Enable skipped");
+                LogDebug("Enable skipped");
                 return false;
             }
         }
@@ -48,24 +44,43 @@ namespace SezzUI
         {
             if (_isEnabled)
             {
-                PluginLog.Debug($"[HudModule:{GetType().Name}] Disable");
+                LogDebug("Disable");
                 _isEnabled = false;
                 return true;
             }
             else
             {
-                PluginLog.Debug($"[HudModule:{GetType().Name}] Disable skipped");
+                LogDebug("Disable skipped");
                 return false;
             }
         }
 
         public virtual bool Toggle(bool enable)
         {
-            return enable ? Enable() : Disable();
+            if (enable != _isEnabled)
+            {
+                return enable ? Enable() : Disable();
+            }
+            return false;
+        }
+
+        protected void LogDebug(string messageTemplate, params object[] values)
+        {
+#if DEBUG
+            PluginLog.Debug(new StringBuilder("[HudModule:").Append(GetType().Name).Append("] ").Append(messageTemplate).ToString(), values);
+#endif
+        }
+
+        protected void LogDebug(Exception exception, string messageTemplate, params object[] values)
+        {
+#if DEBUG
+            PluginLog.Debug(exception, new StringBuilder("[HudModule:").Append(GetType().Name).Append("] ").Append(messageTemplate).ToString(), values);
+#endif
         }
 
         public virtual void Draw(DrawState state, Vector2? origin)
         {
+            // override
         }
 
         ~HudModule()
@@ -86,7 +101,7 @@ namespace SezzUI
                 return;
             }
 
-            PluginLog.Debug($"[HudModule:{GetType().Name}] Dispose");
+            LogDebug("Dispose");
 
             if (_isEnabled)
             {
