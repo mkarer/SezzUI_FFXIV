@@ -53,8 +53,8 @@ namespace SezzUI.Modules.JobHud
 					using (Bar bar = new(hud))
 					{
 						bar.IconSize = new Vector2(38, 26);
-						bar.Add(new Icon(bar) { TextureActionId = 7551, CooldownActionId = 7551, IconClipOffset = -0.7f }); // Head Gaze
-						bar.Add(new Icon(bar) { TextureActionId = 7541, CooldownActionId = 7541 }); // Second Wind
+						bar.Add(new Icon(bar) { TextureActionId = 7551, CooldownActionId = 7551, IconClipOffset = -0.7f }); // Head Graze
+                        bar.Add(new Icon(bar) { TextureActionId = 7541, CooldownActionId = 7541 }); // Second Wind
 						bar.Add(new Icon(bar) { TextureActionId = 7548, CooldownActionId = 7548, StatusId = 1209, MaxStatusDuration = 6, StatusTarget = Enums.Unit.Player }); // Arm's Length
 						hud.AddBar(bar);
 					}
