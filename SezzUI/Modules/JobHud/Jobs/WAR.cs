@@ -15,7 +15,7 @@ namespace SezzUI.Modules.JobHud.Jobs
                 bar.Add(new Icon(bar) { TextureStatusId = 2677, StatusId = 2677, MaxStatusDuration = 60, StatusTarget = Enums.Unit.Player, Level = 50 }); // Surging Tempest
                 bar.Add(new Icon(bar) { TextureActionId = 38, CooldownActionId = 38, StatusActionId = 38, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, GlowBorderStatusIds = new[] { (uint)1177, (uint)9 }, Features = IconFeatures.GlowIgnoresState, Level = 6 }); // Berserk
                 bar.Add(new Icon(bar) { TextureActionId = 7386, CooldownActionId = 7386, Level = 62 }); // Onslaught
-                bar.Add(new Icon(bar) { TextureActionId = 52, CooldownActionId = 52, StatusId = 1897, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, Level = 50 }); // Infuriate
+                bar.Add(new Icon(bar) { TextureActionId = 52, CooldownActionId = 52, StatusId = 1897, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, RequiresCombat = true, Level = 50 }); // Infuriate
                 bar.Add(new Icon(bar) { TextureActionId = 3551, CooldownActionId = 3551, StatusIds = new[] { (uint)735, (uint)1857 }, MaxStatusDuration = jobLevel >= 82 ? 8 : 6, StatusTarget = Enums.Unit.Player, Level = 56 }); // Raw Intuition/Nascent Flash
                 hud.AddBar(bar);
             }
