@@ -59,6 +59,22 @@ namespace SezzUI.Interface.GeneralElements
         [Checkbox("Combat: LeavingCombat")]
         [Order(131, collapseWith = nameof(LogEvents))]
         public bool LogEventCombatLeavingCombat = false;
+
+        [Checkbox("Cooldown: Hooks")]
+        [Order(140, collapseWith = nameof(LogEvents))]
+        public bool LogEventCooldownHooks = false;
+
+        [Checkbox("Cooldown: CooldownStarted")]
+        [Order(141, collapseWith = nameof(LogEvents))]
+        public bool LogEventCooldownStarted = false;
+
+        [Checkbox("Cooldown: CooldownChanged")]
+        [Order(142, collapseWith = nameof(LogEvents))]
+        public bool LogEventCooldownChanged = false;
+
+        [Checkbox("Cooldown: CooldownFinished")]
+        [Order(143, collapseWith = nameof(LogEvents))]
+        public bool LogEventCooldownFinished = false;
     }
 #endif
 }
