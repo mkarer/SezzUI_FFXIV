@@ -10,14 +10,12 @@ namespace SezzUI.Modules.JobHud.Jobs
         
         public override void Configure(JobHud hud)
         {
-            using (Bar bar = new(hud))
-            {
-                bar.Add(new Icon(bar) { TextureActionId = 144, StatusIds = new[] { (uint)161, (uint)162, (uint)163, (uint)1210 }, MaxStatusDurations = new[] { 21f, 18f, 30f, 18f }, StatusTarget = Enums.Unit.Target, GlowBorderStatusId = 164, Features = IconFeatures.GlowIgnoresState, Level = 4 }); // Thunder
-                bar.Add(new Icon(bar) { TextureActionId = 25796, CooldownActionId = 25796, CustomPowerCondition = IsInAstralFireOrIsInUmbralIce, GlowBorderUsable = true, Level = 86 }); // Amplifier
-                bar.Add(new Icon(bar) { TextureActionId = 3574, CooldownActionId = 3574, StatusId = 867, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, Level = 54 }); // Sharpcast
-                bar.Add(new Icon(bar) { TextureActionId = 3573, CooldownActionId = 3573, StatusId = 737, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, GlowBorderStatusId = 738, GlowBorderInvertCheck = true, GlowBorderStatusIdForced = 737, GlowBorderUsable = true, Level = 52 }); // Ley Lines
-                hud.AddBar(bar);
-            }
+            Bar bar1 = new(hud);
+            bar1.Add(new Icon(bar1) { TextureActionId = 144, StatusIds = new[] { (uint)161, (uint)162, (uint)163, (uint)1210 }, MaxStatusDurations = new[] { 21f, 18f, 30f, 18f }, StatusTarget = Enums.Unit.Target, GlowBorderStatusId = 164, Features = IconFeatures.GlowIgnoresState, Level = 4 }); // Thunder
+            bar1.Add(new Icon(bar1) { TextureActionId = 25796, CooldownActionId = 25796, CustomPowerCondition = IsInAstralFireOrIsInUmbralIce, GlowBorderUsable = true, Level = 86 }); // Amplifier
+            bar1.Add(new Icon(bar1) { TextureActionId = 3574, CooldownActionId = 3574, StatusId = 867, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, Level = 54 }); // Sharpcast
+            bar1.Add(new Icon(bar1) { TextureActionId = 3573, CooldownActionId = 3573, StatusId = 737, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, GlowBorderStatusId = 738, GlowBorderInvertCheck = true, GlowBorderStatusIdForced = 737, GlowBorderUsable = true, Level = 52 }); // Ley Lines
+            hud.AddBar(bar1);
 
             // Firestarter
             hud.AddAlert(new AuraAlert

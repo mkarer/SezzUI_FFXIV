@@ -8,18 +8,16 @@ namespace SezzUI.Modules.JobHud.Jobs
     public sealed class RPR : BasePreset
     {
         public override uint JobId => DelvUI.Helpers.JobIDs.RPR;
-        
+
         public override void Configure(JobHud hud)
         {
-            using (Bar bar = new(hud))
-            {
-                bar.Add(new Icon(bar) { TextureStatusId = 2586, StatusId = 2586, MaxStatusDuration = 60, StatusTarget = Enums.Unit.Target, Level = 10 }); // Death's Design
-                bar.Add(new Icon(bar) { TextureActionId = 24394, StatusIds = new[] { (uint)2593, (uint)2863 }, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, RequiredPowerAmount = 50, RequiredPowerType = Helpers.JobsHelper.PowerType.Shroud, GlowBorderUsable = true, Level = 80 }); // Enshroud
-                bar.Add(new Icon(bar) { TextureActionId = 24398, CustomCondition = IsEnshrouded, CustomPowerCondition = HasOneLemureLeft, GlowBorderUsable = true, Level = 90 }); // Communio
-                bar.Add(new Icon(bar) { TextureActionId = 24393, CooldownActionId = 24393, RequiredPowerAmount = 50, RequiredPowerType = Helpers.JobsHelper.PowerType.Soul, GlowBorderUsable = true, Level = 76 }); // Gluttony
-                bar.Add(new Icon(bar) { TextureActionId = 24405, CooldownActionId = 24405, StatusId = 2599, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, StacksStatusId = 2592, Level = 72 }); // Arcane Circle
-                hud.AddBar(bar);
-            }
+            Bar bar1 = new(hud);
+            bar1.Add(new Icon(bar1) { TextureStatusId = 2586, StatusId = 2586, MaxStatusDuration = 60, StatusTarget = Enums.Unit.Target, Level = 10 }); // Death's Design
+            bar1.Add(new Icon(bar1) { TextureActionId = 24394, StatusIds = new[] { (uint)2593, (uint)2863 }, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, RequiredPowerAmount = 50, RequiredPowerType = Helpers.JobsHelper.PowerType.Shroud, GlowBorderUsable = true, Level = 80 }); // Enshroud
+            bar1.Add(new Icon(bar1) { TextureActionId = 24398, CustomCondition = IsEnshrouded, CustomPowerCondition = HasOneLemureLeft, GlowBorderUsable = true, Level = 90 }); // Communio
+            bar1.Add(new Icon(bar1) { TextureActionId = 24393, CooldownActionId = 24393, RequiredPowerAmount = 50, RequiredPowerType = Helpers.JobsHelper.PowerType.Soul, GlowBorderUsable = true, Level = 76 }); // Gluttony
+            bar1.Add(new Icon(bar1) { TextureActionId = 24405, CooldownActionId = 24405, StatusId = 2599, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, StacksStatusId = 2592, Level = 72 }); // Arcane Circle
+            hud.AddBar(bar1);
 
             // Soulsow/Harvest Moon
             hud.AddAlert(new AuraAlert

@@ -7,18 +7,16 @@ namespace SezzUI.Modules.JobHud.Jobs
     public sealed class RDM : BasePreset
     {
         public override uint JobId => DelvUI.Helpers.JobIDs.RDM;
-        
+
         public override void Configure(JobHud hud)
         {
-            using (Bar bar = new(hud))
-            {
-                bar.Add(new Icon(bar) { TextureActionId = 7518, CooldownActionId = 7518, StatusId = 1238, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 50 }); // Acceleration
-                bar.Add(new Icon(bar) { TextureActionId = 7506, CooldownActionId = 7506, Level = 6 }); // Corps-a-corps
-                bar.Add(new Icon(bar) { TextureActionId = 7515, CooldownActionId = 7515, Level = 40 }); // Displacement
-                bar.Add(new Icon(bar) { TextureActionId = 7521, CooldownActionId = 7521, CustomPowerCondition = IsManaficationNotOvercapping, RequiresCombat = true, Level = 60 }); // Manafication
-                bar.Add(new Icon(bar) { TextureActionId = 7520, CooldownActionId = 7520, StatusId = 1239, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, Level = 58 }); // Embolden
-                hud.AddBar(bar);
-            }
+            Bar bar1 = new(hud);
+            bar1.Add(new Icon(bar1) { TextureActionId = 7518, CooldownActionId = 7518, StatusId = 1238, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 50 }); // Acceleration
+            bar1.Add(new Icon(bar1) { TextureActionId = 7506, CooldownActionId = 7506, Level = 6 }); // Corps-a-corps
+            bar1.Add(new Icon(bar1) { TextureActionId = 7515, CooldownActionId = 7515, Level = 40 }); // Displacement
+            bar1.Add(new Icon(bar1) { TextureActionId = 7521, CooldownActionId = 7521, CustomPowerCondition = IsManaficationNotOvercapping, RequiresCombat = true, Level = 60 }); // Manafication
+            bar1.Add(new Icon(bar1) { TextureActionId = 7520, CooldownActionId = 7520, StatusId = 1239, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, Level = 58 }); // Embolden
+            hud.AddBar(bar1);
 
             // Dualcast
             hud.AddAlert(new AuraAlert

@@ -6,18 +6,16 @@ namespace SezzUI.Modules.JobHud.Jobs
     public sealed class DNC : BasePreset
     {
         public override uint JobId => DelvUI.Helpers.JobIDs.DNC;
-        
+
         public override void Configure(JobHud hud)
         {
-            using (Bar bar = new(hud))
-            {
-                bar.Add(new Icon(bar) { TextureActionId = 15997, CooldownActionId = 15997, StatusIds = new[] { (uint)1818, (uint)1821, (uint)2024, (uint)2105, (uint)2113 }, MaxStatusDurations = new[] { 15f, 60f, 60f, 60f, 60f }, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, GlowBorderStatusId = 1818, Features = IconFeatures.GlowIgnoresState, Level = 15 }); // Standard Step
-                bar.Add(new Icon(bar) { TextureActionId = 15998, CooldownActionId = 15998, StatusIds = new[] { (uint)1819, (uint)1822, (uint)2050 }, MaxStatusDurations = new[] { 15f, 20f, 20f }, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, GlowBorderStatusId = 1819, Features = IconFeatures.GlowIgnoresState, Level = 70 }); // Technical Step
-                bar.Add(new Icon(bar) { TextureActionId = 16013, CooldownActionId = 16013, Level = 72 }); // Flourish
-                bar.Add(new Icon(bar) { TextureActionId = 16010, CooldownActionId = 16010, Level = 50 }); // En Avant
-                bar.Add(new Icon(bar) { TextureActionId = 16011, CooldownActionId = 16011, StatusId = 1825, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 62 }); // Devilment
-                hud.AddBar(bar);
-            }
+            Bar bar1 = new(hud);
+            bar1.Add(new Icon(bar1) { TextureActionId = 15997, CooldownActionId = 15997, StatusIds = new[] { (uint)1818, (uint)1821, (uint)2024, (uint)2105, (uint)2113 }, MaxStatusDurations = new[] { 15f, 60f, 60f, 60f, 60f }, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, GlowBorderStatusId = 1818, Features = IconFeatures.GlowIgnoresState, Level = 15 }); // Standard Step
+            bar1.Add(new Icon(bar1) { TextureActionId = 15998, CooldownActionId = 15998, StatusIds = new[] { (uint)1819, (uint)1822, (uint)2050 }, MaxStatusDurations = new[] { 15f, 20f, 20f }, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, GlowBorderStatusId = 1819, Features = IconFeatures.GlowIgnoresState, Level = 70 }); // Technical Step
+            bar1.Add(new Icon(bar1) { TextureActionId = 16013, CooldownActionId = 16013, Level = 72 }); // Flourish
+            bar1.Add(new Icon(bar1) { TextureActionId = 16010, CooldownActionId = 16010, Level = 50 }); // En Avant
+            bar1.Add(new Icon(bar1) { TextureActionId = 16011, CooldownActionId = 16011, StatusId = 1825, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 62 }); // Devilment
+            hud.AddBar(bar1);
 
             base.Configure(hud);
 

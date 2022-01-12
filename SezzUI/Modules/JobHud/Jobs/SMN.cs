@@ -6,16 +6,14 @@ namespace SezzUI.Modules.JobHud.Jobs
     public sealed class SMN : BasePreset
     {
         public override uint JobId => DelvUI.Helpers.JobIDs.SMN;
-        
+
         public override void Configure(JobHud hud)
         {
-            using (Bar bar = new(hud))
-            {
-                bar.Add(new Icon(bar) { TextureActionId = 3581, CooldownActionId = 3581, CustomDuration = GetDemiBahamutDuration, RequiresCombat = true, RequiresPet = true, Level = 58 }); // Dreadwyrm Trance
-                bar.Add(new Icon(bar) { TextureActionId = 7429, CooldownActionId = 7429, CustomCondition = IsDemiBahamutSummoned, Level = 70 }); // Enkindle Bahamut
-                bar.Add(new Icon(bar) { TextureActionId = 25801, CooldownActionId = 25801, StatusId = 2703, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, RequiresCombat = true, CustomCondition = IsCarbuncleSummoned, StatusSourcePlayer = false, Level = 66 }); // Searing Light
-                hud.AddBar(bar);
-            }
+            Bar bar1 = new(hud);
+            bar1.Add(new Icon(bar1) { TextureActionId = 3581, CooldownActionId = 3581, CustomDuration = GetDemiBahamutDuration, RequiresCombat = true, RequiresPet = true, Level = 58 }); // Dreadwyrm Trance
+            bar1.Add(new Icon(bar1) { TextureActionId = 7429, CooldownActionId = 7429, CustomCondition = IsDemiBahamutSummoned, Level = 70 }); // Enkindle Bahamut
+            bar1.Add(new Icon(bar1) { TextureActionId = 25801, CooldownActionId = 25801, StatusId = 2703, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, RequiresCombat = true, CustomCondition = IsCarbuncleSummoned, StatusSourcePlayer = false, Level = 66 }); // Searing Light
+            hud.AddBar(bar1);
 
             // Further Rain
             hud.AddAlert(new AuraAlert
