@@ -158,12 +158,17 @@ namespace SezzUI.Modules.JobHud
                 _animator.Update();
 
                 float yOffset = 0;
+
                 for (int i = 0; i < _bars.Count; i++)
                 {
-                    Vector2 pos = origin + Config.Position + _animator.Data.Offset;
-                    pos.Y += yOffset;
-                    _bars[i].Draw(pos, _animator);
-                    yOffset += _bars[i].IconSize.Y + _bars[i].IconPadding;
+                    Bar bar = _bars[i];
+                    if (bar.HasIcons)
+                    {
+                        Vector2 pos = origin + Config.Position + _animator.Data.Offset;
+                        pos.Y += yOffset;
+                        bar.Draw(pos, _animator);
+                        yOffset += bar.IconSize.Y + bar.IconPadding;
+                    }
                 }
             }
 
@@ -173,17 +178,18 @@ namespace SezzUI.Modules.JobHud
 
         public void AddBar(Bar bar)
         {
-            if (bar.HasIcons)
-            {
-                _bars.Add(bar);
-            }
+            _bars.Add(bar);
         }
 
         public void AddAlert(AuraAlert alert)
         {
-            if (alert.Level > 1 && (Plugin.ClientState.LocalPlayer?.Level ?? 0) < alert.Level) { return; }
-
-            _auraAlerts.Add(alert);
+            if (alert.Level > 1 && (Plugin.ClientState.LocalPlayer?.Level ?? 0) < alert.Level) {
+                alert.Dispose();
+            }
+            else
+            {
+                _auraAlerts.Add(alert);
+            }
         }
 
         public void Show()
