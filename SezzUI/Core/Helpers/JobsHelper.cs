@@ -50,7 +50,7 @@ namespace SezzUI.Helpers
 
         public static bool IsActionUnlocked(uint actionId)
         {
-            LuminaAction? action = SpellHelper.GetAction(actionId);
+            LuminaAction? action = SpellHelper.Instance.GetAction(actionId);
             if (action != null)
             {
 			    byte jobLevel = action.IsRoleAction ? GetUnsyncedLevel() : Plugin.ClientState.LocalPlayer?.Level ?? 0;

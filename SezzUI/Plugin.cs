@@ -109,6 +109,7 @@ namespace SezzUI
             GlobalColors.Initialize();
             DelvUI.Helpers.TexturesCache.Initialize();
             Helpers.ImageCache.Initialize();
+            Helpers.SpellHelper.Initialize();
             DelvUI.Helpers.TooltipsHelper.Initialize();
             EventManager.Initialize();
             HudManager.Initialize();
@@ -362,6 +363,7 @@ namespace SezzUI
             DelvUI.Helpers.SpellHelper.Instance.Dispose();
             DelvUI.Helpers.TexturesCache.Instance.Dispose();
             Helpers.ImageCache.Instance.Dispose();
+            Helpers.SpellHelper.Instance.Dispose();
             DelvUI.Helpers.TooltipsHelper.Instance.Dispose();
 
             // This needs to remain last to avoid race conditions

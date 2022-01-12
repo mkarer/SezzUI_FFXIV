@@ -58,7 +58,7 @@ namespace SezzUI.Modules.JobHud
                 if (value != null)
 				{
                     uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId((uint)value);
-                    LuminaAction? action = Helpers.SpellHelper.GetAction(actionIdAdjusted);
+                    LuminaAction? action = Helpers.SpellHelper.Instance.GetAction(actionIdAdjusted);
                     if (action != null)
                     {
                         bool useLocalTexture = false;
@@ -98,7 +98,7 @@ namespace SezzUI.Modules.JobHud
       
                 if (value != null)
                 {
-                    LuminaStatus? status = Helpers.SpellHelper.GetStatus((uint)value);
+                    LuminaStatus? status = Helpers.SpellHelper.Instance.GetStatus((uint)value);
                     if (status != null)
                     {
                         bool useLocalTexture = false;
@@ -165,7 +165,7 @@ namespace SezzUI.Modules.JobHud
                 if (value != null)
                 {
                     uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId((uint)value);
-                    LuminaStatus? status = Helpers.SpellHelper.GetStatusByAction(actionIdAdjusted);
+                    LuminaStatus? status = Helpers.SpellHelper.Instance.GetStatusByAction(actionIdAdjusted);
                     if (status != null)
                     {
                         StatusId = status.RowId;

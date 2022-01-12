@@ -124,7 +124,7 @@ namespace SezzUI.Modules.JobHud
 
         public bool UseStatusIcon(uint statusId)
         {
-            LuminaStatus? status = Helpers.SpellHelper.GetStatus(statusId);
+            LuminaStatus? status = Helpers.SpellHelper.Instance.GetStatus(statusId);
             if (status != null)
             {
                 _texture = DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId(status.Icon);
@@ -140,7 +140,7 @@ namespace SezzUI.Modules.JobHud
         public bool UseActionIcon(uint actionId)
         {
             uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
-            LuminaAction? action = Helpers.SpellHelper.GetAction(actionIdAdjusted);
+            LuminaAction? action = Helpers.SpellHelper.Instance.GetAction(actionIdAdjusted);
             if (action != null)
             {
                 _texture = DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId(action.Icon);

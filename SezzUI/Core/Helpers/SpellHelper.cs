@@ -2,7 +2,9 @@
 using System.Linq;
 using Lumina.Excel;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
+using LuminaGeneralAction = Lumina.Excel.GeneratedSheets.GeneralAction;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
+using Dalamud.Utility;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Statuses;
@@ -20,51 +22,36 @@ namespace SezzUI.Helpers
 		public float CooldownTotalRemaining = 0;
 	}
 
-	public static class SpellHelper
+	public class SpellHelper
 	{
-		public static LuminaAction? GetAction(uint actionId)
-		{
-			// TODO: Level filter?
-			ExcelSheet<LuminaAction>? sheet = Plugin.DataManager.GetExcelSheet<LuminaAction>();
-			if (sheet != null)
-			{
-				LuminaAction? action = sheet.GetRow(actionId);
-				if (action != null)
-				{
-					return action;
-				}
-			}
+        private ExcelSheet<LuminaAction>? _sheetAction;
+        private ExcelSheet<LuminaGeneralAction>? _sheetGeneralAction;
+        private ExcelSheet<LuminaStatus>? _sheetStatus;
 
-			return null;
-		}
+        public LuminaAction? GetAction(uint actionId) => _sheetAction?.GetRow(actionId);
+        public string? GetActionName(uint actionId) => GetAction(actionId)?.Name.ToDalamudString().ToString();
+        public ushort? GetActionIcon(uint actionId) => GetAction(actionId)?.Icon;
 
-		public static LuminaStatus? GetStatusByAction(uint actionId)
+        public LuminaGeneralAction? GetGeneralAction(uint actionId) => _sheetGeneralAction?.GetRow(actionId);
+        public string? GetGeneralActionName(uint actionId) => GetGeneralAction(actionId)?.Name.ToDalamudString().ToString();
+        public int? GetGeneralActionIcon(uint actionId) => GetGeneralAction(actionId)?.Icon;
+
+        public LuminaStatus? GetStatus(uint statusId) => _sheetStatus?.FirstOrDefault(status => status.RowId.Equals(statusId));
+
+        public LuminaStatus? GetStatusByAction(uint actionId)
 		{
 			LuminaAction? action = GetAction(actionId);
 			if (action != null)
 			{
-				ExcelSheet<LuminaStatus>? sheet = Plugin.DataManager.GetExcelSheet<LuminaStatus>();
-
-				if (sheet != null)
+				if (_sheetStatus != null)
 				{
 					string actionName = action.Name.ToString().ToLower();
-					LuminaStatus? status = sheet.FirstOrDefault(status => status.Name.ToString().ToLower().Equals(actionName));
+					LuminaStatus? status = _sheetStatus.FirstOrDefault(status => status.Name.ToString().ToLower().Equals(actionName));
 					if (status != null)
 					{
 						return status;
 					}
 				}
-			}
-
-			return null;
-		}
-
-		public static LuminaStatus? GetStatus(uint statusId)
-		{
-			ExcelSheet<LuminaStatus>? sheet = Plugin.DataManager.GetExcelSheet<LuminaStatus>();
-			if (sheet != null)
-			{
-				return sheet.FirstOrDefault(status => status.RowId.Equals(statusId));
 			}
 
 			return null;
@@ -219,5 +206,39 @@ namespace SezzUI.Helpers
 
             return data;
 		}
-	}
+
+        #region Singleton
+        private SpellHelper()
+        {
+            _sheetAction = Plugin.DataManager.Excel.GetSheet<LuminaAction>();
+            _sheetGeneralAction = Plugin.DataManager.Excel.GetSheet<LuminaGeneralAction>();
+            _sheetStatus = Plugin.DataManager.Excel.GetSheet<LuminaStatus>();
+        }
+
+        public static void Initialize() { Instance = new SpellHelper(); }
+
+        public static SpellHelper Instance { get; private set; } = null!;
+
+        ~SpellHelper()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (!disposing)
+            {
+                return;
+            }
+
+            Instance = null!;
+        }
+        #endregion
+    }
 }
