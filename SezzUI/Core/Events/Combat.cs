@@ -1,5 +1,4 @@
 ﻿using System;
-using Dalamud.Logging;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
@@ -21,7 +20,7 @@ namespace SezzUI.GameEvents
         {
             if (base.Enable())
             {
-                Plugin.Framework.Update += FrameworkUpdate;
+                Plugin.Framework.Update += OnFrameworkUpdate;
                 return true;
             }
             
@@ -32,22 +31,22 @@ namespace SezzUI.GameEvents
         {
             if (base.Disable())
             {
-                Plugin.Framework.Update -= FrameworkUpdate;
+                Plugin.Framework.Update -= OnFrameworkUpdate;
                 return true;
             }
 
             return false;
         }
 
-        private void FrameworkUpdate(Framework framework)
+        private void OnFrameworkUpdate(Framework framework)
         {
             try
             {
                 Update();
             }
-            catch
+            catch (Exception ex)
             {
-                // 
+                LogError(ex, "OnFrameworkUpdate", $"Error: {ex}");
             }
         }
 
@@ -58,9 +57,9 @@ namespace SezzUI.GameEvents
             {
                 state = Plugin.Condition[ConditionFlag.InCombat] || (treatWeaponOutAsCombat && Plugin.ClientState.LocalPlayer != null && Plugin.ClientState.LocalPlayer.StatusFlags.HasFlag(StatusFlags.WeaponOut));
             }
-            catch
+            catch (Exception ex)
             {
-                // 
+                LogError(ex, "IsInCombat", $"Error: {ex}");
             }
 
             return state;
@@ -79,7 +78,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
                         if (EventManager.Config.LogEvents && EventManager.Config.LogEventCombatEnteringCombat)
                         {
-                            PluginLog.Debug($"[Event:{GetType().Name}] EnteringCombat");
+                            LogDebug("EnteringCombat");
                         }
 #endif
                         try
@@ -88,14 +87,14 @@ namespace SezzUI.GameEvents
                         }
                         catch (Exception ex)
                         {
-                            PluginLog.Error(ex, $"[Event:{GetType().Name}::EnteringCombat] Failed invoking {nameof(this.EnteringCombat)}: {ex}");
+                            LogError(ex, "EnteringCombat", $"Failed invoking {nameof(EnteringCombat)}: {ex}");
                         }
                     } else
                     {
 #if DEBUG
                         if (EventManager.Config.LogEvents && EventManager.Config.LogEventCombatLeavingCombat)
                         {
-                            PluginLog.Debug($"[Event:{GetType().Name}] LeavingCombat");
+                            LogDebug("LeavingCombat");
                         }
 #endif
                         try
@@ -104,14 +103,14 @@ namespace SezzUI.GameEvents
                         }
                         catch (Exception ex)
                         {
-                            PluginLog.Error(ex, $"[Event:{GetType().Name}::LeavingCombat] Failed invoking {nameof(this.LeavingCombat)}: {ex}");
+                            LogError(ex, "LeavingCombat", $"Failed invoking {nameof(LeavingCombat)}: {ex}");
                         }
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // 
+                LogError(ex, "Update", $"Error: {ex}");
             }
         }
     }

@@ -1,5 +1,4 @@
 ﻿using System;
-using Dalamud.Logging;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 
@@ -26,7 +25,7 @@ namespace SezzUI.GameEvents
         {
             if (base.Enable())
             {
-                Plugin.Framework.Update += FrameworkUpdate;
+                Plugin.Framework.Update += OnFrameworkUpdate;
                 return true;
             }
         
@@ -37,21 +36,22 @@ namespace SezzUI.GameEvents
         {
             if (base.Disable())
             {
-                Plugin.Framework.Update -= FrameworkUpdate;
+                Plugin.Framework.Update -= OnFrameworkUpdate;
                 return true;
             }
 
             return false;
         }
 
-        private void FrameworkUpdate(Framework framework)
+        private void OnFrameworkUpdate(Framework framework)
         {
             try
             {
                 Update();
             }
-            catch
+            catch (Exception ex)
             {
+                LogError(ex, "OnFrameworkUpdate", $"Error: {ex}");
             }
         }
 
@@ -69,7 +69,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
                     if (EventManager.Config.LogEvents && EventManager.Config.LogEventPlayerJobChanged)
                     {
-                        PluginLog.Debug($"[Event:{GetType().Name}::JobChanged] Job ID: {jobId}");
+                        LogDebug("JobChanged", $"Job ID: {jobId}");
                     }
 #endif
                     JobChanged?.Invoke(jobId);
@@ -77,7 +77,7 @@ namespace SezzUI.GameEvents
             }
             catch (Exception ex)
             {
-                PluginLog.Error(ex, $"[Event:{GetType().Name}::JobChanged] Failed invoking {nameof(this.JobChanged)}: {ex}");
+                LogError(ex, "JobChanged", $"Failed invoking {nameof(JobChanged)}: {ex}");
             }
 
             try
@@ -90,7 +90,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
                     if (EventManager.Config.LogEvents && EventManager.Config.LogEventPlayerLevelChanged)
                     {
-                        PluginLog.Debug($"[Event:{GetType().Name}::LevelChanged] Level: {level}");
+                        LogDebug("LevelChanged", $"Level: {level}");
                     }
 #endif
                     LevelChanged?.Invoke(level);
@@ -98,7 +98,7 @@ namespace SezzUI.GameEvents
             }
             catch (Exception ex)
             {
-                PluginLog.Error(ex, $"[Event:{GetType().Name}::LevelChanged] Failed invoking {nameof(this.LevelChanged)}: {ex}");
+                LogError(ex, "LevelChanged", $"Failed invoking {nameof(LevelChanged)}: {ex}");
             }
         }
     }

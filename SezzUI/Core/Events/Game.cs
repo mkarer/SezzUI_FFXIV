@@ -1,5 +1,4 @@
 ﻿using System;
-using Dalamud.Logging;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Hooking;
@@ -43,17 +42,17 @@ namespace SezzUI.GameEvents
                 {
                     _setHudLayoutHook = new(setHudLayoutPtr, SetHudLayoutDetour);
 #if DEBUG
-                    PluginLog.Debug($"[Event:{GetType().Name}] Hooked: SetHudLayout (ptr = {setHudLayoutPtr.ToInt64():X})");
+                    LogDebug($"Hooked: SetHudLayout (ptr = {setHudLayoutPtr.ToInt64():X})");
 #endif
                 }
                 else
                 {
-                    PluginLog.Debug($"[Event:{GetType().Name}] Signature not found: SetHudLayout");
+                    LogError($"Signature not found: SetHudLayout");
                 }
             }
             catch (Exception ex)
             {
-                PluginLog.Error(ex, $"[Event:{GetType().Name}] Failed to setup hooks: {ex}");
+                LogError(ex, $"Failed to setup hooks: {ex}");
             }
 
             base.Initialize();
@@ -98,6 +97,8 @@ namespace SezzUI.GameEvents
                 _addonsVisibilityCached = false;
                 _hudLayoutReady = false;
                 _hudLayout = UNKNOWN_HUD_LAYOUT;
+
+                return true;
             }
 
             return false;
@@ -125,14 +126,14 @@ namespace SezzUI.GameEvents
 #if DEBUG
                     if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameAddonsLoaded)
                     {
-                        PluginLog.Debug($"[Event:{GetType().Name}::AddonsLoaded] Loaded: {loaded} Ready: {_addonsReady}");
+                        LogDebug("AddonsLoaded", $"Loaded: {loaded} Ready: {_addonsReady}");
                     }
 #endif
                     AddonsLoaded?.Invoke(loaded, _addonsReady);
                 }
                 catch (Exception ex)
                 {
-                    PluginLog.Error(ex, $"[Event:{GetType().Name}::AddonsLoaded] Failed invoking {nameof(this.AddonsLoaded)}: {ex}");
+                    LogError(ex, "AddonsLoaded", $"Failed invoking {nameof(AddonsLoaded)}: {ex}");
                 }
             }
         }
@@ -214,14 +215,14 @@ namespace SezzUI.GameEvents
 #if DEBUG
                     if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameAddonsVisibilityChanged)
                     {
-                        PluginLog.Debug($"[Event:{GetType().Name}::AddonVisibilityChanged] State: {addonVisibility}");
+                        LogDebug("AddonsVisibilityChanged", $"State: {addonVisibility}");
                     }
 #endif
                     AddonsVisibilityChanged?.Invoke(addonVisibility);
                 }
                 catch (Exception ex)
                 {
-                    PluginLog.Error(ex, $"[Event:{GetType().Name}::AddonVisibilityChanged] Failed invoking {nameof(this.AddonsVisibilityChanged)}: {ex}");
+                    LogError(ex, "AddonsVisibilityChanged", $"Failed invoking {nameof(AddonsVisibilityChanged)}: {ex}");
                 }
             }
         }
@@ -234,14 +235,14 @@ namespace SezzUI.GameEvents
 #if DEBUG
                 if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameHudLayoutActivated)
                 {
-                    PluginLog.Debug($"[Event:{GetType().Name}::HudLayoutActivated] Layout: {hudLayout} LayoutReady: {_hudLayoutReady}");
+                    LogDebug("HudLayoutActivated", $"Layout: {hudLayout} LayoutReady: {_hudLayoutReady}");
                 }
 #endif
                 HudLayoutActivated?.Invoke(hudLayout, _hudLayoutReady);
             }
             catch (Exception ex)
             {
-                PluginLog.Error(ex, $"[Event:{GetType().Name}::HudLayoutActivated] Failed invoking {nameof(this.HudLayoutActivated)}: {ex}");
+                LogError(ex, "HudLayoutActivated", $"Failed invoking {nameof(HudLayoutActivated)}: {ex}");
             }
         }
 
@@ -252,15 +253,15 @@ namespace SezzUI.GameEvents
             try
             {
                 ret = _setHudLayoutHook!.Original(filePtr, hudLayout, unk0, unk1);
+#if DEBUG
+                LogDebug("SetHudLayoutDetour", $"Result: {ret} Layout: {hudLayout}");
+#endif
             }
             catch (Exception ex)
             {
-                PluginLog.Error(ex, $"[Event:{GetType().Name}::HudLayoutActivated] Hooked SetHudLayout({filePtr.ToInt64():X}, {hudLayout}, {unk0}, {unk1}) failed: {ex}");
+                LogError(ex, "SetHudLayoutDetour", $"Failed invoking original SetHudLayout({filePtr.ToInt64():X}, {hudLayout}, {unk0}, {unk1}): {ex}");
             }
 
-#if DEBUG
-            PluginLog.Debug($"[Event:{GetType().Name}::SetHudLayoutDetour] Layout: {hudLayout} Result: {ret}");
-#endif
             if (ret == 0)
             {
                 _hudLayout = hudLayout;
