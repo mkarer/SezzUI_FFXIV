@@ -79,16 +79,16 @@ namespace DelvUI.Helpers
             return actionIdAdjusted > 0 ? actionIdAdjusted : _actionManager->GetAdjustedActionId(actionId);
         }
 
-        public unsafe float GetRecastTimeElapsed(uint actionId) => _actionManager->GetRecastTimeElapsed(ActionType.Spell, GetSpellActionId(actionId));
+        public unsafe float GetRecastTimeElapsed(uint actionId, ActionType actionType = ActionType.Spell) => _actionManager->GetRecastTimeElapsed(actionType, GetSpellActionId(actionId));
 
-        public unsafe float GetRecastTime(uint actionId) => _actionManager->GetRecastTime(ActionType.Spell, GetSpellActionId(actionId));
+        public unsafe float GetRecastTime(uint actionId, ActionType actionType = ActionType.Spell) => _actionManager->GetRecastTime(actionType, GetSpellActionId(actionId));
 
-        public unsafe void GetRecastTimes(uint actionId, out float total, out float elapsed)
+        public unsafe void GetRecastTimes(uint actionId, out float total, out float elapsed, ActionType actionType = ActionType.Spell)
         {
             total = 0f;
             elapsed = 0f;
 
-            int recastGroup = _actionManager->GetRecastGroup((int)ActionType.Spell, actionId);
+            int recastGroup = _actionManager->GetRecastGroup((int)actionType, actionId);
             RecastDetail* recastDetail = _actionManager->GetRecastGroupDetail(recastGroup);
             if (recastDetail != null)
             {
@@ -97,30 +97,9 @@ namespace DelvUI.Helpers
             }
             else
             {
-                total = GetRecastTime(actionId);
-                elapsed = total > 0 ? GetRecastTimeElapsed(actionId) : 0;
+                total = GetRecastTime(actionId, actionType);
+                elapsed = total > 0 ? GetRecastTimeElapsed(actionId, actionType) : 0;
             }
-        }
-
-        public float GetSpellCooldown(uint actionId) => Math.Abs(GetRecastTime(GetSpellActionId(actionId)) - GetRecastTimeElapsed(GetSpellActionId(actionId)));
-
-        public int GetSpellCooldownInt(uint actionId)
-        {
-            int cooldown = (int)Math.Ceiling(GetSpellCooldown(actionId) % GetRecastTime(actionId));
-            return Math.Max(0, cooldown);
-        }
-
-        public int GetStackCount(int maxStacks, uint actionId)
-        {
-            int cooldown = GetSpellCooldownInt(actionId);
-            float recastTime = GetRecastTime(actionId);
-
-            if (cooldown <= 0 || recastTime == 0)
-            {
-                return maxStacks;
-            }
-
-            return maxStacks - (int)Math.Ceiling(cooldown / (recastTime / maxStacks));
         }
 
         public unsafe ushort GetMaxCharges(uint actionId, uint level)

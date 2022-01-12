@@ -62,7 +62,6 @@ namespace SezzUI.Helpers
 		public static LuminaStatus? GetStatus(uint statusId)
 		{
 			ExcelSheet<LuminaStatus>? sheet = Plugin.DataManager.GetExcelSheet<LuminaStatus>();
-
 			if (sheet != null)
 			{
 				return sheet.FirstOrDefault(status => status.RowId.Equals(statusId));
@@ -212,11 +211,10 @@ namespace SezzUI.Helpers
 
             data.ChargesCurrent = data.CooldownTotalElapsed > 0 ? (int)Math.Floor(data.CooldownTotalElapsed / data.CooldownPerCharge) : data.ChargesMax;
 
-            //if (actionId == 16151)
+            //if (actionId == 16010)
             //{
             //    Dalamud.Logging.PluginLog.Debug($"Level {player.Level} CooldownTotal {data.CooldownTotal} CooldownRemaining {data.CooldownRemaining} chargesMod {chargesMod} " +
-            //        $"GetRecastTime {DelvUI.Helpers.SpellHelper.Instance.GetRecastTime(actionIdAdjusted)} GetAdjustedRecastTime {totalCooldown}" +
-            //        $"GetRecastTimeElapsed {DelvUI.Helpers.SpellHelper.Instance.GetRecastTimeElapsed(actionIdAdjusted)} GetAdjustedRecastTimeElapsed {elapsedCooldown}");
+            //        $"CooldownTotalElapsed {data.CooldownTotalElapsed} CooldownTotalRemaining {data.CooldownTotalRemaining} CooldownPerCharge {data.CooldownPerCharge}");
             //}
 
             return data;
