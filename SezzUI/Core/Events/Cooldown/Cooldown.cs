@@ -343,7 +343,10 @@ namespace SezzUI.GameEvents
                     }
                     else if (_actionsModifyingCooldowns.ContainsKey(actionId))
                     {
-                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 15);
+                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 25);
+                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 50);
+                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 75);
+                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 400);
                     }
                 }
             }
