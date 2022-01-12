@@ -64,16 +64,20 @@ namespace SezzUI.Interface.GeneralElements
         [Order(140, collapseWith = nameof(LogEvents))]
         public bool LogEventCooldownHooks = false;
 
-        [Checkbox("Cooldown: CooldownStarted")]
+        [Checkbox("Cooldown: Usage")]
         [Order(141, collapseWith = nameof(LogEvents))]
+        public bool LogEventCooldownUsage = false;
+
+        [Checkbox("Cooldown: CooldownStarted")]
+        [Order(145, collapseWith = nameof(LogEvents))]
         public bool LogEventCooldownStarted = false;
 
         [Checkbox("Cooldown: CooldownChanged")]
-        [Order(142, collapseWith = nameof(LogEvents))]
+        [Order(146, collapseWith = nameof(LogEvents))]
         public bool LogEventCooldownChanged = false;
 
         [Checkbox("Cooldown: CooldownFinished")]
-        [Order(143, collapseWith = nameof(LogEvents))]
+        [Order(147, collapseWith = nameof(LogEvents))]
         public bool LogEventCooldownFinished = false;
     }
 #endif

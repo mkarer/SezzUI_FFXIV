@@ -53,6 +53,13 @@ namespace SezzUI.GameEvents
 
         public void Watch(uint actionId)
         {
+#if DEBUG
+            if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownUsage)
+            {
+                LogDebug("Watch", $"Action ID: {actionId}");
+            }
+#endif
+
             if (_watchedActions.ContainsKey(actionId))
             {
                 _watchedActions[actionId]++;
@@ -67,6 +74,14 @@ namespace SezzUI.GameEvents
         public void Unwatch(uint actionId, bool all = false)
         {
             if (!_watchedActions.ContainsKey(actionId)) { return; }
+
+#if DEBUG
+            if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownUsage)
+            {
+                LogDebug("Unwatch", $"Action ID: {actionId} All: {all}");
+            }
+#endif
+
             if (!all)
             {
                 _watchedActions[actionId]--;
