@@ -190,7 +190,7 @@ namespace SezzUI.Modules.JobHud
         {
             if (!IsShown)
             {
-                PluginLog.Debug($"[{GetType().Name}] Show");
+                //PluginLog.Debug($"[{GetType().Name}] Show");
                 _isShown = !IsShown;
                 _lastDrawTick = 0;
                 _animator.Animate();
@@ -201,7 +201,7 @@ namespace SezzUI.Modules.JobHud
         {
             if (IsShown)
             {
-                PluginLog.Debug($"[{GetType().Name}] Hide {force}");
+                //PluginLog.Debug($"[{GetType().Name}] Hide {force}");
                 _isShown = !IsShown;
                 _animator.Stop(force || LastDrawElapsed > 2000);
             }
@@ -209,7 +209,7 @@ namespace SezzUI.Modules.JobHud
 
         protected override void InternalDispose()
         {
-            Reset();
+            Toggle(false);
 
             ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
             _config.ValueChangeEvent -= OnConfigPropertyChanged;
