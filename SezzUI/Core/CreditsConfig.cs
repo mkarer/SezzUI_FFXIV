@@ -31,17 +31,8 @@ namespace SezzUI.Interface.GeneralElements
             ImGui.Text("Most of the base framework and configuration code is taken from DelvUI which saved me a tremendous amount of time. Big shoutout!");
             ImGui.NewLine();
 
-            ImGui.TextColored(titleColor, "XIVAuras");
-            ImGui.SameLine();
-            ImGui.Text("by Lichie");
-            ImGui.Text("License: GNU GPL v3");
-            ImGui.Text("Website:");
-            ImGui.SameLine();
-            if (ImGui.Button("https://github.com/lichie567/XIVAuras", new Vector2(0, 0)))
-            {
-                DelvUI.Helpers.Utils.OpenUrl("https://github.com/lichie567/XIVAuras");
-            }
-            ImGui.Text("DrawProgressSwipe");
+            ImGui.TextColored(titleColor, "Additional credits:");
+            ImGui.Text("CaiClone, Lichie");
 
             return false;
         }
