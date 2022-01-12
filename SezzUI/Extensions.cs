@@ -98,6 +98,11 @@ namespace SezzUI
             return new Vector2(v.X, v.Y + offset);
         }
 
+        public static Vector2 AddXY(this Vector2 v, float offset)
+        {
+            return new Vector2(v.X + offset, v.Y + offset);
+        }
+
         public static Vector4 AddTransparency(this Vector4 vec, float opacity)
         {
             return new Vector4(vec.X, vec.Y, vec.Z, vec.W * opacity);
@@ -237,6 +242,11 @@ namespace DelvUI
         public static Vector2 AddY(this Vector2 v, float offset)
         {
             return new Vector2(v.X, v.Y + offset);
+        }
+
+        public static Vector2 AddXY(this Vector2 v, float offset)
+        {
+            return new Vector2(v.X + offset, v.Y + offset);
         }
 
         public static Vector4 AddTransparency(this Vector4 vec, float opacity)
