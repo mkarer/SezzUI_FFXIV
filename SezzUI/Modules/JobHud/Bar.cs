@@ -38,7 +38,16 @@ namespace SezzUI.Modules.JobHud
 
         public void Add(Icon icon, int index = -1)
 		{
-            if (!icon.ShouldShow()) { return; }
+            if (!icon.ShouldShow())
+            {
+                icon.Dispose();
+                return;
+            }
+
+            if (icon.CooldownActionId != null)
+            {
+                EventManager.Cooldown.Watch((uint)icon.CooldownActionId);
+            }
 
             if (index == -1)
 			{
@@ -89,7 +98,15 @@ namespace SezzUI.Modules.JobHud
                 return;
             }
      
-            _icons.ForEach(i => i.Dispose());
+            _icons.ForEach(icon =>
+            {
+                if (icon.CooldownActionId != null)
+                {
+                    EventManager.Cooldown.Unwatch((uint)icon.CooldownActionId);
+                }
+
+                icon.Dispose();
+            });
         }
     }
 }
