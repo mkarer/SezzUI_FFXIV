@@ -60,6 +60,12 @@ namespace SezzUI.GameEvents
         /// Remaining cooldown in milliseconds or 0 if inactive.
         /// </summary>
         public uint Remaining => IsActive ? Duration - (uint)(Environment.TickCount64 - StartTime) : 0;
+
+        /// <summary>
+        /// Elapsed time in milliseconds or 0 if inactive.
+        /// </summary>
+        public uint Elapsed => IsActive ? Duration - Remaining : 0;
+
         public bool IsActive => _duration > 0 && _currentCharges != _maxCharges;
 
         /// <summary>
