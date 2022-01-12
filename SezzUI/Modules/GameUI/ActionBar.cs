@@ -189,24 +189,26 @@ namespace SezzUI.Modules.GameUI
                 return false;
             }
 
-            _originalPositions[bar] = new();
-
             byte buttonsFound = 0;
 
-            for (var j = 0; j < addon->UldManager.NodeListCount; j++)
-            {
-                AtkResNode* node = addon->UldManager.NodeList[j];
-                if (node != null && (int)node->Type >= 1000)
-                {
-                    var compNode = (AtkComponentNode*)node;
-                    var objectInfo = (AtkUldComponentInfo*)compNode->Component->UldManager.Objects;
+            lock (_originalPositions) {
+                _originalPositions[bar] = new();
 
-                    if (objectInfo->ComponentType == ComponentType.Base)
+                for (var j = 0; j < addon->UldManager.NodeListCount; j++)
+                {
+                    AtkResNode* node = addon->UldManager.NodeList[j];
+                    if (node != null && (int)node->Type >= 1000)
                     {
-                        // This should be an ActionButton!
-                        PluginLog.Debug($"[{GetType().Name}::CacheActionBarPositions] Caching {bar} node: ID: {node->NodeID} X: {node->X} Y: {node->Y}");
-                        _originalPositions[bar].Add(node->NodeID, new(node->X, node->Y));
-                        buttonsFound++;
+                        var compNode = (AtkComponentNode*)node;
+                        var objectInfo = (AtkUldComponentInfo*)compNode->Component->UldManager.Objects;
+
+                        if (objectInfo->ComponentType == ComponentType.Base)
+                        {
+                            // This should be an ActionButton!
+                            PluginLog.Debug($"[{GetType().Name}::CacheActionBarPositions] Caching {bar} node: ID: {node->NodeID} X: {node->X} Y: {node->Y}");
+                            _originalPositions[bar].Add(node->NodeID, new(node->X, node->Y));
+                            buttonsFound++;
+                        }
                     }
                 }
             }
