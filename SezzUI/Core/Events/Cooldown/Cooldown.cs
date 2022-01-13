@@ -1,5 +1,6 @@
 ﻿/*
- * Port of LibSezzCooldown-16, atleast the basic functionality.
+ * LibSezzCooldown-16
+ * Initial port with basic functionality...
  * 
  * Just like in World of Warcraft we don't care about the accumulated duration of all charges,
  * instead we only care about one charge.
