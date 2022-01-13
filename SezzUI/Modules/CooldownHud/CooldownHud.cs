@@ -69,9 +69,12 @@ namespace SezzUI.Modules.CooldownHud
 
         private void AddRunningCooldowns()
         {
-            foreach (var kvp in _cooldowns)
+            foreach ((uint actionId, _) in _cooldowns)
             {
-                // Check if action is on cooldown using CooldownManager
+                GameEvents.CooldownData data = GameEvents.Cooldown.Instance.Get(actionId);
+                if (data.IsActive) {
+                    OnCooldownChanged(actionId, data);
+                }
             }
         }
 
@@ -85,8 +88,9 @@ namespace SezzUI.Modules.CooldownHud
             });
         }
 
-        public void RegisterCooldown(uint actionId, BarManager.BarManager barManager)
+        public void RegisterCooldown(uint actionId, BarManager.BarManager barManager, bool adjustAction = true)
         {
+            actionId = adjustAction ? DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId) : actionId;
             if (_cooldowns.ContainsKey(actionId))
             {
                 if (!_cooldowns[actionId].barManagers.Contains(barManager))
@@ -109,12 +113,12 @@ namespace SezzUI.Modules.CooldownHud
             }
         }
 
-        public void RegisterCooldown(uint actionId, string barManagerId)
+        public void RegisterCooldown(uint actionId, string barManagerId, bool adjustAction = true)
         {
             BarManager.BarManager? barManager = _barManagers.Where(x => x.Id == barManagerId).FirstOrDefault();
             if (barManager != null)
             {
-                RegisterCooldown(actionId, barManager);
+                RegisterCooldown(actionId, barManager, adjustAction);
             }
             else
             {
@@ -122,16 +126,21 @@ namespace SezzUI.Modules.CooldownHud
             }
         }
 
-        public void RegisterCooldown(uint actionId, int barManagerIndex = 0)
+        public void RegisterCooldown(uint actionId, int barManagerIndex = 0, bool adjustAction = true)
         {
             if (_barManagers.Count > barManagerIndex)
             {
-                RegisterCooldown(actionId, _barManagers[barManagerIndex]);
+                RegisterCooldown(actionId, _barManagers[barManagerIndex], adjustAction);
             }
             else
             {
                 LogError("RegisterCooldown", $"Action ID: {actionId} Failed to register cooldown - invalid Bar Manager Index: {barManagerIndex}");
             }
+        }
+
+        public void RegisterCooldown(uint actionId, bool adjustAction)
+        {
+            RegisterCooldown(actionId, 0, adjustAction);
         }
 
         public override bool Enable()
