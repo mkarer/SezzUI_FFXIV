@@ -18,7 +18,7 @@
             bar2.Add(new Icon(bar2) { TextureActionId = 7531, CooldownActionId = 7531, StatusId = 1191, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 8 }); // Rampart
             bar2.Add(new Icon(bar2) { TextureActionId = 16140, CooldownActionId = 16140, StatusId = 1832, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 6 }); // Camouflage
             bar2.Add(new Icon(bar2) { TextureActionId = 16148, CooldownActionId = 16148, StatusId = 1834, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 38 }); // Nebula
-            bar2.Add(new Icon(bar2) { TextureActionId = 16161, CooldownActionId = 16161, StatusId = 1840, MaxStatusDuration = 7, StatusTarget = Enums.Unit.Player, GlowBorderStatusId = 1898, Level = 68 }); // Heart of Stone
+            bar2.Add(new Icon(bar2) { TextureActionId = 16161, CooldownActionId = 16161, StatusIds = new[] { (uint)1840, (uint)2683 }, MaxStatusDurations = new[] { 7f, 8f }, StatusTarget = Enums.Unit.Player, GlowBorderStatusId = 1898, Level = 68 }); // Heart of Stone
             bar2.Add(new Icon(bar2) { TextureActionId = 16152, CooldownActionId = 16152, StatusId = 1836, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 50 }); // Superbolide
             hud.AddBar(bar2);
 

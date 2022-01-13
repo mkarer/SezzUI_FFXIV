@@ -69,6 +69,8 @@ namespace DelvUI.Helpers
                 { 3581, new() { { 58, 3581 }, { 70, 7427 } } },
                 // BRD
                 { 3559, new() { { 52, 3559 } } }, // The Wanderer's Minuet
+                // GNB
+                { 16161, new() { { 68, 16161 }, { 82, 25758 } } }, // Heart of Stone/Heart of Corundum
             };
         }
 
