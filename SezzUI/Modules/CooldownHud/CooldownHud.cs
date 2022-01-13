@@ -19,9 +19,12 @@ namespace SezzUI.Modules.CooldownHud
         private Dictionary<uint, BasePreset> _presets = new();
         private List<BarManager.BarManager> _barManagers = new();
         private Dictionary<uint, CooldownHudItem> _cooldowns = new();
+        private Dictionary<uint, CooldownPulse> _pulses = new();
 
         private uint _currentJobId = 0;
         private byte _currentLevel = 0;
+
+        private const int MINIMUM_PULSE_INTERVAL = 6000; // Maximum value from config + another 1000ms to be safe.
 
         private void Reset()
         {
@@ -38,6 +41,13 @@ namespace SezzUI.Modules.CooldownHud
                 item.Dispose();
             }
             _cooldowns.Clear();
+
+            // Remove all pulse animations
+            foreach ((_, CooldownPulse pulse) in _pulses)
+            {
+                pulse.Dispose();
+            }
+            _pulses.Clear();
         }
 
         private void Configure()
@@ -58,7 +68,7 @@ namespace SezzUI.Modules.CooldownHud
                 preset.Configure(this);
             }
 
-            // Create bars for already running cooldowns
+            ConfigureBarManagers();
             AddRunningCooldowns();
         }
 
@@ -72,20 +82,70 @@ namespace SezzUI.Modules.CooldownHud
             foreach ((uint actionId, _) in _cooldowns)
             {
                 GameEvents.CooldownData data = GameEvents.Cooldown.Instance.Get(actionId);
-                if (data.IsActive) {
+                if (data.IsActive)
+                {
                     OnCooldownChanged(actionId, data);
                 }
             }
         }
 
+        #region Cooldown Pulse
+        private void Pulse(BarManager.BarManagerBar bar) => Pulse(bar.Id, bar.Icon);
+
+        private void Pulse(uint actionId, TextureWrap? texture) {
+            if (!_cooldowns.ContainsKey(actionId))
+            {
+                // This should actually never happen.
+                LogError("Pulse", $"Action ID: {actionId} Tried to show cooldown pulse for unknown cooldown!");
+                return;
+            } 
+
+            LogDebug("Pulse", $"Action ID: {actionId}");
+
+            _cooldowns[actionId].LastPulse = Environment.TickCount64;
+
+            CooldownPulse pulse = new()
+            {
+                Texture = texture,
+                Position = Config.CooldownHudPulse.Position,
+                Size = Config.CooldownHudPulse.Size,
+                Anchor = Config.CooldownHudPulse.Anchor,
+            };
+            _pulses[actionId] = pulse;
+            pulse.Show();
+        }
+
+        private bool ShouldShowPulse(uint actionId) => !_pulses.ContainsKey(actionId) && _cooldowns.ContainsKey(actionId) && Environment.TickCount64 - _cooldowns[actionId].LastPulse > MINIMUM_PULSE_INTERVAL;
+        #endregion
+
         public override void Draw(DrawState state, Vector2? origin)
         {
             if (origin == null || (state != DrawState.Visible && state != DrawState.Partially)) { return; }
 
+            // Bar Managers
             _barManagers.ForEach(barManager =>
             {
                 barManager.Draw((Vector2)origin);
+
+                if (Config.CooldownHudPulse.Enabled)
+                {
+                    foreach (BarManager.BarManagerBar bar in barManager.Bars.Where(bar => bar.IsActive && bar.Remaining <= Math.Abs(Config.CooldownHudPulse.Delay) && ShouldShowPulse(bar.Id)))
+                    {
+                        Pulse(bar);
+                    }
+                }
             });
+
+            // Draw pulse animations and remove finished ones
+            foreach ((uint actionId, CooldownPulse pulse) in _pulses)
+            {
+                pulse.Draw((Vector2)origin);
+                if (!pulse.Animator.IsAnimating)
+                {
+                    pulse.Dispose();
+                    _pulses.Remove(actionId);
+                }
+            }
         }
 
         public void RegisterCooldown(uint actionId, BarManager.BarManager barManager, bool adjustAction = true)
@@ -105,7 +165,7 @@ namespace SezzUI.Modules.CooldownHud
             }
             else
             {
-                CooldownHudItem item = new() { actionId = actionId };
+                CooldownHudItem item = new() { ActionId = actionId };
                 item.barManagers.Add(barManager);
                 _cooldowns[actionId] = item;
                 EventManager.Cooldown.Watch(actionId);
@@ -143,6 +203,19 @@ namespace SezzUI.Modules.CooldownHud
             RegisterCooldown(actionId, 0, adjustAction);
         }
 
+        private void GetActionDisplayData(uint actionId, ActionType actionType, out string? name, out TextureWrap? texture)
+        {
+            name = actionType == ActionType.General ?
+                Helpers.SpellHelper.Instance.GetGeneralActionName(actionId) :
+                Helpers.SpellHelper.Instance.GetActionName(actionId);
+
+            int? iconId = actionType == ActionType.General ?
+                Helpers.SpellHelper.Instance.GetGeneralActionIcon(actionId) :
+                Helpers.SpellHelper.Instance.GetActionIcon(actionId);
+
+            texture = iconId != null ? DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId((uint)iconId) : null;
+        }
+
         public override bool Enable()
         {
             if (!base.Enable()) { return false; }
@@ -155,7 +228,6 @@ namespace SezzUI.Modules.CooldownHud
             EventManager.Cooldown.CooldownFinished += OnCooldownFinished;
 
             Configure();
-            ConfigureBarManagers();
 
             return true;
         }
@@ -291,17 +363,8 @@ namespace SezzUI.Modules.CooldownHud
 
             _cooldowns[actionId].barManagers.ForEach(barManager =>
             {
-                string? name = data.Type == ActionType.General ?
-                    Helpers.SpellHelper.Instance.GetGeneralActionName(actionId) :
-                    Helpers.SpellHelper.Instance.GetActionName(actionId);
-
-                int? iconId = data.Type == ActionType.General ?
-                    Helpers.SpellHelper.Instance.GetGeneralActionIcon(actionId) :
-                    Helpers.SpellHelper.Instance.GetActionIcon(actionId);
-
-                TextureWrap? icon = iconId != null ? DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId((uint)iconId) : null;
-
-                barManager.Add(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
+                GetActionDisplayData(actionId, data.Type, out string? name, out TextureWrap? texture);
+                barManager.Add(actionId, name ?? "Unknown Action", texture, data.StartTime, data.Duration);
                 //bool result = barManager.Add(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
                 //LogDebug("OnCooldownStarted", $"BarManager Result: {result} {iconId} Bars: {barManager.Count}");
             });
@@ -313,17 +376,8 @@ namespace SezzUI.Modules.CooldownHud
 
             _cooldowns[actionId].barManagers.ForEach(barManager =>
             {
-                string? name = data.Type == ActionType.General ?
-                    Helpers.SpellHelper.Instance.GetGeneralActionName(actionId) :
-                    Helpers.SpellHelper.Instance.GetActionName(actionId);
-
-                int? iconId = data.Type == ActionType.General ?
-                    Helpers.SpellHelper.Instance.GetGeneralActionIcon(actionId) :
-                    Helpers.SpellHelper.Instance.GetActionIcon(actionId);
-
-                TextureWrap? icon = iconId != null ? DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId((uint)iconId) : null;
-
-                barManager.Update(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
+                GetActionDisplayData(actionId, data.Type, out string? name, out TextureWrap? texture);
+                barManager.Update(actionId, name ?? "Unknown Action", texture, data.StartTime, data.Duration);
                 //bool result = barManager.Update(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
                 //LogDebug("OnCooldownChanged", $"BarManager Result: {result} {iconId} Bars: {barManager.Count}");
             });
@@ -332,6 +386,13 @@ namespace SezzUI.Modules.CooldownHud
         private void OnCooldownFinished(uint actionId, GameEvents.CooldownData data, uint elapsedFinish)
         {
             if (!_cooldowns.ContainsKey(actionId)) { return; }
+
+            if (Config.CooldownHudPulse.Enabled && ShouldShowPulse(actionId))
+            {
+                // Bar is propably not available anymore here.
+                GetActionDisplayData(actionId, data.Type, out string? name, out TextureWrap? texture);
+                Pulse(actionId, texture);
+            }
 
             _cooldowns[actionId].barManagers.ForEach(barManager =>
             {
