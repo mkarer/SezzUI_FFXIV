@@ -133,7 +133,15 @@ namespace SezzUI.Modules.JobHud
         /// <summary>
         /// Action ID that will be used to display cooldown spiral and text.
         /// </summary>
-        public uint? CooldownActionId;
+        public uint? CooldownActionId
+        {
+            get { return _cooldownActionId; }
+            set
+            {
+                _cooldownActionId = value != null ? DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId((uint)value) : value;
+            }
+        }
+        private uint? _cooldownActionId;
         public float CooldownWarningThreshold = 7f;
 
         /// <summary>
@@ -309,27 +317,28 @@ namespace SezzUI.Modules.JobHud
             // Cooldown + Charges
             if (CooldownActionId != null)
 			{
-                Helpers.CooldownData cooldown = Helpers.SpellHelper.GetCooldownData((uint)CooldownActionId);
+                GameEvents.CooldownData cooldown = EventManager.Cooldown.Get((uint)CooldownActionId);
 
-                if (cooldown.CooldownRemaining > 0)
+                if (cooldown.IsActive)
 				{
                     if (!failedInitialCondition)
                     {
-                        newState = cooldown.CooldownRemaining > CooldownWarningThreshold ? IconState.FadedOut : IconState.Soon;
+                        newState = (cooldown.Remaining / 1000f) > CooldownWarningThreshold ? IconState.FadedOut : IconState.Soon;
                     }
 
-                    cooldownTextRemaining = cooldown.CooldownRemaining;
-                    cooldownSpiralRemaining = cooldown.CooldownRemaining;
-                    cooldownSpiralTotal = cooldown.CooldownPerCharge;
+                    cooldownTextRemaining = cooldown.Remaining / 1000f;
+                    cooldownSpiralRemaining = cooldown.Remaining / 1000f;
+                    cooldownSpiralTotal = cooldown.Duration / 1000f;
                 }
                 else if (!failedInitialCondition)
 				{
                     newState = IconState.Ready;
                 }
 
-                if (cooldown.ChargesMax > 1)
+                ushort maxCharges = cooldown.IsActive ? cooldown.MaxCharges : EventManager.Cooldown.GetMaxCharges((uint)CooldownActionId);
+                if (maxCharges > 1)
 				{
-                    chargesTextAmount = (short)cooldown.ChargesCurrent;
+                    chargesTextAmount = (short)(cooldown.IsActive ? cooldown.CurrentCharges : maxCharges);
                 }
             }
 
