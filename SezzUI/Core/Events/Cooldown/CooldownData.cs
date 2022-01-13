@@ -59,14 +59,16 @@ namespace SezzUI.GameEvents
         /// <summary>
         /// Remaining cooldown in milliseconds or 0 if inactive.
         /// </summary>
-        public uint Remaining => IsActive ? Duration - (uint)(Environment.TickCount64 - StartTime) : 0;
+        public uint Remaining => IsActive ? (uint)_remaining : 0;
+        private long _remaining => Duration - (Environment.TickCount64 - StartTime);
 
         /// <summary>
         /// Elapsed time in milliseconds or 0 if inactive.
         /// </summary>
         public uint Elapsed => IsActive ? Duration - Remaining : 0;
-
-        public bool IsActive => _duration > 0 && _currentCharges != _maxCharges;
+        
+        // TODO: Force update when checking IsActive instead of checking remaining time for a negative value?
+        public bool IsActive => _duration > 0 && _currentCharges != _maxCharges && _remaining > 0;
 
         /// <summary>
         /// Returns if any value has changed since the last call of PrepareUpdate().
