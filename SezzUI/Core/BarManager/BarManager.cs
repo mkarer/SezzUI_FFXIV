@@ -19,6 +19,7 @@ namespace SezzUI.BarManager
         public Vector2 Position = Vector2.Zero;
 
         public BarManagerBarConfig BarConfig = new();
+        public List<BarManagerBar> Bars { get { return _bars; } }
         private List<BarManagerBar> _bars = new();
         public int Count => _bars.Count();
 
