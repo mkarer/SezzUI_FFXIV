@@ -179,6 +179,18 @@ namespace SezzUI.GameEvents
             }
         }
 
+        public CooldownData Get(uint actionId) {
+            if (!_watchedActions.ContainsKey(actionId)) {
+                LogError("Get", $"Error: Cannot retrieve data for unwatched cooldown! Action ID: {actionId}");
+            }
+            else if (_cache.ContainsKey(actionId))
+            {
+                return _cache[actionId];
+            }
+
+            return new();
+        }
+
         /// <summary>
         /// Schedule cooldown data update (in OnFrameworkUpdate)
         /// </summary>
