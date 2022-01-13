@@ -245,7 +245,7 @@ namespace SezzUI.GameEvents
             }
         }
 
-        public static unsafe ushort GetMaxCharges(uint actionId, uint level)
+        public unsafe ushort GetMaxCharges(uint actionId, uint level = 0)
         {
             return ActionManager.GetMaxCharges(actionId, level);
         }
