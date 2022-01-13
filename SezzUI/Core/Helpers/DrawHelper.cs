@@ -145,6 +145,12 @@ namespace SezzUI.Helpers
             // TODO: HUD Clipping
             if (total > 0)
             {
+                if (remaining > total) {
+                    // avoid crashes
+                    Dalamud.Logging.PluginLog.Warning("[DrawProgressSwipe] Adjusted remaining duration {remaining} to not exceed total {total}. FIX YOUR CODE!");
+                    remaining = total;
+                }
+
                 float percent = 1 - (total - remaining) / total;
 
                 float radius = (float)Math.Sqrt(Math.Pow(Math.Max(size.X, size.Y), 2) * 2) / 2f;
