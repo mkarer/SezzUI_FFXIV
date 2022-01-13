@@ -7,7 +7,6 @@ namespace SezzUI.Modules.CooldownHud.Jobs
         public override void Configure(CooldownHud hud)
         {
             base.Configure(hud);
-            hud.RegisterCooldown(52); // Infuriate
         }
     }
 }

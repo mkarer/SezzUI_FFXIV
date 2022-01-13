@@ -8,6 +8,9 @@ namespace SezzUI.Modules.CooldownHud.Jobs
         {
             base.Configure(hud);
 
+            hud.RegisterCooldown(110); // Bloodletter
+            hud.RegisterCooldown(3561); // The Warden's Paean
+            hud.RegisterCooldown(3558); // Empyreal Arrow
             hud.RegisterCooldown(3562); // Sidewinder
         }
     }

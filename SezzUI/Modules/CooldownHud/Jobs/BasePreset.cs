@@ -16,7 +16,10 @@ namespace SezzUI.Modules.CooldownHud
 			{
 				case DelvUI.Helpers.JobRoles.Tank:
                     hud.RegisterCooldown(7538, 1); // Interject
-					break;
+                    hud.RegisterCooldown(7533); // Provoke
+                    hud.RegisterCooldown(7535); // Reprisal
+                    hud.RegisterCooldown(7537); // Shirk
+                    break;
 
                 case DelvUI.Helpers.JobRoles.Healer:
 					break;
