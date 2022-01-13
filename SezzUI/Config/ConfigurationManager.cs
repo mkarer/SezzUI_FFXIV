@@ -425,6 +425,7 @@ namespace SezzUI.Config
 
             // Modules
             typeof(JobHudConfig),
+            typeof(CooldownHudConfig),
             typeof(ElementHiderConfig),
             typeof(ActionBarConfig),
 
