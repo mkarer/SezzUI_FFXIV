@@ -335,7 +335,7 @@ namespace SezzUI.Modules.JobHud
                     newState = IconState.Ready;
                 }
 
-                ushort maxCharges = cooldown.IsActive ? cooldown.MaxCharges : EventManager.Cooldown.GetMaxCharges((uint)CooldownActionId);
+                ushort maxCharges = cooldown.IsActive ? cooldown.MaxCharges : GameEvents.Cooldown.GetMaxCharges((uint)CooldownActionId);
                 if (maxCharges > 1)
 				{
                     chargesTextAmount = (short)(cooldown.IsActive ? cooldown.CurrentCharges : maxCharges);
