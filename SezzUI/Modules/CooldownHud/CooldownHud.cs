@@ -301,8 +301,9 @@ namespace SezzUI.Modules.CooldownHud
 
                 TextureWrap? icon = iconId != null ? DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId((uint)iconId) : null;
 
-                bool result = barManager.Add(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
-                LogDebug("OnCooldownStarted", $"BarManager Result: {result} {iconId} Bars: {barManager.Count}");
+                barManager.Add(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
+                //bool result = barManager.Add(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
+                //LogDebug("OnCooldownStarted", $"BarManager Result: {result} {iconId} Bars: {barManager.Count}");
             });
         }
 
@@ -322,8 +323,9 @@ namespace SezzUI.Modules.CooldownHud
 
                 TextureWrap? icon = iconId != null ? DelvUI.Helpers.TexturesCache.Instance.GetTextureFromIconId((uint)iconId) : null;
 
-                bool result = barManager.Update(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
-                LogDebug("OnCooldownChanged", $"BarManager Result: {result} {iconId} Bars: {barManager.Count}");
+                barManager.Update(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
+                //bool result = barManager.Update(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
+                //LogDebug("OnCooldownChanged", $"BarManager Result: {result} {iconId} Bars: {barManager.Count}");
             });
         }
 
@@ -333,8 +335,9 @@ namespace SezzUI.Modules.CooldownHud
 
             _cooldowns[actionId].barManagers.ForEach(barManager =>
             {
-                bool result = barManager.Remove(actionId);
-                LogDebug("OnCooldownFinished", $"BarManager Result: {result} Bars: {barManager.Count}");
+                barManager.Remove(actionId);
+                //bool result = barManager.Remove(actionId);
+                //LogDebug("OnCooldownFinished", $"BarManager Result: {result} Bars: {barManager.Count}");
             });
         }
         #endregion
