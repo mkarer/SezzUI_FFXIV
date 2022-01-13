@@ -86,7 +86,7 @@ namespace SezzUI.Helpers
             bool fontPushed = DelvUI.Helpers.FontsManager.Instance.PushFont(font);
 
             Vector2 textSize = ImGui.CalcTextSize(textPosCalc != "" ? textPosCalc : text);
-            Vector2 textPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(anchor == Enums.DrawAnchor.Center ? pos + size / 2 : pos + size, textSize, anchor);
+            Vector2 textPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(pos + size, textSize, anchor);
             textPosition.X += xOffset;
             textPosition.Y += 1 + yOffset;
 
@@ -172,23 +172,57 @@ namespace SezzUI.Helpers
             }
         }
 
-        public static void DrawCooldownText(Vector2 pos, Vector2 size, float cooldown, ImDrawListPtr drawList, string font = "MyriadProLightCond_20", float opacity = 1)
-		{
+        public static string FormatDuration(uint durationMS, ushort msThreshold = 0, bool zeroSeconds = true)
+        {
+            return FormatDuration(durationMS / 1000f, msThreshold, zeroSeconds);
+        }
+
+        public static string FormatDuration(float duration, ushort msThreshold = 0, bool zeroSeconds = true)
+        {
+            // TODO: Cleanup, quick and dirty Lua port...
             // https://stackoverflow.com/questions/463642/what-is-the-best-way-to-convert-seconds-into-hourminutessecondsmilliseconds
-            int cooldownRounded = (int)Math.Ceiling(cooldown);
-            int seconds = cooldownRounded % 60;
-            if (cooldownRounded >= 60)
+            if (duration >= 3600)
             {
-                int minutes = (cooldownRounded % 3600) / 60;
-                DrawCenteredOutlineText(font, String.Format("{0:D1}:{1:D2}", minutes, seconds), pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(0.6f, 0.6f, 0.6f, opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, opacity)), drawList);
+                // 1 Hour+
+                uint hours = (uint)Math.Floor(duration / 3600f);
+                uint minutes = (uint)Math.Floor((duration - (hours * 3600)) / 60f);
+                uint seconds = (uint)((duration - (minutes * 60)) - (hours * 3600));
+                return string.Format("{0:D1}:{1:D2}:{2:D2}", hours, minutes, seconds);
             }
-            else if (cooldown > 3)
+            else if (duration >= 60)
             {
-                DrawCenteredOutlineText(font, String.Format("{0:D1}", seconds), pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, opacity)), drawList);
+                // 1-59 Minutes
+                uint minutes = (uint)Math.Floor(duration / 60f);
+                uint seconds = (uint)(duration - (minutes * 60));
+                return string.Format("{0:D1}:{1:D2}", minutes, seconds);
+            }
+            else if (duration > msThreshold)
+            {
+                // Seconds
+                return Math.Floor(duration).ToString();
             }
             else
             {
-                DrawCenteredOutlineText(font, cooldown.ToString("0.0", Plugin.NumberFormatInfo), pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 0, 0, opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, opacity)), drawList);
+                // Milliseconds
+                return (Math.Truncate(duration * 10) / 10).ToString(zeroSeconds ? "0.0" : ".0", Plugin.NumberFormatInfo);
+            }
+        }
+
+        public static void DrawCooldownText(Vector2 pos, Vector2 size, float cooldown, ImDrawListPtr drawList, string font = "MyriadProLightCond_20", float opacity = 1)
+		{
+            ushort msThreshold = 3;
+
+            if (cooldown >= 60)
+            {
+                DrawCenteredOutlineText(font, FormatDuration(cooldown), pos, size / 2f, ImGui.ColorConvertFloat4ToU32(new Vector4(0.6f, 0.6f, 0.6f, opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, opacity)), drawList);
+            }
+            else if (cooldown > msThreshold)
+            {
+                DrawCenteredOutlineText(font, FormatDuration(cooldown, msThreshold), pos, size / 2f, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, opacity)), drawList);
+            }
+            else
+            {
+                DrawCenteredOutlineText(font, FormatDuration(cooldown, msThreshold), pos, size / 2f, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 0, 0, opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, opacity)), drawList);
             }
         }
 
