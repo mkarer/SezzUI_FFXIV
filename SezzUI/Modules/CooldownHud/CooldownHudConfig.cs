@@ -7,7 +7,7 @@ namespace SezzUI.Interface.GeneralElements
     [SubSection("General", 0)]
     public class CooldownHudConfig : PluginConfigObject
     {
-        [NestedConfig("Pulse Animation", 35)]
+        [NestedConfig("Pulse Animation", 20)]
         public CooldownHudPulseConfig CooldownHudPulse = new CooldownHudPulseConfig();
 
         public new static CooldownHudConfig DefaultConfig()
@@ -23,7 +23,7 @@ namespace SezzUI.Interface.GeneralElements
     public class CooldownHudPulseConfig : AnchorablePluginConfigObject
     {
         [DragInt("Animation Delay [ms]", min = -5000, max = 0)]
-        [Order(10, collapseWith = nameof(Enabled))]
+        [Order(30, collapseWith = nameof(Enabled))]
         public int Delay = -400;
 
         public new static CooldownHudPulseConfig DefaultConfig() {
