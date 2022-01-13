@@ -40,11 +40,13 @@ namespace SezzUI.GameEvents
         private DelayedCooldownUpdateComparer _delayedCooldownUpdateComparer = new();
 
         private static Dictionary<uint, uint> _actionsModifyingCooldowns = new(){
-            // Enhanced Infuriate [157]: Reduces Infuriate [52] recast time by 5 seconds upon landing Inner Beast [49], Steel Cyclone [51], Fell Cleave [3549], or Decimate [3550] on most targets.
+            // [WAR] Enhanced Infuriate [157]: Reduces Infuriate [52] recast time by 5 seconds upon landing Inner Beast [49], Steel Cyclone [51], Fell Cleave [3549], or Decimate [3550] on most targets.
             { 49, 52 },
             { 51, 52 },
             { 3549, 52 },
             { 3550, 52 },
+            // [SMN] XIVCombo Demi Enkindle Feature: Enkindle [7429] somehow is still 7427?
+            { 7427, 7429 },
         };
 
         // TODO: Delay first update based on latency?
@@ -245,7 +247,7 @@ namespace SezzUI.GameEvents
             }
         }
 
-        public unsafe ushort GetMaxCharges(uint actionId, uint level = 0)
+        public static unsafe ushort GetMaxCharges(uint actionId, uint level = 0)
         {
             return ActionManager.GetMaxCharges(actionId, level);
         }
@@ -349,17 +351,23 @@ namespace SezzUI.GameEvents
             {
                 if (ret == 1)
                 {
-                    // Action should be on cooldown now.
                     if (_watchedActions.ContainsKey(actionId))
                     {
+                        // Action should be on cooldown now!
                         Update(actionId, actionType);
                     }
                     else if (_actionsModifyingCooldowns.ContainsKey(actionId))
                     {
+                        // Delay update, cooldown won't get changed instantly.
+                        // TODO: Latency-based?
                         ScheduleUpdate(_actionsModifyingCooldowns[actionId], 25);
                         ScheduleUpdate(_actionsModifyingCooldowns[actionId], 50);
                         ScheduleUpdate(_actionsModifyingCooldowns[actionId], 75);
-                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 400);
+                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 150);
+                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 300);
+                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 600);
+                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 900);
+                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 2500);
                     }
                 }
             }
