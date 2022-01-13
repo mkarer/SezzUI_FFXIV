@@ -44,7 +44,8 @@ namespace SezzUI.GameEvents
         private List<Tuple<long, uint>> _delayedUpdates = new();
         private DelayedCooldownUpdateComparer _delayedCooldownUpdateComparer = new();
 
-        private static Dictionary<uint, uint> _actionsModifyingCooldowns = new(){
+        private static Dictionary<uint, uint> _actionsModifyingCooldowns = new()
+        {
             // [WAR] Enhanced Infuriate [157]: Reduces Infuriate [52] recast time by 5 seconds upon landing Inner Beast [49], Steel Cyclone [51], Fell Cleave [3549], or Decimate [3550] on most targets.
             { 49, 52 },
             { 51, 52 },
@@ -101,7 +102,8 @@ namespace SezzUI.GameEvents
                 _cache.Remove(actionId);
             }
 
-            if (_lastActionId == actionId && !_watchedActions.ContainsKey(actionId)) {
+            if (_lastActionId == actionId && !_watchedActions.ContainsKey(actionId))
+            {
                 _lastActionId = 0;
             }
         }
@@ -122,7 +124,9 @@ namespace SezzUI.GameEvents
             //LogDebug($"totalCooldown {totalCooldown} totalElapsed {totalElapsed} totalElapsedMS {(int)(totalElapsed * 1000f)} DateTime.UtcNow.Ticks {DateTime.UtcNow.Ticks} DateTime.UtcNow.Ticks-totalElapsed {DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(totalElapsed)).Ticks}");
             //LogDebug($"totalCooldownAdjusted {totalCooldownAdjusted} chargesMod {chargesMod}");
 
-            if (totalCooldownAdjusted > 0)
+            bool isFinished = totalCooldownAdjusted <= 0;
+
+            if (!isFinished)
             {
                 bool cooldownStarted = !_cache.ContainsKey(actionId);
                 CooldownData data = cooldownStarted ? new() : _cache[actionId];
@@ -137,7 +141,7 @@ namespace SezzUI.GameEvents
                 data.CurrentCharges = totalElapsedAdjusted > 0 || maxChargesMaxLevel == 1 ?
                     (ushort)Math.Floor(totalElapsedAdjusted / cooldownPerCharge) :
                     maxChargesCurrentLevel;
-                
+
                 data.StartTime = Environment.TickCount64 - (int)chargingMilliseconds; // Not 100% accurate for some reason, should be fine though (if not we can still update more often).
                 data.Type = actionType;
 
@@ -149,29 +153,34 @@ namespace SezzUI.GameEvents
                 //LogDebug($"chargesMod {chargesMod}");
                 //LogDebug($"StartTime {data.StartTime} ElapsedCalculated {Environment.TickCount64 - data.StartTime}ms elapsed {totalElapsedAdjusted % cooldownPerCharge}s {(totalElapsedAdjusted % cooldownPerCharge) * 1000}ms {(long)((totalElapsedAdjusted % cooldownPerCharge) * 1000)}ms ");
 
-                // Schedule update
-                uint delay = cooldownStarted ? UPDATE_DELAY_INITIAL : UPDATE_DELAY_REPEATED;
-                uint remaining = data.Remaining;
-                ScheduleUpdate(actionId, remaining >= delay ? delay : remaining + 1);
+                isFinished = !data.IsActive;
+                if (!isFinished)
+                {
+                    // Schedule update
+                    uint delay = cooldownStarted ? UPDATE_DELAY_INITIAL : UPDATE_DELAY_REPEATED;
+                    uint remaining = data.Remaining;
+                    ScheduleUpdate(actionId, remaining >= delay ? delay : remaining + 1);
 
-                if (cooldownStarted)
-                {
-                    // New
-                    InvokeCooldownStarted(actionId, data);
-                    _cache[actionId] = data;
-                }
-                else
-                {
-                    // Updated
-                    if (data.HasChanged)
+                    if (cooldownStarted)
                     {
-                        InvokeCooldownChanged(actionId, data);
+                        // New
+                        InvokeCooldownStarted(actionId, data);
+                        _cache[actionId] = data;
                     }
-                }
+                    else
+                    {
+                        // Updated
+                        if (data.HasChanged)
+                        {
+                            InvokeCooldownChanged(actionId, data);
+                        }
+                    }
 
-                return true;
+                    return true;
+                }
             }
-            else
+
+            if (isFinished)
             {
                 // Inactive
                 if (_cache.ContainsKey(actionId))
@@ -181,21 +190,23 @@ namespace SezzUI.GameEvents
                     InvokeCooldownFinished(actionId, data, (uint)(Environment.TickCount64 - data.StartTime) - data.Duration);
                     _cache.Remove(actionId);
                 }
-
-                return false;
             }
+
+            return false;
         }
 
         private void UpdateAll()
         {
-            foreach(var kvp in _watchedActions)
+            foreach (var kvp in _watchedActions)
             {
                 Update(kvp.Key, GetActionType(kvp.Key));
             }
         }
 
-        public CooldownData Get(uint actionId) {
-            if (!_watchedActions.ContainsKey(actionId)) {
+        public CooldownData Get(uint actionId)
+        {
+            if (!_watchedActions.ContainsKey(actionId))
+            {
                 LogError("Get", $"Error: Cannot retrieve data for unwatched cooldown! Action ID: {actionId}");
             }
             else if (_cache.ContainsKey(actionId))
@@ -213,7 +224,7 @@ namespace SezzUI.GameEvents
         /// <param name="delay">Minimum delay in milliseconds</param>
         private void ScheduleUpdate(uint actionId, uint delay)
         {
-            lock(_delayedUpdates)
+            lock (_delayedUpdates)
             {
                 _delayedUpdates.Add(new(Environment.TickCount64 + delay, actionId));
                 _delayedUpdates.Sort(_delayedCooldownUpdateComparer);
@@ -221,7 +232,8 @@ namespace SezzUI.GameEvents
             }
         }
 
-        private void ScheduleMultipleUpdates(uint actionIds) {
+        private void ScheduleMultipleUpdates(uint actionIds)
+        {
             // TODO: Latency-based/Action-queue time?
             ScheduleUpdate(actionIds, 25);
             ScheduleUpdate(actionIds, 50);
@@ -362,7 +374,8 @@ namespace SezzUI.GameEvents
             return false;
         }
 
-        private bool UpdateIfWatched(uint actionId, ActionType actionType, bool isAdjusted = false) {
+        private bool UpdateIfWatched(uint actionId, ActionType actionType, bool isAdjusted = false)
+        {
             if (_watchedActions.ContainsKey(actionId))
             {
                 // Action should be on cooldown now!
@@ -402,9 +415,11 @@ namespace SezzUI.GameEvents
 
             try
             {
-                if (ret == 1 && !UpdateIfWatched(actionId, actionType)) {
+                if (ret == 1 && !UpdateIfWatched(actionId, actionType))
+                {
                     uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
-                    if (actionIdAdjusted != actionId) {
+                    if (actionIdAdjusted != actionId)
+                    {
                         UpdateIfWatched(actionIdAdjusted, actionType, true);
                     }
                 }
@@ -447,7 +462,8 @@ namespace SezzUI.GameEvents
         {
             _receiveActionEffectHook!.Original(sourceActorID, sourceActor, vectorPosition, effectHeader, effectArray, effectTrail);
 
-            if (_lastActionId != 0) {
+            if (_lastActionId != 0)
+            {
 #if DEBUG
                 if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
                 {
