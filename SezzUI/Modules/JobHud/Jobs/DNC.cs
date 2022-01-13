@@ -20,9 +20,9 @@ namespace SezzUI.Modules.JobHud.Jobs
             base.Configure(hud);
 
             Bar roleBar = hud.Bars.Last();
+            roleBar.Add(new Icon(roleBar) { TextureActionId = 16015, CooldownActionId = 16015, Level = 52 }, 1); // Curing Waltz
+            roleBar.Add(new Icon(roleBar) { TextureActionId = 16012, CooldownActionId = 16012, StatusId = 1826, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 60 }, 1); // Shield Samba
             roleBar.Add(new Icon(roleBar) { TextureActionId = 16014, CooldownActionId = 16014, StatusId = 1827, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, StacksStatusId = 2696, GlowBorderStatusId = 2696, Features = IconFeatures.GlowIgnoresState, Level = 80 }, 1); // Improvisation
-            roleBar.Add(new Icon(roleBar) { TextureActionId = 16012, CooldownActionId = 16012, StatusId = 1826, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 60 }, 2); // Shield Samba
-            roleBar.Add(new Icon(roleBar) { TextureActionId = 16015, CooldownActionId = 16015, Level = 52 }, 3); // Curing Waltz
 
             // Threefold Fan Dance
             hud.AddAlert(new AuraAlert

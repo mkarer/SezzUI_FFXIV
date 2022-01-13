@@ -40,8 +40,8 @@ namespace SezzUI.Modules.JobHud.Jobs
             base.Configure(hud);
 
             Bar roleBar = hud.Bars.Last();
-            roleBar.Add(new Icon(roleBar) { TextureActionId = 3561, CooldownActionId = 3561, StatusId = 866, MaxStatusDuration = 30, StatusTarget = Enums.Unit.TargetOrPlayer, StatusSourcePlayer = false, Level = 35 }, 1); // The Warden's Paean
-            roleBar.Add(new Icon(roleBar) { TextureActionId = 7405, CooldownActionId = 7405, StatusId = 1934, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, Level = 62 }, 2); // Troubadour
+            //roleBar.Add(new Icon(roleBar) { TextureActionId = 3561, CooldownActionId = 3561, StatusId = 866, MaxStatusDuration = 30, StatusTarget = Enums.Unit.TargetOrPlayer, StatusSourcePlayer = false, Level = 35 }, 1); // The Warden's Paean
+            roleBar.Add(new Icon(roleBar) { TextureActionId = 7405, CooldownActionId = 7405, StatusId = 1934, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, Level = 62 }, 1); // Troubadour
             roleBar.Add(new Icon(roleBar) { TextureActionId = 7408, CooldownActionId = 7408, StatusId = 1202, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, Level = 66 }, 1); // Nature's Minne
         }
 
