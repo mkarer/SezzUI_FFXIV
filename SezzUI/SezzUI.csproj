@@ -92,7 +92,6 @@
 		<PackageReference Include="DalamudPackager" Version="2.1.5" />
 		<PackageReference Include="Colourful" Version="3.1.0" />
 		<PackageReference Include="ILRepack" Version="2.1.0-beta1" />
-		<PackageReference Include="XivCommon" Version="3.2.0" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
