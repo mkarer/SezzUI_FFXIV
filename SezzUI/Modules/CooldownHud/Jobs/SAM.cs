@@ -7,6 +7,9 @@ namespace SezzUI.Modules.CooldownHud.Jobs
         public override void Configure(CooldownHud hud)
         {
             base.Configure(hud);
+
+            hud.RegisterCooldown(16486); // Kaeshi: Setsugekka
+            hud.RegisterCooldown(16481); // Hissatsu: Senei
         }
     }
 }
