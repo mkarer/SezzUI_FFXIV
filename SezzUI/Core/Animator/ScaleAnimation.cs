@@ -21,8 +21,8 @@ namespace SezzUI.Animator
 			_delayStart = delayStart;
 			_delayEnd = delayEnd;
 
-			MinScale = Math.Max(0.05f, Math.Min(fromScale, toScale));
-			MaxScale = Math.Min(10f, Math.Max(fromScale, toScale));
+			MinScale = Math.Max(0.01f, Math.Min(fromScale, toScale));
+			MaxScale = Math.Min(100f, Math.Max(fromScale, toScale));
 			_defaultType = (toScale > fromScale) ? ScalingType.Upscale : ScalingType.Downscale;
 			_currentType = _defaultType;
 		}
