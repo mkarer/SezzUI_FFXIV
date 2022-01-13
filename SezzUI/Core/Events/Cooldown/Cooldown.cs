@@ -33,6 +33,11 @@ namespace SezzUI.GameEvents
         private delegate byte UseActionDelegate(IntPtr actionManager, ActionType actionType, uint actionID, long targetID, uint param, uint useType, int pvp, IntPtr a7);
         private Hook<UseActionDelegate>? _useActionHook;
 
+        private delegate void ReceiveActionEffectDelegate(int sourceActorID, IntPtr sourceActor, IntPtr vectorPosition, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail);
+        private Hook<ReceiveActionEffectDelegate>? _receiveActionEffectHook;
+
+        private uint _lastActionId = 0;
+
         private Dictionary<uint, ushort> _watchedActions = new();
         private Dictionary<uint, CooldownData> _cache = new();
 
@@ -95,12 +100,16 @@ namespace SezzUI.GameEvents
                 _delayedUpdates.RemoveAll(x => x.Item2 == actionId);
                 _cache.Remove(actionId);
             }
+
+            if (_lastActionId == actionId && !_watchedActions.ContainsKey(actionId)) {
+                _lastActionId = 0;
+            }
         }
 
-        private void Update(uint actionId, ActionType actionType)
+        private bool Update(uint actionId, ActionType actionType)
         {
             PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
-            if (player == null) { return; }
+            if (player == null) { return false; }
 
             // We're not adjusting the action ID in here, because actionId should already be adjusted.
             GetRecastTimes(actionId, out float totalCooldown, out float totalElapsed, actionType);
@@ -159,6 +168,8 @@ namespace SezzUI.GameEvents
                         InvokeCooldownChanged(actionId, data);
                     }
                 }
+
+                return true;
             }
             else
             {
@@ -170,6 +181,8 @@ namespace SezzUI.GameEvents
                     InvokeCooldownFinished(actionId, data, (uint)(Environment.TickCount64 - data.StartTime) - data.Duration);
                     _cache.Remove(actionId);
                 }
+
+                return false;
             }
         }
 
@@ -206,6 +219,19 @@ namespace SezzUI.GameEvents
                 _delayedUpdates.Sort(_delayedCooldownUpdateComparer);
                 //_delayedUpdates.ForEach(x => PluginLog.Debug($"_delayedUpdates {x.Item1} {x.Item2}"));
             }
+        }
+
+        private void ScheduleMultipleUpdates(uint actionIds) {
+            // TODO: Latency-based/Action-queue time?
+            ScheduleUpdate(actionIds, 25);
+            ScheduleUpdate(actionIds, 50);
+            ScheduleUpdate(actionIds, 75);
+            ScheduleUpdate(actionIds, 150);
+            ScheduleUpdate(actionIds, 300);
+            ScheduleUpdate(actionIds, 500);
+            ScheduleUpdate(actionIds, 600);
+            ScheduleUpdate(actionIds, 900);
+            ScheduleUpdate(actionIds, 2500);
         }
 
         private void OnFrameworkUpdate(Framework framework)
@@ -336,7 +362,34 @@ namespace SezzUI.GameEvents
             return false;
         }
 
-        private byte UseActionDetour(IntPtr actionManager, ActionType actionType, uint actionId, long targetedActorId, uint param, uint useType, int pvp, IntPtr a7)
+        private bool UpdateIfWatched(uint actionId, ActionType actionType, bool isAdjusted = false) {
+            if (_watchedActions.ContainsKey(actionId))
+            {
+                // Action should be on cooldown now!
+                _lastActionId = actionId;
+                if (!Update(actionId, actionType))
+                {
+                    // Appearantly it's not.
+                    ScheduleMultipleUpdates(actionId);
+                }
+                return true;
+            }
+            else if (_actionsModifyingCooldowns.ContainsKey(actionId))
+            {
+                // Delay update, cooldown won't get changed instantly.
+                _lastActionId = _actionsModifyingCooldowns[actionId];
+                ScheduleMultipleUpdates(_actionsModifyingCooldowns[actionId]);
+                return true;
+            }
+            else if (!isAdjusted)
+            {
+                _lastActionId = 0;
+            }
+
+            return false;
+        }
+
+        private unsafe byte UseActionDetour(IntPtr actionManager, ActionType actionType, uint actionId, long targetedActorId, uint param, uint useType, int pvp, IntPtr a7)
         {
             var ret = _useActionHook!.Original(actionManager, actionType, actionId, targetedActorId, param, useType, pvp, a7);
 
@@ -349,25 +402,10 @@ namespace SezzUI.GameEvents
 
             try
             {
-                if (ret == 1)
-                {
-                    if (_watchedActions.ContainsKey(actionId))
-                    {
-                        // Action should be on cooldown now!
-                        Update(actionId, actionType);
-                    }
-                    else if (_actionsModifyingCooldowns.ContainsKey(actionId))
-                    {
-                        // Delay update, cooldown won't get changed instantly.
-                        // TODO: Latency-based?
-                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 25);
-                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 50);
-                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 75);
-                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 150);
-                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 300);
-                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 600);
-                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 900);
-                        ScheduleUpdate(_actionsModifyingCooldowns[actionId], 2500);
+                if (ret == 1 && !UpdateIfWatched(actionId, actionType)) {
+                    uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
+                    if (actionIdAdjusted != actionId) {
+                        UpdateIfWatched(actionIdAdjusted, actionType, true);
                     }
                 }
             }
@@ -377,6 +415,48 @@ namespace SezzUI.GameEvents
             }
 
             return ret;
+        }
+
+        private bool HookReceiveActionEffect()
+        {
+            try
+            {
+                if (Plugin.SigScanner.TryScanText("E8 ?? ?? ?? ?? 48 8B 8D F0 03 00 00", out var receiveActionEffectPtr))
+                {
+                    _receiveActionEffectHook = new(receiveActionEffectPtr, ReceiveActionEffectDetour);
+#if DEBUG
+                    LogDebug($"Hooked: ReceiveActionEffect (ptr = {receiveActionEffectPtr.ToInt64():X})");
+#endif
+                    return true;
+                }
+                else
+                {
+                    LogError($"Signature not found: ReceiveActionEffect");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, $"Failed to setup hooks: {ex}");
+            }
+
+            return false;
+        }
+
+
+        private unsafe void ReceiveActionEffectDetour(int sourceActorID, IntPtr sourceActor, IntPtr vectorPosition, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail)
+        {
+            _receiveActionEffectHook!.Original(sourceActorID, sourceActor, vectorPosition, effectHeader, effectArray, effectTrail);
+
+            if (_lastActionId != 0) {
+#if DEBUG
+                if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+                {
+                    LogDebug("ReceiveActionEffectDetour", $"Update Action ID: {_lastActionId}");
+                }
+#endif
+                Update(_lastActionId, GetActionType(_lastActionId));
+                _lastActionId = 0;
+            }
         }
 
         private static string? GetSignature<T>(string methodName)
@@ -396,6 +476,7 @@ namespace SezzUI.GameEvents
             {
                 Plugin.Framework.Update += OnFrameworkUpdate;
                 _useActionHook?.Enable();
+                _receiveActionEffectHook?.Enable();
 
                 return true;
             }
@@ -409,8 +490,10 @@ namespace SezzUI.GameEvents
             {
                 Plugin.Framework.Update -= OnFrameworkUpdate;
                 _useActionHook?.Disable();
+                _receiveActionEffectHook?.Disable();
                 _delayedUpdates.Clear();
                 _cache.Clear();
+                _lastActionId = 0;
 
                 return true;
             }
@@ -432,6 +515,7 @@ namespace SezzUI.GameEvents
         protected override void Initialize()
         {
             HookUseAction(); // TOOD: Don't allow enabling if this fails, because it doesn't do shit without the hook.
+            HookReceiveActionEffect();
             base.Initialize();
         }
 
@@ -440,6 +524,7 @@ namespace SezzUI.GameEvents
             _watchedActions.Clear();
             _actionsModifyingCooldowns.Clear();
             _useActionHook?.Dispose();
+            _receiveActionEffectHook?.Dispose();
         }
         #endregion
     }
