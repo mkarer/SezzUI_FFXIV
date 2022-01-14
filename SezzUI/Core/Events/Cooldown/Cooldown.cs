@@ -170,7 +170,6 @@ namespace SezzUI.GameEvents
             //LogDebug($"totalCooldownAdjusted {totalCooldownAdjusted} chargesMod {chargesMod}");
 
             bool isFinished = totalCooldownAdjusted <= 0;
-
             if (!isFinished)
             {
                 bool cooldownStarted = !_cache.ContainsKey(actionId);
@@ -192,7 +191,9 @@ namespace SezzUI.GameEvents
 
                 bool chargesChanged = !cooldownStarted && data.CurrentCharges != previousCharges;
 
-                data.StartTime = Environment.TickCount64 - (int)chargingMilliseconds; // Not 100% accurate for some reason, should be fine though (if not we can still update more often).
+                if (chargingMilliseconds > 0) {
+                    data.StartTime = Environment.TickCount64 - (int)chargingMilliseconds; // Not 100% accurate for some reason, should be fine though (if not we can still update more often).
+                }
                 data.Type = actionType;
 
                 //LogDebug($"now {Environment.TickCount64}");
@@ -237,7 +238,9 @@ namespace SezzUI.GameEvents
                 {
                     CooldownData data = _cache[actionId];
                     data.CurrentCharges = data.MaxCharges;
-                    InvokeCooldownFinished(actionId, data, (uint)(Environment.TickCount64 - data.StartTime) - data.Duration);
+                    //LogDebug("Update", $"ActionID {actionId} FinishedBecauseTotalCooldownAdjusted {totalCooldownAdjusted <= 0} Now {Environment.TickCount64} StartTime {data.StartTime} Duration {data.Duration} Elapsed {Environment.TickCount64 - data.StartTime - data.Duration}");
+                    long elapsedFinished = Environment.TickCount64 - data.StartTime - data.Duration;
+                    InvokeCooldownFinished(actionId, data, elapsedFinished < 0 ? 0 : (uint)elapsedFinished); // elapsedFinished can be negative!
                     _cache.Remove(actionId);
                 }
             }
