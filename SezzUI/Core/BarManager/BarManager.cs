@@ -30,17 +30,17 @@ namespace SezzUI.BarManager
             Id = id != "" ? id : Guid.NewGuid().ToString();
         }
 
-        public bool Add(uint id, string? text, string? text2, TextureWrap? icon, long start, uint duration, bool allowUpdating = true)
+        public bool Add(uint id, string? text, string? text2, TextureWrap? icon, long start, uint duration, object? data = null, bool allowUpdating = true)
         {
             if (!allowUpdating && Get(id) != null) {
                 return false;
             }
             else {
-                return Update(id, text, text2, icon, start, duration, true);
+                return Update(id, text, text2, icon, start, duration, data, true);
             }
         }
 
-        public bool Update(uint id, string? text, string? text2, TextureWrap? icon, long start, uint duration, bool allowAdding = true)
+        public bool Update(uint id, string? text, string? text2, TextureWrap? icon, long start, uint duration, object? data = null, bool allowAdding = true)
         {
             BarManagerBar? bar = Get(id);
 
@@ -53,19 +53,20 @@ namespace SezzUI.BarManager
 
             if (bar != null)
             {
-                return Update(bar, text, text2, icon, start, duration);
+                return Update(bar, text, text2, icon, start, duration, data);
             }
 
             return false;
         }
 
-        public bool Update(BarManagerBar bar, string? text, string? text2, TextureWrap? icon, long start, uint duration)
+        public bool Update(BarManagerBar bar, string? text, string? text2, TextureWrap? icon, long start, uint duration, object? data = null)
         {
             bar.Text = text;
             bar.CountText = text2;
             bar.Icon = icon;
             bar.StartTime = start;
             bar.Duration = duration;
+            bar.Data = data;
 
             return true;
         }

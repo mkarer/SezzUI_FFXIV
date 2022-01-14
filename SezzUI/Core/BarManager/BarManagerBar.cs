@@ -16,6 +16,7 @@ namespace SezzUI.BarManager
         public string? Text;
         public string? CountText;
         public TextureWrap? Icon;
+        public object? Data;
 
         public long StartTime = 0;
         public uint Duration = 0;
