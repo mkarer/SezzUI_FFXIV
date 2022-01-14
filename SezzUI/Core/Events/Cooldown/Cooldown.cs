@@ -35,8 +35,13 @@ namespace SezzUI.GameEvents
 
         private delegate void ReceiveActionEffectDelegate(int sourceActorID, IntPtr sourceActor, IntPtr vectorPosition, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail);
         private Hook<ReceiveActionEffectDelegate>? _receiveActionEffectHook;
-
         private uint _lastActionId = 0;
+
+        // TODO: Delay first update based on latency?
+        // Also: https://twitter.com/perchbird_/status/1282734091780186120
+        private static uint UPDATE_DELAY_INITIAL = 1850;
+        private static uint UPDATE_DELAY_REPEATED = 5000;
+        private static uint UPDATE_DELAY_REPEATED_FREQUENT = 50; // 60 FPS = 16.7ms/Frame
 
         private Dictionary<uint, ushort> _watchedActions = new();
         private Dictionary<uint, CooldownData> _cache = new();
@@ -44,22 +49,38 @@ namespace SezzUI.GameEvents
         private List<Tuple<long, uint>> _delayedUpdates = new();
         private DelayedCooldownUpdateComparer _delayedCooldownUpdateComparer = new();
 
-        private static Dictionary<uint, uint> _actionsModifyingCooldowns = new()
+        private static Dictionary<uint, uint> _actionsModifyingCooldowns = new() // Actions that modify the duration of other cooldowns
         {
-            // [WAR] Enhanced Infuriate [157]: Reduces Infuriate [52] recast time by 5 seconds upon landing Inner Beast [49], Steel Cyclone [51], Fell Cleave [3549], or Decimate [3550] on most targets.
+            // WAR
+            // Enhanced Infuriate [157]: Reduces Infuriate [52] recast time by 5 seconds upon landing Inner Beast [49], Steel Cyclone [51], Fell Cleave [3549], or Decimate [3550] on most targets.
             { 49, 52 },
             { 51, 52 },
             { 3549, 52 },
             { 3550, 52 },
-            // [SMN] XIVCombo Demi Enkindle Feature: Enkindle [7429] somehow is still 7427?
+            // BRD
+            // Empyreal Arrow [3885] -> Bloodletter [110] (and Rain of Death [117] which is grouped below) during Mage's Ballad
+            { 3558, 110 },
+            // SMN
+            // XIVCombo Demi Enkindle Feature: Enkindle [7429] somehow is still 7427?
             { 7427, 7429 },
         };
 
-        // TODO: Delay first update based on latency?
-        // Also: https://twitter.com/perchbird_/status/1282734091780186120
-        private static uint UPDATE_DELAY_INITIAL = 1850;
-        private static uint UPDATE_DELAY_REPEATED = 5000;
+        private static List<List<uint>> _cooldownGroups = new() // Actions that share the same cooldown
+        {
+            // SAM
+            new() { 7867, 16483, 16486, 16485, 16484 }, // (Iaijutsu (XIVCombo) [7867]) Tsubame-gaeshi [16483] => Kaeshi: Setsugekka [16486] + Kaeshi: Goken [16485] + Kaeshi: Higanbana [16484]
+            // BRD
+            new() { 110, 117 }, // Bloodletter [110] + Rain of Death [117]
+        };
 
+        private static List<uint> _frequentUpdateCooldowns = new() // Workaround until I figure out how to do this correctly. Yes, this is absolute bullshit :(
+        {
+            // BRD
+            110,
+            117, // Bloodletter [110], Rain of Death [117] => Mage's Ballad
+        };
+
+        #region Public Methods
         public void Watch(uint actionId)
         {
 #if DEBUG
@@ -108,6 +129,30 @@ namespace SezzUI.GameEvents
             }
         }
 
+        public CooldownData Get(uint actionId)
+        {
+            if (!_watchedActions.ContainsKey(actionId))
+            {
+                LogError("Get", $"Error: Cannot retrieve data for unwatched cooldown! Action ID: {actionId}");
+            }
+            else if (_cache.ContainsKey(actionId))
+            {
+                return _cache[actionId];
+            }
+
+            return new();
+        }
+
+        public ActionType GetActionType(uint actionId)
+        {
+            // TODO: Where do we find the correct ActionType?
+            return _cache.ContainsKey(actionId) ?
+                _cache[actionId].Type :
+                (actionId == 4 || actionId == 8 ? ActionType.General : ActionType.Spell);
+        }
+        #endregion
+
+        #region Cooldown Data Update
         private bool Update(uint actionId, ActionType actionType)
         {
             PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
@@ -157,7 +202,7 @@ namespace SezzUI.GameEvents
                 if (!isFinished)
                 {
                     // Schedule update
-                    uint delay = cooldownStarted ? UPDATE_DELAY_INITIAL : UPDATE_DELAY_REPEATED;
+                    uint delay = _frequentUpdateCooldowns.Contains(actionId) ? UPDATE_DELAY_REPEATED_FREQUENT : (cooldownStarted ? UPDATE_DELAY_INITIAL : UPDATE_DELAY_REPEATED);
                     uint remaining = data.Remaining;
                     ScheduleUpdate(actionId, remaining >= delay ? delay : remaining + 1);
 
@@ -203,20 +248,67 @@ namespace SezzUI.GameEvents
             }
         }
 
-        public CooldownData Get(uint actionId)
+        private bool TryUpdateIfWatched(uint actionId, ActionType actionType, bool isAdjusted = false, bool isGroupItem = false, bool isModiyfingAction = false)
         {
-            if (!_watchedActions.ContainsKey(actionId))
+            if (_watchedActions.ContainsKey(actionId))
             {
-                LogError("Get", $"Error: Cannot retrieve data for unwatched cooldown! Action ID: {actionId}");
+                // Action should be on cooldown now!
+                _lastActionId = actionId;
+                if (!Update(actionId, actionType))
+                {
+                    // Appearantly it's not.
+                    ScheduleMultipleUpdates(actionId);
+                }
+                return true;
             }
-            else if (_cache.ContainsKey(actionId))
+            else if (!isGroupItem && !isModiyfingAction && _actionsModifyingCooldowns.ContainsKey(actionId))
             {
-                return _cache[actionId];
+                // Delay update, cooldown won't get changed instantly.
+                _lastActionId = _actionsModifyingCooldowns[actionId];
+                TryUpdateIfWatched(_actionsModifyingCooldowns[actionId], actionType, isAdjusted, isGroupItem, true);
+                ScheduleMultipleUpdates(_actionsModifyingCooldowns[actionId]);
+                return true;
+            }
+            else if (!isGroupItem)
+            {
+                // Check if action is in a group and update watched group cooldowns
+                foreach (List<uint> group in _cooldownGroups.Where(cdg => cdg.Contains(actionId)))
+                {
+                    group.ForEach(groupedActionId =>
+                    {
+                        TryUpdateAdjusted(groupedActionId, actionType, true);
+                    });
+                }
             }
 
-            return new();
+            if (!isAdjusted && !isGroupItem)
+            {
+                _lastActionId = 0;
+            }
+
+            return false;
         }
 
+        private bool TryUpdateAdjusted(uint actionId, ActionType actionType, bool isGroupItem = false)
+        {
+            if (!TryUpdateIfWatched(actionId, actionType, false, isGroupItem))
+            {
+                uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
+                if (actionIdAdjusted != actionId)
+                {
+                    return TryUpdateIfWatched(actionIdAdjusted, actionType, true, isGroupItem);
+                }
+            }
+            else
+            {
+                return true;
+            }
+
+            return false;
+        }
+        #endregion
+
+        #region Update Scheduling
         /// <summary>
         /// Schedule cooldown data update (in OnFrameworkUpdate)
         /// </summary>
@@ -259,14 +351,7 @@ namespace SezzUI.GameEvents
                 }
             }
         }
-
-        private ActionType GetActionType(uint actionId)
-        {
-            // TODO: Where do we find the correct ActionType?
-            return _cache.ContainsKey(actionId) ?
-                _cache[actionId].Type :
-                (actionId == 4 || actionId == 8 ? ActionType.General : ActionType.Spell);
-        }
+        #endregion
 
         #region ActionManager
         private readonly unsafe ActionManager* _actionManager;
@@ -374,34 +459,6 @@ namespace SezzUI.GameEvents
             return false;
         }
 
-        private bool UpdateIfWatched(uint actionId, ActionType actionType, bool isAdjusted = false)
-        {
-            if (_watchedActions.ContainsKey(actionId))
-            {
-                // Action should be on cooldown now!
-                _lastActionId = actionId;
-                if (!Update(actionId, actionType))
-                {
-                    // Appearantly it's not.
-                    ScheduleMultipleUpdates(actionId);
-                }
-                return true;
-            }
-            else if (_actionsModifyingCooldowns.ContainsKey(actionId))
-            {
-                // Delay update, cooldown won't get changed instantly.
-                _lastActionId = _actionsModifyingCooldowns[actionId];
-                ScheduleMultipleUpdates(_actionsModifyingCooldowns[actionId]);
-                return true;
-            }
-            else if (!isAdjusted)
-            {
-                _lastActionId = 0;
-            }
-
-            return false;
-        }
-
         private unsafe byte UseActionDetour(IntPtr actionManager, ActionType actionType, uint actionId, long targetedActorId, uint param, uint useType, int pvp, IntPtr a7)
         {
             var ret = _useActionHook!.Original(actionManager, actionType, actionId, targetedActorId, param, useType, pvp, a7);
@@ -415,13 +472,9 @@ namespace SezzUI.GameEvents
 
             try
             {
-                if (ret == 1 && !UpdateIfWatched(actionId, actionType))
+                if (ret == 1)
                 {
-                    uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
-                    if (actionIdAdjusted != actionId)
-                    {
-                        UpdateIfWatched(actionIdAdjusted, actionType, true);
-                    }
+                    TryUpdateAdjusted(actionId, actionType);
                 }
             }
             catch (Exception ex)
@@ -457,7 +510,6 @@ namespace SezzUI.GameEvents
             return false;
         }
 
-
         private unsafe void ReceiveActionEffectDetour(int sourceActorID, IntPtr sourceActor, IntPtr vectorPosition, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail)
         {
             _receiveActionEffectHook!.Original(sourceActorID, sourceActor, vectorPosition, effectHeader, effectArray, effectTrail);
@@ -470,7 +522,7 @@ namespace SezzUI.GameEvents
                     LogDebug("ReceiveActionEffectDetour", $"Update Action ID: {_lastActionId}");
                 }
 #endif
-                Update(_lastActionId, GetActionType(_lastActionId));
+                TryUpdateAdjusted(_lastActionId, GetActionType(_lastActionId));
                 _lastActionId = 0;
             }
         }
@@ -539,6 +591,8 @@ namespace SezzUI.GameEvents
         {
             _watchedActions.Clear();
             _actionsModifyingCooldowns.Clear();
+            _cooldownGroups.Clear();
+            _frequentUpdateCooldowns.Clear();
             _useActionHook?.Dispose();
             _receiveActionEffectHook?.Dispose();
         }
