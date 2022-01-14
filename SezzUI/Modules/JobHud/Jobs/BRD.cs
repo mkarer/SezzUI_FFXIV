@@ -14,8 +14,8 @@ namespace SezzUI.Modules.JobHud.Jobs
             Bar bar1 = new(hud);
             bar1.Add(new Icon(bar1) { TextureActionId = 100, StatusIds = new[] { (uint)124, (uint)1200 }, MaxStatusDuration = 45, StatusTarget = Enums.Unit.Target, Level = 6 }); // Venomous Bite
             bar1.Add(new Icon(bar1) { TextureActionId = 113, StatusIds = new[] { (uint)129, (uint)1201 }, MaxStatusDuration = 45, StatusTarget = Enums.Unit.Target, Level = 30 }); // Windbite
-            bar1.Add(new Icon(bar1) { TextureActionId = 107, CooldownActionId = 107, StatusId = 128, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 38 }); // Barrage
             bar1.Add(new Icon(bar1) { TextureActionId = 101, CooldownActionId = 101, StatusId = 125, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 4 }); // Raging Strikes
+            bar1.Add(new Icon(bar1) { TextureActionId = 107, CooldownActionId = 107, StatusId = 128, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 38 }); // Barrage
             hud.AddBar(bar1);
 
             Bar bar2 = new(hud);
