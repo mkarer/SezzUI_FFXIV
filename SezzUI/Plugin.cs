@@ -43,6 +43,7 @@ namespace SezzUI
         public static TargetManager TargetManager { get; private set; } = null!;
         public static UiBuilder UiBuilder { get; private set; } = null!;
         public static PartyList PartyList { get; private set; } = null!;
+        public static ChatGui ChatGui { get; private set; } = null!;
 
         public static TextureWrap? BannerTexture;
 
@@ -66,7 +67,8 @@ namespace SezzUI
             ObjectTable objectTable,
             PartyList partyList,
             SigScanner sigScanner,
-            TargetManager targetManager
+            TargetManager targetManager,
+            ChatGui chatGui
         )
         {
             BuddyList = buddyList;
@@ -82,6 +84,7 @@ namespace SezzUI
             PartyList = partyList;
             SigScanner = sigScanner;
             TargetManager = targetManager;
+            ChatGui = chatGui;
             UiBuilder = PluginInterface.UiBuilder;
 
             if (pluginInterface.AssemblyLocation.DirectoryName != null)
