@@ -20,7 +20,7 @@ namespace SezzUI.GameEvents
     internal sealed unsafe class Cooldown : BaseGameEvent
     {
 #pragma warning disable 67
-        public delegate void CooldownChangedDelegate(uint actionId, CooldownData data);
+        public delegate void CooldownChangedDelegate(uint actionId, CooldownData data, bool chargesChanged, ushort previousCharges);
         public event CooldownChangedDelegate? CooldownChanged;
 
         public delegate void CooldownStartedDelegate(uint actionId, CooldownData data);
@@ -183,9 +183,14 @@ namespace SezzUI.GameEvents
 
                 data.MaxCharges = maxChargesCurrentLevel;
                 data.Duration = (uint)cooldownPerCharge * 1000;
+
+                ushort previousCharges = data.CurrentCharges;
+                
                 data.CurrentCharges = totalElapsedAdjusted > 0 || maxChargesMaxLevel == 1 ?
                     (ushort)Math.Floor(totalElapsedAdjusted / cooldownPerCharge) :
                     maxChargesCurrentLevel;
+
+                bool chargesChanged = !cooldownStarted && data.CurrentCharges != previousCharges;
 
                 data.StartTime = Environment.TickCount64 - (int)chargingMilliseconds; // Not 100% accurate for some reason, should be fine though (if not we can still update more often).
                 data.Type = actionType;
@@ -217,7 +222,7 @@ namespace SezzUI.GameEvents
                         // Updated
                         if (data.HasChanged)
                         {
-                            InvokeCooldownChanged(actionId, data);
+                            InvokeCooldownChanged(actionId, data, chargesChanged, previousCharges);
                         }
                     }
 
@@ -395,17 +400,17 @@ namespace SezzUI.GameEvents
             }
         }
 
-        private void InvokeCooldownChanged(uint actionId, CooldownData data)
+        private void InvokeCooldownChanged(uint actionId, CooldownData data, bool chargesChanged, ushort previousCharges)
         {
 #if DEBUG
             if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownChanged)
             {
-                LogDebug("CooldownChanged", $"ActionID {actionId} StartTime {data.StartTime} Duration {data.Duration / 1000}s Charges {data.CurrentCharges}/{data.MaxCharges} Elapsed {Environment.TickCount64 - data.StartTime}ms Remaining {data.Remaining}ms");
+                LogDebug("CooldownChanged", $"ActionID {actionId} StartTime {data.StartTime} Duration {data.Duration / 1000}s Charges {data.CurrentCharges}/{data.MaxCharges} (Charges Changed: {chargesChanged}{(chargesChanged ? $" Previously: {previousCharges}" : "")}) Elapsed {Environment.TickCount64 - data.StartTime}ms Remaining {data.Remaining}ms");
             }
 #endif
             try
             {
-                CooldownChanged?.Invoke(actionId, data);
+                CooldownChanged?.Invoke(actionId, data, chargesChanged, previousCharges);
             }
             catch (Exception ex)
             {
