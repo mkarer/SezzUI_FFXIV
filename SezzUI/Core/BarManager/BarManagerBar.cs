@@ -14,6 +14,7 @@ namespace SezzUI.BarManager
         public uint Id = 0;
 
         public string? Text;
+        public string? CountText;
         public TextureWrap? Icon;
 
         public long StartTime = 0;
@@ -85,13 +86,19 @@ namespace SezzUI.BarManager
                             // Text: Name
                             if (Text != null)
                             {
-                                Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextextStyle, DrawAnchor.Left, Text, new Vector2(posBar.X, position.Y), new Vector2(0, Config.Size.Y / 2), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)), drawList, 5, 0);
+                                Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Left, Text, new Vector2(posBar.X, position.Y), new Vector2(0, Config.Size.Y / 2), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)), drawList, 5, 0);
+                            }
+
+                            // Text: Count
+                            if (CountText != null) {
+                                Vector2 posText2 = Text == null ? new(posBar.X, position.Y) : new(posBar.X + 5 + (Text == null ? Vector2.Zero : ImGui.CalcTextSize(Text)).X, position.Y);
+                                Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y / 2), ImGui.ColorConvertFloat4ToU32(Config.CountTextColor), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)), drawList, 5, 0);
                             }
 
                             // Text: Duration
                             if (Config.ShowDuration)
                             {
-                                Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextextStyle, DrawAnchor.Right, Helpers.DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), position, new Vector2(Config.Size.X, Config.Size.Y / 2), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)), drawList, -5, 0);
+                                Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Right, Helpers.DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), position, new Vector2(Config.Size.X, Config.Size.Y / 2), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)), drawList, -5, 0);
                             }
                         }
                         break;
@@ -143,13 +150,20 @@ namespace SezzUI.BarManager
                             // Text: Name
                             if (Text != null)
                             {
-                                Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextextStyle, DrawAnchor.Left, Text, posBar, new Vector2(0, sizeBar.Y / 2), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)), drawList, 4, 0);
+                                Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Left, Text, posBar, new Vector2(0, sizeBar.Y / 2), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)), drawList, 4, 0);
+                            }
+
+                            // Text: Count
+                            if (CountText != null)
+                            {
+                                Vector2 posText2 = Text == null ? new(posBar.X, posBar.Y) : new(posBar.X + 5 + (Text == null ? Vector2.Zero : ImGui.CalcTextSize(Text)).X, posBar.Y);
+                                Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y / 2), ImGui.ColorConvertFloat4ToU32(Config.CountTextColor), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)), drawList, 5, 0);
                             }
 
                             // Text: Duration
                             if (Config.ShowDuration)
                             {
-                                Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextextStyle, DrawAnchor.Right, Helpers.DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), posBar, new Vector2(sizeBar.X, sizeBar.Y / 2), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)), drawList, -4, 0);
+                                Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Right, Helpers.DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), posBar, new Vector2(sizeBar.X, sizeBar.Y / 2), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)), drawList, -4, 0);
                             }
                         }
                         break;

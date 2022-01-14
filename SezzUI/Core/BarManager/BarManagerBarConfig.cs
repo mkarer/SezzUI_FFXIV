@@ -21,12 +21,14 @@ namespace SezzUI.BarManager
 
                 switch (value) {
                     case BarManagerStyle.Classic:
-                        NameTextextStyle = TextStyle.Shadowed;
+                        NameTextStyle = TextStyle.Shadowed;
+                        CountTextStyle = TextStyle.Shadowed;
                         DurationTextextStyle = TextStyle.Shadowed;
                         break;
 
                     case BarManagerStyle.Ruri:
-                        NameTextextStyle = TextStyle.Outline;
+                        NameTextStyle = TextStyle.Outline;
+                        CountTextStyle = TextStyle.Outline;
                         DurationTextextStyle = TextStyle.Outline;
                         break;
                 }
@@ -41,8 +43,13 @@ namespace SezzUI.BarManager
         //public Vector4 FillColor = new(137f / 255f, 0f, 16f / 255f, 0.7f); // Target: Debuffs
         public Vector4 BackgroundColor = new(0f, 0f, 0f, 100f / 255f);
         public Vector4 BorderColor = new(1f, 1f, 1f, 40f / 255f);
+
         public Vector4 NameTextColor = new(1f, 1f, 1f, 1);
-        public TextStyle NameTextextStyle = TextStyle.Normal;
+        public TextStyle NameTextStyle = TextStyle.Normal;
+
+        public Vector4 CountTextColor = new(0f, 1f, 0f, 1);
+        public TextStyle CountTextStyle = TextStyle.Normal;
+
         public Vector4 DurationTextColor = new(1f, 1f, 1f, 1);
         public TextStyle DurationTextextStyle = TextStyle.Normal;
 
