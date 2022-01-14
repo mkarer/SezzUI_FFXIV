@@ -1,4 +1,5 @@
-﻿using SezzUI.Core;
+﻿using System;
+using SezzUI.Core;
 using SezzUI.Enums;
 using System.Numerics;
 using ImGuiNET;
@@ -10,6 +11,7 @@ namespace SezzUI.Modules.CooldownHud
     {
         public uint ActionId;
         public ushort Charges = 0;
+        public long Created;
 
         public uint? IconId
         {
@@ -67,6 +69,8 @@ namespace SezzUI.Modules.CooldownHud
             Animator.Timelines.OnHide.Data.DefaultScale = visibleScale;
             Animator.Timelines.OnHide.Add(new Animator.FadeAnimation(1, 0, 200));
             Animator.Timelines.OnHide.Add(new Animator.ScaleAnimation(visibleScale, endScale, 200));
+
+            Created = Environment.TickCount64;
         }
 
         public override void Draw(Vector2 origin, int elapsed = 0)

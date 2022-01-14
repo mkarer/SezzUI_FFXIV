@@ -25,6 +25,7 @@ namespace SezzUI.Modules.CooldownHud
         private byte _currentLevel = 0;
 
         private const ushort INITIAL_PULSE_CHARGES = 100; // Unreachable amount of charges.
+        private const ushort NOPULSE_AFTER_ELAPSEDFINISHED = 3000; // Don't show pulse if the cooldown finished ages ago...
 
         private void Reset()
         {
@@ -135,7 +136,7 @@ namespace SezzUI.Modules.CooldownHud
 
                 if (Config.CooldownHudPulse.Enabled)
                 {
-                    foreach (BarManager.BarManagerBar bar in barManager.Bars.Where(bar => bar.IsActive && bar.Remaining <= Math.Abs(Config.CooldownHudPulse.Delay) && CanPulse(bar.Id, bar.Data != null ? (ushort)((ushort)bar.Data + 1): (ushort)0)))
+                    foreach (BarManager.BarManagerBar bar in barManager.Bars.Where(bar => bar.IsActive && bar.Remaining <= Math.Abs(Config.CooldownHudPulse.Delay) && CanPulse(bar.Id, bar.Data != null ? (ushort)((ushort)bar.Data + 1) : (ushort)0)))
                     {
                         Pulse(bar, true);
                     }
@@ -148,9 +149,14 @@ namespace SezzUI.Modules.CooldownHud
                 for (int i = _pulses.Count - 1; i >= 0; i--)
                 {
                     CooldownPulse pulse = _pulses[i];
-                    pulse.Draw((Vector2)origin);
-                    if (!pulse.Animator.IsAnimating)
+                    bool expired = Environment.TickCount64 - pulse.Created >= NOPULSE_AFTER_ELAPSEDFINISHED;
+                    if (!expired)
                     {
+                        pulse.Draw((Vector2)origin);
+                    }
+                    if (expired || !pulse.Animator.IsAnimating)
+                    {
+                        LogDebug("Draw", $"Removing CooldownPulse: Action ID: {pulse.ActionId} Charges: {pulse.Charges} Created: {pulse.Created} Expired: {expired} Animating: {pulse.Animator.IsAnimating}"); ;
                         pulse.Dispose();
                         _pulses.RemoveAt(i);
                     }
@@ -398,7 +404,8 @@ namespace SezzUI.Modules.CooldownHud
                 //LogDebug("OnCooldownChanged", $"BarManager Result: {result} {iconId} Bars: {barManager.Count}");
 
                 // Pulse if charges changed and it wasn't already triggered by the customized delay in Draw()
-                if (chargesChanged) {
+                if (chargesChanged)
+                {
                     _cooldowns[actionId].LastPulseCharges = INITIAL_PULSE_CHARGES;
                 }
                 if (chargesChanged && data.CurrentCharges > 0 && CanPulse(actionId, data.CurrentCharges))
@@ -416,7 +423,7 @@ namespace SezzUI.Modules.CooldownHud
         {
             if (!_cooldowns.ContainsKey(actionId)) { return; }
 
-            if (CanPulse(actionId, data.CurrentCharges))
+            if (elapsedFinish <= NOPULSE_AFTER_ELAPSEDFINISHED && CanPulse(actionId, data.CurrentCharges))
             {
                 // Bar is very likely not available anymore here, because it was removed by BarManager.RemoveExpired
                 GetActionDisplayData(actionId, data.Type, out string? name, out TextureWrap? texture);
