@@ -8,6 +8,9 @@ namespace SezzUI.Modules.CooldownHud
 {
     public sealed class CooldownPulse : AnimatedHudElement
     {
+        public uint ActionId;
+        public ushort Charges = 0;
+
         public uint? IconId
         {
             get { return _iconId; }

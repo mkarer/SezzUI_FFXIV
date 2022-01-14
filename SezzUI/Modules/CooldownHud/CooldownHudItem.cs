@@ -6,7 +6,7 @@ namespace SezzUI.Modules.CooldownHud
     public class CooldownHudItem : IDisposable
     {
         public uint ActionId;
-        public long LastPulse = 0;
+        public ushort LastPulseCharges = 100;
         public List<BarManager.BarManager> barManagers = new();
 
         ~CooldownHudItem()

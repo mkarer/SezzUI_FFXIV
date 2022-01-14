@@ -19,12 +19,12 @@ namespace SezzUI.Modules.CooldownHud
         private Dictionary<uint, BasePreset> _presets = new();
         private List<BarManager.BarManager> _barManagers = new();
         private Dictionary<uint, CooldownHudItem> _cooldowns = new();
-        private Dictionary<uint, CooldownPulse> _pulses = new();
+        private List<CooldownPulse> _pulses = new();
 
         private uint _currentJobId = 0;
         private byte _currentLevel = 0;
 
-        private const int MINIMUM_PULSE_INTERVAL = 6000; // Maximum value from config + another 1000ms to be safe.
+        private const ushort INITIAL_PULSE_CHARGES = 100; // Unreachable amount of charges.
 
         private void Reset()
         {
@@ -43,10 +43,7 @@ namespace SezzUI.Modules.CooldownHud
             _cooldowns.Clear();
 
             // Remove all pulse animations
-            foreach ((_, CooldownPulse pulse) in _pulses)
-            {
-                pulse.Dispose();
-            }
+            _pulses.ForEach(pulse => pulse.Dispose());
             _pulses.Clear();
         }
 
@@ -84,38 +81,47 @@ namespace SezzUI.Modules.CooldownHud
                 GameEvents.CooldownData data = GameEvents.Cooldown.Instance.Get(actionId);
                 if (data.IsActive)
                 {
-                    OnCooldownChanged(actionId, data);
+                    OnCooldownChanged(actionId, data, false);
                 }
             }
         }
 
         #region Cooldown Pulse
-        private void Pulse(BarManager.BarManagerBar bar) => Pulse(bar.Id, bar.Icon);
+        private void Pulse(BarManager.BarManagerBar bar, bool early) => Pulse(bar.Id, bar.Icon, (ushort)((bar.Data != null ? (ushort)bar.Data : 0) + (early ? 1 : 0)));
 
-        private void Pulse(uint actionId, TextureWrap? texture) {
+        private void Pulse(uint actionId, TextureWrap? texture, ushort charges)
+        {
             if (!_cooldowns.ContainsKey(actionId))
             {
                 // This should actually never happen.
                 LogError("Pulse", $"Action ID: {actionId} Tried to show cooldown pulse for unknown cooldown!");
                 return;
-            } 
+            }
 
-            LogDebug("Pulse", $"Action ID: {actionId}");
+            LogDebug("Pulse", $"Action ID: {actionId} Charges: {charges}");
 
-            _cooldowns[actionId].LastPulse = Environment.TickCount64;
+            _cooldowns[actionId].LastPulseCharges = charges;
 
             CooldownPulse pulse = new()
             {
+                ActionId = actionId,
+                Charges = charges,
                 Texture = texture,
                 Position = Config.CooldownHudPulse.Position,
                 Size = Config.CooldownHudPulse.Size,
                 Anchor = Config.CooldownHudPulse.Anchor,
             };
-            _pulses[actionId] = pulse;
+            _pulses.Add(pulse);
             pulse.Show();
         }
 
-        private bool ShouldShowPulse(uint actionId) => !_pulses.ContainsKey(actionId) && _cooldowns.ContainsKey(actionId) && Environment.TickCount64 - _cooldowns[actionId].LastPulse > MINIMUM_PULSE_INTERVAL;
+        private bool CanPulse(uint actionId, ushort charges)
+        {
+            return Config.CooldownHudPulse.Enabled && charges > 0 &&
+                _pulses.Count(pulse => pulse.ActionId == actionId && pulse.Charges == charges) == 0 && // Not currently showing animations for this cooldown at this charges
+                _cooldowns.ContainsKey(actionId) && // Cooldown is watched
+                _cooldowns[actionId].LastPulseCharges != charges; // Last shown pulse for this action was for another amount of charges
+        }
         #endregion
 
         public override void Draw(DrawState state, Vector2? origin)
@@ -129,21 +135,25 @@ namespace SezzUI.Modules.CooldownHud
 
                 if (Config.CooldownHudPulse.Enabled)
                 {
-                    foreach (BarManager.BarManagerBar bar in barManager.Bars.Where(bar => bar.IsActive && bar.Remaining <= Math.Abs(Config.CooldownHudPulse.Delay) && ShouldShowPulse(bar.Id)))
+                    foreach (BarManager.BarManagerBar bar in barManager.Bars.Where(bar => bar.IsActive && bar.Remaining <= Math.Abs(Config.CooldownHudPulse.Delay) && CanPulse(bar.Id, bar.Data != null ? (ushort)((ushort)bar.Data + 1): (ushort)0)))
                     {
-                        Pulse(bar);
+                        Pulse(bar, true);
                     }
                 }
             });
 
-            // Draw pulse animations and remove finished ones
-            foreach ((uint actionId, CooldownPulse pulse) in _pulses)
+            // Update pulse animations and remove finished ones
+            if (_pulses.Any())
             {
-                pulse.Draw((Vector2)origin);
-                if (!pulse.Animator.IsAnimating)
+                for (int i = _pulses.Count - 1; i >= 0; i--)
                 {
-                    pulse.Dispose();
-                    _pulses.Remove(actionId);
+                    CooldownPulse pulse = _pulses[i];
+                    pulse.Draw((Vector2)origin);
+                    if (!pulse.Animator.IsAnimating)
+                    {
+                        pulse.Dispose();
+                        _pulses.RemoveAt(i);
+                    }
                 }
             }
         }
@@ -165,7 +175,11 @@ namespace SezzUI.Modules.CooldownHud
             }
             else
             {
-                CooldownHudItem item = new() { ActionId = actionId };
+                CooldownHudItem item = new()
+                {
+                    ActionId = actionId,
+                    LastPulseCharges = INITIAL_PULSE_CHARGES,
+                };
                 item.barManagers.Add(barManager);
                 _cooldowns[actionId] = item;
                 EventManager.Cooldown.Watch(actionId);
@@ -361,25 +375,40 @@ namespace SezzUI.Modules.CooldownHud
         {
             if (!_cooldowns.ContainsKey(actionId)) { return; }
 
+            _cooldowns[actionId].LastPulseCharges = INITIAL_PULSE_CHARGES;
             _cooldowns[actionId].barManagers.ForEach(barManager =>
             {
                 GetActionDisplayData(actionId, data.Type, out string? name, out TextureWrap? texture);
-                barManager.Add(actionId, name ?? "Unknown Action", data.MaxCharges > 1 && data.CurrentCharges > 0 ? "x1" : null, texture, data.StartTime, data.Duration);
+                barManager.Add(actionId, name ?? "Unknown Action", data.MaxCharges > 1 && data.CurrentCharges > 0 ? "x1" : null, texture, data.StartTime, data.Duration, data.CurrentCharges);
                 //bool result = barManager.Add(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
                 //LogDebug("OnCooldownStarted", $"BarManager Result: {result} {iconId} Bars: {barManager.Count}");
             });
         }
 
-        private void OnCooldownChanged(uint actionId, GameEvents.CooldownData data)
+        private void OnCooldownChanged(uint actionId, GameEvents.CooldownData data, bool chargesChanged, ushort previousCharges = 0)
         {
             if (!_cooldowns.ContainsKey(actionId)) { return; }
 
             _cooldowns[actionId].barManagers.ForEach(barManager =>
             {
                 GetActionDisplayData(actionId, data.Type, out string? name, out TextureWrap? texture);
-                barManager.Update(actionId, name ?? "Unknown Action", data.MaxCharges > 1 && data.CurrentCharges > 0 ? "x1" : null, texture, data.StartTime, data.Duration);
+
+                barManager.Update(actionId, name ?? "Unknown Action", data.MaxCharges > 1 && data.CurrentCharges > 0 ? "x1" : null, texture, data.StartTime, data.Duration, data.CurrentCharges);
                 //bool result = barManager.Update(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
                 //LogDebug("OnCooldownChanged", $"BarManager Result: {result} {iconId} Bars: {barManager.Count}");
+
+                // Pulse if charges changed and it wasn't already triggered by the customized delay in Draw()
+                if (chargesChanged) {
+                    _cooldowns[actionId].LastPulseCharges = INITIAL_PULSE_CHARGES;
+                }
+                if (chargesChanged && data.CurrentCharges > 0 && CanPulse(actionId, data.CurrentCharges))
+                {
+                    BarManager.BarManagerBar? bar = barManager.Get(actionId);
+                    if (bar != null)
+                    {
+                        Pulse(bar, false);
+                    }
+                }
             });
         }
 
@@ -387,13 +416,14 @@ namespace SezzUI.Modules.CooldownHud
         {
             if (!_cooldowns.ContainsKey(actionId)) { return; }
 
-            if (Config.CooldownHudPulse.Enabled && ShouldShowPulse(actionId))
+            if (CanPulse(actionId, data.CurrentCharges))
             {
-                // Bar is propably not available anymore here.
+                // Bar is very likely not available anymore here, because it was removed by BarManager.RemoveExpired
                 GetActionDisplayData(actionId, data.Type, out string? name, out TextureWrap? texture);
-                Pulse(actionId, texture);
+                Pulse(actionId, texture, data.CurrentCharges);
             }
 
+            _cooldowns[actionId].LastPulseCharges = INITIAL_PULSE_CHARGES;
             _cooldowns[actionId].barManagers.ForEach(barManager =>
             {
                 barManager.Remove(actionId);
