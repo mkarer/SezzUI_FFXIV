@@ -364,7 +364,7 @@ namespace SezzUI.Modules.CooldownHud
             _cooldowns[actionId].barManagers.ForEach(barManager =>
             {
                 GetActionDisplayData(actionId, data.Type, out string? name, out TextureWrap? texture);
-                barManager.Add(actionId, name ?? "Unknown Action", texture, data.StartTime, data.Duration);
+                barManager.Add(actionId, name ?? "Unknown Action", data.MaxCharges > 1 && data.CurrentCharges > 0 ? "x1" : null, texture, data.StartTime, data.Duration);
                 //bool result = barManager.Add(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
                 //LogDebug("OnCooldownStarted", $"BarManager Result: {result} {iconId} Bars: {barManager.Count}");
             });
@@ -377,7 +377,7 @@ namespace SezzUI.Modules.CooldownHud
             _cooldowns[actionId].barManagers.ForEach(barManager =>
             {
                 GetActionDisplayData(actionId, data.Type, out string? name, out TextureWrap? texture);
-                barManager.Update(actionId, name ?? "Unknown Action", texture, data.StartTime, data.Duration);
+                barManager.Update(actionId, name ?? "Unknown Action", data.MaxCharges > 1 && data.CurrentCharges > 0 ? "x1" : null, texture, data.StartTime, data.Duration);
                 //bool result = barManager.Update(actionId, name ?? "Unknown Action", icon, data.StartTime, data.Duration);
                 //LogDebug("OnCooldownChanged", $"BarManager Result: {result} {iconId} Bars: {barManager.Count}");
             });
