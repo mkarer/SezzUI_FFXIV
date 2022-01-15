@@ -15,232 +15,190 @@ using System.Numerics;
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
-using Gma.System.MouseKeyHook;
+using RawInputLight;
+using Windows.Win32.Foundation;
+using System.Threading;
 
 namespace SezzUI
 {
     internal class NativeMethods : IDisposable
     {
-        #region API
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr SetWindowsHookEx(int idHook, MessageProc lpfn, IntPtr hMod, uint dwThreadId);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool UnhookWindowsHookEx(IntPtr hHook);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
-
         [DllImport("user32.dll", SetLastError = true)]
-        internal static extern IntPtr GetForegroundWindow();
+        private static extern IntPtr GetForegroundWindow();
 
-        public delegate IntPtr MessageProc(int nCode, IntPtr wParam, IntPtr lParam);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool DestroyWindow(IntPtr hwnd);
 
-        public IKeyboardMouseEvents? m_GlobalHook = null;
-
-        //[StructLayout(LayoutKind.Sequential)]
-        //public class KBDLLHOOKSTRUCT
-        //{
-        //    public uint vkCode;
-        //    public uint scanCode;
-        //    public KBDLLHOOKSTRUCTFlags flags;
-        //    public uint time;
-        //    public UIntPtr dwExtraInfo;
-        //}
-
-        //[Flags]
-        //public enum KBDLLHOOKSTRUCTFlags : uint
-        //{
-        //    LLKHF_EXTENDED = 0x01,
-        //    LLKHF_INJECTED = 0x10,
-        //    LLKHF_ALTDOWN = 0x20,
-        //    LLKHF_UP = 0x80,
-        //}
-
-        private const int WH_KEYBOARD = 2;
-        private const int WH_KEYBOARD_LL = 13;
-        public const int VK_LCONTROL = 0xA2; // 162
-        public const int VK_RCONTROL = 0xA3; // 163
-        public const int VK_LMENU = 0xA4; // 164
-        public const int VK_RMENU = 0xA5; // 164
-        #endregion
-
-        public enum KeyboardMessage
-        {
-            KeyDown = 0x100,
-            KeyUp = 0x101,
-            SysKeyDown = 0x104,
-            SysKeyUp = 0x105
-        }
-
-        //public event EventHandler<NewKeyboardMessageEventArgs>? NewKeyboardMessage;
-        //public class NewKeyboardMessageEventArgs : EventArgs
-        //{
-        //    public uint VirtKeyCode { get; private set; }
-        //    public KeyboardMessage MessageType { get; private set; }
-
-        //    public NewKeyboardMessageEventArgs(uint vkCode, KeyboardMessage msg)
-        //    {
-        //        VirtKeyCode = vkCode;
-        //        MessageType = msg;
-        //    }
-        //}
-
-        public delegate void KeyboardMessageReceivedDelegate(int vkCode, KeyboardMessage message);
-        public event KeyboardMessageReceivedDelegate? KeyboardMessageReceived;
+        [DllImport("Kernel32", ExactSpelling = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        public static extern uint GetCurrentThreadId();
 
         private IntPtr _mainWindowHandle = IntPtr.Zero;
-        private IntPtr _keyboardHook = IntPtr.Zero;
-        private MessageProc _keyboardMessageProc;
 
         private static readonly Lazy<NativeMethods> ev = new Lazy<NativeMethods>(() => new NativeMethods());
         public static NativeMethods Instance { get { return ev.Value; } }
         public static bool Initialized { get { return ev.IsValueCreated; } }
+        public void Initialize() { }
 
         protected string _logPrefix;
         protected string _logPrefixBase;
 
-        // When you don't want the ProcessId, use this overload and pass IntPtr.Zero for the second parameter
-        [DllImport("user32.dll")]
-        internal static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+        private NativeAPI.HWND_WRAPPER? _inputWrapper;
+        private RawInput? _rawinput;
+        private ushort? _lastVirtualKeyCode;
+        private KeyState? _lastKeyState;
+        private Task? _taskInputMessagePump;
+        private CancellationTokenSource _taskCTS;
+
+        public delegate void OnKeyDownDelegate(ushort vkCode);
+        public event OnKeyDownDelegate? OnKeyDown;
+
+        public delegate void OnKeyUpDelegate(ushort vkCode);
+        public event OnKeyUpDelegate? OnKeyUp;
+
+        // http://asger-p.dk/info/virtualkeycodes.php
+        public const ushort VK_CONTROL = 0x11;
+        public const ushort VK_MENU = 0x12;
+        public const int VK_RMENU = 0xA5;
+        public const int VK_LMENU = 0xA4;
+        public const int VK_LCONTROL = 0xA2;
+        public const int VK_RCONTROL = 0xA3;
+
+        private void OnKeyStateChanged(HANDLE devID, ushort vkCode, KeyState state)
+        {
+            if (IsGameInForeground && (_lastVirtualKeyCode == null || _lastKeyState == null || _lastVirtualKeyCode != vkCode || _lastKeyState != state))
+            {
+                // We don't care about repeated messages while holding a key!
+                //LogDebug($"Key: 0x{vkCode:X} {vkCode} : {state}");
+                _lastVirtualKeyCode = vkCode;
+                _lastKeyState = state;
+
+                if (state == KeyState.KeyUp)
+                {
+                    OnKeyUp?.Invoke(vkCode);
+                }
+                else if (state == KeyState.KeyDown)
+                {
+                    OnKeyDown?.Invoke(vkCode);
+                }
+            }
+        }
+
+        private void MessagePump(CancellationToken ct)
+        {
+            if (_inputWrapper != null && !ct.IsCancellationRequested)
+            {
+                LogDebug("MessagePump", "Running Task...");
+                NativeAPI.MessagePump((NativeAPI.HWND_WRAPPER)_inputWrapper, ct);
+                LogDebug("MessagePump", "Done.");
+            }
+        }
 
         public bool InstallInputHooks()
         {
-            m_GlobalHook = Hook.GlobalEvents();
-            return true;
-
-            //if (_keyboardHook == IntPtr.Zero)
-            //{
-            //    _lastVirtualKeyCode = null;
-            //    _lastKeyboardMessage = null;
-
-            //    if (_mainWindowHandle == IntPtr.Zero)
-            //    {
-            //        _mainWindowHandle = Process.GetCurrentProcess().MainWindowHandle;
-            //        LogDebug($"InstallInputHooks", $"MainWindowTitle: {Process.GetCurrentProcess().MainWindowTitle}");
-            //        LogDebug($"InstallInputHooks", $"MainWindowHandle: {_mainWindowHandle.ToInt64():X} (Foreground: {GetForegroundWindow() == _mainWindowHandle})");
-            //    }
-
-            //    try
-            //    {
-            //        // Process.GetCurrentProcess().MainModule!.BaseAddress
-            //        //var module = Process.GetCurrentProcess().Modules.Cast<ProcessModule>().FirstOrDefault(m => m.ModuleName == "sezzui.dll");
-            //        //LogDebug($"InstallInputHooks", $"ffxiv_dx11: {(module != null ? module.BaseAddress.ToInt64() : IntPtr.Zero):X}");
-            //        //LogDebug($"InstallInputHooks", $"MainModule: {Process.GetCurrentProcess().MainModule!.BaseAddress:X}");
-            //        //uint threadID = GetWindowThreadProcessId(_mainWindowHandle, out uint processHandle);
-            //        //LogDebug($"InstallInputHooks", $"threadID: {threadID} {processHandle})");
-
-            //        //var hInst = Marshal.GetHINSTANCE(Assembly.GetExecutingAssembly().GetModules()[0]);
-            //        //LogDebug($"InstallInputHooks", $"hInst: {hInst:X}");
-            //        //LogDebug($"InstallInputHooks", $"Name: {Assembly.GetExecutingAssembly().GetModules()[0].FullyQualifiedName}");
-
-            //        //_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, _keyboardMessageProc, IntPtr.Zero, 0);
-            //        _keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, _keyboardMessageProc, IntPtr.Zero, 0);
-            //        LogDebug($"InstallInputHooks", $"WH_KEYBOARD_LL (ptr = {_keyboardHook.ToInt64():X})");
-
-            //        int error = Marshal.GetLastWin32Error();
-            //        if (error != 0)
-            //        {
-            //            Win32Exception ex = new(Marshal.GetLastWin32Error());
-            //            LogError(ex, $"InstallInputHooks", $"Failed to setup WH_KEYBOARD_LL hook: {ex}");
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        LogError(ex, "InstallInputHooks", $"Error: {ex}");
-            //    }
-            //}
-            //else
-            //{
-            //    LogDebug("InstallInputHooks", "WH_KEYBOARD_LL is already hooked!");
-            //}
-
-            //return _keyboardHook != IntPtr.Zero;
-        }
-
-        public bool UninstallInputHooks()
-        {
-            m_GlobalHook?.Dispose();
-            return true;
-
-            //if (_keyboardHook != IntPtr.Zero)
-            //{
-            //    LogDebug("UninstallInputHooks", "WH_KEYBOARD_LL");
-
-            //    try
-            //    {
-            //        if (UnhookWindowsHookEx(_keyboardHook))
-            //        {
-            //            _keyboardHook = IntPtr.Zero;
-            //            return true;
-            //        }
-            //        else
-            //        {
-            //            _keyboardHook = IntPtr.Zero; // It won't work even if we try again.
-            //            int error = Marshal.GetLastWin32Error();
-            //            if (error != 0)
-            //            {
-            //                Win32Exception ex = new(Marshal.GetLastWin32Error());
-            //                LogError(ex, $"UninstallInputHooks", $"Failed to remove WH_KEYBOARD_LL hook: {ex}");
-            //            }
-            //            else
-            //            {
-            //                LogError($"InstallInputHooks", $"Failed to setup WH_KEYBOARD_LL hook.");
-            //            }
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        LogError(ex, "InstallInputHooks", $"Error: {ex}");
-            //        return false;
-            //    }
-            //}
-            //else
-            //{
-            //    return true;
-            //}
-
-            //return false;
-        }
-
-        private int? _lastVirtualKeyCode;
-        private KeyboardMessage? _lastKeyboardMessage;
-
-        private IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
-        {
-            if (nCode >= 0 && GetForegroundWindow() == _mainWindowHandle)
+            LogDebug("InstallInputHooks", $"Thread ID: {GetCurrentThreadId()}");
+            if (_inputWrapper != null || (_taskInputMessagePump != null && _taskInputMessagePump.Status == TaskStatus.Running))
             {
-                int vkCode = Marshal.ReadInt32(lParam);
-                //LogDebug("LowLevelKeyboardProc", $"VKCode {vkCode} Message {(KeyboardMessage)wParam}");
-
-                if (_lastVirtualKeyCode == null || _lastKeyboardMessage == null || _lastVirtualKeyCode != vkCode || _lastKeyboardMessage != (KeyboardMessage)wParam)
-                {
-                    // Key changed (we don't care about repeated messages while holding a key)
-                    _lastVirtualKeyCode = vkCode;
-                    _lastKeyboardMessage = (KeyboardMessage)wParam;
-                    KeyboardMessageReceived?.Invoke(vkCode, (KeyboardMessage)wParam);
-                }
-
-                //KBDLLHOOKSTRUCT? kbd = Marshal.PtrToStructure<KBDLLHOOKSTRUCT>(lParam);
-                //if (kbd != null)
-                //{
-                //    if (_lastVKCode == null || _lastKeyboardMessage == null || _lastVKCode != kbd.vkCode || _lastKeyboardMessage != (KeyboardMessage)wParam) {
-                //        // Key changed (we don't care about repeated messages while holding a key)
-                //        NewKeyboardMessage?.Invoke(this, new NewKeyboardMessageEventArgs(kbd.vkCode, (KeyboardMessage)wParam));
-                //    }
-                //}
+                LogError("InstallInputHooks", "Error: RawInputLight is still active!");
+                return true;
             }
 
-            return CallNextHookEx(_keyboardHook, nCode, wParam, lParam);
+            LogDebug("InstallInputHooks", "Initializing RawInputLight...");
+
+            try
+            {
+                _inputWrapper = NativeAPI.OpenWindow();
+                _rawinput = new RawInput((NativeAPI.HWND_WRAPPER)_inputWrapper);
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "InstallInputHooks", $"Error: {ex}");
+            }
+
+            if (_inputWrapper != null && _rawinput != null)
+            {
+                _rawinput.KeyStateChangeEvent += OnKeyStateChanged;
+                _taskInputMessagePump = Task.Run(() => MessagePump(_taskCTS.Token), _taskCTS.Token);
+                LogDebug("InstallInputHooks", $"Task started, ID: {_taskInputMessagePump.Id}!");
+                //LogDebug("InstallInputHooks", $"Done {_taskCTS.Token.CanBeCanceled}");
+                return true;
+            }
+            else
+            {
+                LogError("InstallInputHooks", "Failed to setup RawInputLight!");
+                return false;
+            }
         }
+
+        public void UninstallInputHooks()
+        {
+            if (_rawinput != null)
+            {
+                _rawinput.KeyStateChangeEvent -= OnKeyStateChanged;
+            }
+
+            if (_taskInputMessagePump != null && _taskInputMessagePump.Status == TaskStatus.Running)
+            {
+                LogDebug("UninstallInputHooks", $"Trying to cancel RawInputLight task #{_taskInputMessagePump.Id}...");
+                _taskCTS.Cancel();
+
+                try
+                {
+                    _taskInputMessagePump.Wait(_taskCTS.Token);
+                }
+                catch (OperationCanceledException ex)
+                {
+                    LogDebug("UninstallInputHooks", $"RawInputLight task has been canceled. ({ex.Message})");
+                }
+                catch (Exception ex)
+                {
+                    LogError(ex, "UninstallInputHooks", $"Error cancelling RawInputLight task: {ex}");
+                }
+                finally
+                {
+                    _taskCTS.Dispose();
+                    LogDebug("UninstallInputHooks", $"Done.");
+                    _taskCTS = new();
+                }
+            }
+
+            if (_inputWrapper != null)
+            {
+                try
+                {
+                    if (NativeAPI.CloseWindow((NativeAPI.HWND_WRAPPER)_inputWrapper))
+                    {
+                        LogDebug("UninstallInputHooks", $"RawInputLight window successfully destroyed.");
+                        _inputWrapper = null;
+                    }
+                    else
+                    {
+                        LogError("UninstallInputHooks", $"Failed to destroy RawInputLight window.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogError(ex, "UninstallInputHooks", $"Error destroying RawInputLight window: {ex}");
+                }
+            }
+
+            _taskInputMessagePump = null;
+            _rawinput = null;
+        }
+
+        public bool IsGameInForeground => GetForegroundWindow() == _mainWindowHandle;
 
         protected NativeMethods()
         {
             _logPrefixBase = GetType().Name;
             _logPrefix = new StringBuilder("[").Append(_logPrefixBase).Append("] ").ToString();
+            _taskCTS = new();
 
-            _keyboardMessageProc = new MessageProc(LowLevelKeyboardProc);
+            _mainWindowHandle = Process.GetCurrentProcess().MainWindowHandle;
+            LogDebug($"MainWindowTitle: {Process.GetCurrentProcess().MainWindowTitle}");
+            LogDebug($"MainWindowHandle: {_mainWindowHandle.ToInt64():X} (Foreground: {IsGameInForeground})");
+            LogDebug($"Thread ID: {GetCurrentThreadId()}");
         }
 
         ~NativeMethods()
@@ -262,6 +220,7 @@ namespace SezzUI
             }
 
             UninstallInputHooks();
+            _taskCTS?.Dispose();
         }
 
         #region Logging
