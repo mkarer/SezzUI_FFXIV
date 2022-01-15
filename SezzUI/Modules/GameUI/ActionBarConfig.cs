@@ -10,6 +10,10 @@ namespace SezzUI.Interface.GeneralElements
     [SubSection("Action Bars", 0)]
     public class ActionBarConfig : PluginConfigObject
     {
+        [Checkbox("Enable Bar Paging (Ctrl: Page 2, Alt: Page 3)", isMonitored = true)]
+        [Order(5)]
+        public bool EnableBarPaging = false;
+
         [NestedConfig("ActionBar 1", 60, collapsingHeader = false)]
         public SingleActionBarConfig Bar1 = new SingleActionBarConfig(Element.ActionBar1);
 

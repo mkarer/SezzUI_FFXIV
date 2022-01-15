@@ -10,6 +10,7 @@ using Dalamud.Game.Gui;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using System.Runtime.InteropServices;
+using SezzUI.GameStructs;
 
 namespace SezzUI.Modules.GameUI
 {
@@ -40,6 +41,8 @@ namespace SezzUI.Modules.GameUI
                 Update();
             }
 
+            EnableBarPaging();
+
             return true;
         }
 
@@ -47,14 +50,128 @@ namespace SezzUI.Modules.GameUI
         {
             if (!base.Disable()) { return false; }
 
+            Config.EnableBarPaging = false;
+
             EventManager.Game.AddonsLoaded -= OnAddonsLoaded;
             EventManager.Game.HudLayoutActivated -= OnHudLayoutActivated;
 
             Reset();
             _originalPositions.Clear();
+            DisableBarPaging();
 
             return true;
         }
+
+        #region Bar Paging
+        private bool _keyboardHooked = false;
+        private byte _pageDefault = 0;
+        private byte _pageControl = 1;
+        private byte _pageAlt = 2;
+
+        private void EnableBarPaging()
+        {
+            if (!Config.EnableBarPaging || _keyboardHooked) { return; }
+
+            NativeMethods.Instance.InstallInputHooks();
+            NativeMethods.Instance.OnKeyUp += OnKeyUp;
+            NativeMethods.Instance.OnKeyDown += OnKeyDown;
+            _keyboardHooked = true;
+        }
+
+        private void DisableBarPaging()
+        {
+            if (_keyboardHooked)
+            {
+                NativeMethods.Instance.UninstallInputHooks();
+                NativeMethods.Instance.OnKeyUp -= OnKeyUp;
+                NativeMethods.Instance.OnKeyDown -= OnKeyDown;
+                _keyboardHooked = false;
+            }
+        }
+
+        private void ToggleBarPaging(bool enable)
+        {
+            if (enable)
+            {
+                EnableBarPaging();
+            }
+            else
+            {
+                DisableBarPaging();
+            }
+        }
+
+        private unsafe void SetActionBarPage(byte page)
+        {
+            if (!EventManager.Game.AreAddonsReady || !EventManager.Game.AreAddonsVisible) { return; }
+
+            AtkUnitBase* actionBar = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("_ActionBar", 1);
+            if (actionBar == null) { return; }
+
+            AddonActionBarBase* actionBarBase = (AddonActionBarBase*)actionBar;
+
+            if (actionBarBase->IsPetHotbar == 0 && actionBarBase->HotbarID != page)
+            {
+                LogDebug("SetActionBarPage", $"Page: {page}");
+
+                try
+                {
+                    var atkArrayDataHolder = Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder;
+                    actionBarBase->HotbarID = page;
+                    actionBar->VTable->OnUpdate(actionBar, atkArrayDataHolder.NumberArrays, atkArrayDataHolder.StringArrays);
+                }
+                catch (Exception ex)
+                {
+                    LogError(ex, "SetActionBarPage", $"Error updating Hotbar ID: {ex}");
+                }
+            }
+        }
+
+        private void OnKeyDown(ushort vkCode)
+        {
+            if (vkCode == NativeMethods.VK_CONTROL)
+            {
+                LogDebug("OnKeyDown", $"{vkCode} HoldingCtrl");
+                SetActionBarPage(_pageControl);
+            }
+            else if (vkCode == NativeMethods.VK_MENU)
+            {
+                LogDebug("OnKeyDown", $"{vkCode} HoldingAlt");
+                SetActionBarPage(_pageAlt);
+            }
+        }
+
+        private void OnKeyUp(ushort vkCode)
+        {
+            if (vkCode != NativeMethods.VK_CONTROL && vkCode != NativeMethods.VK_MENU)
+            {
+                // Ignore
+                return;
+            }
+
+            bool pressedCtrl = ImGuiNET.ImGui.GetIO().KeyCtrl;
+            bool pressedAlt = ImGuiNET.ImGui.GetIO().KeyAlt;
+
+            if (!pressedAlt && !pressedCtrl) 
+            {
+                // No modifiers, we should never get here :D
+                LogDebug("OnKeyUp", $"{vkCode} NoModifiers");
+                SetActionBarPage(0);
+            }
+            else if (vkCode == NativeMethods.VK_MENU)
+            {
+                // Released Alt
+                LogDebug("OnKeyUp", $"{vkCode} ReleasedAlt");
+                SetActionBarPage(pressedCtrl ? _pageControl : _pageDefault);
+            }
+            else if (vkCode == NativeMethods.VK_CONTROL)
+            {
+                // Released Ctrl
+                LogDebug("OnKeyUp", $"{vkCode} ReleasedCtrl");
+                SetActionBarPage(pressedAlt ? _pageAlt : _pageDefault);
+            }
+        }
+        #endregion
 
         private void Update()
         {
@@ -74,14 +191,15 @@ namespace SezzUI.Modules.GameUI
         private unsafe void UpdateActionBar(Element bar, SingleActionBarConfig config)
         {
             if (!config.Enabled) { return; }
-            
+
             PluginLog.Debug($"[{GetType().Name}::UpdateActionBar] Updating element: {bar}");
 
             var addon = (AtkUnitBase*)Plugin.GameGui.GetAddonByName(Addons.Names[bar], 1);
             if (addon != null && addon->RootNode != null)
             {
                 int ratio = (int)(Math.Floor(10f * addon->RootNode->Width / addon->RootNode->Height));
-                ActionBarLayout layout = ratio switch {
+                ActionBarLayout layout = ratio switch
+                {
                     86 => ActionBarLayout.H12V1, // 624x72
                     27 => ActionBarLayout.H6V2, // 331x121
                     14 => ActionBarLayout.H4V3, // 241x170
@@ -109,7 +227,8 @@ namespace SezzUI.Modules.GameUI
 
                         if (CacheActionBarPositions(bar, (IntPtr)addon))
                         {
-                            if (config.InvertRowOrdering) {
+                            if (config.InvertRowOrdering)
+                            {
                                 InvertActionBarRows(bar, (IntPtr)addon, layout);
                             }
                             else
@@ -191,7 +310,8 @@ namespace SezzUI.Modules.GameUI
 
             byte buttonsFound = 0;
 
-            lock (_originalPositions) {
+            lock (_originalPositions)
+            {
                 _originalPositions[bar] = new();
 
                 for (var j = 0; j < addon->UldManager.NodeListCount; j++)
@@ -348,10 +468,10 @@ namespace SezzUI.Modules.GameUI
         {
             if (sender is SingleActionBarConfig barConfig)
             {
-                PluginLog.Debug($"[{sender.GetType().Name}] {barConfig.Bar} OnConfigPropertyChanged {args.PropertyName}: {args}");
                 switch (args.PropertyName)
                 {
                     case "Enabled":
+                        PluginLog.Debug($"[{sender.GetType().Name}] {barConfig.Bar} Enabled: {barConfig.Enabled}: {args}");
                         if (barConfig.Enabled)
                         {
                             if (GameEvents.Game.Instance.IsInGame())
@@ -373,10 +493,21 @@ namespace SezzUI.Modules.GameUI
                         break;
 
                     case "InvertRowOrdering":
+                        PluginLog.Debug($"[{sender.GetType().Name}] {barConfig.Bar} InvertRowOrdering: {barConfig.InvertRowOrdering}: {args}");
                         if (barConfig.Enabled && GameEvents.Game.Instance.IsInGame())
                         {
                             UpdateActionBar(barConfig.Bar, barConfig);
                         }
+                        break;
+                }
+            }
+            else
+            {
+                switch (args.PropertyName)
+                {
+                    case "EnableBarPaging":
+                        LogDebug("OnConfigPropertyChanged", $"{args.PropertyName}: {Config.EnableBarPaging}");
+                        ToggleBarPaging(Config.EnableBarPaging);
                         break;
                 }
             }
