@@ -49,7 +49,6 @@ namespace SezzUI
 
         public static string AssemblyLocation { get; private set; } = "";
         public string Name => "SezzUI";
-
         public static string Version { get; private set; } = "";
 
         public static NumberFormatInfo NumberFormatInfo = CultureInfo.GetCultureInfo("en-GB").NumberFormat;
@@ -96,7 +95,7 @@ namespace SezzUI
                 AssemblyLocation = Assembly.GetExecutingAssembly().Location;
             }
 
-            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.4";
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.5";
 
             DelvUI.Helpers.FontsManager.Initialize(AssemblyLocation);
             LoadBanner();
@@ -249,7 +248,7 @@ namespace SezzUI
             }
         }
 
-#region Draw State
+        #region Draw State
         //private static double _occupiedInQuestStartTime = -1;
         private DrawState _lastDrawState = DrawState.Unknown;
 
@@ -330,7 +329,7 @@ namespace SezzUI
 
             return DrawState.Visible;
         }
-#endregion
+        #endregion
 
         private void OpenConfigUi()
         {
@@ -368,9 +367,12 @@ namespace SezzUI
             Helpers.ImageCache.Instance.Dispose();
             Helpers.SpellHelper.Instance.Dispose();
             DelvUI.Helpers.TooltipsHelper.Instance.Dispose();
+            if (NativeMethods.Initialized) { NativeMethods.Instance.Dispose(); }
 
             // This needs to remain last to avoid race conditions
             ConfigurationManager.Instance.Dispose();
+
+            PluginLog.Debug($"Goodbye!");
         }
     }
 }
