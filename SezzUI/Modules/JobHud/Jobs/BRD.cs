@@ -14,15 +14,15 @@ namespace SezzUI.Modules.JobHud.Jobs
             Bar bar1 = new(hud);
             bar1.Add(new Icon(bar1) { TextureActionId = 100, StatusIds = new[] { (uint)124, (uint)1200 }, MaxStatusDuration = 45, StatusTarget = Enums.Unit.Target, Level = 6 }); // Venomous Bite
             bar1.Add(new Icon(bar1) { TextureActionId = 113, StatusIds = new[] { (uint)129, (uint)1201 }, MaxStatusDuration = 45, StatusTarget = Enums.Unit.Target, Level = 30 }); // Windbite
-            bar1.Add(new Icon(bar1) { TextureActionId = 101, CooldownActionId = 101, StatusId = 125, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 4 }); // Raging Strikes
-            bar1.Add(new Icon(bar1) { TextureActionId = 107, CooldownActionId = 107, StatusId = 128, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, Level = 38 }); // Barrage
+            bar1.Add(new Icon(bar1) { TextureActionId = 101, CooldownActionId = 101, StatusId = 125, MaxStatusDuration = 20, Level = 4 }); // Raging Strikes
+            bar1.Add(new Icon(bar1) { TextureActionId = 107, CooldownActionId = 107, StatusId = 128, MaxStatusDuration = 10, Level = 38 }); // Barrage
             hud.AddBar(bar1);
 
             Bar bar2 = new(hud);
             bar2.Add(new Icon(bar2) { TextureActionId = 3559, CooldownActionId = 3559, CustomDuration = GetWanderersMinuetDuration, Level = 52 }); // The Wanderer's Minuet
             bar2.Add(new Icon(bar2) { TextureActionId = 114, CooldownActionId = 114, CustomDuration = GetMagesBalladDuration, Level = 30 }); // Mage's Ballad
             bar2.Add(new Icon(bar2) { TextureActionId = 116, CooldownActionId = 116, CustomDuration = GetArmysPaeonDuration, Level = 40 }); // Army's Paeon
-            bar2.Add(new Icon(bar2) { TextureActionId = 118, CooldownActionId = 118, StatusId = 141, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, CustomPowerCondition = IsPlaying, Level = 50 }); // Battle Voice
+            bar2.Add(new Icon(bar2) { TextureActionId = 118, CooldownActionId = 118, StatusId = 141, MaxStatusDuration = 15, StatusSourcePlayer = false, CustomPowerCondition = IsPlaying, Level = 50 }); // Battle Voice
             hud.AddBar(bar2);
 
             // Straight Shot
@@ -41,8 +41,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 
             Bar roleBar = hud.Bars.Last();
             //roleBar.Add(new Icon(roleBar) { TextureActionId = 3561, CooldownActionId = 3561, StatusId = 866, MaxStatusDuration = 30, StatusTarget = Enums.Unit.TargetOrPlayer, StatusSourcePlayer = false, Level = 35 }, 1); // The Warden's Paean
-            roleBar.Add(new Icon(roleBar) { TextureActionId = 7405, CooldownActionId = 7405, StatusId = 1934, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, Level = 62 }, 1); // Troubadour
-            roleBar.Add(new Icon(roleBar) { TextureActionId = 7408, CooldownActionId = 7408, StatusId = 1202, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, Level = 66 }, 1); // Nature's Minne
+            roleBar.Add(new Icon(roleBar) { TextureActionId = 7405, CooldownActionId = 7405, StatusId = 1934, MaxStatusDuration = 15, StatusSourcePlayer = false, Level = 62 }, 1); // Troubadour
+            roleBar.Add(new Icon(roleBar) { TextureActionId = 7408, CooldownActionId = 7408, StatusId = 1202, MaxStatusDuration = 15, StatusSourcePlayer = false, Level = 66 }, 1); // Nature's Minne
         }
 
         private static bool IsPlaying()

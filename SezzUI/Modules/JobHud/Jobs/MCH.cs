@@ -9,7 +9,7 @@ namespace SezzUI.Modules.JobHud.Jobs
         public override void Configure(JobHud hud)
         {
             Bar bar1 = new(hud);
-            bar1.Add(new Icon(bar1) { TextureActionId = 2876, CooldownActionId = 2876, StatusId = 851, MaxStatusDuration = 5, StatusTarget = Enums.Unit.Player, Level = 10 }); // Reassemble
+            bar1.Add(new Icon(bar1) { TextureActionId = 2876, CooldownActionId = 2876, StatusId = 851, MaxStatusDuration = 5, Level = 10 }); // Reassemble
             bar1.Add(new Icon(bar1) { TextureActionId = 7414, CooldownActionId = 7414, RequiresCombat = true, Level = 66 }); // Barrel Stabilizer
             bar1.Add(new Icon(bar1) { TextureActionId = 2864, CooldownActionId = 2864, RequiredPowerAmount = 60, RequiredPowerType = Helpers.JobsHelper.PowerType.Battery, Level = 66 }); // Rook Autoturret/Automation Queen
             bar1.Add(new Icon(bar1) { TextureActionId = 2878, CooldownActionId = 2878, StatusId = 861, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Target, Level = 45 }); // Wildfire
@@ -18,7 +18,7 @@ namespace SezzUI.Modules.JobHud.Jobs
             base.Configure(hud);
 
             Bar roleBar = hud.Bars.Last();
-            roleBar.Add(new Icon(roleBar) { TextureActionId = 16889, CooldownActionId = 16889, StatusId = 1951, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 56 }, 1); // Tactician
+            roleBar.Add(new Icon(roleBar) { TextureActionId = 16889, CooldownActionId = 16889, StatusId = 1951, MaxStatusDuration = 15, Level = 56 }, 1); // Tactician
         }
     }
 }

@@ -13,7 +13,7 @@ namespace SezzUI.Modules.JobHud.Jobs
             Bar bar1 = new(hud);
             bar1.Add(new Icon(bar1) { TextureActionId = 3581, CooldownActionId = 3581, CustomDuration = GetDemiBahamutDuration, RequiresCombat = true, RequiresPet = true }); // Dreadwyrm Trance
             bar1.Add(new Icon(bar1) { TextureActionId = 7429, CooldownActionId = 7429, CustomCondition = IsDemiBahamutSummoned }); // Enkindle Bahamut
-            bar1.Add(new Icon(bar1) { TextureActionId = 25801, CooldownActionId = 25801, StatusId = 2703, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, RequiresCombat = true, CustomCondition = IsCarbuncleSummoned, StatusSourcePlayer = false }); // Searing Light
+            bar1.Add(new Icon(bar1) { TextureActionId = 25801, CooldownActionId = 25801, StatusId = 2703, MaxStatusDuration = 30, RequiresCombat = true, CustomCondition = IsCarbuncleSummoned, StatusSourcePlayer = false }); // Searing Light
             hud.AddBar(bar1);
 
             // Further Rain
@@ -31,7 +31,7 @@ namespace SezzUI.Modules.JobHud.Jobs
             base.Configure(hud);
 
             Bar roleBar = hud.Bars.Last();
-            roleBar.Add(new Icon(roleBar) { TextureActionId = 25799, CooldownActionId = 25799, StatusId = 2702, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, CustomCondition = IsCarbuncleSummoned, StatusSourcePlayer = false }, 1); // Radiant Aegis
+            roleBar.Add(new Icon(roleBar) { TextureActionId = 25799, CooldownActionId = 25799, StatusId = 2702, MaxStatusDuration = 30, CustomCondition = IsCarbuncleSummoned, StatusSourcePlayer = false }, 1); // Radiant Aegis
         }
 
         // Pet IDs:

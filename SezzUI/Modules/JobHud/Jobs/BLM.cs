@@ -13,8 +13,8 @@ namespace SezzUI.Modules.JobHud.Jobs
             Bar bar1 = new(hud);
             bar1.Add(new Icon(bar1) { TextureActionId = 144, StatusIds = new[] { (uint)161, (uint)162, (uint)163, (uint)1210 }, MaxStatusDurations = new[] { 21f, 18f, 30f, 18f }, StatusTarget = Enums.Unit.Target, GlowBorderStatusId = 164, Features = IconFeatures.GlowIgnoresState, Level = 4 }); // Thunder
             bar1.Add(new Icon(bar1) { TextureActionId = 25796, CooldownActionId = 25796, CustomPowerCondition = IsInAstralFireOrIsInUmbralIce, GlowBorderUsable = true, Level = 86 }); // Amplifier
-            bar1.Add(new Icon(bar1) { TextureActionId = 3574, CooldownActionId = 3574, StatusId = 867, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, Level = 54 }); // Sharpcast
-            bar1.Add(new Icon(bar1) { TextureActionId = 3573, CooldownActionId = 3573, StatusId = 737, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, GlowBorderStatusId = 738, GlowBorderInvertCheck = true, GlowBorderStatusIdForced = 737, GlowBorderUsable = true, Level = 52 }); // Ley Lines
+            bar1.Add(new Icon(bar1) { TextureActionId = 3574, CooldownActionId = 3574, StatusId = 867, MaxStatusDuration = 30, Level = 54 }); // Sharpcast
+            bar1.Add(new Icon(bar1) { TextureActionId = 3573, CooldownActionId = 3573, StatusId = 737, MaxStatusDuration = 30, GlowBorderStatusId = 738, GlowBorderInvertCheck = true, GlowBorderStatusIdForced = 737, GlowBorderUsable = true, Level = 52 }); // Ley Lines
             hud.AddBar(bar1);
 
             // Firestarter
@@ -64,8 +64,8 @@ namespace SezzUI.Modules.JobHud.Jobs
             base.Configure(hud);
 
             Bar roleBar = hud.Bars.Last();
-            roleBar.Add(new Icon(roleBar) { TextureActionId = 157, CooldownActionId = 157, StatusId = 168, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 30 }, 1); // Manaward
-            roleBar.Add(new Icon(roleBar) { TextureActionId = 7421, CooldownActionId = 7421, StatusId = 1211, MaxStatusDuration = 15, StatusTarget = Enums.Unit.Player, Level = 66 }, 1); // Triplecast
+            roleBar.Add(new Icon(roleBar) { TextureActionId = 157, CooldownActionId = 157, StatusId = 168, MaxStatusDuration = 20, Level = 30 }, 1); // Manaward
+            roleBar.Add(new Icon(roleBar) { TextureActionId = 7421, CooldownActionId = 7421, StatusId = 1211, MaxStatusDuration = 15, Level = 66 }, 1); // Triplecast
         }
 
         private static bool IsInAstralFireOrIsInUmbralIce()

@@ -13,10 +13,10 @@ namespace SezzUI.Modules.JobHud.Jobs
         {
             Bar bar1 = new(hud);
             bar1.Add(new Icon(bar1) { TextureStatusId = 2586, StatusId = 2586, MaxStatusDuration = 60, StatusTarget = Enums.Unit.Target, Level = 10 }); // Death's Design
-            bar1.Add(new Icon(bar1) { TextureActionId = 24394, StatusIds = new[] { (uint)2593, (uint)2863 }, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, RequiredPowerAmount = 50, RequiredPowerType = Helpers.JobsHelper.PowerType.Shroud, GlowBorderUsable = true, Level = 80 }); // Enshroud
+            bar1.Add(new Icon(bar1) { TextureActionId = 24394, StatusIds = new[] { (uint)2593, (uint)2863 }, MaxStatusDuration = 30, RequiredPowerAmount = 50, RequiredPowerType = Helpers.JobsHelper.PowerType.Shroud, GlowBorderUsable = true, Level = 80 }); // Enshroud
             bar1.Add(new Icon(bar1) { TextureActionId = 24398, CustomCondition = IsEnshrouded, CustomPowerCondition = HasOneLemureLeft, GlowBorderUsable = true, Level = 90 }); // Communio
             bar1.Add(new Icon(bar1) { TextureActionId = 24393, CooldownActionId = 24393, RequiredPowerAmount = 50, RequiredPowerType = Helpers.JobsHelper.PowerType.Soul, GlowBorderUsable = true, Level = 76 }); // Gluttony
-            bar1.Add(new Icon(bar1) { TextureActionId = 24405, CooldownActionId = 24405, StatusId = 2599, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, StacksStatusId = 2592, Level = 72 }); // Arcane Circle
+            bar1.Add(new Icon(bar1) { TextureActionId = 24405, CooldownActionId = 24405, StatusId = 2599, MaxStatusDuration = 20, StacksStatusId = 2592, Level = 72 }); // Arcane Circle
             hud.AddBar(bar1);
 
             // Soulsow/Harvest Moon
@@ -82,7 +82,7 @@ namespace SezzUI.Modules.JobHud.Jobs
             base.Configure(hud);
 
             Bar roleBar = hud.Bars.Last();
-            roleBar.Add(new Icon(roleBar) { TextureActionId = 24404, CooldownActionId = 24404, StatusIds = new[] { (uint)2596, (uint)2597 }, MaxStatusDuration = 5, StatusTarget = Enums.Unit.Player, Level = 40 }, 1); // Arcane Crest
+            roleBar.Add(new Icon(roleBar) { TextureActionId = 24404, CooldownActionId = 24404, StatusIds = new[] { (uint)2596, (uint)2597 }, MaxStatusDuration = 5, Level = 40 }, 1); // Arcane Crest
         }
 
         private static bool ShouldUseGibbet()

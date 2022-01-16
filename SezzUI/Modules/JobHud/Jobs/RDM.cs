@@ -11,11 +11,11 @@ namespace SezzUI.Modules.JobHud.Jobs
         public override void Configure(JobHud hud)
         {
             Bar bar1 = new(hud);
-            bar1.Add(new Icon(bar1) { TextureActionId = 7518, CooldownActionId = 7518, StatusId = 1238, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, Level = 50 }); // Acceleration
+            bar1.Add(new Icon(bar1) { TextureActionId = 7518, CooldownActionId = 7518, StatusId = 1238, MaxStatusDuration = 20, Level = 50 }); // Acceleration
             bar1.Add(new Icon(bar1) { TextureActionId = 7506, CooldownActionId = 7506, Level = 6 }); // Corps-a-corps
             bar1.Add(new Icon(bar1) { TextureActionId = 7515, CooldownActionId = 7515, Level = 40 }); // Displacement
             bar1.Add(new Icon(bar1) { TextureActionId = 7521, CooldownActionId = 7521, CustomPowerCondition = IsManaficationNotOvercapping, RequiresCombat = true, Level = 60 }); // Manafication
-            bar1.Add(new Icon(bar1) { TextureActionId = 7520, CooldownActionId = 7520, StatusId = 1239, MaxStatusDuration = 20, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, Level = 58 }); // Embolden
+            bar1.Add(new Icon(bar1) { TextureActionId = 7520, CooldownActionId = 7520, StatusId = 1239, MaxStatusDuration = 20, StatusSourcePlayer = false, Level = 58 }); // Embolden
             hud.AddBar(bar1);
 
             // Dualcast
@@ -60,7 +60,7 @@ namespace SezzUI.Modules.JobHud.Jobs
             base.Configure(hud);
 
             Bar roleBar = hud.Bars.Last();
-            roleBar.Add(new Icon(roleBar) { TextureActionId = 25857, CooldownActionId = 25857, StatusId = 2707, MaxStatusDuration = 10, StatusTarget = Enums.Unit.Player, StatusSourcePlayer = false, Level = 86 }, 1); // Magick Barrier
+            roleBar.Add(new Icon(roleBar) { TextureActionId = 25857, CooldownActionId = 25857, StatusId = 2707, MaxStatusDuration = 10, StatusSourcePlayer = false, Level = 86 }, 1); // Magick Barrier
         }
 
         private static bool IsManaficationNotOvercapping()

@@ -17,7 +17,7 @@ All the datamined IDs for actions and spells can be found here:
 This is a special case, it should show the cooldown of Lay Lines, the duration of Lay Lines (the buff we get that indicates that "Between the Lines" is available despite its cooldown) and it should glow while we're not standing in the Circle of Power:
 
 ```cs
-bar.Add(new Icon(bar) { TextureActionId = 3573, CooldownActionId = 3573, StatusId = 737, MaxStatusDuration = 30, StatusTarget = Enums.Unit.Player, GlowBorderStatusId = 738, GlowBorderInvertCheck = true, GlowBorderStatusIdForced = 737, GlowBorderUsable = true, Level = 52 });
+bar.Add(new Icon(bar) { TextureActionId = 3573, CooldownActionId = 3573, StatusId = 737, MaxStatusDuration = 30, GlowBorderStatusId = 738, GlowBorderInvertCheck = true, GlowBorderStatusIdForced = 737, GlowBorderUsable = true, Level = 52 });
 ```
 
 Full explanation:
@@ -34,7 +34,6 @@ Full explanation:
 | --- | --- |
 | `StatusId = 737` | Check for Ley Lines status (NOT affected by GetAdjustedActionId, if this would be needed we could use StatusActionId instead) |
 | `MaxStatusDuration = 30` | A maximum duration has to be specified because it is not available in the [Status](https://goatcorp.github.io/Dalamud/api/FFXIVClientStructs.FFXIV.Client.Game.Status.html) object |
-| `StatusTarget = Enums.Unit.Player` | Check for Ley Lines on the player | 
 
 | Border Glow Property | Description |
 | --- | --- |
