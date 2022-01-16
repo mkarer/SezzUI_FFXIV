@@ -26,7 +26,7 @@ namespace SezzUI.GameStructs
         //[FieldOffset(0x23F)] public int UnknownInt23F;
         //[FieldOffset(0x243)] public int UnknownInt243; // Flags of some kind
         [FieldOffset(0x240)] public byte IsShared;
-        [FieldOffset(0x244)] public byte IsPetHotbar;
+        [FieldOffset(0x245)] public byte IsPetHotbar;
     }
 
     //[StructLayout(LayoutKind.Explicit, Size = 0xC8)]
