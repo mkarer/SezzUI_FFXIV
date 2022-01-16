@@ -185,7 +185,7 @@ namespace SezzUI.Modules.JobHud
         private uint? _statusActionId;
         public float? MaxStatusDuration;
         public float[]? MaxStatusDurations;
-        public Enums.Unit? StatusTarget;
+        public Enums.Unit StatusTarget = Enums.Unit.Player;
         public float StatusWarningThreshold = 7f;
         public Func<(float, float)>? CustomDuration;
 
@@ -344,7 +344,7 @@ namespace SezzUI.Modules.JobHud
 
             // Status
             // Will be used as IconState if not checking any cooldowns.
-            if ((StatusId != null || StatusIds != null) && StatusTarget != null && (MaxStatusDuration != null || MaxStatusDurations != null))
+            if ((StatusId != null || StatusIds != null) && (MaxStatusDuration != null || MaxStatusDurations != null))
 			{
                 bool shouldShowStatusBar = !Features.HasFlag(IconFeatures.NoStatusBar);
                 bool shouldShowStatusAsCooldown = (CooldownActionId == null && !Features.HasFlag(IconFeatures.NoStatusCooldownDisplay));
@@ -354,13 +354,13 @@ namespace SezzUI.Modules.JobHud
                 {
                     status = (StatusTarget is Enums.Unit.TargetOrPlayer) ?
                         Helpers.SpellHelper.GetStatus((uint)StatusId, Enums.Unit.Target, StatusSourcePlayer) ?? Helpers.SpellHelper.GetStatus((uint)StatusId, Enums.Unit.Player, StatusSourcePlayer) :
-                        Helpers.SpellHelper.GetStatus((uint)StatusId, (Enums.Unit)StatusTarget, StatusSourcePlayer);
+                        Helpers.SpellHelper.GetStatus((uint)StatusId, StatusTarget, StatusSourcePlayer);
                 }
                 else if (StatusIds != null)
                 {
                     status = (StatusTarget is Enums.Unit.TargetOrPlayer) ?
                         Helpers.SpellHelper.GetStatus(StatusIds, Enums.Unit.Target, StatusSourcePlayer) ?? Helpers.SpellHelper.GetStatus(StatusIds, Enums.Unit.Player, StatusSourcePlayer) :
-                        Helpers.SpellHelper.GetStatus(StatusIds, (Enums.Unit)StatusTarget, StatusSourcePlayer);
+                        Helpers.SpellHelper.GetStatus(StatusIds, StatusTarget, StatusSourcePlayer);
                 }
 
                 if (status != null)
