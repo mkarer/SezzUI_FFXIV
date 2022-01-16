@@ -106,7 +106,7 @@ namespace SezzUI.Modules.GameUI
 
         private void OnKeyStateChanged(ushort vkCode, KeyState state)
         {
-            PluginLog.Debug($"OnKeyStateChanged: vkCode {vkCode} KeyState {state}");
+            //PluginLog.Debug($"OnKeyStateChanged: vkCode {vkCode} KeyState {state}");
 
             if (state == KeyState.KeyDown)
             {
