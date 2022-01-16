@@ -24,6 +24,7 @@ namespace SezzUI.Modules.JobHud
         public int? ExactPowerAmount;
 
         public Func<bool>? CustomCondition;
+        public Func<float>? CustomDuration;
 
         public bool InvertCheck = false;
         public bool EnableInCombat = true;
@@ -276,7 +277,7 @@ namespace SezzUI.Modules.JobHud
                     // Status Duration
                     if (!InvertCheck)
                     {
-                        float duration = status?.RemainingTime ?? 0;
+                        float duration = CustomDuration != null ? CustomDuration() : status?.RemainingTime ?? 0;
                         if (duration <= 0 && status != null && MaxDuration != null && Animator.TimeElapsed < 3000)
                         {
                             // Guess the duration until it is available in Dalamud?
