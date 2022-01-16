@@ -71,6 +71,9 @@ namespace DelvUI.Helpers
                 { 3559, new() { { 52, 3559 } } }, // The Wanderer's Minuet
                 // GNB
                 { 16161, new() { { 68, 16161 }, { 82, 25758 } } }, // Heart of Stone/Heart of Corundum
+                // DRG
+                { 88, new() { { 50, 88 }, { 86, 25772 } } }, // Chaos Thrust
+                { 3555, new() { { 60, 3555 } } }, // Geirskogul
             };
         }
 
