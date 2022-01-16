@@ -35,8 +35,9 @@ namespace SezzUI.Modules.CooldownHud
                 _texture = value;
                 if (value != null)
                 {
-                    IconUV0 = new(1f / value.Width, 1f / value.Height);
-                    IconUV1 = new(1f - 1f / value.Width, 1f - 1f / value.Height);
+                    float cutoff = 1.6f;
+                    IconUV0 = new(cutoff / value.Width, cutoff / value.Height);
+                    IconUV1 = new(1f - cutoff / value.Width, 1f - cutoff / value.Height);
                 }
             }
         }
