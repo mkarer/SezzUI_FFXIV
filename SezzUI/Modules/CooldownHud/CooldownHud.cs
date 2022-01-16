@@ -150,11 +150,11 @@ namespace SezzUI.Modules.CooldownHud
                 {
                     CooldownPulse pulse = _pulses[i];
                     bool expired = Environment.TickCount64 - pulse.Created >= NOPULSE_AFTER_ELAPSEDFINISHED;
-                    if (!expired)
+                    if (!expired || pulse.Animator.IsAnimating)
                     {
                         pulse.Draw((Vector2)origin);
                     }
-                    if (expired || !pulse.Animator.IsAnimating)
+                    if (expired && !pulse.Animator.IsAnimating)
                     {
                         LogDebug("Draw", $"Removing CooldownPulse: Action ID: {pulse.ActionId} Charges: {pulse.Charges} Created: {pulse.Created} Expired: {expired} Animating: {pulse.Animator.IsAnimating}"); ;
                         pulse.Dispose();
