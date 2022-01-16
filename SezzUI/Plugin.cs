@@ -367,7 +367,6 @@ namespace SezzUI
             Helpers.ImageCache.Instance.Dispose();
             Helpers.SpellHelper.Instance.Dispose();
             DelvUI.Helpers.TooltipsHelper.Instance.Dispose();
-            if (NativeMethods.Initialized) { NativeMethods.Instance.Dispose(); }
 
             // This needs to remain last to avoid race conditions
             ConfigurationManager.Instance.Dispose();

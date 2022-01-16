@@ -1,0 +1,5 @@
+﻿GetForegroundWindow
+RegisterRawInputDevices
+GetRawInputData
+RAWINPUTHEADER
+RAWINPUT

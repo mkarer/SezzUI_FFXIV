@@ -11,6 +11,11 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using System.Runtime.InteropServices;
 using SezzUI.GameStructs;
+using SezzUI.NativeMethods;
+using SezzUI.NativeMethods.RawInput;
+using System.Diagnostics;
+using SezzUI.Enums;
+using System.Numerics;
 
 namespace SezzUI.Modules.GameUI
 {
@@ -50,8 +55,6 @@ namespace SezzUI.Modules.GameUI
         {
             if (!base.Disable()) { return false; }
 
-            Config.EnableBarPaging = false;
-
             EventManager.Game.AddonsLoaded -= OnAddonsLoaded;
             EventManager.Game.HudLayoutActivated -= OnHudLayoutActivated;
 
@@ -63,30 +66,108 @@ namespace SezzUI.Modules.GameUI
         }
 
         #region Bar Paging
-        private bool _keyboardHooked = false;
-        private byte _pageDefault = 0;
-        private byte _pageControl = 1;
-        private byte _pageAlt = 2;
+        private readonly byte _pageDefault = 0;
+        private readonly byte _pageControl = 1;
+        private readonly byte _pageAlt = 2;
+        private readonly ushort VK_CONTROL = 0x11;
+        private readonly ushort VK_MENU = 0x12;
+        private static RawInputNativeWindow? _msgWindow;
+
+        public override void Draw(DrawState state, Vector2? origin)
+        {
+            if (_msgWindow != null && _msgWindow.Handle == IntPtr.Zero)
+            {
+                bool success = false;
+                if (!_msgWindow.CreateWindow())
+                {
+                    LogError("Draw", "Error: Failed to setup Bar Paging, CreateWindow failed!");
+                }
+                else if (!_msgWindow.RegisterDevices())
+                {
+                    LogError("Draw", "Error: Failed to setup Bar Paging: RegisterDevices failed! Bar Paging will now be disabled!");
+                }
+                else
+                {
+                    LogError("Draw", "Bar Paging enabled, RawInputNativeWindow successfully created.");
+                    success = true;
+                    _msgWindow.OnKeyStateChanged += OnKeyStateChanged;
+                }
+
+                if (!success)
+                {
+                    Plugin.ChatGui.PrintError("Failed to setup Bar Paging - it will now be disabled and can only be enabled again after RESTARTING the game!");
+                    Plugin.ChatGui.PrintError("You can (and should) check the Dalamud logfile for further details.");
+                    Config.EnableBarPaging = false;
+                    _msgWindow.DestroyHandle();
+                    _msgWindow = null;
+                }
+            }
+        }
+
+        private void OnKeyStateChanged(ushort vkCode, KeyState state)
+        {
+            PluginLog.Debug($"OnKeyStateChanged: vkCode {vkCode} KeyState {state}");
+
+            if (state == KeyState.KeyDown)
+            {
+                if (vkCode == VK_CONTROL)
+                {
+                    LogDebug("OnKeyDown", $"{vkCode} HoldingCtrl");
+                    SetActionBarPage(_pageControl);
+                }
+                else if (vkCode == VK_MENU)
+                {
+                    LogDebug("OnKeyDown", $"{vkCode} HoldingAlt");
+                    SetActionBarPage(_pageAlt);
+                }
+            }
+            else if (state == KeyState.KeyUp) 
+            {
+                if (vkCode != VK_CONTROL && vkCode != VK_MENU)
+                {
+                    // Ignore
+                    return;
+                }
+
+                // TODO: GetAsyncKeyState
+                bool pressedCtrl = ImGuiNET.ImGui.GetIO().KeyCtrl;
+                bool pressedAlt = ImGuiNET.ImGui.GetIO().KeyAlt;
+
+                if (!pressedAlt && !pressedCtrl)
+                {
+                    // No modifiers, we should never get here :D
+                    LogDebug("OnKeyUp", $"{vkCode} NoModifiers");
+                    SetActionBarPage(0);
+                }
+                else if (vkCode == VK_MENU)
+                {
+                    // Released Alt
+                    LogDebug("OnKeyUp", $"{vkCode} ReleasedAlt");
+                    SetActionBarPage(pressedCtrl ? _pageControl : _pageDefault);
+                }
+                else if (vkCode == VK_CONTROL)
+                {
+                    // Released Ctrl
+                    LogDebug("OnKeyUp", $"{vkCode} ReleasedCtrl");
+                    SetActionBarPage(pressedAlt ? _pageAlt : _pageDefault);
+                }
+            }
+        }
 
         private void EnableBarPaging()
         {
-            if (!Config.EnableBarPaging || _keyboardHooked) { return; }
+            if (!Config.EnableBarPaging || _msgWindow != null) { return; }
 
-            NativeMethods.Instance.InstallInputHooks();
-            NativeMethods.Instance.OnKeyUp += OnKeyUp;
-            NativeMethods.Instance.OnKeyDown += OnKeyDown;
-            _keyboardHooked = true;
+            _msgWindow = new(Process.GetCurrentProcess().MainWindowHandle) { IgnoreRepeat = true };
         }
 
         private void DisableBarPaging()
         {
-            if (_keyboardHooked)
-            {
-                NativeMethods.Instance.UninstallInputHooks();
-                NativeMethods.Instance.OnKeyUp -= OnKeyUp;
-                NativeMethods.Instance.OnKeyDown -= OnKeyDown;
-                _keyboardHooked = false;
-            }
+            if (_msgWindow == null) { return; }
+
+            _msgWindow.OnKeyStateChanged -= OnKeyStateChanged;
+            _msgWindow.DestroyHandle();
+            _msgWindow = null;
         }
 
         private void ToggleBarPaging(bool enable)
@@ -124,51 +205,6 @@ namespace SezzUI.Modules.GameUI
                 {
                     LogError(ex, "SetActionBarPage", $"Error updating Hotbar ID: {ex}");
                 }
-            }
-        }
-
-        private void OnKeyDown(ushort vkCode)
-        {
-            if (vkCode == NativeMethods.VK_CONTROL)
-            {
-                LogDebug("OnKeyDown", $"{vkCode} HoldingCtrl");
-                SetActionBarPage(_pageControl);
-            }
-            else if (vkCode == NativeMethods.VK_MENU)
-            {
-                LogDebug("OnKeyDown", $"{vkCode} HoldingAlt");
-                SetActionBarPage(_pageAlt);
-            }
-        }
-
-        private void OnKeyUp(ushort vkCode)
-        {
-            if (vkCode != NativeMethods.VK_CONTROL && vkCode != NativeMethods.VK_MENU)
-            {
-                // Ignore
-                return;
-            }
-
-            bool pressedCtrl = ImGuiNET.ImGui.GetIO().KeyCtrl;
-            bool pressedAlt = ImGuiNET.ImGui.GetIO().KeyAlt;
-
-            if (!pressedAlt && !pressedCtrl) 
-            {
-                // No modifiers, we should never get here :D
-                LogDebug("OnKeyUp", $"{vkCode} NoModifiers");
-                SetActionBarPage(0);
-            }
-            else if (vkCode == NativeMethods.VK_MENU)
-            {
-                // Released Alt
-                LogDebug("OnKeyUp", $"{vkCode} ReleasedAlt");
-                SetActionBarPage(pressedCtrl ? _pageControl : _pageDefault);
-            }
-            else if (vkCode == NativeMethods.VK_CONTROL)
-            {
-                // Released Ctrl
-                LogDebug("OnKeyUp", $"{vkCode} ReleasedCtrl");
-                SetActionBarPage(pressedAlt ? _pageAlt : _pageDefault);
             }
         }
         #endregion

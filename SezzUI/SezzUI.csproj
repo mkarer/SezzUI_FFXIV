@@ -92,9 +92,10 @@
 		<PackageReference Include="DalamudPackager" Version="2.1.5" />
 		<PackageReference Include="Colourful" Version="3.1.0" />
 		<PackageReference Include="ILRepack" Version="2.1.0-beta1" />
-	</ItemGroup>
-	<ItemGroup>
-	  <ProjectReference Include="..\RawInputLight\RawInputLight.csproj" />
+		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.1.619-beta">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 	<ItemGroup>
 	  <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
