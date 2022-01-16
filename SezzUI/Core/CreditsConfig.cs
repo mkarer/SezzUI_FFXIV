@@ -32,7 +32,7 @@ namespace SezzUI.Interface.GeneralElements
             ImGui.NewLine();
 
             ImGui.TextColored(titleColor, "Additional credits:");
-            ImGui.Text("CaiClone, Lichie");
+            ImGui.Text("CaiClone, Lichie, professorK");
 
             return false;
         }
