@@ -20,7 +20,6 @@
  * 
  * inputWin.OnKeyStateChanged -= OnKeyStateChanged;
  * inputWin.DestroyHandle();
- * 
  */
 
 using System;
