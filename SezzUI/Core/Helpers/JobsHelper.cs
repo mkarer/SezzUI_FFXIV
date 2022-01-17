@@ -42,7 +42,7 @@ namespace SezzUI.Helpers
             if (Plugin.ClientState.LocalPlayer == null) { return 0; }
 
             UIState* uiState = UIState.Instance();
-            if (uiState != null && uiState->PlayerState.SyncedLevel != 0)
+            if (uiState != null && uiState->PlayerState.SyncedLevel != 0 && Plugin.ClientState.LocalPlayer.ClassJob != null && Plugin.ClientState.LocalPlayer.ClassJob.GameData != null)
             {
                 int index = Plugin.ClientState.LocalPlayer.ClassJob.GameData.ExpArrayIndex & 0xff;
                 return (byte)uiState->PlayerState.ClassJobLevelArray[index];
