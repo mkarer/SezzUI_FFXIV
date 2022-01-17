@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using SezzUI.Config;
 using SezzUI.Interface.GeneralElements;
 using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Dalamud.Game.Gui;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using System.Runtime.InteropServices;
 using SezzUI.GameStructs;
 using SezzUI.NativeMethods;
@@ -34,12 +30,18 @@ namespace SezzUI.Modules.GameUI
         };
         private static readonly byte _maxButtons = 12;
 
+        private delegate void SetActionBarPageDelegate(IntPtr agentActionBar, byte page);
+        private SetActionBarPageDelegate? _setActionBarPage;
+        private IntPtr? _setPagePtr;
+
         public override bool Enable()
         {
             if (!base.Enable()) { return false; }
 
             EventManager.Game.AddonsLoaded += OnAddonsLoaded;
             EventManager.Game.HudLayoutActivated += OnHudLayoutActivated;
+
+            ScanBarPagingSignatures();
 
             if (EventManager.Game.IsInGame())
             {
@@ -73,6 +75,29 @@ namespace SezzUI.Modules.GameUI
         private readonly ushort VK_MENU = 0x12;
         private static RawInputNativeWindow? _msgWindow;
 
+        private void ScanBarPagingSignatures()
+        {
+            if (_setPagePtr != null) { return; }
+
+            if (Plugin.SigScanner.TryScanText("E8 ?? ?? ?? ?? FF C3 83 FB 38 7E E0 BA ?? ?? ?? ?? 48 8B CF", out IntPtr setPagePtr)) // 6.0.5: ffxiv_dx11.exe+80D130
+            {
+                LogDebug("ScanBarPagingSignatures", $"SetPage: {setPagePtr.ToInt64():X}");
+                _setPagePtr = setPagePtr;
+                try
+                {
+                    _setActionBarPage = Marshal.GetDelegateForFunctionPointer<SetActionBarPageDelegate>(setPagePtr);
+                }
+                catch (Exception ex)
+                {
+                    LogError(ex, "ScanBarPagingSignatures", $"Error: {ex}");
+                }
+            }
+            else
+            {
+                LogError("ScanBarPagingSignatures", "Error: SetPage signature not found!");
+            }
+        }
+
         public override void Draw(DrawState state, Vector2? origin)
         {
             if (_msgWindow != null && _msgWindow.Handle == IntPtr.Zero)
@@ -88,7 +113,7 @@ namespace SezzUI.Modules.GameUI
                 }
                 else
                 {
-                    LogError("Draw", "Bar Paging enabled, RawInputNativeWindow successfully created.");
+                    LogDebug("Draw", "Bar Paging enabled, RawInputNativeWindow successfully created.");
                     success = true;
                     _msgWindow.OnKeyStateChanged += OnKeyStateChanged;
                 }
@@ -121,7 +146,7 @@ namespace SezzUI.Modules.GameUI
                     SetActionBarPage(_pageAlt);
                 }
             }
-            else if (state == KeyState.KeyUp) 
+            else if (state == KeyState.KeyUp)
             {
                 if (vkCode != VK_CONTROL && vkCode != VK_MENU)
                 {
@@ -158,7 +183,14 @@ namespace SezzUI.Modules.GameUI
         {
             if (!Config.EnableBarPaging || _msgWindow != null) { return; }
 
-            _msgWindow = new(Process.GetCurrentProcess().MainWindowHandle) { IgnoreRepeat = true };
+            if (_setPagePtr == null)
+            {
+                Plugin.ChatGui.PrintError("Signature scan failed, Bar Paging will not be available!");
+            }
+            else
+            {
+                _msgWindow = new(Process.GetCurrentProcess().MainWindowHandle) { IgnoreRepeat = true };
+            }
         }
 
         private void DisableBarPaging()
@@ -184,7 +216,7 @@ namespace SezzUI.Modules.GameUI
 
         private unsafe void SetActionBarPage(byte page)
         {
-            if (!EventManager.Game.AreAddonsReady || !EventManager.Game.AreAddonsVisible) { return; }
+            if (!EventManager.Game.AreAddonsReady || !EventManager.Game.AreAddonsVisible || _setActionBarPage == null) { return; }
 
             AtkUnitBase* actionBar = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("_ActionBar", 1);
             if (actionBar == null) { return; }
@@ -195,15 +227,17 @@ namespace SezzUI.Modules.GameUI
             {
                 LogDebug("SetActionBarPage", $"Page: {page}");
 
-                try
+                IntPtr agentActionBar = Plugin.GameGui.FindAgentInterface(actionBar);
+                if (agentActionBar != IntPtr.Zero)
                 {
-                    var atkArrayDataHolder = Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder;
-                    actionBarBase->HotbarID = page;
-                    actionBar->VTable->OnUpdate(actionBar, atkArrayDataHolder.NumberArrays, atkArrayDataHolder.StringArrays);
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex, "SetActionBarPage", $"Error updating Hotbar ID: {ex}");
+                    try
+                    {
+                        _setActionBarPage(agentActionBar, page);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError(ex, "SetActionBarPage", $"Error updating Hotbar ID: {ex}");
+                    }
                 }
             }
         }
