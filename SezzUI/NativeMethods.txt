@@ -3,3 +3,8 @@ RegisterRawInputDevices
 GetRawInputData
 RAWINPUTHEADER
 RAWINPUT
+SetWinEventHook
+PostMessage
+GetCurrentThreadId
+GetWindowThreadProcessId
+RegisterWindowMessage
