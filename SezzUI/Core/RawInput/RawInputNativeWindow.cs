@@ -58,8 +58,8 @@ namespace SezzUI.NativeMethods.RawInput
         /// Ignore repeated keys while holding down a key.
         /// </summary>
         public bool IgnoreRepeat = false;
-        private ushort? _lastVirtualKeyCode;
-        private KeyState? _lastKeyState;
+        private static ushort? _lastVirtualKeyCode;
+        private static KeyState? _lastKeyState;
 
         /// <summary>
         /// Allow processing keys while parent process is not in foreground.
@@ -147,11 +147,7 @@ namespace SezzUI.NativeMethods.RawInput
             try
             {
                 PluginLog.Debug($"[RawInputNativeWindow::SetWinEventHook] Enabling hook...");
-                if (_winEventHookProc == null)
-                {
-                    _winEventHookProc = new(WinEventProc);
-                }
-
+                _winEventHookProc = new(WinEventProc);
                 _winEventHookHandle = PInvoke.SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, null, _winEventHookProc, 0, 0, WINEVENT_OUTOFCONTEXT);
             }
             catch (Exception ex)
@@ -189,7 +185,7 @@ namespace SezzUI.NativeMethods.RawInput
 
         private void WinEventProc(HWINEVENTHOOK hWinEventHook, uint @event, HWND hwnd, int idObject, int idChild, uint idEventThread, uint dwmsEventTime)
         {
-            //PluginLog.Error($"[RawInputNativeWindow::WinEventProc] Event Type: {@event}");
+            //PluginLog.Debug($"[RawInputNativeWindow::WinEventProc] Event Type: {@event}");
             if (_lastVirtualKeyCode != null && _lastKeyState != null && _lastKeyState == KeyState.KeyDown && IsInBackground)
             {
                 TryInvokeOnKeyStateChanged((ushort)_lastVirtualKeyCode, KeyState.KeyUp);
