@@ -22,8 +22,6 @@
  * inputWin.DestroyHandle();
  * 
  */
-// https://githubmate.com/repo/profK/RawInputLight
-// https://referencesource.microsoft.com/#System.Windows.Forms/winforms/Managed/System/WinForms/Timer.cs,272
 
 using System;
 using System.Runtime.InteropServices;
