@@ -6,10 +6,10 @@ namespace SezzUI.Interface.GeneralElements
 #if DEBUG
     [Disableable(false)]
     [Section("General")]
-    [SubSection("Developer", 0)]
-    public class DeveloperConfig : PluginConfigObject
+    [SubSection("DEBUG", 0)]
+    public class GeneralDebugConfig : PluginConfigObject
     {
-        public new static DeveloperConfig DefaultConfig() => new();
+        public new static GeneralDebugConfig DefaultConfig() => new();
   
         [Checkbox("Show Banner", isMonitored = true)]
         [Order(1)]
