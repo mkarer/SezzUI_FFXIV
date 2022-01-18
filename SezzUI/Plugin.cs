@@ -130,7 +130,7 @@ namespace SezzUI
             CommandManager.AddHandler("/sui", alias);
 
 #if DEBUG
-            var config = ConfigurationManager.Instance.GetConfigObject<DeveloperConfig>();
+            var config = ConfigurationManager.Instance.GetConfigObject<GeneralDebugConfig>();
             if (config != null && config.ShowConfigurationOnLogin)
             {
                 OpenConfigUi();
@@ -231,7 +231,7 @@ namespace SezzUI
                 {
                     _lastDrawState = drawState;
 #if DEBUG
-                    var config = ConfigurationManager.Instance.GetConfigObject<DeveloperConfig>();
+                    var config = ConfigurationManager.Instance.GetConfigObject<GeneralDebugConfig>();
                     if (config != null && config.LogEvents && config.LogEventPluginDrawStateChanged)
                     {
                         PluginLog.Debug($"[Plugin::DrawStateChanged] State: {drawState}");

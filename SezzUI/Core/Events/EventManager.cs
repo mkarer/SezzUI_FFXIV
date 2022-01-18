@@ -13,7 +13,7 @@ namespace SezzUI
 
 #if DEBUG
         protected static PluginConfigObject _config = null!;
-        public static DeveloperConfig Config => (DeveloperConfig)_config;
+        public static GeneralDebugConfig Config => (GeneralDebugConfig)_config;
 #endif
 
 #region Singleton
@@ -22,7 +22,7 @@ namespace SezzUI
         public EventManager()
         {
 #if DEBUG
-            _config = ConfigurationManager.Instance.GetConfigObject<DeveloperConfig>();
+            _config = ConfigurationManager.Instance.GetConfigObject<GeneralDebugConfig>();
             ConfigurationManager.Instance.ResetEvent += OnConfigReset;
 #endif
         }
@@ -63,7 +63,7 @@ namespace SezzUI
 #if DEBUG
         private void OnConfigReset(ConfigurationManager sender)
         {
-            _config = sender.GetConfigObject<DeveloperConfig>();
+            _config = sender.GetConfigObject<GeneralDebugConfig>();
         }
 #endif
     }

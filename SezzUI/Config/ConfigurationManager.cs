@@ -420,7 +420,7 @@ namespace SezzUI.Config
             // Core
             typeof(GeneralConfig),
 #if DEBUG
-            typeof(DeveloperConfig),
+            typeof(GeneralDebugConfig),
 #endif
 
             // Modules
