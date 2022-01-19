@@ -17,7 +17,7 @@ namespace SezzUI.Modules.CooldownHud
 	{
 		private CooldownHudConfig Config => (CooldownHudConfig) _config;
 #if DEBUG
-		private readonly CooldownHudDebugConfig _debugConfig;
+		private CooldownHudDebugConfig _debugConfig;
 #endif
 		private readonly Dictionary<uint, BasePreset> _presets = new();
 		private readonly List<BarManager.BarManager> _barManagers = new();
@@ -76,6 +76,10 @@ namespace SezzUI.Modules.CooldownHud
 			if (_presets.TryGetValue(_currentJobId, out BasePreset? preset))
 			{
 				preset.Configure(this);
+			}
+			else
+			{
+				_presets[0].Configure(this);
 			}
 
 			ConfigureBarManagers();
@@ -404,6 +408,7 @@ namespace SezzUI.Modules.CooldownHud
 			_config.ValueChangeEvent += OnConfigPropertyChanged;
 
 #if DEBUG
+			_debugConfig = ConfigurationManager.Instance.GetConfigObject<CooldownHudDebugConfig>();
 			if (_debugConfig.LogConfigurationManager)
 			{
 				LogDebug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
