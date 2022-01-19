@@ -2,110 +2,118 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using DelvUI.Helpers;
+using SezzUI.Enums;
+using DrawHelper = SezzUI.Helpers.DrawHelper;
 
 namespace SezzUI.Modules.JobHud
 {
-    public class Bar : IDisposable
-    {
-        public JobHud Parent { get { return _parent; } }
-        private JobHud _parent;
-        private List<Icon> _icons;
-        public bool HasIcons { get { return _icons.Count > 0; } }
+	public class Bar : IDisposable
+	{
+		public JobHud Parent { get; }
 
-        public Vector2 IconSize
-        {
-            get { return _iconSize; }
-            set
-			{
-                _iconSize = value;
-                (IconUV0, IconUV1) = Helpers.DrawHelper.GetTexCoordinates(IconSize);
-            }
-        }
-        public Vector2 IconUV0 = new Vector2(0, 0);
-        public Vector2 IconUV1 = new Vector2(1, 1);
-        public uint IconPadding = 8;
-        private Vector2 _iconSize; // 36px Icon + 1px Borders
+		private readonly List<Icon> _icons;
+		public bool HasIcons => _icons.Count > 0;
 
-        public Vector2 Size = Vector2.Zero;
-
-        public Bar(JobHud hud)
+		public Vector2 IconSize
 		{
-            _parent = hud;
-            _icons = new();
-            IconSize = new(38, 38); // 36px Icon + 1px Borders
-        }
+			get => _iconSize;
+			set
+			{
+				_iconSize = value;
+				(IconUV0, IconUV1) = DrawHelper.GetTexCoordinates(IconSize);
+			}
+		}
 
-        public void Add(Icon icon, int index = -1)
+		public Vector2 IconUV0 = new(0, 0);
+		public Vector2 IconUV1 = new(1, 1);
+		public uint IconPadding = 8;
+		private Vector2 _iconSize; // 36px Icon + 1px Borders
+
+		public Vector2 Size = Vector2.Zero;
+
+		public Bar(JobHud hud)
 		{
-            if (!icon.ShouldShow())
-            {
-                icon.Dispose();
-                return;
-            }
+			Parent = hud;
+			_icons = new();
+			IconSize = new(38, 38); // 36px Icon + 1px Borders
+		}
 
-            if (icon.CooldownActionId != null)
-            {
-                EventManager.Cooldown.Watch((uint)icon.CooldownActionId);
-            }
-
-            if (index == -1)
+		public void Add(Icon icon, int index = -1)
+		{
+			if (!icon.ShouldShow())
 			{
-                _icons.Add(icon);
-            }
-            else
+				icon.Dispose();
+				return;
+			}
+
+			if (icon.CooldownActionId != null)
 			{
-                _icons.Insert(index, icon);
-            }
+				EventManager.Cooldown.Watch((uint) icon.CooldownActionId);
+			}
 
-            Size.Y = IconSize.Y;
-            Size.X = IconSize.X * _icons.Count() + (_icons.Count() - 1) * IconPadding;
-        }
+			if (index == -1)
+			{
+				_icons.Add(icon);
+			}
+			else
+			{
+				_icons.Insert(index, icon);
+			}
 
-        public void Draw(Vector2 origin, Animator.Animator animator)
-        {
-            if (!HasIcons) { return; }
+			Size.Y = IconSize.Y;
+			Size.X = IconSize.X * _icons.Count() + (_icons.Count() - 1) * IconPadding;
+		}
 
-            Vector2 pos = DelvUI.Helpers.Utils.GetAnchoredPosition(origin, Size, Enums.DrawAnchor.Top);
+		public void Draw(Vector2 origin, Animator.Animator animator)
+		{
+			if (!HasIcons)
+			{
+				return;
+			}
 
-            DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_JobHudBar", pos, Size, false, false, (drawList) => {
-                Vector2 iconPos = Vector2.Zero;
-                iconPos.Y = pos.Y;
+			Vector2 pos = Utils.GetAnchoredPosition(origin, Size, DrawAnchor.Top);
 
-                for (int i = 0; i < _icons.Count; i++)
-                {
-                    iconPos.X = pos.X + i * (IconPadding + IconSize.X);
-                    _icons[i].Draw(iconPos, IconSize, animator, drawList);
-                }
-            });
-        }
+			DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_JobHudBar", pos, Size, false, false, drawList =>
+			{
+				Vector2 iconPos = Vector2.Zero;
+				iconPos.Y = pos.Y;
 
-        ~Bar()
-        {
-            Dispose(false);
-        }
+				for (int i = 0; i < _icons.Count; i++)
+				{
+					iconPos.X = pos.X + i * (IconPadding + IconSize.X);
+					_icons[i].Draw(iconPos, IconSize, animator, drawList);
+				}
+			});
+		}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		~Bar()
+		{
+			Dispose(false);
+		}
 
-        protected void Dispose(bool disposing)
-        {
-            if (!disposing)
-            {
-                return;
-            }
-     
-            _icons.ForEach(icon =>
-            {
-                if (icon.CooldownActionId != null)
-                {
-                    EventManager.Cooldown.Unwatch((uint)icon.CooldownActionId);
-                }
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
-                icon.Dispose();
-            });
-        }
-    }
+		protected void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_icons.ForEach(icon =>
+			{
+				if (icon.CooldownActionId != null)
+				{
+					EventManager.Cooldown.Unwatch((uint) icon.CooldownActionId);
+				}
+
+				icon.Dispose();
+			});
+		}
+	}
 }

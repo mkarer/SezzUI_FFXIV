@@ -1,9 +1,13 @@
 ﻿# JobHud Configuration
 
-Actions will automatically be adjusted to the level-appropiate one by [GetAdjustedActionId](https://goatcorp.github.io/Dalamud/api/FFXIVClientStructs.FFXIV.Client.Game.ActionManager.html#FFXIVClientStructs_FFXIV_Client_Game_ActionManager_GetAdjustedActionId_System_UInt32_), so its best to use the initial action that isn't affected by any traits.
-There are plugins (XIVCombo and similar ones) that hook into GetAdjustedActionId and mess with the result, those actions can be manually added to the SpellHelper class.
+Actions will automatically be adjusted to the level-appropiate one
+by [GetAdjustedActionId](https://goatcorp.github.io/Dalamud/api/FFXIVClientStructs.FFXIV.Client.Game.ActionManager.html#FFXIVClientStructs_FFXIV_Client_Game_ActionManager_GetAdjustedActionId_System_UInt32_)
+, so its best to use the initial action that isn't affected by any traits. There are plugins (XIVCombo and similar ones)
+that hook into GetAdjustedActionId and mess with the result, those actions can be manually added to the SpellHelper
+class.
 
 All the datamined IDs for actions and spells can be found here:
+
 - <https://zeffuro.github.io/SimpleTriggernometryTriggerCreator/>
 - <https://github.com/xivapi/ffxiv-datamining/blob/master/csv/Action.csv>
 - <https://github.com/xivapi/ffxiv-datamining/blob/master/csv/Status.csv>
@@ -14,7 +18,9 @@ All the datamined IDs for actions and spells can be found here:
 
 ### Ley Lines
 
-This is a special case, it should show the cooldown of Lay Lines, the duration of Lay Lines (the buff we get that indicates that "Between the Lines" is available despite its cooldown) and it should glow while we're not standing in the Circle of Power:
+This is a special case, it should show the cooldown of Lay Lines, the duration of Lay Lines (the buff we get that
+indicates that "Between the Lines" is available despite its cooldown) and it should glow while we're not standing in the
+Circle of Power:
 
 ```cs
 bar.Add(new Icon(bar) { TextureActionId = 3573, CooldownActionId = 3573, StatusId = 737, MaxStatusDuration = 30, GlowBorderStatusId = 738, GlowBorderInvertCheck = true, GlowBorderStatusIdForced = 737, GlowBorderUsable = true, Level = 52 });

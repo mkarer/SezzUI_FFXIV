@@ -1,286 +1,303 @@
 using System;
-using System.Linq;
-using System.Reflection;
-using Dalamud.Logging;
-using System.Numerics;
 using System.Collections.Generic;
-using Dalamud.Game.ClientState.Objects.Types;
+using System.Linq;
+using System.Numerics;
+using System.Reflection;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Logging;
+using SezzUI.Animator;
 using SezzUI.Config;
+using SezzUI.Enums;
+using SezzUI.Helpers;
 using SezzUI.Interface;
 using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Modules.JobHud
 {
-    public class JobHud : DraggableHudElement, IHudElementWithActor
-    {
-        private JobHudConfig Config => (JobHudConfig)_config;
-        public GameObject? Actor { get; set; } = null;
+	public class JobHud : DraggableHudElement, IHudElementWithActor
+	{
+		private JobHudConfig Config => (JobHudConfig) _config;
+		public GameObject? Actor { get; set; } = null;
 
-        private Animator.Animator _animator = new();
-        public bool IsShown { get { return _isShown; } }
-        private bool _isShown = false;
-        private bool _isEnabled = false;
+		private readonly Animator.Animator _animator = new();
+		public bool IsShown { get; private set; }
 
-        internal Vector4 AccentColor;
-        public List<Bar> Bars { get { return _bars; } }
-        private List<Bar> _bars = new();
-        private List<AuraAlert> _auraAlerts = new();
-        private Dictionary<uint, BasePreset> _presets = new();
+		private bool _isEnabled;
 
-        public int LastDrawTick { get { return _lastDrawTick;  } }
-        public int LastDrawElapsed { get { return _lastDrawElapsed;  } }
-        private int _lastDrawTick = 0;
-        private int _lastDrawElapsed = 0;
+		internal Vector4 AccentColor;
+		public List<Bar> Bars { get; } = new();
 
-        private uint _currentJobId = 0;
-        private byte _currentLevel = 0;
+		private readonly List<AuraAlert> _auraAlerts = new();
+		private readonly Dictionary<uint, BasePreset> _presets = new();
 
-        public JobHud(JobHudConfig config, string displayName) : base(config, displayName)
-        {
-            config.ValueChangeEvent += OnConfigPropertyChanged;
-            ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+		public int LastDrawTick { get; private set; }
 
-            _animator.Timelines.OnShow.Data.DefaultOpacity = 0;
-            _animator.Timelines.OnShow.Data.DefaultOffset.Y = -20;
-            _animator.Timelines.OnShow.Add(new Animator.FadeAnimation(0, 1, 150));
-            _animator.Timelines.OnShow.Add(new Animator.TranslationAnimation(_animator.Timelines.OnShow.Data.DefaultOffset, Vector2.Zero, 150));
+		public int LastDrawElapsed { get; private set; }
 
-            _animator.Timelines.OnHide.Data.DefaultOpacity = 1;
-            _animator.Timelines.OnHide.Add(new Animator.FadeAnimation(1, 0, 150));
-            _animator.Timelines.OnHide.Add(new Animator.TranslationAnimation(Vector2.Zero, new Vector2(0, 20), 150));
+		private uint _currentJobId;
+		private byte _currentLevel;
 
-            try
-            {
-                Assembly.GetAssembly(typeof(BasePreset))!.GetTypes().Where(t => t.BaseType == typeof(BasePreset)).Select(t => Activator.CreateInstance(t)).Cast<BasePreset>().ToList().ForEach(t => _presets.Add(t.JobId, t));
-            }
-            catch (Exception ex)
-            {
-                PluginLog.Error(ex, $"[{GetType().Name}] Error loading presets: {ex}");
-            }
+		public JobHud(JobHudConfig config, string displayName) : base(config, displayName)
+		{
+			config.ValueChangeEvent += OnConfigPropertyChanged;
+			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
 
-            Toggle(Config.Enabled);
-        }
+			_animator.Timelines.OnShow.Data.DefaultOpacity = 0;
+			_animator.Timelines.OnShow.Data.DefaultOffset.Y = -20;
+			_animator.Timelines.OnShow.Add(new FadeAnimation(0, 1, 150));
+			_animator.Timelines.OnShow.Add(new TranslationAnimation(_animator.Timelines.OnShow.Data.DefaultOffset, Vector2.Zero, 150));
 
-        protected override (List<Vector2>, List<Vector2>) ChildrenPositionsAndSizes()
-        {
-            return (new List<Vector2>() { Config.Position },
-                    new List<Vector2>() { new(300f, 72f) });
-        }
+			_animator.Timelines.OnHide.Data.DefaultOpacity = 1;
+			_animator.Timelines.OnHide.Add(new FadeAnimation(1, 0, 150));
+			_animator.Timelines.OnHide.Add(new TranslationAnimation(Vector2.Zero, new(0, 20), 150));
 
-        public void Toggle(bool enable = true)
-        {
-            PluginLog.Debug($"[{GetType().Name}] Toggle: {enable}");
-            if (enable && !_isEnabled)
-            {
-                PluginLog.Debug($"[{GetType().Name}] Enable");
-                _isEnabled = !_isEnabled;
-                Plugin.ClientState.Login += OnLogin;
-                Plugin.ClientState.Logout += OnLogout;
+			try
+			{
+				Assembly.GetAssembly(typeof(BasePreset))!.GetTypes().Where(t => t.BaseType == typeof(BasePreset)).Select(t => Activator.CreateInstance(t)).Cast<BasePreset>().ToList().ForEach(t => _presets.Add(t.JobId, t));
+			}
+			catch (Exception ex)
+			{
+				PluginLog.Error(ex, $"[{GetType().Name}] Error loading presets: {ex}");
+			}
 
-                EventManager.Player.JobChanged += OnJobChanged;
-                EventManager.Player.LevelChanged += OnLevelChanged;
-                EventManager.Combat.EnteringCombat += OnEnteringCombat;
-                EventManager.Combat.LeavingCombat += OnLeavingCombat;
+			Toggle(Config.Enabled);
+		}
 
-                Configure();
-            }
-            else if (!enable && _isEnabled)
-            {
-                PluginLog.Debug($"[{GetType().Name}] Disable");
-                _isEnabled = !_isEnabled;
-                Reset();
+		protected override (List<Vector2>, List<Vector2>) ChildrenPositionsAndSizes() =>
+			(new() {Config.Position}, new() {new(300f, 72f)});
 
-                Plugin.ClientState.Login -= OnLogin;
-                Plugin.ClientState.Logout -= OnLogout;
+		public void Toggle(bool enable = true)
+		{
+			PluginLog.Debug($"[{GetType().Name}] Toggle: {enable}");
+			if (enable && !_isEnabled)
+			{
+				PluginLog.Debug($"[{GetType().Name}] Enable");
+				_isEnabled = !_isEnabled;
+				Plugin.ClientState.Login += OnLogin;
+				Plugin.ClientState.Logout += OnLogout;
 
-                EventManager.Player.JobChanged -= OnJobChanged;
-                EventManager.Player.LevelChanged -= OnLevelChanged;
-                EventManager.Combat.EnteringCombat -= OnEnteringCombat;
-                EventManager.Combat.LeavingCombat -= OnLeavingCombat;
+				EventManager.Player.JobChanged += OnJobChanged;
+				EventManager.Player.LevelChanged += OnLevelChanged;
+				EventManager.Combat.EnteringCombat += OnEnteringCombat;
+				EventManager.Combat.LeavingCombat += OnLeavingCombat;
 
-                OnLogout(null!, null!);
-            }
-        }
+				Configure();
+			}
+			else if (!enable && _isEnabled)
+			{
+				PluginLog.Debug($"[{GetType().Name}] Disable");
+				_isEnabled = !_isEnabled;
+				Reset();
 
-        private void Reset()
-        {
-            Hide(true);
-            _bars.ForEach(bar => bar.Dispose());
-            _bars.Clear();
-            _auraAlerts.ForEach(aa => aa.Dispose());
-            _auraAlerts.Clear();
-            _currentJobId = 0;
-            _currentLevel = 0;
-        }
+				Plugin.ClientState.Login -= OnLogin;
+				Plugin.ClientState.Logout -= OnLogout;
 
-        private void Configure()
-        {
-            Reset();
+				EventManager.Player.JobChanged -= OnJobChanged;
+				EventManager.Player.LevelChanged -= OnLevelChanged;
+				EventManager.Combat.EnteringCombat -= OnEnteringCombat;
+				EventManager.Combat.LeavingCombat -= OnLeavingCombat;
 
-            PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
-            _currentJobId = player?.ClassJob.Id ?? 0;
-            _currentLevel = player?.Level ?? 0;
+				OnLogout(null!, null!);
+			}
+		}
 
-            if (_currentJobId == 0 || _currentLevel == 0) { return; }
+		private void Reset()
+		{
+			Hide(true);
+			Bars.ForEach(bar => bar.Dispose());
+			Bars.Clear();
+			_auraAlerts.ForEach(aa => aa.Dispose());
+			_auraAlerts.Clear();
+			_currentJobId = 0;
+			_currentLevel = 0;
+		}
 
-            if (!Defaults.JobColors.TryGetValue(_currentJobId, out AccentColor))
-            {
-                AccentColor = Defaults.IconBarColor;
-            }
+		private void Configure()
+		{
+			Reset();
 
-            if (_presets.TryGetValue(_currentJobId, out BasePreset? preset))
-            {
-                preset.Configure(this);
-            }
+			PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+			_currentJobId = player?.ClassJob.Id ?? 0;
+			_currentLevel = player?.Level ?? 0;
 
-            if (EventManager.Combat.IsInCombat()) { Show(); }
-        }
+			if (_currentJobId == 0 || _currentLevel == 0)
+			{
+				return;
+			}
 
-        public override void DrawChildren(Vector2 origin)
-        {
-            if (!Config.Enabled || Actor == null || Actor is not PlayerCharacter player || Helpers.SpellHelper.GetStatus(1534, Enums.Unit.Player, false) != null)
-            {
-                // 1534: Role-playing
-                // Condition.RolePlaying ?
-                _lastDrawTick = 0;
-                return;
-            }
+			if (!Defaults.JobColors.TryGetValue(_currentJobId, out AccentColor))
+			{
+				AccentColor = Defaults.IconBarColor;
+			}
 
-            // Remember last draw time - if too much time has passed skip hide animations!
-            int ticksNow = Environment.TickCount;
-            _lastDrawElapsed = ticksNow - _lastDrawTick;
-            _lastDrawTick = ticksNow;
+			if (_presets.TryGetValue(_currentJobId, out BasePreset? preset))
+			{
+				preset.Configure(this);
+			}
 
-            // Bars
-            if (IsShown || _animator.IsAnimating)
-            {
-                _animator.Update();
+			if (EventManager.Combat.IsInCombat())
+			{
+				Show();
+			}
+		}
 
-                float yOffset = 0;
+		public override void DrawChildren(Vector2 origin)
+		{
+			if (!Config.Enabled || Actor == null || Actor is not PlayerCharacter player || SpellHelper.GetStatus(1534, Unit.Player, false) != null)
+			{
+				// 1534: Role-playing
+				// Condition.RolePlaying ?
+				LastDrawTick = 0;
+				return;
+			}
 
-                for (int i = 0; i < _bars.Count; i++)
-                {
-                    Bar bar = _bars[i];
-                    if (bar.HasIcons)
-                    {
-                        Vector2 pos = origin + Config.Position + _animator.Data.Offset;
-                        pos.Y += yOffset;
-                        bar.Draw(pos, _animator);
-                        yOffset += bar.IconSize.Y + bar.IconPadding;
-                    }
-                }
-            }
+			// Remember last draw time - if too much time has passed skip hide animations!
+			int ticksNow = Environment.TickCount;
+			LastDrawElapsed = ticksNow - LastDrawTick;
+			LastDrawTick = ticksNow;
 
-            // Aura Alerts
-            _auraAlerts.ForEach(aa => aa.Draw(origin, LastDrawElapsed));
-        }
+			// Bars
+			if (IsShown || _animator.IsAnimating)
+			{
+				_animator.Update();
 
-        public void AddBar(Bar bar)
-        {
-            _bars.Add(bar);
-        }
+				float yOffset = 0;
 
-        public void AddAlert(AuraAlert alert)
-        {
-            if (alert.Level > 1 && (Plugin.ClientState.LocalPlayer?.Level ?? 0) < alert.Level) {
-                alert.Dispose();
-            }
-            else
-            {
-                _auraAlerts.Add(alert);
-            }
-        }
+				for (int i = 0; i < Bars.Count; i++)
+				{
+					Bar bar = Bars[i];
+					if (bar.HasIcons)
+					{
+						Vector2 pos = origin + Config.Position + _animator.Data.Offset;
+						pos.Y += yOffset;
+						bar.Draw(pos, _animator);
+						yOffset += bar.IconSize.Y + bar.IconPadding;
+					}
+				}
+			}
 
-        public void Show()
-        {
-            if (!IsShown)
-            {
-                //PluginLog.Debug($"[{GetType().Name}] Show");
-                _isShown = !IsShown;
-                _lastDrawTick = 0;
-                _animator.Animate();
-            }
-        }
+			// Aura Alerts
+			_auraAlerts.ForEach(aa => aa.Draw(origin, LastDrawElapsed));
+		}
 
-        public void Hide(bool force = false)
-        {
-            if (IsShown)
-            {
-                //PluginLog.Debug($"[{GetType().Name}] Hide {force}");
-                _isShown = !IsShown;
-                _animator.Stop(force || LastDrawElapsed > 2000);
-            }
-        }
+		public void AddBar(Bar bar)
+		{
+			Bars.Add(bar);
+		}
 
-        protected override void InternalDispose()
-        {
-            Toggle(false);
+		public void AddAlert(AuraAlert alert)
+		{
+			if (alert.Level > 1 && (Plugin.ClientState.LocalPlayer?.Level ?? 0) < alert.Level)
+			{
+				alert.Dispose();
+			}
+			else
+			{
+				_auraAlerts.Add(alert);
+			}
+		}
 
-            ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
-            _config.ValueChangeEvent -= OnConfigPropertyChanged;
-        }
+		public void Show()
+		{
+			if (!IsShown)
+			{
+				//PluginLog.Debug($"[{GetType().Name}] Show");
+				IsShown = !IsShown;
+				LastDrawTick = 0;
+				_animator.Animate();
+			}
+		}
 
-        #region Configuration Events
-        private void OnConfigPropertyChanged(object sender, OnChangeBaseArgs args)
-        {
-            switch (args.PropertyName)
-            {
-                case "Enabled":
-                    PluginLog.Debug($"[{GetType().Name}] OnConfigPropertyChanged Config.Enabled: {Config.Enabled}");
-                    Toggle(Config.Enabled);
-                    break;
-            }
-        }
+		public void Hide(bool force = false)
+		{
+			if (IsShown)
+			{
+				//PluginLog.Debug($"[{GetType().Name}] Hide {force}");
+				IsShown = !IsShown;
+				_animator.Stop(force || LastDrawElapsed > 2000);
+			}
+		}
 
-        private void OnConfigReset(ConfigurationManager sender)
-        {
-            // Configuration doesn't change on reset? 
-            PluginLog.Debug($"[{GetType().Name}] OnConfigReset");
-            if (_config != null)
-            {
-                _config.ValueChangeEvent -= OnConfigPropertyChanged;
-            }
-            _config = sender.GetConfigObject<JobHudConfig>();
-            _config.ValueChangeEvent += OnConfigPropertyChanged;
-            Toggle(Config.Enabled);
-            PluginLog.Debug($"[{GetType().Name}] Config.Enabled: {Config.Enabled}");
-        }
-        #endregion
+		protected override void InternalDispose()
+		{
+			Toggle(false);
 
-        #region Game Events
-        private void OnLogin(object? sender, EventArgs e)
-        {
-        }
+			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+			_config.ValueChangeEvent -= OnConfigPropertyChanged;
+		}
 
-        private void OnLogout(object? sender, EventArgs e)
-        {
-            Hide(true);
-        }
+		#region Configuration Events
 
-        private void OnEnteringCombat(object? sender, EventArgs e)
-        {
-            Show();
-        }
+		private void OnConfigPropertyChanged(object sender, OnChangeBaseArgs args)
+		{
+			switch (args.PropertyName)
+			{
+				case "Enabled":
+					PluginLog.Debug($"[{GetType().Name}] OnConfigPropertyChanged Config.Enabled: {Config.Enabled}");
+					Toggle(Config.Enabled);
+					break;
+			}
+		}
 
-        private void OnLeavingCombat(object? sender, EventArgs e)
-        {
-            Hide();
-        }
+		private void OnConfigReset(ConfigurationManager sender)
+		{
+			// Configuration doesn't change on reset? 
+			PluginLog.Debug($"[{GetType().Name}] OnConfigReset");
+			if (_config != null)
+			{
+				_config.ValueChangeEvent -= OnConfigPropertyChanged;
+			}
 
-        private void OnJobChanged(uint jobId)
-        {
-            // We're caching current level and job in Configure()
-            // to avoid resetting/configuring twice.
-            if (_currentJobId != jobId) { Configure(); }
-        }
+			_config = sender.GetConfigObject<JobHudConfig>();
+			_config.ValueChangeEvent += OnConfigPropertyChanged;
+			Toggle(Config.Enabled);
+			PluginLog.Debug($"[{GetType().Name}] Config.Enabled: {Config.Enabled}");
+		}
 
-        private void OnLevelChanged(byte level)
-        {
-            // We're caching current level and job in Configure()
-            // to avoid resetting/configuring twice.
-            if (_currentLevel != level) { Configure(); }
-        }
-        #endregion
-    }
+		#endregion
+
+		#region Game Events
+
+		private void OnLogin(object? sender, EventArgs e)
+		{
+		}
+
+		private void OnLogout(object? sender, EventArgs e)
+		{
+			Hide(true);
+		}
+
+		private void OnEnteringCombat(object? sender, EventArgs e)
+		{
+			Show();
+		}
+
+		private void OnLeavingCombat(object? sender, EventArgs e)
+		{
+			Hide();
+		}
+
+		private void OnJobChanged(uint jobId)
+		{
+			// We're caching current level and job in Configure()
+			// to avoid resetting/configuring twice.
+			if (_currentJobId != jobId)
+			{
+				Configure();
+			}
+		}
+
+		private void OnLevelChanged(byte level)
+		{
+			// We're caching current level and job in Configure()
+			// to avoid resetting/configuring twice.
+			if (_currentLevel != level)
+			{
+				Configure();
+			}
+		}
+
+		#endregion
+	}
 }
