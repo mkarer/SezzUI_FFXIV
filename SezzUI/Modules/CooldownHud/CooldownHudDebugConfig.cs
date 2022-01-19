@@ -10,19 +10,9 @@ namespace SezzUI.Modules.CooldownHud
 	[Exportable(false)]
 	public class CooldownHudDebugConfig : PluginConfigObject
 	{
-		public new static CooldownHudDebugConfig DefaultConfig() => new();
-
-		[Checkbox("Log General Messages")]
-		[Order(1)]
-		public bool LogGeneral = true;
-
 		[Checkbox("Log Configuration Manager")]
 		[Order(5)]
 		public bool LogConfigurationManager = false;
-
-		[Checkbox("Log Cooldown (Un-)Registration")]
-		[Order(10)]
-		public bool LogCooldownRegistration = false;
 
 		[Checkbox("Log Cooldown Event Handling")]
 		[Order(10)]
@@ -31,6 +21,16 @@ namespace SezzUI.Modules.CooldownHud
 		[Checkbox("Log Cooldown Pulse Animations")]
 		[Order(10)]
 		public bool LogCooldownPulseAnimations = false;
+
+		[Checkbox("Log Cooldown (Un-)Registration")]
+		[Order(10)]
+		public bool LogCooldownRegistration = false;
+
+		[Checkbox("Log General Messages")]
+		[Order(1)]
+		public bool LogGeneral = true;
+
+		public new static CooldownHudDebugConfig DefaultConfig() => new();
 	}
 #endif
 }

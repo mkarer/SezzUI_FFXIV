@@ -5,19 +5,19 @@ namespace SezzUI.Modules.CooldownHud
 {
 	public class CooldownHudItem : IDisposable
 	{
+		public readonly List<BarManager.BarManager> BarManagers = new();
 		public uint ActionId;
 		public ushort LastPulseCharges = 100;
-		public readonly List<BarManager.BarManager> BarManagers = new();
-
-		~CooldownHudItem()
-		{
-			Dispose(false);
-		}
 
 		public void Dispose()
 		{
 			Dispose(true);
 			GC.SuppressFinalize(this);
+		}
+
+		~CooldownHudItem()
+		{
+			Dispose(false);
 		}
 
 		private void Dispose(bool disposing)

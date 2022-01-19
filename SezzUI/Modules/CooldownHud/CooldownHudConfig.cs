@@ -1,5 +1,6 @@
 ﻿using SezzUI.Config;
 using SezzUI.Config.Attributes;
+using SezzUI.Enums;
 
 namespace SezzUI.Interface.GeneralElements
 {
@@ -7,10 +8,10 @@ namespace SezzUI.Interface.GeneralElements
 	[SubSection("General", 0)]
 	public class CooldownHudConfig : PluginConfigObject
 	{
-		public new static CooldownHudConfig DefaultConfig() => new() {Enabled = true};
-
 		[NestedConfig("Pulse Animation", 20)]
 		public CooldownHudPulseConfig CooldownHudPulse = new();
+
+		public new static CooldownHudConfig DefaultConfig() => new() {Enabled = true};
 	}
 
 	public class CooldownHudPulseConfig : AnchorablePluginConfigObject
@@ -26,7 +27,7 @@ namespace SezzUI.Interface.GeneralElements
 				Position = new(430f, -208f),
 				Delay = -400,
 				Size = new(32f, 32f),
-				Anchor = Enums.DrawAnchor.Center
+				Anchor = DrawAnchor.Center
 			};
 	}
 }
