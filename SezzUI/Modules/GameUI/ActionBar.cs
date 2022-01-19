@@ -107,20 +107,9 @@ namespace SezzUI.Modules.GameUI
 			}
 #endif
 			AtkUnitBase* addon = (AtkUnitBase*) Plugin.GameGui.GetAddonByName(Addons.Names[bar], 1);
-			if (addon != null && addon->RootNode != null)
+			if ((IntPtr) addon != IntPtr.Zero)
 			{
-				int ratio = (int) Math.Floor(10f * addon->RootNode->Width / addon->RootNode->Height);
-				ActionBarLayout layout = ratio switch
-				{
-					86 => ActionBarLayout.H12V1, // 624x72
-					27 => ActionBarLayout.H6V2, // 331x121
-					14 => ActionBarLayout.H4V3, // 241x170
-					6 => ActionBarLayout.H3V4, // 162x260
-					3 => ActionBarLayout.H2V6, // 117x358
-					1 => ActionBarLayout.H1V12, // 72x624
-					_ => ActionBarLayout.Unknown
-				};
-
+				ActionBarLayout layout = ((AddonActionBarBase*) addon)->Layout;
 				switch (layout)
 				{
 					case ActionBarLayout.H12V1:
@@ -149,7 +138,7 @@ namespace SezzUI.Modules.GameUI
 							}
 							else
 							{
-								// TODO: Only reset row ordering when other features are added...
+								// TODO: Only reset row ordering here instead of everything!
 								ResetActionBar(bar, config);
 							}
 						}
@@ -161,8 +150,12 @@ namespace SezzUI.Modules.GameUI
 
 						break;
 
+					case ActionBarLayout.Unknown:
+						LogError("UpdateActionBar", $"[{bar}] Error: Unsupported Layout ID: {((AddonActionBarBase*) addon)->LayoutID}");
+						break;
+
 					default:
-						LogError("UpdateActionBar", $"[{bar}] Error: Unknown layout! Ratio: {ratio}");
+						LogError("UpdateActionBar", $"[{bar}] Error: Unsupported Layout: {layout}");
 						break;
 				}
 			}
@@ -314,7 +307,7 @@ namespace SezzUI.Modules.GameUI
 #endif
 
 			AtkUnitBase* addon = (AtkUnitBase*) Plugin.GameGui.GetAddonByName(Addons.Names[bar], 1);
-			if (addon != null)
+			if ((IntPtr)addon != IntPtr.Zero)
 			{
 				foreach ((uint nodeId, Vector2<float> pos) in _originalPositions[bar])
 				{
@@ -441,7 +434,12 @@ namespace SezzUI.Modules.GameUI
 
 		private void OnKeyStateChanged(ushort vkCode, KeyState state)
 		{
-			//PluginLog.Debug($"OnKeyStateChanged: vkCode {vkCode} KeyState {state}");
+#if DEBUG
+			// if (_debugConfig.LogRawInputEventHandling)
+			// {
+			// 	LogDebug("OnKeyStateChanged", $"Key: {vkCode} State: {state}");
+			// }
+#endif
 
 			if (state == KeyState.KeyDown)
 			{
@@ -558,13 +556,13 @@ namespace SezzUI.Modules.GameUI
 
 		private unsafe void SetActionBarPage(byte page)
 		{
-			if (!EventManager.Game.AreAddonsReady || !EventManager.Game.AreAddonsVisible || _setActionBarPage == null)
+			if (!EventManager.Game.AreAddonsReady || _setActionBarPage == null)
 			{
 				return;
 			}
 
 			AtkUnitBase* actionBar = (AtkUnitBase*) Plugin.GameGui.GetAddonByName("_ActionBar", 1);
-			if (actionBar == null)
+			if ((IntPtr) actionBar == IntPtr.Zero || !actionBar->IsVisible)
 			{
 				return;
 			}

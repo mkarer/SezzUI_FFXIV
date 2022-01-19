@@ -40,16 +40,15 @@ namespace SezzUI.Modules.GameUI
 		StatusOther
 	}
 
-	public enum ActionBarLayout
+	public enum ActionBarLayout : byte
 	{
-		Unknown,
-
-		H12V1,
-		H6V2,
-		H4V3,
-		H3V4,
-		H2V6,
-		H1V12
+		Unknown = 255,
+		H12V1 = 0,
+		H6V2 = 1,
+		H4V3 = 2,
+		H3V4 = 3,
+		H2V6 = 4,
+		H1V12 = 5
 	}
 
 	public static class Addons

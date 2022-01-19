@@ -14,15 +14,15 @@ namespace SezzUI.Modules.GameUI
 	{
 		private readonly List<InteractableArea> _areas = new();
 
-        /// <summary>
-        ///     Contains the current (assumed) visiblity state of default game elements.
-        /// </summary>
-        private readonly Dictionary<Element, bool> _currentVisibility = new();
+		/// <summary>
+		///     Contains the current (assumed) visibility state of default game elements.
+		/// </summary>
+		private readonly Dictionary<Element, bool> _currentVisibility = new();
 
-        /// <summary>
-        ///     Contains the expected visiblity state of default game elements based on mouseover state or other events.
-        /// </summary>
-        private readonly Dictionary<Element, bool> _expectedVisibility = new();
+		/// <summary>
+		///     Contains the expected visibility state of default game elements based on mouseover state or other events.
+		/// </summary>
+		private readonly Dictionary<Element, bool> _expectedVisibility = new();
 
 		private bool _initialUpdate = true;
 		private ElementHiderConfig Config => (ElementHiderConfig) _config;

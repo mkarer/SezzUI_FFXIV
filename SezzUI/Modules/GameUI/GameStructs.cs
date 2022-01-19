@@ -1,5 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using SezzUI.Modules.GameUI;
 
 namespace SezzUI.GameStructs
 {
@@ -17,6 +19,11 @@ namespace SezzUI.GameStructs
 
 		[FieldOffset(0x245)]
 		public byte IsPetHotbar;
+
+		[FieldOffset(0x270)]
+		public byte LayoutID;
+
+		public ActionBarLayout Layout => Enum.IsDefined(typeof(ActionBarLayout), LayoutID) ? (ActionBarLayout) LayoutID : ActionBarLayout.Unknown;
 	}
 
 	// ActionBar Agent offset 0xDE seems to be the page that receives key events?
