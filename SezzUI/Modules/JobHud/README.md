@@ -48,6 +48,6 @@ Full explanation:
 | `GlowBorderStatusIdForced = 737` | Check for Ley Lines status (not affected by GlowBorderInvertCheck) |
 | `GlowBorderUsable = true` | Check if Ley Lines action is NOT USABLE (GlowBorderInvertCheck!) |
 
-| Level Property | Description |
-| --- | --- |
-| `Level = 52` | Ley Lines is only available at level 52, don't display the icon when not at least at that level. |
+| Level Property | Description                                                                                                                                                                                                      |
+| --- |------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Level = 52` | Ley Lines is only available at level 52, don't display the icon when not at least at that level. This is optional, if ommited will check against the required level of `TextureActionId` or `CooldownActionId`. |
