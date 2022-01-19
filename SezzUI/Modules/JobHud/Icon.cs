@@ -159,6 +159,7 @@ namespace SezzUI.Modules.JobHud
         /// Overrides other stack counters!
         /// </summary>
         public uint? StacksStatusId;
+        public Func<(byte, byte)>? CustomStacks;
 
         /// <summary>
         /// Action ID to lookup Status ID by name.
@@ -495,6 +496,15 @@ namespace SezzUI.Modules.JobHud
                 if (current > 0)
                 {
                     chargesTextAmount = (short)Math.Floor((float)current);
+                }
+            }
+
+            if (CustomStacks != null && chargesTextAmount == -1)
+            {
+                (byte current, byte max) = CustomStacks();
+                if (current > 0)
+                {
+                    chargesTextAmount = current;
                 }
             }
 
