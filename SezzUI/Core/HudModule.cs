@@ -11,25 +11,20 @@ namespace SezzUI
     {
         protected PluginConfigObject _config;
         public PluginConfigObject GetConfig() { return _config; }
-        protected string _logPrefix;
-        protected string _logPrefixBase;
+        private readonly string _logPrefix;
+        private readonly string _logPrefixBase;
 
-        public HudModule(PluginConfigObject config)
+        protected HudModule(PluginConfigObject config)
         {
             _config = config;
             _logPrefixBase = new StringBuilder("HudModule:").Append(GetType().Name).ToString();
             _logPrefix = new StringBuilder("[").Append(_logPrefixBase).Append("] ").ToString();
         }
 
-        public virtual bool Enabled {
-            get
-            {
-                return _isEnabled;
-            }
-        }
+        protected virtual bool Enabled => _isEnabled;
         private bool _isEnabled = false;
 
-        public virtual bool Enable()
+        protected virtual bool Enable()
         {
             if (!_isEnabled)
             {
@@ -44,7 +39,7 @@ namespace SezzUI
             }
         }
 
-        public virtual bool Disable()
+        protected virtual bool Disable()
         {
             if (_isEnabled)
             {
@@ -59,7 +54,7 @@ namespace SezzUI
             }
         }
 
-        public virtual bool Toggle(bool enable)
+        protected virtual bool Toggle(bool enable)
         {
             if (enable != _isEnabled)
             {

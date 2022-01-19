@@ -34,7 +34,7 @@ namespace SezzUI.Modules.GameUI
         private SetActionBarPageDelegate? _setActionBarPage;
         private IntPtr? _setPagePtr;
 
-        public override bool Enable()
+        protected override bool Enable()
         {
             if (!base.Enable()) { return false; }
 
@@ -53,7 +53,7 @@ namespace SezzUI.Modules.GameUI
             return true;
         }
 
-        public override bool Disable()
+        protected override bool Disable()
         {
             if (!base.Disable()) { return false; }
 

@@ -28,7 +28,7 @@ namespace SezzUI.Modules.GameUI
         /// </summary>
         private Dictionary<Element, bool> _expectedVisibility = new();
 
-        public override bool Enable()
+        protected override bool Enable()
         {
             if (!base.Enable()) { return false; }
 
@@ -80,7 +80,7 @@ namespace SezzUI.Modules.GameUI
             return true;
         }
 
-        public override bool Disable()
+        protected override bool Disable()
         {
             if (!base.Disable()) { return false; }
 

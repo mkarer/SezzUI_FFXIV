@@ -3,31 +3,31 @@ using System.Collections.Generic;
 
 namespace SezzUI.Modules.CooldownHud
 {
-    public class CooldownHudItem : IDisposable
-    {
-        public uint ActionId;
-        public ushort LastPulseCharges = 100;
-        public List<BarManager.BarManager> barManagers = new();
+	public class CooldownHudItem : IDisposable
+	{
+		public uint ActionId;
+		public ushort LastPulseCharges = 100;
+		public readonly List<BarManager.BarManager> BarManagers = new();
 
-        ~CooldownHudItem()
-        {
-            Dispose(false);
-        }
+		~CooldownHudItem()
+		{
+			Dispose(false);
+		}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
-        protected void Dispose(bool disposing)
-        {
-            if (!disposing)
-            {
-                return;
-            }
+		private void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
 
-            barManagers.Clear();
-        }
-    }
+			BarManagers.Clear();
+		}
+	}
 }
