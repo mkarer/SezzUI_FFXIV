@@ -426,7 +426,7 @@ namespace SezzUI.Modules.GameUI
 					Plugin.ChatGui.PrintError("Failed to setup Bar Paging - it will now be disabled and can only be enabled again after RESTARTING the game!");
 					Plugin.ChatGui.PrintError("You can (and should) check the Dalamud logfile for further details.");
 					Config.EnableBarPaging = false;
-					_msgWindow.DestroyHandle();
+					_msgWindow.Dispose();
 					_msgWindow = null;
 				}
 			}
@@ -538,7 +538,7 @@ namespace SezzUI.Modules.GameUI
 			}
 
 			_msgWindow.OnKeyStateChanged -= OnKeyStateChanged;
-			_msgWindow.DestroyHandle();
+			_msgWindow.Dispose();
 			_msgWindow = null;
 		}
 

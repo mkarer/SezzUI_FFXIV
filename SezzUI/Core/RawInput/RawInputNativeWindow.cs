@@ -19,7 +19,7 @@
  * Disposal:
  * 
  * inputWin.OnKeyStateChanged -= OnKeyStateChanged;
- * inputWin.DestroyHandle();
+ * inputWin.Dispose(); // VERY IMPORTANT
  */
 
 using System;
@@ -34,7 +34,7 @@ using System.Threading;
 
 namespace SezzUI.NativeMethods.RawInput
 {
-    public class RawInputNativeWindow : NativeWindow
+    public class RawInputNativeWindow : NativeWindow, IDisposable
     {
         #region Win32 API
         private const int WM_CLOSE = 0x0010;
@@ -51,8 +51,7 @@ namespace SezzUI.NativeMethods.RawInput
         /// </summary>
         public bool ShouldParse => EnableBackgroundParsing || !IsInBackground;
         private readonly IntPtr _parentProcessHandle;
-
-        private HWND _hwnd = new();
+        private HWND _hwnd;
 
         /// <summary>
         /// Ignore repeated keys while holding down a key.
@@ -60,6 +59,7 @@ namespace SezzUI.NativeMethods.RawInput
         public bool IgnoreRepeat = false;
         private static ushort? _lastVirtualKeyCode;
         private static KeyState? _lastKeyState;
+        private static bool _devicesRegistered;
 
         /// <summary>
         /// Allow processing keys while parent process is not in foreground.
@@ -69,7 +69,7 @@ namespace SezzUI.NativeMethods.RawInput
 
         private static WINEVENTPROC? _winEventHookProc;
         private UnhookWinEventSafeHandle? _winEventHookHandle;
-        private CancellationTokenSource _unhookCTS = new();
+        private CancellationTokenSource _unhookCts = new();
         private static int _unhookTimeout = 5000;
 
         public delegate void OnKeyStateChangedDelegate(ushort vkCode, KeyState state);
@@ -78,6 +78,12 @@ namespace SezzUI.NativeMethods.RawInput
         public RawInputNativeWindow(IntPtr parentProcessHandle)
         {
             _parentProcessHandle = parentProcessHandle;
+            _hwnd = new();
+        }
+        
+        static RawInputNativeWindow()
+        {
+            _devicesRegistered = false;
         }
 
         protected override void OnHandleChange()
@@ -121,11 +127,11 @@ namespace SezzUI.NativeMethods.RawInput
             return Handle != IntPtr.Zero;
         }
 
-        public bool InvokeRequired => GetInvokeRequired(Handle);
+        private bool InvokeRequired => GetInvokeRequired();
 
-        private unsafe bool GetInvokeRequired(IntPtr hWnd)
+        private unsafe bool GetInvokeRequired()
         {
-            if (hWnd == IntPtr.Zero) { return false; }
+            if (Handle == IntPtr.Zero) { return false; }
 
             uint hwndThread = PInvoke.GetWindowThreadProcessId(_hwnd);
             uint currentThread = PInvoke.GetCurrentThreadId();
@@ -147,6 +153,7 @@ namespace SezzUI.NativeMethods.RawInput
             try
             {
                 PluginLog.Debug($"[RawInputNativeWindow::SetWinEventHook] Enabling hook...");
+                // ReSharper disable once RedundantDelegateCreation
                 _winEventHookProc = new(WinEventProc);
                 _winEventHookHandle = PInvoke.SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, null, _winEventHookProc, 0, 0, WINEVENT_OUTOFCONTEXT);
             }
@@ -186,7 +193,7 @@ namespace SezzUI.NativeMethods.RawInput
         private void WinEventProc(HWINEVENTHOOK hWinEventHook, uint @event, HWND hwnd, int idObject, int idChild, uint idEventThread, uint dwmsEventTime)
         {
             //PluginLog.Debug($"[RawInputNativeWindow::WinEventProc] Event Type: {@event}");
-            if (_lastVirtualKeyCode != null && _lastKeyState != null && _lastKeyState == KeyState.KeyDown && IsInBackground)
+            if (_lastVirtualKeyCode != null && _lastKeyState is KeyState.KeyDown && IsInBackground)
             {
                 TryInvokeOnKeyStateChanged((ushort)_lastVirtualKeyCode, KeyState.KeyUp);
             }
@@ -194,17 +201,12 @@ namespace SezzUI.NativeMethods.RawInput
         #endregion
 
         #region Finalizer
-        public void DestroyWindow()
-        {
-            DestroyWindow(true);
-        }
-
-        private void DestroyWindow(bool destroyHandle)
+        private void DestroyWindow()
         {
             if (InvokeRequired)
             {
                 PluginLog.Debug($"[RawInputNativeWindow::DestroyWindow] PostMessage: {Handle.ToInt64():X} WM_CLOSE");
-                _unhookCTS = new(_unhookTimeout); // Gets cancelled after receiving WM_CLOSE and unhooking WinEvent!
+                _unhookCts = new(_unhookTimeout); // Gets cancelled after receiving WM_CLOSE and unhooking WinEvent!
                 if (!PInvoke.PostMessage(_hwnd, WM_CLOSE, 0, 0))
                 {
                     PluginLog.Error($"[RawInputNativeWindow::DestroyWindow] PostMessage Error: {Marshal.GetLastWin32Error()}");
@@ -213,9 +215,9 @@ namespace SezzUI.NativeMethods.RawInput
                 {
                     try
                     {
-                        if (!_unhookCTS.IsCancellationRequested)
+                        if (!_unhookCts.IsCancellationRequested)
                         {
-                            _unhookCTS.Token.WaitHandle.WaitOne(_unhookTimeout);
+                            _unhookCts.Token.WaitHandle.WaitOne(_unhookTimeout);
                         }
                     }
                     catch (Exception ex)
@@ -224,33 +226,29 @@ namespace SezzUI.NativeMethods.RawInput
                     }
                     finally
                     {
-                        if (!_unhookCTS.IsCancellationRequested)
+                        if (!_unhookCts.IsCancellationRequested)
                         {
                             PluginLog.Error($"[RawInputNativeWindow::DestroyWindow] Error: UnhookWinEvent timeout, something went terribly wrong.");
                         }
                     }
                 }
-                return;
             }
             else
             {
                 UnhookWinEvent();
-            }
-
-            lock (this)
-            {
-                if (destroyHandle)
-                {
-                    base.DestroyHandle();
-                }
             }
         }
 
         public override void DestroyHandle()
         {
             _devicesRegistered = false;
-            DestroyWindow(false);
+            DestroyWindow();
             base.DestroyHandle();
+        }
+
+        public void Dispose()
+        {
+            DestroyHandle();
         }
         #endregion
 
@@ -271,7 +269,7 @@ namespace SezzUI.NativeMethods.RawInput
             {
                 PluginLog.Debug("[RawInputNativeWindow::WndProc] WM_CLOSE");
                 UnhookWinEvent();
-                _unhookCTS.Cancel();
+                _unhookCts.Cancel();
             }
 
             base.WndProc(ref m);
@@ -296,8 +294,6 @@ namespace SezzUI.NativeMethods.RawInput
         }
 
         #region RawInput
-        private static bool _devicesRegistered = false;
-
         public unsafe bool RegisterDevices()
         {
             if (_devicesRegistered)
@@ -311,7 +307,7 @@ namespace SezzUI.NativeMethods.RawInput
                 return false;
             }
 
-            RAWINPUTDEVICE[] rawDevices = new RAWINPUTDEVICE[1]
+            RAWINPUTDEVICE[] rawDevices = new RAWINPUTDEVICE[]
             {
                 new()
                 {
@@ -362,8 +358,6 @@ namespace SezzUI.NativeMethods.RawInput
                 else
                 {
                     var raw = (RAWINPUT*)lpb;
-                    HANDLE devHandle = raw->header.hDevice;
-
                     if (raw->header.dwType == 1u) // Keyboard
                     {
                         switch ((KeyState)raw->data.keyboard.Message)
