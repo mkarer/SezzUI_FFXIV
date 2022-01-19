@@ -14,7 +14,7 @@ namespace SezzUI.Modules.CooldownHud
 
 		[Checkbox("Log General Messages")]
 		[Order(1)]
-		public bool LogGeneral = false;
+		public bool LogGeneral = true;
 
 		[Checkbox("Log Configuration Manager")]
 		[Order(5)]
