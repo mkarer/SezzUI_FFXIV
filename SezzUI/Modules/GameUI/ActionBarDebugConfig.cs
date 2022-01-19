@@ -1,0 +1,40 @@
+using SezzUI.Config;
+using SezzUI.Config.Attributes;
+
+namespace SezzUI.Modules.CooldownHud
+{
+#if DEBUG
+	[Disableable(false)]
+	[Section("Game UI")]
+	[SubSection("Action Bars DEBUG", 0)]
+	[Exportable(false)]
+	public class ActionBarDebugConfig : PluginConfigObject
+	{
+		public new static ActionBarDebugConfig DefaultConfig() => new();
+
+		[Checkbox("Log General Messages")]
+		[Order(1)]
+		public bool LogGeneral = true;
+
+		[Checkbox("Log Layout")]
+		[Order(2)]
+		public bool LogLayout = true;
+
+		[Checkbox("Log Bar Paging")]
+		[Order(3)]
+		public bool LogBarPaging = true;
+
+		[Checkbox("Log Configuration Manager")]
+		[Order(5)]
+		public bool LogConfigurationManager = false;
+
+		[Checkbox("Log SigScanner")]
+		[Order(2)]
+		public bool LogSigScanner = false;
+
+		[Checkbox("Log RawInput Event Handling")]
+		[Order(10)]
+		public bool LogRawInputEventHandling = false;
+	}
+#endif
+}

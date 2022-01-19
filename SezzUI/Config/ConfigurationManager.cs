@@ -444,6 +444,9 @@ namespace SezzUI.Config
 #endif
 			typeof(ElementHiderConfig),
 			typeof(ActionBarConfig),
+#if DEBUG
+			typeof(ActionBarDebugConfig),
+#endif
 
 			typeof(TanksColorConfig),
 			typeof(HealersColorConfig),
