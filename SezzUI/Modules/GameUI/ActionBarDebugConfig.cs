@@ -10,7 +10,13 @@ namespace SezzUI.Modules.CooldownHud
 	[Exportable(false)]
 	public class ActionBarDebugConfig : PluginConfigObject
 	{
-		public new static ActionBarDebugConfig DefaultConfig() => new();
+		[Checkbox("Log Bar Paging")]
+		[Order(3)]
+		public bool LogBarPaging = true;
+
+		[Checkbox("Log Configuration Manager")]
+		[Order(5)]
+		public bool LogConfigurationManager = false;
 
 		[Checkbox("Log General Messages")]
 		[Order(1)]
@@ -20,21 +26,15 @@ namespace SezzUI.Modules.CooldownHud
 		[Order(2)]
 		public bool LogLayout = true;
 
-		[Checkbox("Log Bar Paging")]
-		[Order(3)]
-		public bool LogBarPaging = true;
-
-		[Checkbox("Log Configuration Manager")]
-		[Order(5)]
-		public bool LogConfigurationManager = false;
+		[Checkbox("Log RawInput Event Handling")]
+		[Order(10)]
+		public bool LogRawInputEventHandling = false;
 
 		[Checkbox("Log SigScanner")]
 		[Order(2)]
 		public bool LogSigScanner = false;
 
-		[Checkbox("Log RawInput Event Handling")]
-		[Order(10)]
-		public bool LogRawInputEventHandling = false;
+		public new static ActionBarDebugConfig DefaultConfig() => new();
 	}
 #endif
 }

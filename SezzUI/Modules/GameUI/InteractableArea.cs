@@ -1,65 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-using SezzUI.Interface.GeneralElements;
+﻿using System.Collections.Generic;
 using System.Numerics;
+using DelvUI.Helpers;
 using ImGuiNET;
-using SezzUI.Interface;
 using SezzUI.Enums;
+using SezzUI.Interface;
+using SezzUI.Interface.GeneralElements;
+using DrawHelper = SezzUI.Helpers.DrawHelper;
 
 namespace SezzUI.Modules.GameUI
 {
-    public class InteractableArea : ParentAnchoredDraggableHudElement
-    {
-        private InteractableAreaConfig Config => (InteractableAreaConfig)_config;
-     
-        public bool Enabled = true;
-        public Vector2 Position = Vector2.Zero;
-        public Vector2 Size = Vector2.Zero;
-        public DrawAnchor Anchor = DrawAnchor.Center;
-        public List<Element> Elements = new();
-        public bool IsHovered = false;
-        public bool DrawPlaceholder = false;
+	public class InteractableArea : ParentAnchoredDraggableHudElement
+	{
+		public DrawAnchor Anchor = DrawAnchor.Center;
+		public bool DrawPlaceholder = false;
+		public List<Element> Elements = new();
 
-        public void Draw()
-        {
-            Vector2 pos = DelvUI.Helpers.Utils.GetAnchoredPosition(Position, Size, Anchor);
-            IsHovered = ImGui.IsMouseHoveringRect(pos, pos + Size); // TODO: Check if window is active?
+		public bool Enabled = true;
+		public bool IsHovered;
+		public Vector2 Position = Vector2.Zero;
+		public Vector2 Size = Vector2.Zero;
 
-            if (DrawPlaceholder)
-            {
-                ImDrawListPtr drawList = ImGui.GetWindowDrawList();
+		public InteractableArea(InteractableAreaConfig config) : base(config)
+		{
+		}
 
-                ImGui.SetNextWindowPos(pos);
-                ImGui.SetNextWindowSize(Size);
+		private InteractableAreaConfig Config => (InteractableAreaConfig) _config;
 
-                var begin = ImGui.Begin(
-                   ID,
-                    ImGuiWindowFlags.NoTitleBar
-                    | ImGuiWindowFlags.NoScrollbar
-                    | ImGuiWindowFlags.AlwaysAutoResize
-                    | ImGuiWindowFlags.NoBackground
-                    | ImGuiWindowFlags.NoInputs
-                    | ImGuiWindowFlags.NoMove
-                    | ImGuiWindowFlags.NoResize
-                    | ImGuiWindowFlags.NoBringToFrontOnFocus
-                    | ImGuiWindowFlags.NoFocusOnAppearing
-                    | ImGuiWindowFlags.NoSavedSettings
-                );
+		public void Draw()
+		{
+			Vector2 pos = Utils.GetAnchoredPosition(Position, Size, Anchor);
+			IsHovered = ImGui.IsMouseHoveringRect(pos, pos + Size); // TODO: Check if window is active?
 
-                if (!begin)
-                {
-                    ImGui.End();
-                    return;
-                }
+			if (DrawPlaceholder)
+			{
+				ImDrawListPtr drawList = ImGui.GetWindowDrawList();
 
-                Helpers.DrawHelper.DrawPlaceholder(IsHovered ? "YO" : "NAH", pos, Size, 1, drawList);
+				ImGui.SetNextWindowPos(pos);
+				ImGui.SetNextWindowSize(Size);
 
-                ImGui.End();
-            }
-        }
+				bool begin = ImGui.Begin(ID, ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoSavedSettings);
 
-        public InteractableArea(InteractableAreaConfig config) : base(config)
-        {
-        }
-    }
+				if (!begin)
+				{
+					ImGui.End();
+					return;
+				}
+
+				DrawHelper.DrawPlaceholder(IsHovered ? "YO" : "NAH", pos, Size, 1, drawList);
+
+				ImGui.End();
+			}
+		}
+	}
 }
