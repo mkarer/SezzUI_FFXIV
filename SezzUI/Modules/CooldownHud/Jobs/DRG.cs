@@ -12,6 +12,7 @@ namespace SezzUI.Modules.CooldownHud.Jobs
 
 			hud.RegisterCooldown(94); // Elusive Jump
 			hud.RegisterCooldown(95); // Spineshatter Dive
+			hud.RegisterCooldown(96); // Dragonfire Dive
 			hud.RegisterCooldown(92); // Jump
 			hud.RegisterCooldown(16480); // Stardriver
 		}
