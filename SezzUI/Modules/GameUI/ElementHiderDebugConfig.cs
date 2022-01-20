@@ -13,7 +13,7 @@ namespace SezzUI.Interface.GeneralElements
 		[Checkbox("Log General Messages")]
 		[Order(1)]
 		public bool LogGeneral = true;
-		
+
 		[Checkbox("Log Configuration Manager")]
 		[Order(5)]
 		public bool LogConfigurationManager = false;
