@@ -69,8 +69,6 @@ namespace SezzUI.GameEvents
         {
             // SAM
             new() { 7867, 16483, 16486, 16485, 16484 }, // (Iaijutsu (XIVCombo) [7867]) Tsubame-gaeshi [16483] => Kaeshi: Setsugekka [16486] + Kaeshi: Goken [16485] + Kaeshi: Higanbana [16484]
-            // DRG
-            new() { 95, 96 }, // Spineshatter Dive [95] + Dragonfire Dive [96]
             // BRD
             new() { 110, 117 }, // Bloodletter [110] + Rain of Death [117]
         };
