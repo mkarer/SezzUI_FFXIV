@@ -1,7 +1,7 @@
 using SezzUI.Config;
 using SezzUI.Config.Attributes;
 
-namespace SezzUI.Modules.CooldownHud
+namespace SezzUI.Interface.GeneralElements
 {
 #if DEBUG
 	[Disableable(false)]

@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using SezzUI.Modules.CooldownHud;
 
 namespace SezzUI.Config
 {
@@ -443,6 +442,9 @@ namespace SezzUI.Config
 			typeof(CooldownHudDebugConfig),
 #endif
 			typeof(ElementHiderConfig),
+#if DEBUG
+			typeof(ElementHiderDebugConfig),
+#endif
 			typeof(ActionBarConfig),
 #if DEBUG
 			typeof(ActionBarDebugConfig),

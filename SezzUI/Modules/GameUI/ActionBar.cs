@@ -11,7 +11,6 @@ using SezzUI.Enums;
 using SezzUI.GameEvents;
 using SezzUI.GameStructs;
 using SezzUI.Interface.GeneralElements;
-using SezzUI.Modules.CooldownHud;
 using SezzUI.NativeMethods;
 using SezzUI.NativeMethods.RawInput;
 
@@ -307,7 +306,7 @@ namespace SezzUI.Modules.GameUI
 #endif
 
 			AtkUnitBase* addon = (AtkUnitBase*) Plugin.GameGui.GetAddonByName(Addons.Names[bar], 1);
-			if ((IntPtr)addon != IntPtr.Zero)
+			if ((IntPtr) addon != IntPtr.Zero)
 			{
 				foreach ((uint nodeId, Vector2<float> pos) in _originalPositions[bar])
 				{
@@ -599,8 +598,9 @@ namespace SezzUI.Modules.GameUI
 
 		private ActionBar(ActionBarConfig config) : base(config)
 		{
+#if DEBUG
 			_debugConfig = ConfigurationManager.Instance.GetConfigObject<ActionBarDebugConfig>();
-
+#endif
 			Config.ValueChangeEvent += OnConfigPropertyChanged;
 			Config.Bar1.ValueChangeEvent += OnConfigPropertyChanged;
 			Config.Bar2.ValueChangeEvent += OnConfigPropertyChanged;
