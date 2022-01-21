@@ -4,14 +4,16 @@ using System.Linq;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Statuses;
+using Dalamud.Logging;
 using Dalamud.Utility;
 using DelvUI.Helpers;
 using Lumina.Excel;
 using SezzUI.Enums;
+using SezzUI.Hooking;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
+using LuminaActionIndirection = Lumina.Excel.GeneratedSheets.ActionIndirection;
 using LuminaGeneralAction = Lumina.Excel.GeneratedSheets.GeneralAction;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
-using SezzUI.Hooking;
 
 namespace SezzUI.Helpers
 {
@@ -27,36 +29,30 @@ namespace SezzUI.Helpers
 			_sheetAction = Plugin.DataManager.Excel.GetSheet<LuminaAction>();
 			_sheetGeneralAction = Plugin.DataManager.Excel.GetSheet<LuminaGeneralAction>();
 			_sheetStatus = Plugin.DataManager.Excel.GetSheet<LuminaStatus>();
+
 			_actionAdjustments = new()
 			{
-				// Hardcoded values for GetAdjustedActionId for actions that might get replaced by
-				// another plugin (combo plugins hook GetAdjustedActionId):
-
-				// RPR
-				{24405, new() {{72, 24405}}}, // Arcane Circle
-				{24394, new() {{80, 24394}}}, // Enshroud
-				// PLD
-				{3538, new() {{54, 3538}}}, // Goring Blade
-				{7383, new() {{54, 7383}}}, // Requiescat
-				// MCH
-				{2864, new() {{40, 2864}, {80, 16501}}}, // Rook Autoturret/Automation Queen
-				// BLM
-				{3573, new() {{52, 3573}}}, // Ley Lines
-				// DNC
-				{15997, new() {{15, 15997}}}, // Standard Step
-				{15998, new() {{70, 15998}}}, // Technical Step
-				// SGE
-				{24293, new() {{30, 24293}, {72, 24308}, {82, 24314}}}, // Eukrasian Dosis
-				// SMN
-				{3581, new() {{58, 3581}, {70, 7427}}},
-				// BRD
-				{3559, new() {{52, 3559}}}, // The Wanderer's Minuet
-				// GNB
-				{16161, new() {{68, 16161}, {82, 25758}}}, // Heart of Stone/Heart of Corundum
-				// DRG
-				//{88, new() {{50, 88}, {86, 25772}}}, // Chaos Thrust (XIVCombo)
-				{3555, new() {{60, 3555}}} // Geirskogul
+				// Hardcoded actions that that will be used instead of calling GetAdjustedActionId.
+				// The idea is that SpellHelper.GetAdjustedActionId should always only return the level appropriate action and don't care about combos.  
+				// Combo plugin issues should be resolved now by OriginalFunctionManager.GetAdjustedActionId
+				// ActionIndirection data is used to handles real combos "Action changes to X while under the effect of Y." -> "This action cannot be assigned to a hotbar."
+				// Structure: [actionId] => { level, actionIdAtLevel }, { level, actionIdAtLevel }, ...
 			};
+
+			ExcelSheet<LuminaActionIndirection>? sheetActionIndirection = Plugin.DataManager.Excel.GetSheet<LuminaActionIndirection>();
+			sheetActionIndirection?.Where(a => a.ClassJob.Value?.RowId > 0 && a.PreviousComboAction.Value?.RowId > 0).ToList().ForEach(a =>
+			{
+				LuminaAction previousAction = a.PreviousComboAction.Value!; // It's never null.
+				if (!_actionAdjustments.ContainsKey(previousAction.RowId))
+				{
+					_actionAdjustments[previousAction.RowId] = new() {{previousAction.ClassJobLevel, previousAction.RowId}};
+				}
+				else if (!_actionAdjustments[previousAction.RowId].ContainsKey(previousAction.ClassJobLevel))
+				{
+					// This should only be possible when there are already some hardcoded actions defined, let's keep it for now.
+					_actionAdjustments[previousAction.RowId][previousAction.ClassJobLevel] = previousAction.RowId;
+				}
+			});
 		}
 
 		public static uint GetAdjustedActionId(uint actionId)
