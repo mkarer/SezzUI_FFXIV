@@ -217,8 +217,8 @@ namespace SezzUI.Modules.CooldownHud
 
 		private static void GetActionDisplayData(uint actionId, ActionType actionType, out string? name, out TextureWrap? texture)
 		{
-			name = actionType == ActionType.General ? Helpers.SpellHelper.Instance.GetGeneralActionName(actionId) : Helpers.SpellHelper.Instance.GetActionName(actionId);
-			int? iconId = actionType == ActionType.General ? Helpers.SpellHelper.Instance.GetGeneralActionIcon(actionId) : Helpers.SpellHelper.Instance.GetActionIcon(actionId);
+			name = actionType == ActionType.General ? Helpers.SpellHelper.GetGeneralActionName(actionId) : Helpers.SpellHelper.GetActionName(actionId);
+			int? iconId = actionType == ActionType.General ? Helpers.SpellHelper.GetGeneralActionIcon(actionId) : Helpers.SpellHelper.GetActionIcon(actionId);
 			texture = iconId != null ? TexturesCache.Instance.GetTextureFromIconId((uint) iconId) : null;
 		}
 
