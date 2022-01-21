@@ -1,6 +1,6 @@
 ﻿using System;
-using FFXIVClientStructs.FFXIV.Client.Game;
 using Dalamud.Logging;
+using FFXIVClientStructs.FFXIV.Client.Game;
 
 namespace SezzUI.Hooking
 {
@@ -9,12 +9,14 @@ namespace SezzUI.Hooking
 		#region GetAdjustedActionId
 
 		private delegate uint GetAdjustedActionIdDelegate(IntPtr actionManager, uint actionId);
+
 		private static OriginalFunction<GetAdjustedActionIdDelegate>? _originalGetAdjustedActionId;
 		private static bool _triedUnhookingGetAdjustedActionId;
 
 		public static unsafe uint GetAdjustedActionId(uint actionId)
 		{
-			if (!_triedUnhookingGetAdjustedActionId) {
+			if (!_triedUnhookingGetAdjustedActionId)
+			{
 				_triedUnhookingGetAdjustedActionId = true;
 
 				try
@@ -27,16 +29,18 @@ namespace SezzUI.Hooking
 					PluginLog.Error(ex, ex.Message);
 				}
 			}
-	
+
 			ActionManager* actionManager = ActionManager.Instance();
-			return _originalGetAdjustedActionId?.Invoke?.Invoke((IntPtr)actionManager, actionId) ?? actionManager->GetAdjustedActionId(actionId);
+			return _originalGetAdjustedActionId?.Invoke?.Invoke((IntPtr) actionManager, actionId) ?? actionManager->GetAdjustedActionId(actionId);
 		}
+
 		#endregion
 
 		#region Singleton
+
 		public static void Initialize()
 		{
-			Instance = new OriginalFunctionManager();
+			Instance = new();
 		}
 
 		public OriginalFunctionManager()
@@ -68,6 +72,7 @@ namespace SezzUI.Hooking
 
 			Instance = null!;
 		}
+
 		#endregion
 	}
 }

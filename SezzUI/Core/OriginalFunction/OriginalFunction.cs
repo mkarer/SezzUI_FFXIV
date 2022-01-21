@@ -1,18 +1,20 @@
 ﻿using System;
-using Dalamud.Logging;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
-using Reloaded.Memory.Sources;
-using static Reloaded.Memory.Sources.Memory;
+using System.Runtime.InteropServices;
+using Dalamud.Logging;
 using Iced.Intel;
+using Reloaded.Hooks.Tools;
+using Reloaded.Memory.Buffers;
+using Reloaded.Memory.Sources;
 using SezzUI.Helpers;
+using static Reloaded.Memory.Sources.Memory;
 
 namespace SezzUI.Hooking
 {
 	/// <summary>
-	/// While this may look generic at first it is exclusively for GetAdjustedActionId.
-	/// DO NOT USE THIS FOR ANYTHING ELSE without implementing unsupported opcodes. 
+	///     While this may look generic at first it is exclusively for GetAdjustedActionId.
+	///     DO NOT USE THIS FOR ANYTHING ELSE without implementing unsupported opcodes.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	public class OriginalFunction<T> : IDisposable where T : Delegate
@@ -33,6 +35,7 @@ namespace SezzUI.Hooking
 		public T? Invoke { get; private set; }
 
 		#region Constructor
+
 		public OriginalFunction(string signature, string originalBytesString = "")
 		{
 			_originalPointer = Plugin.SigScanner.ScanText(signature);
@@ -60,6 +63,7 @@ namespace SezzUI.Hooking
 			_originalBytes = originalBytes;
 			Initialize();
 		}
+
 		#endregion
 
 		private void Initialize()
@@ -74,7 +78,7 @@ namespace SezzUI.Hooking
 			List<Instruction> currentInstructions = AsmHelper.DecodeInstructions(currentBytes, _originalPointer);
 			if (currentInstructions.Count == 0)
 			{
-				throw new Exception("Failed to disassemble current instructions!");
+				throw new("Failed to disassemble current instructions!");
 			}
 
 			bool isHooked = currentInstructions.Any() && currentInstructions[0].Mnemonic == Mnemonic.Jmp; // TODO: This only works if the original function doesn't start with a JMP!
@@ -86,15 +90,15 @@ namespace SezzUI.Hooking
 				if (_originalBytes.Length == 0)
 				{
 					// Use current byte code
-					_originalBytes = currentBytes[0..hookLength];
+					_originalBytes = currentBytes[..hookLength];
 				}
 				else
 				{
 					// Compare if supplied original code is different, just to be safe.
-					var length = Math.Min(_originalBytes.Length, currentBytes.Length);
-					if (!_originalBytes[0..length].SequenceEqual(currentBytes[0..length]))
+					int length = Math.Min(_originalBytes.Length, currentBytes.Length);
+					if (!_originalBytes[..length].SequenceEqual(currentBytes[..length]))
 					{
-						throw new Exception("Supplied original byte code doesn't match byte code in memory!");
+						throw new("Supplied original byte code doesn't match byte code in memory!");
 					}
 
 					hookLength = defaultHookLength;
@@ -105,14 +109,14 @@ namespace SezzUI.Hooking
 
 			if (_originalBytes.Length < minHookLength)
 			{
-				throw new Exception("Original byte code size is smaller than minimum hook length!");
+				throw new("Original byte code size is smaller than minimum hook length!");
 			}
 
 			// Find end of hook instructions
 			bool foundHookEnd = false;
 			if (isHooked)
 			{
-				PluginLog.Debug($"Original function is already hooked.");
+				PluginLog.Debug("Original function is already hooked.");
 
 				for (int i = 0; i < currentInstructions.Count; i++)
 				{
@@ -121,18 +125,19 @@ namespace SezzUI.Hooking
 						foundHookEnd = true;
 						break;
 					}
+
 					hookLength += currentInstructions[i].Length;
 
 					if (i > maxHookInstructions)
 					{
-						throw new Exception("Failed to lookup end of current hook!");
+						throw new("Failed to lookup end of current hook!");
 					}
 				}
 			}
 
 			if (isHooked && !foundHookEnd)
 			{
-				throw new Exception("Failed to lookup end of current hook!");
+				throw new("Failed to lookup end of current hook!");
 			}
 
 			if (!isHooked && !foundHookEnd && hookLength == 0)
@@ -144,14 +149,14 @@ namespace SezzUI.Hooking
 
 			// Dump
 			PluginLog.Debug(">>> Current instructions:");
-			AsmHelper.DumpInstructions(currentBytes[0..hookLength], _originalPointer);
+			AsmHelper.DumpInstructions(currentBytes[..hookLength], _originalPointer);
 
 			PluginLog.Debug(">>> Original instructions:");
-			AsmHelper.DumpInstructions(_originalBytes[0..hookLength], _originalPointer);
+			AsmHelper.DumpInstructions(_originalBytes[..hookLength], _originalPointer);
 
 			// Create new instructions
-			var minMax = Reloaded.Hooks.Tools.Utilities.GetRelativeJumpMinMax((long)_originalPointer, Int32.MaxValue - maxFunctionSize);
-			var buffer = Reloaded.Hooks.Tools.Utilities.FindOrCreateBufferInRange(maxFunctionSize, minMax.min, minMax.max, 1);
+			(long min, long max) minMax = Utilities.GetRelativeJumpMinMax((long) _originalPointer, int.MaxValue - maxFunctionSize);
+			MemoryBuffer buffer = Utilities.FindOrCreateBufferInRange(maxFunctionSize, minMax.min, minMax.max, 1);
 			List<byte> opCodes = new();
 
 			_newPointer = buffer.ExecuteWithLock(() =>
@@ -165,16 +170,16 @@ namespace SezzUI.Hooking
 					$"org {currAddress}"
 				};
 
-				var originalInstructions = AsmHelper.DecodeInstructions(_originalBytes[0..hookLength], _originalPointer);
-				foreach (var instruction in originalInstructions)
+				List<Instruction> originalInstructions = AsmHelper.DecodeInstructions(_originalBytes[..hookLength], _originalPointer);
+				foreach (Instruction instruction in originalInstructions)
 				{
 					// TODO: I'm too lazy right now to check those I don't need.
 					assemblyCode.Add(instruction.OpCode.Mnemonic == Mnemonic.Jg ? $"jg qword {(IntPtr) instruction.NearBranchTarget}" : instruction.ToString());
 				}
 
 				assemblyCode.Add($"jmp qword {_originalPointer + hookLength}");
-				opCodes.AddRange(Reloaded.Hooks.Tools.Utilities.Assembler.Assemble(assemblyCode.ToArray()));
-				Reloaded.Hooks.Tools.Utilities.FillArrayUntilSize<byte>(opCodes, 0x90, maxFunctionSize);
+				opCodes.AddRange(Utilities.Assembler.Assemble(assemblyCode.ToArray()));
+				Utilities.FillArrayUntilSize<byte>(opCodes, 0x90, maxFunctionSize);
 
 				return buffer.Add(opCodes.ToArray(), 1);
 			});
@@ -190,13 +195,16 @@ namespace SezzUI.Hooking
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether or not the hook has been disposed.
+		///     Gets a value indicating whether or not the hook has been disposed.
 		/// </summary>
 		private bool IsDisposed { get; set; }
 
 		public void Dispose()
 		{
-			if (IsDisposed) { return; }
+			if (IsDisposed)
+			{
+				return;
+			}
 
 			if (_newPointer != IntPtr.Zero)
 			{
