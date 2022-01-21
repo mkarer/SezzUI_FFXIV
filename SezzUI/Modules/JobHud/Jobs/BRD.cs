@@ -14,8 +14,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 		public override void Configure(JobHud hud)
 		{
 			Bar bar1 = new(hud);
-			bar1.Add(new(bar1) {TextureActionId = 100, StatusIds = new[] {(uint) 124, (uint) 1200}, MaxStatusDuration = 45, StatusTarget = Unit.Target}); // Venomous Bite
-			bar1.Add(new(bar1) {TextureActionId = 113, StatusIds = new[] {(uint) 129, (uint) 1201}, MaxStatusDuration = 45, StatusTarget = Unit.Target}); // Windbite
+			bar1.Add(new(bar1) {TextureActionId = 100, StatusIds = new[] {124u, 1200u}, MaxStatusDuration = 45, StatusTarget = Unit.Target}); // Venomous Bite
+			bar1.Add(new(bar1) {TextureActionId = 113, StatusIds = new[] {129u, 1201u}, MaxStatusDuration = 45, StatusTarget = Unit.Target}); // Windbite
 			bar1.Add(new(bar1) {TextureActionId = 101, CooldownActionId = 101, StatusId = 125, MaxStatusDuration = 20}); // Raging Strikes
 			bar1.Add(new(bar1) {TextureActionId = 107, CooldownActionId = 107, StatusId = 128, MaxStatusDuration = 10}); // Barrage
 			hud.AddBar(bar1);
@@ -42,9 +42,9 @@ namespace SezzUI.Modules.JobHud.Jobs
 			base.Configure(hud);
 
 			Bar roleBar = hud.Bars.Last();
-			//roleBar.Add(new Icon(roleBar) { TextureActionId = 3561, CooldownActionId = 3561, StatusId = 866, MaxStatusDuration = 30, StatusTarget = Enums.Unit.TargetOrPlayer, StatusSourcePlayer = false, Level = 35 }, 1); // The Warden's Paean
-			roleBar.Add(new(roleBar) {TextureActionId = 7405, CooldownActionId = 7405, StatusId = 1934, MaxStatusDuration = 15, StatusSourcePlayer = false, Level = 62}, 1); // Troubadour
-			roleBar.Add(new(roleBar) {TextureActionId = 7408, CooldownActionId = 7408, StatusId = 1202, MaxStatusDuration = 15, StatusSourcePlayer = false, Level = 66}, 1); // Nature's Minne
+			//roleBar.Add(new Icon(roleBar) {TextureActionId = 3561, CooldownActionId = 3561, StatusId = 866, MaxStatusDuration = 30, StatusTarget = Enums.Unit.TargetOrPlayer, StatusSourcePlayer = false}, 1); // The Warden's Paean
+			roleBar.Add(new(roleBar) {TextureActionId = 7405, CooldownActionId = 7405, StatusIds = new[] { 1934u, 1826u, 1951u }, MaxStatusDuration = 15, StatusSourcePlayer = false}, 1); // Troubadour
+			roleBar.Add(new(roleBar) {TextureActionId = 7408, CooldownActionId = 7408, StatusId = 1202, MaxStatusDuration = 15, StatusSourcePlayer = false}, 1); // Nature's Minne
 		}
 
 		private static bool IsPlaying()

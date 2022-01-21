@@ -21,7 +21,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			base.Configure(hud);
 
 			Bar roleBar = hud.Bars.Last();
-			roleBar.Add(new(roleBar) {TextureActionId = 16889, CooldownActionId = 16889, StatusId = 1951, MaxStatusDuration = 15}, 1); // Tactician
+			roleBar.Add(new(roleBar) {TextureActionId = 16889, CooldownActionId = 16889, StatusIds = new[] { 1934u, 1826u, 1951u }, MaxStatusDuration = 15, StatusSourcePlayer = false}, 1); // Tactician
 		}
 	}
 }
