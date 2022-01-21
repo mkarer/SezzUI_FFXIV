@@ -144,7 +144,7 @@ namespace SezzUI.Modules.JobHud
 
 		public bool UseActionIcon(uint actionId)
 		{
-			uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
+			uint actionIdAdjusted = SpellHelper.GetAdjustedActionId(actionId);
 			LuminaAction? action = SpellHelper.GetAction(actionIdAdjusted);
 			if (action != null)
 			{

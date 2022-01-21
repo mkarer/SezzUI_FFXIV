@@ -301,7 +301,7 @@ namespace SezzUI.GameEvents
         {
             if (!TryUpdateIfWatched(actionId, actionType, false, isGroupItem))
             {
-                uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
+                uint actionIdAdjusted = Helpers.SpellHelper.GetAdjustedActionId(actionId);
                 if (actionIdAdjusted != actionId)
                 {
                     return TryUpdateIfWatched(actionIdAdjusted, actionType, true, isGroupItem);

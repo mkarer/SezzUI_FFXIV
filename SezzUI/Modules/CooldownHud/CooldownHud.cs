@@ -148,7 +148,7 @@ namespace SezzUI.Modules.CooldownHud
 
 		public void RegisterCooldown(uint actionId, BarManager.BarManager barManager, bool adjustAction = true)
 		{
-			actionId = adjustAction ? SpellHelper.Instance.GetSpellActionId(actionId) : actionId;
+			actionId = adjustAction ? Helpers.SpellHelper.GetAdjustedActionId(actionId) : actionId;
 			if (_cooldowns.ContainsKey(actionId))
 			{
 				if (!_cooldowns[actionId].BarManagers.Contains(barManager))

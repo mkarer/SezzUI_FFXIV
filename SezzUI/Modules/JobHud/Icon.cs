@@ -19,7 +19,6 @@ using DrawHelper = SezzUI.Helpers.DrawHelper;
 using JobsHelper = SezzUI.Helpers.JobsHelper;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
-using SpellHelper = DelvUI.Helpers.SpellHelper;
 
 namespace SezzUI.Modules.JobHud
 {
@@ -69,7 +68,7 @@ namespace SezzUI.Modules.JobHud
 			{
 				if (value != null)
 				{
-					uint actionIdAdjusted = SpellHelper.Instance.GetSpellActionId((uint) value);
+					uint actionIdAdjusted = SpellHelper.GetAdjustedActionId((uint) value);
 					LuminaAction? action = Helpers.SpellHelper.GetAction(actionIdAdjusted);
 					if (action != null)
 					{
@@ -154,7 +153,7 @@ namespace SezzUI.Modules.JobHud
         public uint? CooldownActionId
 		{
 			get => _cooldownActionId;
-			set => _cooldownActionId = value != null ? SpellHelper.Instance.GetSpellActionId((uint) value) : value;
+			set => _cooldownActionId = value != null ? SpellHelper.GetAdjustedActionId((uint) value) : value;
 		}
 
 		private uint? _cooldownActionId;
@@ -191,7 +190,7 @@ namespace SezzUI.Modules.JobHud
 
 				if (value != null)
 				{
-					uint actionIdAdjusted = SpellHelper.Instance.GetSpellActionId((uint) value);
+					uint actionIdAdjusted = SpellHelper.GetAdjustedActionId((uint) value);
 					LuminaStatus? status = Helpers.SpellHelper.GetStatusByAction(actionIdAdjusted);
 					if (status != null)
 					{

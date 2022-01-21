@@ -363,7 +363,6 @@ namespace SezzUI
             DelvUI.Helpers.FontsManager.Instance.Dispose();
             GlobalColors.Instance.Dispose();
             ProfilesManager.Instance.Dispose();
-            DelvUI.Helpers.SpellHelper.Instance.Dispose();
             DelvUI.Helpers.TexturesCache.Instance.Dispose();
             Helpers.ImageCache.Instance.Dispose();
             DelvUI.Helpers.TooltipsHelper.Instance.Dispose();
