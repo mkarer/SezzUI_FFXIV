@@ -11,17 +11,6 @@ using Dalamud.Game.ClientState.Statuses;
 
 namespace SezzUI.Helpers
 {
-	public class CooldownData
-	{
-		public int ChargesMax = 0;
-		public int ChargesCurrent = 0;
-		public float CooldownPerCharge = 0;
-		public float CooldownTotal = 0;
-		public float CooldownTotalElapsed = 0;
-		public float CooldownRemaining = 0;
-		public float CooldownTotalRemaining = 0;
-	}
-
 	public class SpellHelper
 	{
         private ExcelSheet<LuminaAction>? _sheetAction;
@@ -169,42 +158,6 @@ namespace SezzUI.Helpers
 			}
 
 			return null;
-		}
-
-        public static unsafe CooldownData GetCooldownData(uint actionId)
-		{
-			CooldownData data = new();
-
-			PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
-            if (player == null) { return data; }
-
-            uint actionIdAdjusted = DelvUI.Helpers.SpellHelper.Instance.GetSpellActionId(actionId);
-            DelvUI.Helpers.SpellHelper.Instance.GetRecastTimes(actionIdAdjusted, out float totalCooldown, out float elapsedCooldown);
-
-            ushort maxChargesMaxLevel = DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, Constants.MAX_PLAYER_LEVEL);
-            ushort maxChargesCurrentLevel = player.Level < Constants.MAX_PLAYER_LEVEL ? DelvUI.Helpers.SpellHelper.Instance.GetMaxCharges(actionIdAdjusted, player.Level) : maxChargesMaxLevel;
-            float chargesMod = maxChargesCurrentLevel != maxChargesMaxLevel ? 1f / maxChargesMaxLevel * maxChargesCurrentLevel : 1;
-
-            data.ChargesMax = maxChargesCurrentLevel;
-            data.CooldownTotal = totalCooldown * chargesMod; // GetRecastTime returns total cooldown for max level charges (but only if we have multiple charges right now?)
-
-            if (data.CooldownTotal > 0)
-            {
-                data.CooldownPerCharge = data.CooldownTotal / maxChargesCurrentLevel;
-                data.CooldownTotalElapsed = Math.Min(data.CooldownTotal, elapsedCooldown); // GetRecastTimeElapsed is weird when maxChargesCurrentLevel differs from maxChargesMaxLevel
-                data.CooldownTotalRemaining = (data.CooldownTotal - data.CooldownTotalElapsed);
-                data.CooldownRemaining = data.CooldownTotalRemaining % data.CooldownPerCharge;
-            }
-
-            data.ChargesCurrent = data.CooldownTotalElapsed > 0 ? (int)Math.Floor(data.CooldownTotalElapsed / data.CooldownPerCharge) : data.ChargesMax;
-
-            //if (actionId == 16010)
-            //{
-            //    Dalamud.Logging.PluginLog.Debug($"Level {player.Level} CooldownTotal {data.CooldownTotal} CooldownRemaining {data.CooldownRemaining} chargesMod {chargesMod} " +
-            //        $"CooldownTotalElapsed {data.CooldownTotalElapsed} CooldownTotalRemaining {data.CooldownTotalRemaining} CooldownPerCharge {data.CooldownPerCharge}");
-            //}
-
-            return data;
 		}
 
         #region Singleton
