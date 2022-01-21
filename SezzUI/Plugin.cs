@@ -24,6 +24,7 @@ using ImGuiNET;
 using ImGuiScene;
 using SigScanner = Dalamud.Game.SigScanner;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using SezzUI.Hooking;
 
 namespace SezzUI
 {
@@ -113,6 +114,7 @@ namespace SezzUI
             Helpers.ImageCache.Initialize();
             Helpers.SpellHelper.Initialize();
             DelvUI.Helpers.TooltipsHelper.Initialize();
+            OriginalFunctionManager.Initialize();
             EventManager.Initialize();
             HudManager.Initialize();
 
@@ -130,8 +132,8 @@ namespace SezzUI
             CommandManager.AddHandler("/sui", alias);
 
 #if DEBUG
-            var config = ConfigurationManager.Instance.GetConfigObject<GeneralDebugConfig>();
-            if (config != null && config.ShowConfigurationOnLogin)
+            GeneralDebugConfig? config = ConfigurationManager.Instance.GetConfigObject<GeneralDebugConfig>();
+            if (config?.ShowConfigurationOnLogin ?? false)
             {
                 OpenConfigUi();
             }
@@ -367,6 +369,7 @@ namespace SezzUI
             Helpers.ImageCache.Instance.Dispose();
             Helpers.SpellHelper.Instance.Dispose();
             DelvUI.Helpers.TooltipsHelper.Instance.Dispose();
+            OriginalFunctionManager.Instance.Dispose();
 
             // This needs to remain last to avoid race conditions
             ConfigurationManager.Instance.Dispose();

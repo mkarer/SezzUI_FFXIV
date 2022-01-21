@@ -85,6 +85,21 @@
 		<Reference Include="FFXIVClientStructs">
 			<Private>false</Private>
 		</Reference>
+		<Reference Include="Iced">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Reloaded.Hooks">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Reloaded.Assembler">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Reloaded.Memory">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Reloaded.Memory.Buffers">
+			<Private>false</Private>
+		</Reference>
 	</ItemGroup>
 
 	<!-- NuGet Packages -->
@@ -112,6 +127,9 @@
 	    <Generator>TextTemplatingFileGenerator</Generator>
 	    <LastGenOutput>Extensions.cs</LastGenOutput>
 	  </None>
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Core\OriginalFunction" />
 	</ItemGroup>
 
 	<!-- ILRepack Task-->
