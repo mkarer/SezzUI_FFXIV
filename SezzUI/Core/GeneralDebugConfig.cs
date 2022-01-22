@@ -60,7 +60,7 @@ namespace SezzUI.Interface.GeneralElements
         [Order(131, collapseWith = nameof(LogEvents))]
         public bool LogEventCombatLeavingCombat = false;
 
-        [Checkbox("Cooldown: Hooks")]
+        [Checkbox("Cooldown: Hooks/EventHandler")]
         [Order(140, collapseWith = nameof(LogEvents))]
         public bool LogEventCooldownHooks = false;
 
