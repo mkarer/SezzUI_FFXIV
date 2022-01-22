@@ -52,7 +52,7 @@ namespace SezzUI
         public string Name => "SezzUI";
         public static string Version { get; private set; } = "";
 
-        public static NumberFormatInfo NumberFormatInfo = CultureInfo.GetCultureInfo("en-GB").NumberFormat;
+        public static readonly NumberFormatInfo NumberFormatInfo = CultureInfo.GetCultureInfo("en-GB").NumberFormat;
 
         public Plugin(
             BuddyList buddyList,
