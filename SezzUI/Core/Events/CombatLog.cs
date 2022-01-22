@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Network;
 using Machina.FFXIV.Headers;
@@ -11,7 +12,11 @@ namespace SezzUI.GameEvents
 {
 	internal sealed class CombatLog : BaseGameEvent
 	{
+#pragma warning disable 67
 		public event EventHandler? CombatLogEvent;
+		public delegate void ActionEffectDelegate(uint actorId, uint actionId);
+		public event ActionEffectDelegate? ActionEffect;
+#pragma warning restore 67
 
 		#region Singleton
 
@@ -52,7 +57,7 @@ namespace SezzUI.GameEvents
 
 			try
 			{
-				//ParseNetworkMessage(opcode, data - 0x20, sourceActorId, targetActorId);
+				ParseNetworkMessage(opcode, data - 0x20, sourceActorId, targetActorId);
 			}
 			catch (Exception ex)
 			{
@@ -65,11 +70,12 @@ namespace SezzUI.GameEvents
 			return input.Length > length ? input[..length] : input.PadRight(length, ' ');
 		}
 
-		private void ParseNetworkMessage(ushort opCode, IntPtr data, uint sourceActorId, uint targetActorId)
+		private unsafe void ParseNetworkMessage(ushort opCode, IntPtr data, uint sourceActorId, uint targetActorId)
 		{
 			// https://github.com/ravahn/machina/blob/master/Machina.FFXIV/Headers/Opcodes/Server_MessageType.cs
 			switch (opCode)
 			{
+				/*
 				case 0x0188:
 				{
 					// Status Gain/Lost/Effect?
@@ -110,6 +116,7 @@ namespace SezzUI.GameEvents
 					}
 				}
 					break;
+				*/
 				/*
 				case 0x0293:
 					ParseCombatLogEvent(Deserialize<Server_StatusEffectList2>(data));
@@ -122,44 +129,36 @@ namespace SezzUI.GameEvents
 					break;
 				*/
 				case 0x033e:
-					// {
-					// 	// Similar to UNIT_SPELLCAST_SUCCEEDED?
-					// 	// Not sure when the other opcodes are used (Server_ActionEffect*) 
-					// 	Server_ActionEffect1 packet = Deserialize<Server_ActionEffect1>(data);
-					// 	LogDebug("ParseNetworkMessage", "Type: Server_ActionEffect1 " +
-					// 									$"Action: {fixedLength(SpellHelper.GetActionName(packet.Header.actionId) ?? "Unknown", 20)} [{fixedLength(packet.Header.actionId.ToString(), 5)}] " +
-					// 									$"TargetID: 0x{((IntPtr) packet.TargetID).ToInt64():X} " +
-					// 									$"sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} " +
-					// 									$"unkn {packet.Header.unknown} displayType {packet.Header.effectDisplayType} SomeTargetID {packet.Header.SomeTargetID} 0x{packet.Header.SomeTargetID:X} vari {packet.Header.variation} unk20 {packet.Header.unknown20}");
-					// }
+					{
+						// Similar to UNIT_SPELLCAST_SUCCEEDED?
+						// Not sure when the other opcodes are used (Server_ActionEffect*) 
+						Server_ActionEffect1 packet = Deserialize<Server_ActionEffect1>(data);
+						ActionEffect?.Invoke(targetActorId, packet.Header.actionId);
+
+						// LogDebug("ParseNetworkMessage", "Type: Server_ActionEffect1 " +
+						// 								$"Action: {FixedLength(SpellHelper.GetActionName(packet.Header.actionId) ?? "Unknown", 20)} [{FixedLength(packet.Header.actionId.ToString(), 5)}] " +
+						// 								$"TargetID: 0x{((IntPtr) packet.TargetID).ToInt64():X} " +
+						// 								$"sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} " +
+						// 								$"unkn {packet.Header.unknown} displayType {packet.Header.effectDisplayType} SomeTargetID {packet.Header.SomeTargetID} 0x{packet.Header.SomeTargetID:X} vari {packet.Header.variation} unk20 {packet.Header.unknown20}");
+					}
 					break;
 
-				/*
 				case 0x01f4:
-				{
-					Server_ActionEffect8 packet = Deserialize<Server_ActionEffect8>(data);
-					LogDebug("ParseNetworkMessage", $"Type: Server_ActionEffect8 Action: {SpellHelper.GetActionName(packet.Header.actionId) ?? "Unknown"} [{packet.Header.actionId}]");
-				}
+					ActionEffect?.Invoke(targetActorId, Deserialize<Server_ActionEffect8>(data).Header.actionId);
 					break;
+				
 				case 0x01fa:
-				{
-					Server_ActionEffect16 packet = Deserialize<Server_ActionEffect16>(data);
-					LogDebug("ParseNetworkMessage", $"Type: Server_ActionEffect16 Action: {SpellHelper.GetActionName(packet.Header.actionId) ?? "Unknown"} [{packet.Header.actionId}]");
-				}
+					ActionEffect?.Invoke(targetActorId, Deserialize<Server_ActionEffect16>(data).Header.actionId);
 					break;
+				
 				case 0x0300:
-				{
-					Server_ActionEffect24 packet = Deserialize<Server_ActionEffect24>(data);
-					LogDebug("ParseNetworkMessage", $"Type: Server_ActionEffect24 Action: {SpellHelper.GetActionName(packet.Header.actionId) ?? "Unknown"} [{packet.Header.actionId}]");
-				}
+					ActionEffect?.Invoke(targetActorId, Deserialize<Server_ActionEffect24>(data).Header.actionId);
 					break;
+				
 				case 0x03cd:
-				{
-					Server_ActionEffect32 packet = Deserialize<Server_ActionEffect32>(data);
-					LogDebug("ParseNetworkMessage", $"Type: Server_ActionEffect32 Action: {SpellHelper.GetActionName(packet.Header.actionId) ?? "Unknown"} [{packet.Header.actionId}]");
-				}
+					ActionEffect?.Invoke(targetActorId, Deserialize<Server_ActionEffect32>(data).Header.actionId);
 					break;
-				*/
+
 				case 0x0307:
 				{
 					// NPC casts + Teleport from players + other players casts?
@@ -179,6 +178,7 @@ namespace SezzUI.GameEvents
 					break;
 				case 0x02cf:
 				{
+					/*
 					// UNRELIABLE
 					Server_ActorControl packet = Deserialize<Server_ActorControl>(data);
 
@@ -202,11 +202,13 @@ namespace SezzUI.GameEvents
 					{
 						//LogDebug("ParseNetworkMessage", $"Type: Server_ActorControl sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} Category {packet.category} p1 {packet.param1} p2 {packet.param2} p3 {packet.param3} p4 {packet.param4}");
 					}
+				*/
 				}
 					break;
 
 				case 0x0096:
 				{
+					/*
 					Server_ActorControlSelf packet = Deserialize<Server_ActorControlSelf>(data);
 
 					// LoseEffect:
@@ -229,11 +231,13 @@ namespace SezzUI.GameEvents
 					{
 						//LogDebug("ParseNetworkMessage", $"Type: Server_ActorControlSelf sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} Category {packet.category} p1 {packet.param1} p2 {packet.param2} p3 {packet.param3} p4 {packet.param4} p5 {packet.param5} p6 {packet.param6} pad {packet.padding} pad1 {packet.padding1}");
 					}
+				*/
 				}
 					break;
 
 				case 0x0272:
 				{
+					/*
 					// NEVER?
 					Server_ActorControlTarget packet = Deserialize<Server_ActorControlTarget>(data);
 
@@ -257,6 +261,7 @@ namespace SezzUI.GameEvents
 					{
 						LogDebug("ParseNetworkMessage", $"[Server_ActorControlTarget] sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} Category {packet.category} p1 {packet.param1} p2 {packet.param2} p3 {packet.param3} p4 {packet.param4} pad {packet.padding} pad1 {packet.padding1} pad2 {packet.padding2} TargetID 0x{packet.TargetID:X} ");
 					}
+				*/
 				}
 
 					break;
