@@ -12,6 +12,7 @@ using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Party;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
+using Dalamud.Game.Network;
 using Dalamud.Interface;
 using Dalamud.Logging;
 using Dalamud.Plugin;
@@ -38,6 +39,7 @@ namespace SezzUI
         public static DataManager DataManager { get; private set; } = null!;
         public static Framework Framework { get; private set; } = null!;
         public static GameGui GameGui { get; private set; } = null!;
+        public static GameNetwork GameNetwork { get; private set; } = null!;
         public static JobGauges JobGauges { get; private set; } = null!;
         public static ObjectTable ObjectTable { get; private set; } = null!;
         public static SigScanner SigScanner { get; private set; } = null!;
@@ -63,6 +65,7 @@ namespace SezzUI
             DataManager dataManager,
             Framework framework,
             GameGui gameGui,
+            GameNetwork gameNetwork,
             JobGauges jobGauges,
             ObjectTable objectTable,
             PartyList partyList,
@@ -79,6 +82,7 @@ namespace SezzUI
             DataManager = dataManager;
             Framework = framework;
             GameGui = gameGui;
+            GameNetwork = gameNetwork;
             JobGauges = jobGauges;
             ObjectTable = objectTable;
             PartyList = partyList;

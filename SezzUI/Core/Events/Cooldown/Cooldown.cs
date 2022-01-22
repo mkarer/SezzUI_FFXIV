@@ -359,6 +359,11 @@ namespace SezzUI.GameEvents
                 }
             }
         }
+
+        private void OnCombatLogEvent(object? sender, EventArgs e)
+        {
+            
+        }
         #endregion
 
         #region ActionManager
@@ -551,6 +556,7 @@ namespace SezzUI.GameEvents
             if (base.Enable())
             {
                 Plugin.Framework.Update += OnFrameworkUpdate;
+                EventManager.CombatLog.CombatLogEvent += OnCombatLogEvent;
                 _useActionHook?.Enable();
                 _receiveActionEffectHook?.Enable();
 
@@ -565,6 +571,7 @@ namespace SezzUI.GameEvents
             if (base.Disable())
             {
                 Plugin.Framework.Update -= OnFrameworkUpdate;
+                EventManager.CombatLog.CombatLogEvent -= OnCombatLogEvent;
                 _useActionHook?.Disable();
                 _receiveActionEffectHook?.Disable();
                 _delayedUpdates.Clear();

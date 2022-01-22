@@ -9,6 +9,7 @@ namespace SezzUI
         internal static GameEvents.Game Game { get { return GameEvents.Game.Instance; } }
         internal static GameEvents.Player Player { get { return GameEvents.Player.Instance; } }
         internal static GameEvents.Combat Combat { get { return GameEvents.Combat.Instance; } }
+        internal static GameEvents.CombatLog CombatLog { get { return GameEvents.CombatLog.Instance; } }
         internal static GameEvents.Cooldown Cooldown { get { return GameEvents.Cooldown.Instance; } }
 
 #if DEBUG
@@ -51,6 +52,7 @@ namespace SezzUI
             if (GameEvents.Player.Initialized) { Player.Dispose(); }
             if (GameEvents.Combat.Initialized) { Combat.Dispose(); }
             if (GameEvents.Cooldown.Initialized) { Cooldown.Dispose(); }
+            if (GameEvents.CombatLog.Initialized) { CombatLog.Dispose(); }
 
 #if DEBUG
             ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
