@@ -1,7 +1,9 @@
 ﻿using System;
-using Dalamud.Logging;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using Dalamud.Logging;
+using FFXIVClientStructs.Attributes;
 using Iced.Intel;
 
 namespace SezzUI.Helpers
@@ -12,7 +14,7 @@ namespace SezzUI.Helpers
 
 		public static void DumpInstructions(byte[] bytes, IntPtr ip)
 		{
-			var instructions = DecodeInstructions(bytes, ip);
+			List<Instruction> instructions = DecodeInstructions(bytes, ip);
 			string pad = "D" + instructions.Count.ToString("D").Length;
 			for (int i = 0; i < instructions.Count; i++)
 			{
@@ -22,19 +24,36 @@ namespace SezzUI.Helpers
 
 		public static List<Instruction> DecodeInstructions(byte[] bytes, IntPtr ip)
 		{
-			var decoder = Decoder.Create(64, bytes);
-			decoder.IP = (ulong)ip;
-			ulong endRip = decoder.IP + (uint)bytes.Length;
+			Decoder decoder = Decoder.Create(64, bytes);
+			decoder.IP = (ulong) ip;
+			ulong endRip = decoder.IP + (uint) bytes.Length;
 
-			var instructions = new List<Instruction>();
+			List<Instruction> instructions = new List<Instruction>();
 			while (decoder.IP < endRip)
 			{
-				var instr = decoder.Decode();
-				if (instr.IsInvalid) { break; }
+				Instruction instr = decoder.Decode();
+				if (instr.IsInvalid)
+				{
+					break;
+				}
+
 				instructions.Add(instr);
 			}
 
 			return instructions;
+		}
+
+		public static string? GetSignature<T>(string methodName)
+		{
+			// https://github.com/CaiClone/GCDTracker/blob/main/src/Data/HelperMethods.cs
+			MethodBase? method = typeof(T).GetMethod(methodName);
+			if (method == null)
+			{
+				return null;
+			}
+
+			MemberFunctionAttribute attribute = (MemberFunctionAttribute) method.GetCustomAttributes(typeof(MemberFunctionAttribute), true)[0];
+			return attribute?.Signature ?? null;
 		}
 	}
 }

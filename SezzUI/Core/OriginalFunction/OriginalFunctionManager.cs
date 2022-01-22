@@ -22,7 +22,8 @@ namespace SezzUI.Hooking
 				try
 				{
 					// Client::Game::ActionManager.GetAdjustedActionId
-					_originalGetAdjustedActionId = new("E8 ?? ?? ?? ?? 8B F8 3B DF", "81 FA 2D 01 00 00 7F 42 0F 84 4B 01 00 00 8D 42 EB");
+					string getAdjustedActionIdSig = Helpers.AsmHelper.GetSignature<ActionManager>("GetAdjustedActionId") ?? "E8 ?? ?? ?? ?? 8B F8 3B DF";
+					_originalGetAdjustedActionId = new(getAdjustedActionIdSig, "81 FA 2D 01 00 00 7F 42 0F 84 4B 01 00 00 8D 42 EB");
 				}
 				catch (Exception ex)
 				{
