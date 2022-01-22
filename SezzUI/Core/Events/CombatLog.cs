@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Network;
 using Machina.FFXIV.Headers;
 using SezzUI.Helpers;
 using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Utility;
 
 namespace SezzUI.GameEvents
 {
@@ -58,22 +60,57 @@ namespace SezzUI.GameEvents
 			}
 		}
 
-		private string fixedLength(string input, int length)
+		private static string FixedLength(string input, int length)
 		{
-			if (input.Length > length)
-				return input.Substring(0, length);
-			else
-				return input.PadRight(length, ' ');
+			return input.Length > length ? input[..length] : input.PadRight(length, ' ');
 		}
 
 		private void ParseNetworkMessage(ushort opCode, IntPtr data, uint sourceActorId, uint targetActorId)
 		{
+			// https://github.com/ravahn/machina/blob/master/Machina.FFXIV/Headers/Opcodes/Server_MessageType.cs
 			switch (opCode)
 			{
-				/*
 				case 0x0188:
-					ParseCombatLogEvent(Deserialize<Server_StatusEffectList>(data));
+				{
+					// Status Gain/Lost/Effect?
+					StatusEffectList packet = Deserialize<StatusEffectList>(data);
+					LogDebug("ParseNetworkMessage", ">>> Type: Server_StatusEffectList "
+													+ $"JobID {packet.JobID} "
+													+ $"Level1 {packet.Level1} " 
+													+ $"Level2 {packet.Level2} " 
+													+ $"Level3 {packet.Level3} " 
+													+ $"HP {packet.CurrentHP}/{packet.MaxHP} " 
+													+ $"MP {packet.CurrentMP}/{packet.MaxMP} " 
+													+ $"Shield {packet.DamageShield} " 
+													+ $"Unknown1 {packet.Unknown1} " 
+													+ $"Unknown2 {packet.Unknown2} " 
+													+ $"sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} " 
+													+ $"ActorID 0x{packet.MessageHeader.ActorID:X}");
+
+					GameObject? statusTargetActor = Plugin.ObjectTable.SearchById(targetActorId);
+					string statusTargetName = statusTargetActor?.Name.TextValue ?? "Unknown";
+					string jobName = Plugin.DataManager.Excel.GetSheet<Lumina.Excel.GeneratedSheets.ClassJob>()?.Where(a => a.RowId == packet.JobID).FirstOrDefault()?.NameEnglish.ToString() ?? "";
+					int level = Math.Max(Math.Max(packet.Level3, packet.Level2), packet.Level1);
+					LogDebug("ParseNetworkMessage", $"Target: {statusTargetName} [0x{targetActorId:X}] (Level {level}{(jobName != "" ? " " + jobName : "")})");
+
+					LogDebug("ParseNetworkMessage", $">>> MessageLength {packet.MessageHeader.MessageLength} MessageType {packet.MessageHeader.MessageType} Unknown1: {packet.MessageHeader.Unknown1} Unknown2: {packet.MessageHeader.Unknown2} Unknown3: {packet.MessageHeader.Unknown3} Unknown4: {packet.MessageHeader.Unknown4}");
+
+					// targetActorId = objectId
+					foreach (var eff in packet.Effects)
+					{
+						//if (eff.ActorID == 0 ) break;
+
+						GameObject? source = Plugin.ObjectTable.SearchById(eff.ActorID);
+						string sourceName = source?.Name.TextValue ?? "Unknown";
+						string effectName = SpellHelper.GetStatus(eff.EffectID)?.Name.ToDalamudString().ToString() ?? "Unknown Effect";
+						
+						// duration can be negative?!
+
+						LogDebug("ParseNetworkMessage", $"EffectID {eff.EffectID:0000} [{FixedLength(effectName, 20)}] Duration {eff.Duration:000.00} ActorID 0x{eff.ActorID:X} [{FixedLength(sourceName, 20)}] OtherInfo1 {eff.OtherInfo1} OtherInfo2 {eff.OtherInfo2} ");
+					}
+				}
 					break;
+				/*
 				case 0x0293:
 					ParseCombatLogEvent(Deserialize<Server_StatusEffectList2>(data));
 					break;
@@ -126,8 +163,8 @@ namespace SezzUI.GameEvents
 				case 0x0307:
 				{
 					// NPC casts + Teleport from players + other players casts?
-					Server_ActorCast packet = Deserialize<Server_ActorCast>(data);
-					LogDebug("ParseNetworkMessage", "Type: Server_ActorCast " + $"Action: {fixedLength(SpellHelper.GetActionName(packet.ActionID) ?? "Unknown", 20)} [{fixedLength(packet.ActionID.ToString(), 5)}] " + $"SkillType: {packet.SkillType} " + $"TargetID: 0x{((IntPtr) packet.TargetID).ToInt64():X} " + $"Unk0 {packet.Unknown} " + $"Unk1 {packet.Unknown1} " + $"Unk2 {packet.Unknown2} " + $"Unk3 {packet.Unknown3} " + $"sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} " + $"ActorID 0x{packet.MessageHeader.ActorID:X}");
+					// Server_ActorCast packet = Deserialize<Server_ActorCast>(data);
+					// LogDebug("ParseNetworkMessage", "Type: Server_ActorCast " + $"Action: {fixedLength(SpellHelper.GetActionName(packet.ActionID) ?? "Unknown", 20)} [{fixedLength(packet.ActionID.ToString(), 5)}] " + $"SkillType: {packet.SkillType} " + $"TargetID: 0x{((IntPtr) packet.TargetID).ToInt64():X} " + $"Unk0 {packet.Unknown} " + $"Unk1 {packet.Unknown1} " + $"Unk2 {packet.Unknown2} " + $"Unk3 {packet.Unknown3} " + $"sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} " + $"ActorID 0x{packet.MessageHeader.ActorID:X}");
 				}
 					break;
 				case 0x0203:
@@ -156,14 +193,14 @@ namespace SezzUI.GameEvents
 						// p2: tickInterval?
 						// p3: amount?
 						// p4: castSource objectId
-						GameObject? source = GetGameObject(packet.param4);
+						GameObject? source = Plugin.ObjectTable.SearchById(packet.param4);
 						string sourceName = source?.Name.TextValue ?? "Unknown";
 						
-						LogDebug("ParseNetworkMessage", $"[SrvACtrl] [{packet.category}] Source: 0x{packet.param4:X} ({fixedLength(sourceName, 10)}) Amount: {packet.param3:D5} Interval: {packet.param2:D3}s Unknown: {packet.param1}");
+						LogDebug("ParseNetworkMessage", $"[SrvACtrl] [{packet.category}] Source: 0x{packet.param4:X} ({FixedLength(sourceName, 10)}) Amount: {packet.param3:D5} Interval: {packet.param2:D3}s Unknown: {packet.param1}");
 					}
 					else
 					{
-						LogDebug("ParseNetworkMessage", $"Type: Server_ActorControl sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} Category {packet.category} p1 {packet.param1} p2 {packet.param2} p3 {packet.param3} p4 {packet.param4}");
+						//LogDebug("ParseNetworkMessage", $"Type: Server_ActorControl sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} Category {packet.category} p1 {packet.param1} p2 {packet.param2} p3 {packet.param3} p4 {packet.param4}");
 					}
 				}
 					break;
@@ -183,14 +220,14 @@ namespace SezzUI.GameEvents
 						// p2: tickInterval?
 						// p3: amount?
 						// p4: castSource objectId
-						GameObject? source = GetGameObject(packet.param4);
+						GameObject? source = Plugin.ObjectTable.SearchById(packet.param4);
 						string sourceName = source?.Name.TextValue ?? "Unknown";
 						
-						LogDebug("ParseNetworkMessage", $"[SrvACtrS] [{packet.category}] Source: 0x{packet.param4:X} ({fixedLength(sourceName, 10)}) Amount: {packet.param3:D5} Interval: {packet.param2:D3}s Unknown: {packet.param1}");
+						LogDebug("ParseNetworkMessage", $"[SrvACtrS] [{packet.category}] Source: 0x{packet.param4:X} ({FixedLength(sourceName, 10)}) Amount: {packet.param3:D5} Interval: {packet.param2:D3}s Unknown: {packet.param1}");
 					}
 					else
 					{
-						LogDebug("ParseNetworkMessage", $"Type: Server_ActorControlSelf sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} Category {packet.category} p1 {packet.param1} p2 {packet.param2} p3 {packet.param3} p4 {packet.param4} p5 {packet.param5} p6 {packet.param6} pad {packet.padding} pad1 {packet.padding1}");
+						//LogDebug("ParseNetworkMessage", $"Type: Server_ActorControlSelf sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} Category {packet.category} p1 {packet.param1} p2 {packet.param2} p3 {packet.param3} p4 {packet.param4} p5 {packet.param5} p6 {packet.param6} pad {packet.padding} pad1 {packet.padding1}");
 					}
 				}
 					break;
@@ -211,10 +248,10 @@ namespace SezzUI.GameEvents
 						// p2: tickInterval?
 						// p3: amount?
 						// p4: castSource objectId
-						GameObject? source = GetGameObject(packet.param4);
+						GameObject? source = Plugin.ObjectTable.SearchById(packet.param4);
 						string sourceName = source?.Name.TextValue ?? "Unknown";
 						
-						LogDebug("ParseNetworkMessage", $"[{packet.category}] Source: 0x{packet.param4:X} ({fixedLength(sourceName, 10)}) Amount: {packet.param3:D5} Interval: {packet.param2:D3}s Unknown: {packet.param1}");
+						LogDebug("ParseNetworkMessage", $"[{packet.category}] Source: 0x{packet.param4:X} ({FixedLength(sourceName, 10)}) Amount: {packet.param3:D5} Interval: {packet.param2:D3}s Unknown: {packet.param1}");
 					}
 					else
 					{
@@ -245,19 +282,46 @@ namespace SezzUI.GameEvents
 			}
 		}
 
-		private static GameObject? GetGameObject(uint objectId)
+		private static T Deserialize<T>(IntPtr data) where T : struct => Marshal.PtrToStructure<T>(data);
+		
+		public static unsafe byte[] Serialize<T>(T value) where T : unmanaged
 		{
-			foreach (var actor in Plugin.ObjectTable)
+			byte[] buffer = new byte[sizeof(T)];
+
+			fixed (byte* bufferPtr = buffer)
 			{
-				if (actor?.ObjectId == objectId)
-				{
-					return actor;
-				}
+				Buffer.MemoryCopy(&value, bufferPtr, sizeof(T), sizeof(T));
 			}
 
-			return null;
+			return buffer;
 		}
-
-		private static T Deserialize<T>(IntPtr data) where T : struct => Marshal.PtrToStructure<T>(data);
+		
+		[StructLayout(LayoutKind.Sequential, Pack = 1)]
+		public struct StatusEffectListEntry
+		{
+			public ushort EffectID;
+			public byte OtherInfo1;
+			public byte OtherInfo2;
+			public float Duration;
+			public uint ActorID;
+		}
+		
+		[StructLayout(LayoutKind.Sequential, Pack = 1)]
+		public struct StatusEffectList
+		{
+			public Server_MessageHeader MessageHeader;
+			public byte JobID;
+			public byte Level1;
+			public byte Level2;
+			public byte Level3;
+			public uint CurrentHP;
+			public uint MaxHP;
+			public ushort CurrentMP;
+			public ushort MaxMP;
+			public byte DamageShield;
+			public ushort Unknown1; // used to be TP
+			public byte Unknown2;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 30 * 3 * 4)] public StatusEffectListEntry[] Effects;
+		}
 	}
 }
