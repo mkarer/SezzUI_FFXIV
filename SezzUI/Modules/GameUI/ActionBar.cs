@@ -557,18 +557,30 @@ namespace SezzUI.Modules.GameUI
 		{
 			if (!EventManager.Game.AreAddonsReady || _setActionBarPage == null)
 			{
+#if DEBUG
+				if (_debugConfig.LogBarPaging)
+				{
+					LogDebug("SetActionBarPage", $"EventManager.Game.AreAddonsReady: {EventManager.Game.AreAddonsReady} _setActionBarPage {_setActionBarPage}");
+				}
+#endif
 				return;
 			}
 
 			AtkUnitBase* actionBar = (AtkUnitBase*) Plugin.GameGui.GetAddonByName("_ActionBar", 1);
 			if ((IntPtr) actionBar == IntPtr.Zero || !actionBar->IsVisible)
 			{
+#if DEBUG
+				if (_debugConfig.LogBarPaging)
+				{
+					LogDebug("SetActionBarPage", $"_ActionBar: {((IntPtr) actionBar).ToInt64():X} IsVisible {actionBar->IsVisible}");
+				}
+#endif
 				return;
 			}
 
 			AddonActionBarBase* actionBarBase = (AddonActionBarBase*) actionBar;
 
-			if (actionBarBase->IsPetHotbar == 0 && actionBarBase->HotbarID != page)
+			if (actionBarBase->HotbarID < 10 && actionBarBase->HotbarID != page)
 			{
 #if DEBUG
 				if (_debugConfig.LogBarPaging)
@@ -590,6 +602,12 @@ namespace SezzUI.Modules.GameUI
 					}
 				}
 			}
+#if DEBUG
+			else if (_debugConfig.LogBarPaging)
+			{
+				LogDebug("SetActionBarPage", $"IsPetHotbar: {actionBarBase->HasPetHotbar} HotbarID {actionBarBase->HotbarID}");
+			}
+#endif
 		}
 
 		#endregion
