@@ -18,7 +18,7 @@ namespace SezzUI.GameStructs
 		public byte IsShared;
 
 		[FieldOffset(0x245)]
-		public byte IsPetHotbar;
+		public byte HasPetHotbar;
 
 		[FieldOffset(0x270)]
 		public byte LayoutID;
