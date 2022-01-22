@@ -96,7 +96,7 @@ namespace SezzUI
                 AssemblyLocation = Assembly.GetExecutingAssembly().Location;
             }
 
-            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.5";
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.6";
 
             DelvUI.Helpers.FontsManager.Initialize(AssemblyLocation);
             LoadBanner();
