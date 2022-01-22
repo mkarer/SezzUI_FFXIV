@@ -11,7 +11,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 		public override void Configure(JobHud hud)
 		{
 			Bar bar1 = new(hud);
-			bar1.Add(new(bar1) {TextureActionId = 3581, CooldownActionId = 3581, CustomDuration = GetDemiBahamutDuration, RequiresCombat = true, RequiresPet = true}); // Dreadwyrm Trance
+			bar1.Add(new(bar1) {TextureActionId = 25800, CooldownActionId = 25800, CustomDuration = GetDemiBahamutDuration, RequiresCombat = true, RequiresPet = true}); // Aethercharge/Dreadwyrm Trance
 			bar1.Add(new(bar1) {TextureActionId = 7429, CooldownActionId = 7429, CustomCondition = IsDemiBahamutSummoned}); // Enkindle Bahamut
 			bar1.Add(new(bar1) {TextureActionId = 25801, CooldownActionId = 25801, StatusId = 2703, MaxStatusDuration = 30, RequiresCombat = true, CustomCondition = IsCarbuncleSummoned, StatusSourcePlayer = false}); // Searing Light
 			hud.AddBar(bar1);
