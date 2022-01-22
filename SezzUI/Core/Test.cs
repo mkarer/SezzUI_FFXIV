@@ -28,6 +28,10 @@ namespace SezzUI.Core
             try
             {
                 Plugin.ChatGui.Print("Okay.");
+                Plugin.ChatGui.Print(Helpers.SpellHelper.GetAdjustedActionId(25800u,true).ToString());
+                Plugin.ChatGui.Print(Helpers.SpellHelper.GetAdjustedActionId(7427u,true).ToString());
+                Plugin.ChatGui.Print(Helpers.SpellHelper.GetAdjustedActionId(7428u,true).ToString());
+                Plugin.ChatGui.Print(Helpers.SpellHelper.GetAdjustedActionId(7429u,true).ToString());
             }
             catch (Exception ex)
             {
