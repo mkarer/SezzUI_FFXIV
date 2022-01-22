@@ -39,8 +39,12 @@ namespace SezzUI.Helpers
 				// Structure: [actionId] => { level, actionIdAtLevel }, { level, actionIdAtLevel }, ...
 			};
 
+			// TODO: Test at level 80, Aethercharge gets upgraded by traits and also is in ActionIndirection.
+			// ActionIndirection data: 25800 (Aethercharge) -> 25831 (Summon Phoenix)
+			List<uint> adjustmentWhitelist = new(){ 25800u };
+
 			ExcelSheet<LuminaActionIndirection>? sheetActionIndirection = Plugin.DataManager.Excel.GetSheet<LuminaActionIndirection>();
-			sheetActionIndirection?.Where(a => a.ClassJob.Value?.RowId > 0 && a.PreviousComboAction.Value?.RowId > 0).ToList().ForEach(a =>
+			sheetActionIndirection?.Where(a => a.ClassJob.Value?.RowId > 0 && a.PreviousComboAction.Value is {RowId: > 0} && !adjustmentWhitelist.Contains(a.PreviousComboAction.Value.RowId)).ToList().ForEach(a =>
 			{
 				LuminaAction previousAction = a.PreviousComboAction.Value!; // It's never null.
 				if (!_actionAdjustments.ContainsKey(previousAction.RowId))
@@ -55,10 +59,14 @@ namespace SezzUI.Helpers
 			});
 		}
 
-		public static uint GetAdjustedActionId(uint actionId)
+		public static uint GetAdjustedActionId(uint actionId, bool debug = false)
 		{
 			byte level = Plugin.ClientState.LocalPlayer?.Level ?? 0;
 			uint actionIdAdjusted = _actionAdjustments.TryGetValue(actionId, out Dictionary<uint, uint>? actionAdjustments) ? actionAdjustments.Where(a => level >= a.Key).OrderByDescending(a => a.Key).Select(a => a.Value).FirstOrDefault() : 0;
+			if (debug)
+			{
+				PluginLog.Debug($"[GetAdjustedActionId] actionId: {actionId} actionIdAdjusted: {actionIdAdjusted} OriginalFunctionManager.GetAdjustedActionId: {OriginalFunctionManager.GetAdjustedActionId(actionId)}");
+			}
 			return actionIdAdjusted > 0 ? actionIdAdjusted : OriginalFunctionManager.GetAdjustedActionId(actionId);
 		}
 
