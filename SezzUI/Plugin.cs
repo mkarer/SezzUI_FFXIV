@@ -9,7 +9,6 @@ using Dalamud.Game.ClientState.Buddy;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.JobGauge;
 using Dalamud.Game.ClientState.Objects;
-using Dalamud.Game.ClientState.Party;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
 using Dalamud.Game.Network;
@@ -33,7 +32,7 @@ namespace SezzUI
     {
         public static BuddyList BuddyList { get; private set; } = null!;
         public static ClientState ClientState { get; private set; } = null!;
-        public static CommandManager CommandManager { get; private set; } = null!;
+        private static CommandManager CommandManager { get; set; } = null!;
         public static Condition Condition { get; private set; } = null!;
         public static DalamudPluginInterface PluginInterface { get; private set; } = null!;
         public static DataManager DataManager { get; private set; } = null!;
@@ -45,7 +44,6 @@ namespace SezzUI
         public static SigScanner SigScanner { get; private set; } = null!;
         public static TargetManager TargetManager { get; private set; } = null!;
         public static UiBuilder UiBuilder { get; private set; } = null!;
-        public static PartyList PartyList { get; private set; } = null!;
         public static ChatGui ChatGui { get; private set; } = null!;
 
         public static TextureWrap? BannerTexture;
@@ -53,6 +51,9 @@ namespace SezzUI
         public static string AssemblyLocation { get; private set; } = "";
         public string Name => "SezzUI";
         public static string Version { get; private set; } = "";
+#if DEBUG
+        public static GeneralDebugConfig DebugConfig { get; private set; } = null!;
+#endif
 
         public static readonly NumberFormatInfo NumberFormatInfo = CultureInfo.GetCultureInfo("en-GB").NumberFormat;
 
@@ -68,7 +69,6 @@ namespace SezzUI
             GameNetwork gameNetwork,
             JobGauges jobGauges,
             ObjectTable objectTable,
-            PartyList partyList,
             SigScanner sigScanner,
             TargetManager targetManager,
             ChatGui chatGui
@@ -85,7 +85,6 @@ namespace SezzUI
             GameNetwork = gameNetwork;
             JobGauges = jobGauges;
             ObjectTable = objectTable;
-            PartyList = partyList;
             SigScanner = sigScanner;
             TargetManager = targetManager;
             ChatGui = chatGui;
@@ -109,6 +108,10 @@ namespace SezzUI
             ConfigurationManager.Initialize();
             ProfilesManager.Initialize();
             ConfigurationManager.Instance.LoadOrInitializeFiles();
+#if DEBUG
+            DebugConfig = ConfigurationManager.Instance.GetConfigObject<GeneralDebugConfig>();
+            ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+#endif
 
             DelvUI.Helpers.FontsManager.Instance.LoadConfig();
 
@@ -135,13 +138,19 @@ namespace SezzUI
             CommandManager.AddHandler("/sui", alias);
 
 #if DEBUG
-            GeneralDebugConfig? config = ConfigurationManager.Instance.GetConfigObject<GeneralDebugConfig>();
-            if (config?.ShowConfigurationOnLogin ?? false)
+            if (DebugConfig?.ShowConfigurationOnLogin ?? false)
             {
                 OpenConfigUi();
             }
 #endif
         }
+
+#if DEBUG
+        private static void OnConfigReset(ConfigurationManager sender)
+        {
+            DebugConfig = sender.GetConfigObject<GeneralDebugConfig>();
+        }
+#endif
 
         public void Dispose()
         {
@@ -149,12 +158,12 @@ namespace SezzUI
             GC.SuppressFinalize(this);
         }
 
-        private void BuildFont()
+        private static void BuildFont()
         {
             DelvUI.Helpers.FontsManager.Instance.BuildFonts();
         }
 
-        private void LoadBanner()
+        private static void LoadBanner()
         {
             string bannerImage = Path.Combine(Path.GetDirectoryName(AssemblyLocation) ?? "", "Media", "Images", "banner_short_x150.png");
 
@@ -176,9 +185,9 @@ namespace SezzUI
             }
         }
 
-        private void PluginCommand(string command, string arguments)
+        private static void PluginCommand(string command, string arguments)
         {
-            var configManager = ConfigurationManager.Instance;
+            ConfigurationManager configManager = ConfigurationManager.Instance;
 
             if (configManager.IsConfigWindowOpened && !configManager.LockHUD)
             {
@@ -205,9 +214,7 @@ namespace SezzUI
                         break;
 
                     case { } argument when argument.StartsWith("profile"):
-                        // TODO: Turn this into a helper function?
-                        var profile = argument.Split(" ", 2);
-
+                        string[] profile = argument.Split(" ", 2);
                         if (profile.Length > 0)
                         {
                             ProfilesManager.Instance.CheckUpdateSwitchCurrentProfile(profile[1]);
@@ -227,6 +234,7 @@ namespace SezzUI
             UiBuilder.OverrideGameCursor = false;
             ConfigurationManager.Instance.Draw();
 
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (HudManager.Instance != null)
             {
                 bool fontPushed = DelvUI.Helpers.FontsManager.Instance.PushDefaultFont();
@@ -236,7 +244,8 @@ namespace SezzUI
                 {
                     _lastDrawState = drawState;
 #if DEBUG
-                    var config = ConfigurationManager.Instance.GetConfigObject<GeneralDebugConfig>();
+                    GeneralDebugConfig? config = ConfigurationManager.Instance.GetConfigObject<GeneralDebugConfig>();
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                     if (config != null && config.LogEvents && config.LogEventPluginDrawStateChanged)
                     {
                         PluginLog.Debug($"[Plugin::DrawStateChanged] State: {drawState}");
@@ -254,10 +263,9 @@ namespace SezzUI
         }
 
         #region Draw State
-        //private static double _occupiedInQuestStartTime = -1;
         private DrawState _lastDrawState = DrawState.Unknown;
 
-        public static unsafe DrawState GetDrawState()
+        private static unsafe DrawState GetDrawState()
         {
             // Dalamud conditions
             if (!ClientState.IsLoggedIn || Condition[ConditionFlag.CreatingCharacter] || Condition[ConditionFlag.BetweenAreas] || Condition[ConditionFlag.BetweenAreas51] || ClientState.LocalPlayer == null)
@@ -285,21 +293,21 @@ namespace SezzUI
 
             try
             {
-                var parameterWidget = (AtkUnitBase*)GameGui.GetAddonByName("_ParameterWidget", 1);
-                if (parameterWidget != null && !parameterWidget->IsVisible)
+                IntPtr parameterWidget = GameGui.GetAddonByName("_ParameterWidget", 1);
+                if (parameterWidget != IntPtr.Zero && !((AtkUnitBase*)parameterWidget)->IsVisible)
                 {
                     return DrawState.Partially;
                 }
 
-                var fadeMiddleWidget = (AtkUnitBase*)GameGui.GetAddonByName("FadeMiddle", 1);
-                if (fadeMiddleWidget != null && fadeMiddleWidget->IsVisible)
+                IntPtr fadeMiddleWidget = GameGui.GetAddonByName("FadeMiddle", 1);
+                if (fadeMiddleWidget != IntPtr.Zero && ((AtkUnitBase*)fadeMiddleWidget)->IsVisible)
                 {
                     return DrawState.Partially;
                 }
 
                 // TODO: Test if this is good enough, remove if a timer is really needed.
-                var actionBarWidget = (AtkUnitBase*)GameGui.GetAddonByName("_ActionBar", 1);
-                if (actionBarWidget != null && !actionBarWidget->IsVisible)
+                IntPtr actionBarWidget = GameGui.GetAddonByName("_ActionBar", 1);
+                if (actionBarWidget != IntPtr.Zero && !((AtkUnitBase*)actionBarWidget)->IsVisible)
                 {
                     return DrawState.Partially;
                 }
@@ -309,34 +317,11 @@ namespace SezzUI
                 PluginLog.Error(ex, $"[GetDrawState] Error: {ex}");
             }
 
-            //if (Condition[ConditionFlag.OccupiedInQuestEvent] || Condition[ConditionFlag.OccupiedInEvent])
-            //{
-            //    // We have to wait a bit to avoid weird flickering when clicking shiny stuff
-            //    // and hide the ui after half a second passed in this state.
-            //    // Interestingly enough, default hotbars seem to do something similar.
-            //    var time = ImGui.GetTime();
-            //    if (_occupiedInQuestStartTime > 0)
-            //    {
-            //        if (time - _occupiedInQuestStartTime >= 0.25) // TODO: Exact duration might be related to ping or other events!
-            //        {
-            //            return DrawState.PartiallyInteraction;
-            //        }
-            //    }
-            //    else
-            //    {
-            //        _occupiedInQuestStartTime = time;
-            //    }
-            //}
-            //else
-            //{
-            //    _occupiedInQuestStartTime = -1;
-            //}
-
             return DrawState.Visible;
         }
         #endregion
 
-        private void OpenConfigUi()
+        private static void OpenConfigUi()
         {
             ConfigurationManager.Instance.ToggleConfigWindow();
         }
@@ -351,6 +336,9 @@ namespace SezzUI
             HudManager.Instance.Dispose();
             EventManager.Instance.Dispose();
 
+#if DEBUG
+            ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+#endif
             ConfigurationManager.Instance.SaveConfigurations(true);
             ConfigurationManager.Instance.CloseConfigWindow();
 
