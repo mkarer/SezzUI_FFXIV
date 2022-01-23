@@ -23,6 +23,15 @@ namespace SezzUI.Interface.GeneralElements
         [Order(10)]
         public bool ShowConfigurationOnLogin = false;
 
+        // Component Logging
+        [Checkbox("Enable Component Logging [LogLevel: Debug]", spacing = true)]
+        [Order(105)]
+        public bool LogComponents = false;
+
+        [Checkbox("OriginalFunctionManager")]
+        [Order(106, collapseWith = nameof(LogComponents))]
+        public bool LogComponentsOriginalFunctionManager = false;
+        
         // Event Logging
         [Checkbox("Enable Event Logging [LogLevel: Debug]", spacing = true)]
         [Order(100)]

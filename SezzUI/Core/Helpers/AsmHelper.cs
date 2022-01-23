@@ -18,7 +18,7 @@ namespace SezzUI.Helpers
 			string pad = "D" + instructions.Count.ToString("D").Length;
 			for (int i = 0; i < instructions.Count; i++)
 			{
-				PluginLog.Debug($"Instruction {i.ToString(pad)}: {instructions[i]}");
+				PluginLog.Debug($"[OriginalFunction::DumpInstructions] Instruction {i.ToString(pad)}: {instructions[i]}");
 			}
 		}
 

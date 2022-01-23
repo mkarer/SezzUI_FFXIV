@@ -30,7 +30,7 @@ namespace SezzUI.Hooking
 					Plugin.ChatGui.PrintError("SezzUI failed to reassemble GetAdjustedActionId to work around hooking issues.");
 					Plugin.ChatGui.PrintError("If you're using XIVCombo or a similar plugin most action-related features won't work correctly.");
 					Plugin.ChatGui.PrintError("You can (and should) check the Dalamud logfile for further details.");
-					PluginLog.Error(ex, ex.Message);
+					PluginLog.Error(ex, $"[OriginalFunctionManager::GetAdjustedActionId] Error: {ex.Message}");
 				}
 			}
 

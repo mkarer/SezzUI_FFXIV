@@ -26,11 +26,11 @@ namespace SezzUI.Hooking
 		private IntPtr _newPointer = IntPtr.Zero;
 		public IntPtr Address => _newPointer;
 
-		private static readonly int minHookLength = 8; // Usually 8
-		private static readonly int maxHookLength = 16; // Usually 8
-		private static readonly int defaultHookLength = 8; // If the original function isn't hooked we assume that the hook will be of that size and only copy those instructions.
-		private static readonly int maxHookInstructions = 4; // Usually 1
-		private static readonly int maxFunctionSize = 16 * 2;
+		private const int MIN_HOOK_LENGTH = 8; // Usually 8
+		private const int MAX_HOOK_LENGTH = 16; // Usually 8
+		private const int DEFAULT_HOOK_LENGTH = 8; // If the original function isn't hooked we assume that the hook will be of that size and only copy those instructions.
+		private const int MAX_HOOK_INSTRUCTIONS = 4; // Usually 1
+		private const int MAX_FUNCTION_SIZE = 16 * 2;
 
 		public T? Invoke { get; private set; }
 
@@ -68,11 +68,20 @@ namespace SezzUI.Hooking
 
 		private void Initialize()
 		{
-			PluginLog.Debug($"Original address: {_originalPointer.ToInt64():X}");
-
+#if DEBUG
+			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
+			{
+				PluginLog.Debug($"[OriginalFunction::Initialize] Original address: {_originalPointer.ToInt64():X}");
+			}
+#endif
 			// Read current memory
-			CurrentProcess.SafeReadRaw(_originalPointer, out byte[] currentBytes, maxHookLength);
-			PluginLog.Debug("Byte code: " + Convert.ToHexString(currentBytes));
+			CurrentProcess.SafeReadRaw(_originalPointer, out byte[] currentBytes, MAX_HOOK_LENGTH);
+#if DEBUG
+			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
+			{
+				PluginLog.Debug("[OriginalFunction::Initialize] Byte code: " + Convert.ToHexString(currentBytes));
+			}
+#endif
 
 			// Decode current memory
 			List<Instruction> currentInstructions = AsmHelper.DecodeInstructions(currentBytes, _originalPointer);
@@ -101,13 +110,13 @@ namespace SezzUI.Hooking
 						throw new("Supplied original byte code doesn't match byte code in memory!");
 					}
 
-					hookLength = defaultHookLength;
+					hookLength = DEFAULT_HOOK_LENGTH;
 				}
 
 				// TODO: Just hook it?
 			}
 
-			if (_originalBytes.Length < minHookLength)
+			if (_originalBytes.Length < MIN_HOOK_LENGTH)
 			{
 				throw new("Original byte code size is smaller than minimum hook length!");
 			}
@@ -116,8 +125,12 @@ namespace SezzUI.Hooking
 			bool foundHookEnd = false;
 			if (isHooked)
 			{
-				PluginLog.Debug("Original function is already hooked.");
-
+#if DEBUG
+				if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
+				{
+					PluginLog.Debug("[OriginalFunction::Initialize] Original function is already hooked.");
+				}
+#endif
 				for (int i = 0; i < currentInstructions.Count; i++)
 				{
 					if (!foundHookEnd && i > 0 && currentInstructions[i].Mnemonic != Mnemonic.Nop)
@@ -128,35 +141,37 @@ namespace SezzUI.Hooking
 
 					hookLength += currentInstructions[i].Length;
 
-					if (i > maxHookInstructions)
+					if (i > MAX_HOOK_INSTRUCTIONS)
 					{
 						throw new("Failed to lookup end of current hook!");
 					}
 				}
 			}
 
-			if (isHooked && !foundHookEnd)
+			hookLength = isHooked switch
 			{
-				throw new("Failed to lookup end of current hook!");
-			}
+				true when !foundHookEnd => throw new("Failed to lookup end of current hook!"),
+				false when !foundHookEnd && hookLength == 0 => DEFAULT_HOOK_LENGTH,
+				_ => hookLength
+			};
 
-			if (!isHooked && !foundHookEnd && hookLength == 0)
+#if DEBUG
+			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
 			{
-				hookLength = defaultHookLength;
+				PluginLog.Debug($"[OriginalFunction::Initialize] Length of instructions we're going to skip: 0x{hookLength:X}");
+
+				// Dump
+				PluginLog.Debug("[OriginalFunction::Initialize] Current instructions:");
+				AsmHelper.DumpInstructions(currentBytes[..hookLength], _originalPointer);
+
+				PluginLog.Debug("[OriginalFunction::Initialize] Original instructions:");
+				AsmHelper.DumpInstructions(_originalBytes[..hookLength], _originalPointer);
 			}
-
-			PluginLog.Debug($">>> Length of hook instructions: 0x{hookLength:X}");
-
-			// Dump
-			PluginLog.Debug(">>> Current instructions:");
-			AsmHelper.DumpInstructions(currentBytes[..hookLength], _originalPointer);
-
-			PluginLog.Debug(">>> Original instructions:");
-			AsmHelper.DumpInstructions(_originalBytes[..hookLength], _originalPointer);
+#endif
 
 			// Create new instructions
-			(long min, long max) minMax = Utilities.GetRelativeJumpMinMax((long) _originalPointer, int.MaxValue - maxFunctionSize);
-			MemoryBuffer buffer = Utilities.FindOrCreateBufferInRange(maxFunctionSize, minMax.min, minMax.max, 1);
+			(long min, long max) = Utilities.GetRelativeJumpMinMax((long) _originalPointer, int.MaxValue - MAX_FUNCTION_SIZE);
+			MemoryBuffer buffer = Utilities.FindOrCreateBufferInRange(MAX_FUNCTION_SIZE, min, max, 1);
 			List<byte> opCodes = new();
 
 			_newPointer = buffer.ExecuteWithLock(() =>
@@ -171,6 +186,7 @@ namespace SezzUI.Hooking
 				};
 
 				List<Instruction> originalInstructions = AsmHelper.DecodeInstructions(_originalBytes[..hookLength], _originalPointer);
+				// ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
 				foreach (Instruction instruction in originalInstructions)
 				{
 					// TODO: I'm too lazy right now to check those I don't need.
@@ -179,17 +195,22 @@ namespace SezzUI.Hooking
 
 				assemblyCode.Add($"jmp qword {_originalPointer + hookLength}");
 				opCodes.AddRange(Utilities.Assembler.Assemble(assemblyCode.ToArray()));
-				Utilities.FillArrayUntilSize<byte>(opCodes, 0x90, maxFunctionSize);
+				Utilities.FillArrayUntilSize<byte>(opCodes, 0x90, MAX_FUNCTION_SIZE);
 
 				return buffer.Add(opCodes.ToArray(), 1);
 			});
 
 			// Dump
-			PluginLog.Debug(">>> New instructions:");
-			AsmHelper.DumpInstructions(opCodes.ToArray(), _newPointer);
-			PluginLog.Debug("New byte code: " + Convert.ToHexString(opCodes.ToArray()));
-			PluginLog.Debug($"New address: {_newPointer.ToInt64():X}");
-
+#if DEBUG
+			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
+			{
+				PluginLog.Debug("[OriginalFunction::Initialize] New instructions:");
+				AsmHelper.DumpInstructions(opCodes.ToArray(), _newPointer);
+				PluginLog.Debug("[OriginalFunction::Initialize] New byte code: " + Convert.ToHexString(opCodes.ToArray()));
+				PluginLog.Debug($"[OriginalFunction::Initialize] New address: {_newPointer.ToInt64():X}");
+			}
+#endif
+			
 			// Done
 			Invoke = Marshal.GetDelegateForFunctionPointer<T>(_newPointer);
 		}
