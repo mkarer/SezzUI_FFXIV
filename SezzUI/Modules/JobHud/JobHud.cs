@@ -222,6 +222,7 @@ namespace SezzUI.Modules.JobHud
 		protected override void InternalDispose()
 		{
 			Toggle(false);
+			_presets.Clear();
 
 			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
 			_config.ValueChangeEvent -= OnConfigPropertyChanged;

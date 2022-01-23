@@ -356,6 +356,7 @@ namespace SezzUI.Modules.CooldownHud
 		{
 			_barManagers.ForEach(manager => manager.Dispose());
 			_barManagers.Clear();
+			_presets.Clear();
 
 			_config.ValueChangeEvent -= OnConfigPropertyChanged;
 			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
