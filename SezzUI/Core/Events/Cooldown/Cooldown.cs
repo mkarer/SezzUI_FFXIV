@@ -4,18 +4,25 @@
  * 
  * Just like in World of Warcraft we don't care about the accumulated duration of all charges,
  * instead we only care about one charge.
+ *
+ * IMPORTANT: Only ActionType.Spell is supported, to watch "General" actions lookup their action ID first.
+ * This can easily be done by enabling debug logging and using the action, SendAction and ReceiveActionEffect
+ * should output the correct ID.
+ *
+ * TODO: Remove all unused action type code.
  */
 
-using Dalamud.Hooking;
-using FFXIVClientStructs.FFXIV.Client.Game;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects.SubKinds;
-using SezzUI.Helpers;
+using Dalamud.Hooking;
+using FFXIVClientStructs.FFXIV.Client.Game;
+using JetBrains.Annotations;
 using SezzUI.GameStructs;
+using SezzUI.Helpers;
 
 namespace SezzUI.GameEvents
 {
@@ -23,10 +30,15 @@ namespace SezzUI.GameEvents
 	{
 #pragma warning disable 67
 		public delegate void CooldownChangedDelegate(uint actionId, CooldownData data, bool chargesChanged, ushort previousCharges);
+
 		public event CooldownChangedDelegate? CooldownChanged;
+
 		public delegate void CooldownStartedDelegate(uint actionId, CooldownData data);
+
 		public event CooldownStartedDelegate? CooldownStarted;
+
 		public delegate void CooldownFinishedDelegate(uint actionId, CooldownData data, uint elapsedFinish);
+
 		public event CooldownFinishedDelegate? CooldownFinished;
 #pragma warning restore 67
 
@@ -37,24 +49,26 @@ namespace SezzUI.GameEvents
 		// private Hook<UseActionLocationDelegate>? _useActionLocationHook;
 
 		private delegate void SendActionDelegate(long targetObjectId, byte actionType, uint actionId, ushort sequence, long a5, long a6, long a7, long a8, long a9);
+
 		private Hook<SendActionDelegate>? _sendActionHook;
 
 		private delegate void ReceiveActionEffectDelegate(int sourceActorId, IntPtr sourceActor, IntPtr vectorPosition, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail);
+
 		private Hook<ReceiveActionEffectDelegate>? _receiveActionEffectHook;
 
 		// TODO: Delay first update based on latency?
 		// Also: https://twitter.com/perchbird_/status/1282734091780186120
-		private static uint UPDATE_DELAY_INITIAL = 1850;
-		private static uint UPDATE_DELAY_REPEATED = 5000;
-		private static uint UPDATE_DELAY_REPEATED_FREQUENT = 50; // 60 FPS = 16.7ms/Frame
+		private static readonly uint UPDATE_DELAY_INITIAL = 1850;
+		private static readonly uint UPDATE_DELAY_REPEATED = 5000;
+		private static readonly uint UPDATE_DELAY_REPEATED_FREQUENT = 50; // 60 FPS = 16.7ms/Frame
 
-		private Dictionary<uint, ushort> _watchedActions = new();
-		private Dictionary<uint, CooldownData> _cache = new();
+		private readonly Dictionary<uint, ushort> _watchedActions = new();
+		private readonly Dictionary<uint, CooldownData> _cache = new();
 
-		private List<Tuple<long, uint>> _delayedUpdates = new();
-		private DelayedCooldownUpdateComparer _delayedCooldownUpdateComparer = new();
+		private readonly List<Tuple<long, uint>> _delayedUpdates = new();
+		private readonly DelayedCooldownUpdateComparer _delayedCooldownUpdateComparer = new();
 
-		private static Dictionary<uint, uint> _actionsModifyingCooldowns = new() // Actions that modify the duration of other cooldowns
+		private static readonly Dictionary<uint, uint> _actionsModifyingCooldowns = new() // Actions that modify the duration of other cooldowns
 		{
 			// WAR
 			// Enhanced Infuriate [157]: Reduces Infuriate [52] recast time by 5 seconds upon landing Inner Beast [49], Steel Cyclone [51], Fell Cleave [3549], or Decimate [3550] on most targets.
@@ -64,13 +78,13 @@ namespace SezzUI.GameEvents
 			{3550, 52},
 			// BRD
 			// Empyreal Arrow [3885] -> Bloodletter [110] (and Rain of Death [117] which is grouped below) during Mage's Ballad
-			{3558, 110},
+			{3558, 110}
 			// SMN
 			// XIVCombo Demi Enkindle Feature: Enkindle [7429] somehow is still 7427?
 			//{ 7427, 7429 },
 		};
 
-		private static List<List<uint>> _cooldownGroups = new() // Actions that share the same cooldown
+		private static readonly List<List<uint>> _cooldownGroups = new() // Actions that share the same cooldown
 		{
 			// SAM
 			new() {7867, 16483, 16486, 16485, 16484}, // (Iaijutsu (XIVCombo) [7867]) Tsubame-gaeshi [16483] => Kaeshi: Setsugekka [16486] + Kaeshi: Goken [16485] + Kaeshi: Higanbana [16484]
@@ -80,11 +94,11 @@ namespace SezzUI.GameEvents
 			new() {16527, 7515} // Engagement [16527] + Displacement [7515]
 		};
 
-		private static List<uint> _frequentUpdateCooldowns = new() // Workaround until I figure out how to do this correctly. Yes, this is absolute bullshit :(
+		private static readonly List<uint> _frequentUpdateCooldowns = new() // Workaround until I figure out how to do this correctly. Yes, this is absolute bullshit :(
 		{
 			// BRD
 			110,
-			117, // Bloodletter [110], Rain of Death [117] => Mage's Ballad
+			117 // Bloodletter [110], Rain of Death [117] => Mage's Ballad
 		};
 
 		#region Public Methods
@@ -105,7 +119,7 @@ namespace SezzUI.GameEvents
 			else
 			{
 				_watchedActions[actionId] = 1;
-				Update(actionId, GetActionType(actionId));
+				Update(actionId, ActionType.Spell);
 			}
 		}
 
@@ -150,12 +164,6 @@ namespace SezzUI.GameEvents
 			return new();
 		}
 
-		public ActionType GetActionType(uint actionId)
-		{
-			// TODO: Where do we find the correct ActionType?
-			return _cache.ContainsKey(actionId) ? _cache[actionId].Type : (actionId == 4 || actionId == 8 ? ActionType.General : ActionType.Spell);
-		}
-
 		#endregion
 
 		#region Cooldown Data Update
@@ -188,7 +196,7 @@ namespace SezzUI.GameEvents
 
 				float cooldownPerCharge = totalCooldownAdjusted / maxChargesCurrentLevel;
 				float totalElapsedAdjusted = Math.Min(totalCooldownAdjusted, totalElapsed); // GetRecastTimeElapsed is weird when maxChargesCurrentLevel differs from maxChargesMaxLevel
-				float chargingMilliseconds = (totalElapsedAdjusted % cooldownPerCharge) * 1000;
+				float chargingMilliseconds = totalElapsedAdjusted % cooldownPerCharge * 1000;
 
 				data.MaxCharges = maxChargesCurrentLevel;
 				data.Duration = (uint) cooldownPerCharge * 1000;
@@ -218,7 +226,7 @@ namespace SezzUI.GameEvents
 				if (!isFinished)
 				{
 					// Schedule update
-					uint delay = _frequentUpdateCooldowns.Contains(actionId) ? UPDATE_DELAY_REPEATED_FREQUENT : (cooldownStarted ? UPDATE_DELAY_INITIAL : UPDATE_DELAY_REPEATED);
+					uint delay = _frequentUpdateCooldowns.Contains(actionId) ? UPDATE_DELAY_REPEATED_FREQUENT : cooldownStarted ? UPDATE_DELAY_INITIAL : UPDATE_DELAY_REPEATED;
 					uint remaining = data.Remaining;
 					ScheduleUpdate(actionId, remaining >= delay ? delay : remaining + 1);
 
@@ -260,13 +268,13 @@ namespace SezzUI.GameEvents
 
 		private void UpdateAll()
 		{
-			foreach (var kvp in _watchedActions)
+			foreach (KeyValuePair<uint, ushort> kvp in _watchedActions)
 			{
-				Update(kvp.Key, GetActionType(kvp.Key));
+				Update(kvp.Key, ActionType.Spell);
 			}
 		}
 
-		private bool TryUpdateIfWatched(uint actionId, ActionType actionType, bool isAdjusted = false, bool isGroupItem = false, bool isModiyfingAction = false)
+		private bool TryUpdateIfWatched(uint actionId, ActionType actionType, [UsedImplicitly] bool isAdjusted = false, bool isGroupItem = false, bool isModifyingAction = false)
 		{
 			if (_watchedActions.ContainsKey(actionId))
 			{
@@ -279,14 +287,16 @@ namespace SezzUI.GameEvents
 
 				return true;
 			}
-			else if (!isGroupItem && !isModiyfingAction && _actionsModifyingCooldowns.ContainsKey(actionId))
+
+			if (!isGroupItem && !isModifyingAction && _actionsModifyingCooldowns.ContainsKey(actionId))
 			{
 				// Delay update, cooldown won't get changed instantly.
 				TryUpdateIfWatched(_actionsModifyingCooldowns[actionId], actionType, isAdjusted, isGroupItem, true);
 				ScheduleMultipleUpdates(_actionsModifyingCooldowns[actionId]);
 				return true;
 			}
-			else if (!isGroupItem)
+
+			if (!isGroupItem)
 			{
 				// Check if action is in a group and update watched group cooldowns
 				foreach (List<uint> group in _cooldownGroups.Where(cdg => cdg.Contains(actionId)))
@@ -321,7 +331,7 @@ namespace SezzUI.GameEvents
 		#region Update Scheduling
 
 		/// <summary>
-		/// Schedule cooldown data update (in OnFrameworkUpdate)
+		///     Schedule cooldown data update (in OnFrameworkUpdate)
 		/// </summary>
 		/// <param name="actionId"></param>
 		/// <param name="delay">Minimum delay in milliseconds</param>
@@ -358,7 +368,7 @@ namespace SezzUI.GameEvents
 					uint actionId = _delayedUpdates[^1].Item2;
 					//LogDebug("OnFrameworkUpdate", $"TickCount64 {Environment.TickCount64} UpdateTickCount64 {_delayedUpdates[^1].Item1} ActionID {actionId}");
 					_delayedUpdates.RemoveAt(_delayedUpdates.Count - 1);
-					Update(actionId, GetActionType(actionId));
+					Update(actionId, ActionType.Spell);
 				}
 			}
 		}
@@ -389,7 +399,7 @@ namespace SezzUI.GameEvents
 
 		private readonly ActionManager* _actionManager;
 
-		public void GetRecastTimes(uint actionId, out float total, out float elapsed, ActionType actionType = ActionType.Spell)
+		private void GetRecastTimes(uint actionId, out float total, out float elapsed, ActionType actionType = ActionType.Spell)
 		{
 			total = 0f;
 			elapsed = 0f;
@@ -403,10 +413,7 @@ namespace SezzUI.GameEvents
 			}
 		}
 
-		public static ushort GetMaxCharges(uint actionId, uint level = 0)
-		{
-			return ActionManager.GetMaxCharges(actionId, level);
-		}
+		public static ushort GetMaxCharges(uint actionId, uint level = 0) => ActionManager.GetMaxCharges(actionId, level);
 
 		#endregion
 
@@ -470,7 +477,7 @@ namespace SezzUI.GameEvents
 
 		#region Hook
 
-		private void HookUseAction()
+		private bool HookUseAction()
 		{
 			try
 			{
@@ -491,8 +498,8 @@ namespace SezzUI.GameEvents
 					LogError($"Signature not found: UseAction");
 				}
 				*/
-				
-				if (Plugin.SigScanner.TryScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? F3 0F 10 3D ?? ?? ?? ?? 48 8D 4D BF", out var sendActionPtr))
+
+				if (Plugin.SigScanner.TryScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? F3 0F 10 3D ?? ?? ?? ?? 48 8D 4D BF", out IntPtr sendActionPtr))
 				{
 					_sendActionHook = new(sendActionPtr, SendActionDetour);
 #if DEBUG
@@ -501,11 +508,10 @@ namespace SezzUI.GameEvents
 						LogDebug($"Hooked: SendAction (ptr = {sendActionPtr.ToInt64():X})");
 					}
 #endif
+					return true;
 				}
-				else
-				{
-					LogError($"Signature not found: SendAction");
-				}
+
+				LogError("Signature not found: SendAction");
 
 				/*
 				if (Plugin.SigScanner.TryScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 81 FB FB 1C 00 00", out var useActionLocationPtr))
@@ -528,6 +534,8 @@ namespace SezzUI.GameEvents
 			{
 				LogError(ex, $"Failed to setup action hooks: {ex}");
 			}
+
+			return false;
 		}
 
 // 		private byte UseActionLocationDetour(IntPtr actionManager, byte actionType, uint actionId, long targetObjectId, IntPtr location, uint param)
@@ -548,16 +556,16 @@ namespace SezzUI.GameEvents
 #if DEBUG
 			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
 			{
-				LogDebug("SendActionDetour", $"Action ID: {actionId} Action Type: {actionType} Target: 0x{targetObjectId:X} ({Plugin.ObjectTable.SearchById((uint)targetObjectId)?.Name.TextValue ?? "??"})");
+				LogDebug("SendActionDetour", $"Action ID: {actionId} Type: {actionType} Name: {((ActionType) actionType == ActionType.Spell ? SpellHelper.GetActionName(actionId) ?? "?" : "?")} Target: 0x{targetObjectId:X} ({Plugin.ObjectTable.SearchById((uint) targetObjectId)?.Name.TextValue ?? "??"})");
 			}
 #endif
 
-			if (targetObjectId != Plugin.ClientState.LocalPlayer?.ObjectId)
+			if ((ActionType) actionType != ActionType.Spell || targetObjectId != Plugin.ClientState.LocalPlayer?.ObjectId)
 			{
 				return;
 			}
 
-			TryUpdateIfWatched(actionId, (ActionType)actionType);
+			TryUpdateIfWatched(actionId, (ActionType) actionType);
 		}
 
 		/*
@@ -592,7 +600,7 @@ namespace SezzUI.GameEvents
 		{
 			try
 			{
-				if (Plugin.SigScanner.TryScanText("E8 ?? ?? ?? ?? 48 8B 8D F0 03 00 00", out var receiveActionEffectPtr))
+				if (Plugin.SigScanner.TryScanText("E8 ?? ?? ?? ?? 48 8B 8D F0 03 00 00", out IntPtr receiveActionEffectPtr))
 				{
 					_receiveActionEffectHook = new(receiveActionEffectPtr, ReceiveActionEffectDetour);
 #if DEBUG
@@ -603,10 +611,8 @@ namespace SezzUI.GameEvents
 #endif
 					return true;
 				}
-				else
-				{
-					LogError($"Signature not found: ReceiveActionEffect");
-				}
+
+				LogError("Signature not found: ReceiveActionEffect");
 			}
 			catch (Exception ex)
 			{
@@ -631,10 +637,13 @@ namespace SezzUI.GameEvents
 #if DEBUG
 				if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
 				{
-					LogDebug("ReceiveActionEffectDetour", $"Action ID: {header.ActionId} Type: {header.Type} Source: 0x{sourceActorId:X} ({Plugin.ObjectTable.SearchById((uint) sourceActorId)?.Name.TextValue ?? "??"}) Target: 0x{header.TargetObjectId:X} ({Plugin.ObjectTable.SearchById((uint) header.TargetObjectId)?.Name.TextValue ?? "??"})");
+					LogDebug("ReceiveActionEffectDetour", $"Action ID: {header.ActionId} Type: {header.Type} Name: {(((ActionType) header.Type) == ActionType.Spell ? SpellHelper.GetActionName(header.ActionId) ?? "?" : "?")} Source: 0x{sourceActorId:X} ({Plugin.ObjectTable.SearchById((uint) sourceActorId)?.Name.TextValue ?? "??"}) Target: 0x{header.TargetObjectId:X} ({Plugin.ObjectTable.SearchById((uint) header.TargetObjectId)?.Name.TextValue ?? "??"})");
 				}
 #endif
-				TryUpdateIfWatched(header.ActionId, (ActionType)header.Type);
+				if ((ActionType) header.Type == ActionType.Spell)
+				{
+					TryUpdateIfWatched(header.ActionId, (ActionType) header.Type);
+				}
 			}
 			catch (Exception ex)
 			{
@@ -686,7 +695,7 @@ namespace SezzUI.GameEvents
 
 		#region Singleton
 
-		private static readonly Lazy<Cooldown> _ev = new(() => new Cooldown());
+		private static readonly Lazy<Cooldown> _ev = new(() => new());
 		public static Cooldown Instance => _ev.Value;
 		public static bool Initialized => _ev.IsValueCreated;
 
@@ -725,18 +734,18 @@ namespace SezzUI.GameEvents
 			{
 				return 0;
 			}
-			else if (x == null)
+
+			if (x == null)
 			{
 				return 1;
 			}
-			else if (y == null)
+
+			if (y == null)
 			{
 				return -1;
 			}
-			else
-			{
-				return y.Item1.CompareTo(x.Item1);
-			}
+
+			return y.Item1.CompareTo(x.Item1);
 		}
 	}
 }
