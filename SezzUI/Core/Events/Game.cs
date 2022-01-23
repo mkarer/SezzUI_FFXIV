@@ -42,7 +42,10 @@ namespace SezzUI.GameEvents
                 {
                     _setHudLayoutHook = new(setHudLayoutPtr, SetHudLayoutDetour);
 #if DEBUG
-                    LogDebug($"Hooked: SetHudLayout (ptr = {setHudLayoutPtr.ToInt64():X})");
+                    if (EventManager.Config.LogEvents && EventManager.Config.LogEventGame)
+                    {
+                        LogDebug($"Hooked: SetHudLayout (ptr = {setHudLayoutPtr.ToInt64():X})");
+                    }
 #endif
                 }
                 else
@@ -124,7 +127,7 @@ namespace SezzUI.GameEvents
                 {
                     _addonsReady = loaded && (_addonsReady || AreActionBarsLoaded());
 #if DEBUG
-                    if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameAddonsLoaded)
+                    if (EventManager.Config.LogEvents && EventManager.Config.LogEventGame && EventManager.Config.LogEventGameAddonsLoaded)
                     {
                         LogDebug("AddonsLoaded", $"Loaded: {loaded} Ready: {_addonsReady}");
                     }
@@ -213,7 +216,7 @@ namespace SezzUI.GameEvents
                 try
                 {
 #if DEBUG
-                    if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameAddonsVisibilityChanged)
+                    if (EventManager.Config.LogEvents && EventManager.Config.LogEventGame && EventManager.Config.LogEventGameAddonsVisibilityChanged)
                     {
                         LogDebug("AddonsVisibilityChanged", $"State: {addonVisibility}");
                     }
@@ -233,7 +236,7 @@ namespace SezzUI.GameEvents
             {
                 _hudLayoutReady = _addonsReady && AreActionBarsLoaded();
 #if DEBUG
-                if (EventManager.Config.LogEvents && EventManager.Config.LogEventGameHudLayoutActivated)
+                if (EventManager.Config.LogEvents && EventManager.Config.LogEventGame && EventManager.Config.LogEventGameHudLayoutActivated)
                 {
                     LogDebug("HudLayoutActivated", $"Layout: {hudLayout} LayoutReady: {_hudLayoutReady}");
                 }
