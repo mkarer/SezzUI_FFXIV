@@ -39,8 +39,9 @@ namespace SezzUI.Modules.CooldownHud
 			// General Actions
 			// --------------------------------------------------------------------------------
 
-			hud.RegisterCooldown(4); // Sprint
-			hud.RegisterCooldown(8); // Return
+			hud.RegisterCooldown(3); // Sprint
+			hud.RegisterCooldown(5); // Teleport
+			hud.RegisterCooldown(6); // Return
 		}
 	}
 }
