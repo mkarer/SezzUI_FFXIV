@@ -4,102 +4,106 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 
 namespace SezzUI.GameEvents
 {
-    internal sealed unsafe class Player : BaseGameEvent
-    {
-        public delegate void JobChangedDelegate(uint jobId);
-        public event JobChangedDelegate? JobChanged;
-        
-        public delegate void LevelChangedDelegate(byte level);
-        public event LevelChangedDelegate? LevelChanged;
-       
-        private uint lastJobId = 0;
-        private byte lastLevel = 0;
+	internal sealed class Player : BaseGameEvent
+	{
+		public delegate void JobChangedDelegate(uint jobId);
 
-        #region Singleton
-        private static readonly Lazy<Player> ev = new Lazy<Player>(() => new Player());
-        public static Player Instance { get { return ev.Value; } }
-        public static bool Initialized { get { return ev.IsValueCreated; } }
-        #endregion
+		public event JobChangedDelegate? JobChanged;
 
-        public override bool Enable()
-        {
-            if (base.Enable())
-            {
-                Plugin.Framework.Update += OnFrameworkUpdate;
-                return true;
-            }
-        
-            return false;
-        }
+		public delegate void LevelChangedDelegate(byte level);
 
-        public override bool Disable()
-        {
-            if (base.Disable())
-            {
-                Plugin.Framework.Update -= OnFrameworkUpdate;
-                return true;
-            }
+		public event LevelChangedDelegate? LevelChanged;
 
-            return false;
-        }
+		private uint _lastJobId;
+		private byte _lastLevel;
 
-        private void OnFrameworkUpdate(Framework framework)
-        {
-            try
-            {
-                Update();
-            }
-            catch (Exception ex)
-            {
-                LogError(ex, "OnFrameworkUpdate", $"Error: {ex}");
-            }
-        }
+		#region Singleton
 
-        private void Update()
-        {
-            PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+		private static readonly Lazy<Player> _ev = new(() => new());
+		public static Player Instance => _ev.Value;
+		public static bool Initialized => _ev.IsValueCreated;
 
-            try
-            {
-                // Job
-                uint jobId = (player != null ? player.ClassJob.Id : 0);
-                if (jobId != lastJobId)
-                {
-                    lastJobId = jobId;
+		#endregion
+
+		public override bool Enable()
+		{
+			if (base.Enable())
+			{
+				Plugin.Framework.Update += OnFrameworkUpdate;
+				return true;
+			}
+
+			return false;
+		}
+
+		public override bool Disable()
+		{
+			if (base.Disable())
+			{
+				Plugin.Framework.Update -= OnFrameworkUpdate;
+				return true;
+			}
+
+			return false;
+		}
+
+		private void OnFrameworkUpdate(Framework framework)
+		{
+			try
+			{
+				Update();
+			}
+			catch (Exception ex)
+			{
+				LogError(ex, "OnFrameworkUpdate", $"Error: {ex}");
+			}
+		}
+
+		private void Update()
+		{
+			PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+
+			try
+			{
+				// Job
+				uint jobId = player != null ? player.ClassJob.Id : 0;
+				if (jobId != _lastJobId)
+				{
+					_lastJobId = jobId;
 #if DEBUG
-                    if (EventManager.Config.LogEvents && EventManager.Config.LogEventPlayerJobChanged)
-                    {
-                        LogDebug("JobChanged", $"Job ID: {jobId}");
-                    }
+					if (EventManager.Config.LogEvents && EventManager.Config.LogEventPlayerJobChanged)
+					{
+						LogDebug("JobChanged", $"Job ID: {jobId}");
+					}
 #endif
-                    JobChanged?.Invoke(jobId);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogError(ex, "JobChanged", $"Failed invoking {nameof(JobChanged)}: {ex}");
-            }
+					JobChanged?.Invoke(jobId);
+				}
+			}
+			catch (Exception ex)
+			{
+				LogError(ex, "JobChanged", $"Failed invoking {nameof(JobChanged)}: {ex}");
+			}
 
-            try
-            {
-                // Level
-                byte level = (player != null ? player.Level : (byte)0);
-                if (level != lastLevel)
-                {
-                    lastLevel = level;
+			try
+			{
+				// Level
+				byte level = player != null ? player.Level : (byte) 0;
+				if (level != _lastLevel)
+				{
+					_lastLevel = level;
 #if DEBUG
-                    if (EventManager.Config.LogEvents && EventManager.Config.LogEventPlayerLevelChanged)
-                    {
-                        LogDebug("LevelChanged", $"Level: {level}");
-                    }
+					if (EventManager.Config.LogEvents && EventManager.Config.LogEventPlayerLevelChanged)
+					{
+						LogDebug("LevelChanged", $"Level: {level}");
+					}
 #endif
-                    LevelChanged?.Invoke(level);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogError(ex, "LevelChanged", $"Failed invoking {nameof(LevelChanged)}: {ex}");
-            }
-        }
-    }
+					LevelChanged?.Invoke(level);
+				}
+			}
+			catch (Exception ex)
+			{
+				LogError(ex, "LevelChanged", $"Failed invoking {nameof(LevelChanged)}: {ex}");
+			}
+		}
+	}
 }
