@@ -13,9 +13,6 @@ namespace SezzUI.Interface.GeneralElements
 		[NestedConfig("ActionBar 1", 60, collapsingHeader = false)]
 		public SingleActionBarConfig Bar1 = new(Element.ActionBar1);
 
-		[NestedConfig("ActionBar 10", 69, collapsingHeader = false)]
-		public SingleActionBarConfig Bar10 = new(Element.ActionBar10);
-
 		[NestedConfig("ActionBar 2", 61, collapsingHeader = false)]
 		public SingleActionBarConfig Bar2 = new(Element.ActionBar2);
 
@@ -40,9 +37,20 @@ namespace SezzUI.Interface.GeneralElements
 		[NestedConfig("ActionBar 9", 68, collapsingHeader = false)]
 		public SingleActionBarConfig Bar9 = new(Element.ActionBar9);
 
-		[Checkbox("Enable Bar Paging (Ctrl: Page 2, Alt: Page 3)", isMonitored = true)]
+		[NestedConfig("ActionBar 10", 69, collapsingHeader = false)]
+		public SingleActionBarConfig Bar10 = new(Element.ActionBar10);
+
+		[Checkbox("Enable Bar Paging", isMonitored = true)]
 		[Order(5)]
 		public bool EnableBarPaging = false;
+		
+		[Combo("CTRL", "Page 1", "Page 2", "Page 3", "Page 4", "Page 5", "Page 6", "Page 7", "Page 8", "Page 9", "Page 10")]
+		[Order(6, collapseWith = nameof(EnableBarPaging))]
+		public int BarPagingPageCtrl = 5;
+
+		[Combo("ALT", "Page 1", "Page 2", "Page 3", "Page 4", "Page 5", "Page 6", "Page 7", "Page 8", "Page 9", "Page 10")]
+		[Order(6, collapseWith = nameof(EnableBarPaging))]
+		public int BarPagingPageAlt = 2;
 
 		public new static ActionBarConfig DefaultConfig() =>
 			new()

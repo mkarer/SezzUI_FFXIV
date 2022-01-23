@@ -358,8 +358,6 @@ namespace SezzUI.Modules.GameUI
 		#region Bar Paging
 
 		private readonly byte _pageDefault = 0;
-		private readonly byte _pageControl = 1;
-		private readonly byte _pageAlt = 2;
 		private readonly ushort VK_CONTROL = 0x11;
 		private readonly ushort VK_MENU = 0x12;
 		private static RawInputNativeWindow? _msgWindow;
@@ -450,7 +448,7 @@ namespace SezzUI.Modules.GameUI
 						LogDebug("OnKeyStateChanged", $"Key: {vkCode} State: {state} (HoldingCtrl)");
 					}
 #endif
-					SetActionBarPage(_pageControl);
+					SetActionBarPage((byte)Config.BarPagingPageCtrl);
 				}
 				else if (vkCode == VK_MENU)
 				{
@@ -460,7 +458,7 @@ namespace SezzUI.Modules.GameUI
 						LogDebug("OnKeyStateChanged", $"Key: {vkCode} State: {state} (HoldingAlt)");
 					}
 #endif
-					SetActionBarPage(_pageAlt);
+					SetActionBarPage((byte)Config.BarPagingPageAlt);
 				}
 			}
 			else if (state == KeyState.KeyUp)
@@ -496,7 +494,7 @@ namespace SezzUI.Modules.GameUI
 						LogDebug("OnKeyStateChanged", $"Key: {vkCode} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (ReleasedAlt)");
 					}
 #endif
-					SetActionBarPage(pressedCtrl ? _pageControl : _pageDefault);
+					SetActionBarPage(pressedCtrl ? (byte)Config.BarPagingPageCtrl : _pageDefault);
 				}
 				else if (vkCode == VK_CONTROL)
 				{
@@ -507,7 +505,7 @@ namespace SezzUI.Modules.GameUI
 						LogDebug("OnKeyStateChanged", $"Key: {vkCode} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (ReleasedCtrl)");
 					}
 #endif
-					SetActionBarPage(pressedAlt ? _pageAlt : _pageDefault);
+					SetActionBarPage(pressedAlt ? (byte)Config.BarPagingPageAlt : _pageDefault);
 				}
 			}
 		}
