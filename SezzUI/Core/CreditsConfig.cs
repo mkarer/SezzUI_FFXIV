@@ -36,7 +36,7 @@ namespace SezzUI.Interface.GeneralElements
 			ImGui.NewLine();
 
 			ImGui.TextColored(_titleColor, "Additional credits:");
-			ImGui.Text("CaiClone, Lichie, professorK, yomishino");
+			ImGui.Text("0ceal0t, CaiClone, Lichie, lmcintyre, professorK, yomishino");
 
 			return false;
 		}

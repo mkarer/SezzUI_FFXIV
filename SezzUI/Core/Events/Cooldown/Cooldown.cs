@@ -30,8 +30,14 @@ namespace SezzUI.GameEvents
 		public event CooldownFinishedDelegate? CooldownFinished;
 #pragma warning restore 67
 
-		private delegate byte UseActionDelegate(IntPtr actionManager, ActionType actionType, uint actionId, long targetId, uint param, uint useType, int pvp, IntPtr a7);
-		private Hook<UseActionDelegate>? _useActionHook;
+		// private delegate byte UseActionDelegate(IntPtr actionManager, ActionType actionType, uint actionId, long targetId, uint param, uint useType, int pvp, IntPtr a7);
+		// private Hook<UseActionDelegate>? _useActionHook;
+		//
+		// private delegate byte UseActionLocationDelegate(IntPtr actionManager, byte actionType, uint actionId, long targetObjectId, IntPtr location, uint param);
+		// private Hook<UseActionLocationDelegate>? _useActionLocationHook;
+
+		private delegate void SendActionDelegate(long targetObjectId, byte actionType, uint actionId, ushort sequence, long a5, long a6, long a7, long a8, long a9);
+		private Hook<SendActionDelegate>? _sendActionHook;
 
 		private delegate void ReceiveActionEffectDelegate(int sourceActorId, IntPtr sourceActor, IntPtr vectorPosition, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail);
 		private Hook<ReceiveActionEffectDelegate>? _receiveActionEffectHook;
@@ -355,8 +361,10 @@ namespace SezzUI.GameEvents
 			}
 		}
 
+		/*
 		private void OnActionEffect(uint actorId, uint actionId)
 		{
+			// Probably not needed anymore because of ReceiveActionEffect
 			if (actorId != Plugin.ClientState.LocalPlayer?.ObjectId)
 			{
 				return;
@@ -371,6 +379,7 @@ namespace SezzUI.GameEvents
 
 			TryUpdateIfWatched(actionId, GetActionType(actionId));
 		}
+		*/
 
 		#endregion
 
@@ -463,6 +472,7 @@ namespace SezzUI.GameEvents
 		{
 			try
 			{
+				/*
 				string? useActionSig = AsmHelper.GetSignature<ActionManager>("UseAction");
 				if (useActionSig != null && Plugin.SigScanner.TryScanText(useActionSig, out var useActionPtr))
 				{
@@ -478,13 +488,77 @@ namespace SezzUI.GameEvents
 				{
 					LogError($"Signature not found: UseAction");
 				}
+				*/
+				
+				if (Plugin.SigScanner.TryScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? F3 0F 10 3D ?? ?? ?? ?? 48 8D 4D BF", out var sendActionPtr))
+				{
+					_sendActionHook = new(sendActionPtr, SendActionDetour);
+#if DEBUG
+					if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+					{
+						LogDebug($"Hooked: SendAction (ptr = {sendActionPtr.ToInt64():X})");
+					}
+#endif
+				}
+				else
+				{
+					LogError($"Signature not found: SendAction");
+				}
+
+				/*
+				if (Plugin.SigScanner.TryScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 81 FB FB 1C 00 00", out var useActionLocationPtr))
+				{
+					_useActionLocationHook = new(useActionLocationPtr, UseActionLocationDetour);
+#if DEBUG
+					if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+					{
+						LogDebug($"Hooked: UseActionLocation (ptr = {useActionLocationPtr.ToInt64():X})");
+					}
+#endif
+				}
+				else
+				{
+					LogError($"Signature not found: SendAction");
+				}
+			*/
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, $"Failed to setup hooks: {ex}");
+				LogError(ex, $"Failed to setup action hooks: {ex}");
 			}
 		}
 
+// 		private byte UseActionLocationDetour(IntPtr actionManager, byte actionType, uint actionId, long targetObjectId, IntPtr location, uint param)
+// 		{
+// 			var ret = _useActionLocationHook!.Original(actionManager, actionType, actionId, targetObjectId, location, param);
+// #if DEBUG
+// 			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+// 			{
+// 				LogDebug("UseActionLocationDetour", $"Result: {ret} Action ID: {actionId} Action Type: {actionType} Target: 0x{targetObjectId:X} ({Plugin.ObjectTable.SearchById((uint)targetObjectId)?.Name.TextValue ?? "??"})");
+// 			}
+// #endif
+// 			return ret;
+// 		}
+
+		private void SendActionDetour(long targetObjectId, byte actionType, uint actionId, ushort sequence, long a5, long a6, long a7, long a8, long a9)
+		{
+			_sendActionHook!.Original(targetObjectId, actionType, actionId, sequence, a5, a6, a7, a8, a9);
+#if DEBUG
+			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+			{
+				LogDebug("SendActionDetour", $"Action ID: {actionId} Action Type: {actionType} Target: 0x{targetObjectId:X} ({Plugin.ObjectTable.SearchById((uint)targetObjectId)?.Name.TextValue ?? "??"})");
+			}
+#endif
+
+			if (targetObjectId != Plugin.ClientState.LocalPlayer?.ObjectId)
+			{
+				return;
+			}
+
+			TryUpdateIfWatched(actionId, (ActionType)actionType);
+		}
+
+		/*
 		private byte UseActionDetour(IntPtr actionManager, ActionType actionType, uint actionId, long targetedActorId, uint param, uint useType, int pvp, IntPtr a7)
 		{
 			var ret = _useActionHook!.Original(actionManager, actionType, actionId, targetedActorId, param, useType, pvp, a7);
@@ -492,7 +566,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
 			{
-				LogDebug("UseActionDetour", $"Result: {ret} Action Type: {actionType} Action ID: {actionId}");
+				LogDebug("UseActionDetour", $"Result: {ret} Action ID: {actionId} Action Type: {actionType}");
 			}
 #endif
 
@@ -510,6 +584,7 @@ namespace SezzUI.GameEvents
 
 			return ret;
 		}
+		*/
 
 		private bool HookReceiveActionEffect()
 		{
@@ -554,10 +629,10 @@ namespace SezzUI.GameEvents
 #if DEBUG
 				if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
 				{
-					LogDebug("ReceiveActionEffectDetour", $"Action ID: {header.ActionId} Source: 0x{sourceActorId:X} ({Plugin.ObjectTable.SearchById((uint) sourceActorId)?.Name.TextValue ?? "??"}) 0xTarget: {header.TargetObjectId:X} ({Plugin.ObjectTable.SearchById((uint) header.TargetObjectId)?.Name.TextValue ?? "??"})");
+					LogDebug("ReceiveActionEffectDetour", $"Action ID: {header.ActionId} Type: {header.Type} Source: 0x{sourceActorId:X} ({Plugin.ObjectTable.SearchById((uint) sourceActorId)?.Name.TextValue ?? "??"}) Target: 0x{header.TargetObjectId:X} ({Plugin.ObjectTable.SearchById((uint) header.TargetObjectId)?.Name.TextValue ?? "??"})");
 				}
 #endif
-				TryUpdateAdjusted(header.ActionId, GetActionType(header.ActionId));
+				TryUpdateIfWatched(header.ActionId, (ActionType)header.Type);
 			}
 			catch (Exception ex)
 			{
@@ -574,9 +649,11 @@ namespace SezzUI.GameEvents
 			if (base.Enable())
 			{
 				Plugin.Framework.Update += OnFrameworkUpdate;
-				EventManager.CombatLog.ActionEffect += OnActionEffect;
-				_useActionHook?.Enable();
+				// EventManager.CombatLog.ActionEffect += OnActionEffect;
+				// _useActionHook?.Enable();
 				_receiveActionEffectHook?.Enable();
+				_sendActionHook?.Enable();
+				// _useActionLocationHook?.Enable();
 
 				return true;
 			}
@@ -589,9 +666,11 @@ namespace SezzUI.GameEvents
 			if (base.Disable())
 			{
 				Plugin.Framework.Update -= OnFrameworkUpdate;
-				EventManager.CombatLog.ActionEffect -= OnActionEffect;
-				_useActionHook?.Disable();
+				// EventManager.CombatLog.ActionEffect -= OnActionEffect;
+				// _useActionHook?.Disable();
 				_receiveActionEffectHook?.Disable();
+				_sendActionHook?.Disable();
+				// _useActionLocationHook?.Disable();
 				_delayedUpdates.Clear();
 				_cache.Clear();
 
@@ -627,8 +706,10 @@ namespace SezzUI.GameEvents
 			_actionsModifyingCooldowns.Clear();
 			_cooldownGroups.Clear();
 			_frequentUpdateCooldowns.Clear();
-			_useActionHook?.Dispose();
+			// _useActionHook?.Dispose();
 			_receiveActionEffectHook?.Dispose();
+			_sendActionHook?.Dispose();
+			// _useActionLocationHook?.Dispose();
 		}
 
 		#endregion
