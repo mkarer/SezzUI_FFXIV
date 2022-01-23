@@ -2,11 +2,32 @@
 using ImGuiNET;
 using ImGuiScene;
 using System.Numerics;
+using Dalamud.Logging;
+using SezzUI.Enums;
 
 namespace SezzUI.Helpers
 {
 	public static class DrawHelper
 	{
+        public static Vector2 GetAnchoredPosition(Vector2 parentPosition, Vector2 parentSize, Vector2 elementSize, DrawAnchor anchor)
+        {
+            return anchor switch
+            {
+                DrawAnchor.Center => parentPosition + parentSize / 2f - elementSize / 2f,
+                DrawAnchor.Left => parentPosition + new Vector2(0, parentSize.Y / 2f - elementSize.Y / 2f),
+                DrawAnchor.Right => parentPosition + new Vector2(parentPosition.X + parentSize.X - elementSize.X, parentSize.Y / 2f - elementSize.Y / 2f),
+                DrawAnchor.Top => parentPosition + new Vector2(parentSize.X / 2f - elementSize.X / 2f, 0),
+                DrawAnchor.TopLeft => parentPosition,
+                DrawAnchor.TopRight => parentPosition + new Vector2(parentSize.X - elementSize.X, 0),
+                DrawAnchor.Bottom => parentPosition + new Vector2(parentSize.X / 2f - elementSize.X / 2f, parentSize.Y - elementSize.Y),
+                DrawAnchor.BottomLeft => parentPosition + new Vector2(0, parentSize.Y - elementSize.Y),
+                DrawAnchor.BottomRight => parentPosition + new Vector2(parentSize.X - elementSize.X, parentSize.Y - elementSize.Y),
+                _ => parentPosition
+            };
+        }
+
+        public static Vector2 GetAnchoredPosition(Vector2 elementSize, DrawAnchor anchor) => GetAnchoredPosition(Vector2.Zero, ImGui.GetMainViewport().Size, elementSize, anchor);
+
         public static void DrawBackdrop(Vector2 pos, Vector2 size, uint backgroundColor, uint borderColor, ImDrawListPtr drawList)
 		{
             // Background
@@ -129,7 +150,7 @@ namespace SezzUI.Helpers
             drawList.AddLine(new Vector2(pos.X + 1, pos.Y + size.Y - 2), new Vector2(pos.X + size.X - 1, pos.Y + 1), colorLines, 1); // Bottom Left -> Top Right
 
             // Text
-            DrawCenteredShadowText("MyriadProLightCond_16", text, pos, size, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, opacity)), drawList);
+            DrawCenteredShadowText("MyriadProLightCond_16", text, pos, size / 2f, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, opacity)), ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, opacity)), drawList);
         }
 
         public static void DrawProgressBar(Vector2 pos, Vector2 size, float min, float max, float current, uint barColor, uint bgColor, ImDrawListPtr drawList)
@@ -147,7 +168,7 @@ namespace SezzUI.Helpers
             {
                 if (remaining > total) {
                     // avoid crashes
-                    Dalamud.Logging.PluginLog.Warning("[DrawProgressSwipe] Adjusted remaining duration {remaining} to not exceed total {total}. FIX YOUR CODE!");
+                    PluginLog.Warning($"[DrawProgressSwipe] Adjusted remaining duration {remaining} to not exceed total {total}. FIX YOUR CODE!");
                     remaining = total;
                 }
 
@@ -171,16 +192,16 @@ namespace SezzUI.Helpers
 
                     drawList.AddLine(start, end, color, 1);
                     drawList.AddLine(start, new(pos.X + size.X / 2, pos.Y), color, 1);
-                    drawList.AddCircleFilled(start + new Vector2(1 / 4, 1 / 4), 1 / 2, color);
+                    drawList.AddCircleFilled(start + new Vector2(0.25f, 0.25f), 0.5f, color);
                 }
 
                 ImGui.PopClipRect();
             }
         }
 
-        public static string FormatDuration(uint durationMS, ushort msThreshold = 0, bool zeroSeconds = true)
+        public static string FormatDuration(uint durationMs, ushort msThreshold = 0, bool zeroSeconds = true)
         {
-            return FormatDuration(durationMS / 1000f, msThreshold, zeroSeconds);
+            return FormatDuration(durationMs / 1000f, msThreshold, zeroSeconds);
         }
 
         public static string FormatDuration(float duration, ushort msThreshold = 0, bool zeroSeconds = true)
