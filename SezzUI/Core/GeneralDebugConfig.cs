@@ -25,13 +25,17 @@ namespace SezzUI.Interface.GeneralElements
 
         // Component Logging
         [Checkbox("Enable Component Logging [LogLevel: Debug]", spacing = true)]
-        [Order(105)]
+        [Order(200)]
         public bool LogComponents = false;
 
         [Checkbox("OriginalFunctionManager")]
-        [Order(106, collapseWith = nameof(LogComponents))]
+        [Order(210, collapseWith = nameof(LogComponents))]
         public bool LogComponentsOriginalFunctionManager = false;
-        
+
+        [Checkbox("RawInputNativeWindow")]
+        [Order(210, collapseWith = nameof(LogComponents))]
+        public bool LogComponentsRawInputNativeWindow = false;
+
         // Event Logging
         [Checkbox("Enable Event Logging [LogLevel: Debug]", spacing = true)]
         [Order(100)]

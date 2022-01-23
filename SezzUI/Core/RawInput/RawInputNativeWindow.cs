@@ -7,7 +7,7 @@
  * - WM_SYSKEYDOWN will be sent as WM_KEYDOWN
  * - WM_SYSKEYUP will be sent as WM_KEYUP
  * - Keys sent after alt-tabbing out will be lost unless EnableBackgroundParsing is TRUE.
- * - EnableBackgroundParsing is disabled by default (and should be), the state of pressed keys will be reset when the main window loses focus.
+ * - ENABLE_BACKGROUND_PARSING is disabled by default (and should be), the state of pressed keys will be reset when the main window loses focus.
  * - Pressing ALT+GR is bad :D
  * 
  * Sample usage:
@@ -49,7 +49,7 @@ namespace SezzUI.NativeMethods.RawInput
         /// <summary>
         /// Returns TRUE if the parent process is in foreground.
         /// </summary>
-        public bool ShouldParse => EnableBackgroundParsing || !IsInBackground;
+        private bool ShouldParse => ENABLE_BACKGROUND_PARSING || !IsInBackground;
         private readonly IntPtr _parentProcessHandle;
         private HWND _hwnd;
 
@@ -64,8 +64,9 @@ namespace SezzUI.NativeMethods.RawInput
         /// <summary>
         /// Allow processing keys while parent process is not in foreground.
         /// </summary>
-        public bool EnableBackgroundParsing = false; // TODO: Enable WinEventHook if changed after window creation!
-        public bool IsInBackground => PInvoke.GetForegroundWindow() != _parentProcessHandle;
+        private const bool ENABLE_BACKGROUND_PARSING = false;
+
+        private bool IsInBackground => PInvoke.GetForegroundWindow() != _parentProcessHandle;
 
         private static WINEVENTPROC? _winEventHookProc;
         private UnhookWinEventSafeHandle? _winEventHookHandle;
@@ -88,7 +89,12 @@ namespace SezzUI.NativeMethods.RawInput
 
         protected override void OnHandleChange()
         {
-            PluginLog.Debug($"[RawInputNativeWindow::OnHandleChange] Handle: {Handle.ToInt64():X}");
+#if DEBUG
+            if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+            {
+                PluginLog.Debug($"[RawInputNativeWindow::OnHandleChange] Handle: {Handle.ToInt64():X}");
+            }
+#endif
             _hwnd = new(Handle);
         }
 
@@ -117,9 +123,14 @@ namespace SezzUI.NativeMethods.RawInput
                 }
             }
 
-            PluginLog.Debug($"[RawInputNativeWindow::CreateWindow] Handle: {Handle.ToInt64():X}");
+#if DEBUG
+            if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+            {
+                PluginLog.Debug($"[RawInputNativeWindow::CreateWindow] Handle: {Handle.ToInt64():X}");
+            }
+#endif
 
-            if (!EnableBackgroundParsing)
+            if (!ENABLE_BACKGROUND_PARSING)
             {
                 SetWinEventHook();
             }
@@ -137,10 +148,12 @@ namespace SezzUI.NativeMethods.RawInput
             uint currentThread = PInvoke.GetCurrentThreadId();
             bool invokeRequired = hwndThread != currentThread;
 
-            if (invokeRequired)
+#if DEBUG
+            if (invokeRequired && Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
             {
                 PluginLog.Debug($"[RawInputNativeWindow::GetInvokeRequired] Current Thread: {currentThread} Window Thread: {hwndThread}");
             }
+#endif
 
             return invokeRequired;
         }
@@ -152,7 +165,12 @@ namespace SezzUI.NativeMethods.RawInput
 
             try
             {
-                PluginLog.Debug($"[RawInputNativeWindow::SetWinEventHook] Enabling hook...");
+#if DEBUG
+                if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+                {
+                    PluginLog.Debug($"[RawInputNativeWindow::SetWinEventHook] Enabling hook...");
+                }
+#endif
                 // ReSharper disable once RedundantDelegateCreation
                 _winEventHookProc = new(WinEventProc);
                 _winEventHookHandle = PInvoke.SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, null, _winEventHookProc, 0, 0, WINEVENT_OUTOFCONTEXT);
@@ -167,21 +185,28 @@ namespace SezzUI.NativeMethods.RawInput
                 PluginLog.Error($"[RawInputNativeWindow::SetWinEventHook] Error: {Marshal.GetLastWin32Error()}");
                 _winEventHookHandle = null;
             }
-            else
+#if DEBUG
+            else if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
             {
                 PluginLog.Debug($"[RawInputNativeWindow::SetWinEventHook] Handle: {_winEventHookHandle.DangerousGetHandle().ToInt64():X}");
             }
+#endif
         }
 
         private void UnhookWinEvent()
         {
-            if (_winEventHookHandle != null && !_winEventHookHandle.IsInvalid)
+            if (_winEventHookHandle is {IsInvalid: false})
             {
                 try
                 {
                     _winEventHookHandle.Dispose();
                     _winEventHookHandle = null;
-                    PluginLog.Debug($"[RawInputNativeWindow::UnhookWinEvent] Success!");
+#if DEBUG
+                    if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+                    {
+                        PluginLog.Debug($"[RawInputNativeWindow::UnhookWinEvent] Success!");
+                    }
+#endif
                 }
                 catch (Exception ex)
                 {
@@ -192,7 +217,13 @@ namespace SezzUI.NativeMethods.RawInput
 
         private void WinEventProc(HWINEVENTHOOK hWinEventHook, uint @event, HWND hwnd, int idObject, int idChild, uint idEventThread, uint dwmsEventTime)
         {
-            //PluginLog.Debug($"[RawInputNativeWindow::WinEventProc] Event Type: {@event}");
+#if DEBUG
+            if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+            {
+                PluginLog.Debug($"[RawInputNativeWindow::WinEventProc] Event Type: {@event}");
+            }
+#endif
+
             if (_lastVirtualKeyCode != null && _lastKeyState is KeyState.KeyDown && IsInBackground)
             {
                 TryInvokeOnKeyStateChanged((ushort)_lastVirtualKeyCode, KeyState.KeyUp);
@@ -205,7 +236,12 @@ namespace SezzUI.NativeMethods.RawInput
         {
             if (InvokeRequired)
             {
-                PluginLog.Debug($"[RawInputNativeWindow::DestroyWindow] PostMessage: {Handle.ToInt64():X} WM_CLOSE");
+#if DEBUG
+                if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+                {
+                    PluginLog.Debug($"[RawInputNativeWindow::DestroyWindow] PostMessage: {Handle.ToInt64():X} WM_CLOSE");
+                }
+#endif
                 _unhookCts = new(_unhookTimeout); // Gets cancelled after receiving WM_CLOSE and unhooking WinEvent!
                 if (!PInvoke.PostMessage(_hwnd, WM_CLOSE, 0, 0))
                 {
@@ -222,7 +258,7 @@ namespace SezzUI.NativeMethods.RawInput
                     }
                     catch (Exception ex)
                     {
-                        PluginLog.Debug($"[RawInputNativeWindow::DestroyWindow] Error: {ex}");
+                        PluginLog.Error(ex, $"[RawInputNativeWindow::DestroyWindow] Error: {ex}");
                     }
                     finally
                     {
@@ -260,14 +296,24 @@ namespace SezzUI.NativeMethods.RawInput
             }
             else if (m.Msg == WM_INPUT)
             {
-                //PluginLog.Debug("[RawInputNativeWindow::WndProc] WM_INPUT");
+#if DEBUG
+                if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+                {
+                    PluginLog.Debug($"[RawInputNativeWindow::WndProc] WM_INPUT");
+                }
+#endif
                 ParseRawInput(m.LParam);
                 return;
             }
 
             if (m.Msg == WM_CLOSE)
             {
-                PluginLog.Debug("[RawInputNativeWindow::WndProc] WM_CLOSE");
+#if DEBUG
+                if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+                {
+                    PluginLog.Debug($"[RawInputNativeWindow::WndProc] WM_CLOSE");
+                }
+#endif
                 UnhookWinEvent();
                 _unhookCts.Cancel();
             }
@@ -320,7 +366,12 @@ namespace SezzUI.NativeMethods.RawInput
 
             fixed (RAWINPUTDEVICE* devPtr = rawDevices)
             {
-                PluginLog.Debug($"[RawInputNativeWindow::RegisterDevices] Usage Page: {devPtr->usUsagePage} Usage ID: {devPtr->usUsage}");
+#if DEBUG
+                if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+                {
+                    PluginLog.Debug($"[RawInputNativeWindow::RegisterDevices] Usage Page: {devPtr->usUsagePage} Usage ID: {devPtr->usUsage}");
+                }
+#endif
                 try
                 {
                     if (PInvoke.RegisterRawInputDevices(devPtr, (uint)rawDevices.Length, (uint)sizeof(RAWINPUTDEVICE)))
