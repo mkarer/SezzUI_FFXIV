@@ -283,6 +283,7 @@ namespace SezzUI.GameEvents
 				{
 					// Apparently it's not.
 					ScheduleMultipleUpdates(actionId);
+					//LogDebug($"ScheduleMultipleUpdates/1: {actionId} {SpellHelper.GetActionName(actionId) ?? "?"}");
 				}
 
 				return true;
@@ -293,6 +294,7 @@ namespace SezzUI.GameEvents
 				// Delay update, cooldown won't get changed instantly.
 				TryUpdateIfWatched(_actionsModifyingCooldowns[actionId], actionType, isAdjusted, isGroupItem, true);
 				ScheduleMultipleUpdates(_actionsModifyingCooldowns[actionId]);
+				//LogDebug($"ScheduleMultipleUpdates/2: {actionId} {SpellHelper.GetActionName(actionId) ?? "?"}");
 				return true;
 			}
 
