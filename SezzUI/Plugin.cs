@@ -244,9 +244,7 @@ namespace SezzUI
                 {
                     _lastDrawState = drawState;
 #if DEBUG
-                    GeneralDebugConfig? config = ConfigurationManager.Instance.GetConfigObject<GeneralDebugConfig>();
-                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                    if (config != null && config.LogEvents && config.LogEventPluginDrawStateChanged)
+                    if (DebugConfig.LogEvents && DebugConfig.LogEventPluginDrawStateChanged)
                     {
                         PluginLog.Debug($"[Plugin::DrawStateChanged] State: {drawState}");
                     }
@@ -265,6 +263,12 @@ namespace SezzUI
         #region Draw State
         private DrawState _lastDrawState = DrawState.Unknown;
 
+        private static unsafe bool IsAddonVisible(string name)
+        {
+            IntPtr addon = GameGui.GetAddonByName(name, 1);
+            return (addon != IntPtr.Zero && ((AtkUnitBase*) addon)->IsVisible);
+        }
+        
         private static unsafe DrawState GetDrawState()
         {
             // Dalamud conditions
@@ -278,7 +282,7 @@ namespace SezzUI
             }
             else if (Condition[ConditionFlag.WatchingCutscene] || Condition[ConditionFlag.WatchingCutscene78] || Condition[ConditionFlag.OccupiedInCutSceneEvent])
             {
-                return DrawState.HiddenCutscene;
+                return IsAddonVisible("_NaviMap") ? DrawState.Partially : DrawState.HiddenCutscene;
             }
             else if (Condition[ConditionFlag.OccupiedSummoningBell])
             {
@@ -291,30 +295,9 @@ namespace SezzUI
                 return DrawState.Partially;
             }
 
-            try
+            if (!IsAddonVisible("_ParameterWidget") || IsAddonVisible("FadeMiddle") || !IsAddonVisible("_ActionBar"))
             {
-                IntPtr parameterWidget = GameGui.GetAddonByName("_ParameterWidget", 1);
-                if (parameterWidget != IntPtr.Zero && !((AtkUnitBase*)parameterWidget)->IsVisible)
-                {
-                    return DrawState.Partially;
-                }
-
-                IntPtr fadeMiddleWidget = GameGui.GetAddonByName("FadeMiddle", 1);
-                if (fadeMiddleWidget != IntPtr.Zero && ((AtkUnitBase*)fadeMiddleWidget)->IsVisible)
-                {
-                    return DrawState.Partially;
-                }
-
-                // TODO: Test if this is good enough, remove if a timer is really needed.
-                IntPtr actionBarWidget = GameGui.GetAddonByName("_ActionBar", 1);
-                if (actionBarWidget != IntPtr.Zero && !((AtkUnitBase*)actionBarWidget)->IsVisible)
-                {
-                    return DrawState.Partially;
-                }
-            }
-            catch (Exception ex)
-            {
-                PluginLog.Error(ex, $"[GetDrawState] Error: {ex}");
+                return DrawState.Partially;
             }
 
             return DrawState.Visible;
