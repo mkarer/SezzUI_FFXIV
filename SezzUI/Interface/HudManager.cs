@@ -26,12 +26,13 @@ namespace SezzUI.Interface
         private List<IHudElementWithActor> _hudElementsUsingFocusTarget = null!;
         private List<IHudElementWithPreview> _hudElementsWithPreview = null!;
 
-        internal static Modules.JobHud.JobHud? JobHud;
-        internal static Modules.CooldownHud.CooldownHud? CooldownHud;
-        internal static Modules.GameUI.ElementHider? ElementHider;
-        internal static Modules.GameUI.ActionBar? ActionBar;
+        private static Modules.JobHud.JobHud? _jobHud;
+        private static Modules.CooldownHud.CooldownHud? _cooldownHud;
+        private static Modules.GameUI.ElementHider? _elementHider;
+        private static Modules.GameUI.ActionBar? _actionBar;
+        private static Modules.PluginMenu.PluginMenu? _pluginMenu;
 
-        private HudHelper _hudHelper = new HudHelper();
+        private readonly HudHelper _hudHelper = new HudHelper();
 
         #region Singleton
         public static void Initialize() { Instance = new HudManager(); }
@@ -67,7 +68,7 @@ namespace SezzUI.Interface
 
             _hudHelper.Dispose();
 
-            JobHud?.Dispose();
+            _jobHud?.Dispose();
 
             _hudModules.ForEach(module => module.Dispose());
             _hudModules.Clear();
@@ -151,38 +152,46 @@ namespace SezzUI.Interface
         private void CreateMiscElements()
         {
             // Job HUD
-            if (JobHud == null)
+            if (_jobHud == null)
             {
-                JobHud = new(ConfigurationManager.Instance.GetConfigObject<JobHudConfig>(), "Job HUD");
+                _jobHud = new(ConfigurationManager.Instance.GetConfigObject<JobHudConfig>(), "Job HUD");
             }
-            _hudElements.Add(JobHud);
-            _hudElementsUsingPlayer.Add(JobHud);
+            _hudElements.Add(_jobHud);
+            _hudElementsUsingPlayer.Add(_jobHud);
         }
 
         private void CreateModules()
         {
             // Cooldown HUD
-            if (CooldownHud == null)
+            if (_cooldownHud == null)
             {
-                CooldownHud = Modules.CooldownHud.CooldownHud.Initialize();
+                _cooldownHud = Modules.CooldownHud.CooldownHud.Initialize();
             }
-            _hudModules.Add(CooldownHud);
+            _hudModules.Add(_cooldownHud);
 
             // Game UI Tweaks
-            if (ActionBar == null)
+            if (_actionBar == null)
             {
                 // Load this module before ActionBars are getting hidden.
                 Modules.GameUI.ActionBar.Initialize();
-                ActionBar = Modules.GameUI.ActionBar.Instance;
+                _actionBar = Modules.GameUI.ActionBar.Instance;
             }
-            _hudModules.Add(ActionBar);
+            _hudModules.Add(_actionBar);
 
-            if (ElementHider == null)
+            if (_elementHider == null)
             {
                 Modules.GameUI.ElementHider.Initialize();
-                ElementHider = Modules.GameUI.ElementHider.Instance;
+                _elementHider = Modules.GameUI.ElementHider.Instance;
             }
-            _hudModules.Add(ElementHider);
+            _hudModules.Add(_elementHider);
+            
+            // Plugin Menu
+            if (_pluginMenu == null)
+            {
+                Modules.PluginMenu.PluginMenu.Initialize();
+                _pluginMenu = Modules.PluginMenu.PluginMenu.Instance;
+            }
+            _hudModules.Add(_pluginMenu);
         }
 
         public void Draw(DrawState drawState)

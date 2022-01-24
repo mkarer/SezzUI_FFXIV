@@ -449,6 +449,10 @@ namespace SezzUI.Config
 #if DEBUG
 			typeof(ActionBarDebugConfig),
 #endif
+			typeof(PluginMenuConfig),
+#if DEBUG
+			typeof(PluginMenuDebugConfig),
+#endif
 
 			typeof(TanksColorConfig),
 			typeof(HealersColorConfig),
