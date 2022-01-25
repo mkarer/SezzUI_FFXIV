@@ -19,9 +19,8 @@ namespace SezzUI.BarManager
         public Vector2 Position = Vector2.Zero;
 
         public BarManagerBarConfig BarConfig = new();
-        public List<BarManagerBar> Bars { get { return _bars; } }
-        private List<BarManagerBar> _bars = new();
-        public int Count => _bars.Count();
+        public readonly List<BarManagerBar> Bars = new();
+        public int Count => Bars.Count();
 
         public readonly string Id;
 
@@ -48,7 +47,7 @@ namespace SezzUI.BarManager
             { 
                 bar = new(this);
                 bar.Id = id;
-                _bars.Add(bar);
+                Bars.Add(bar);
             }
 
             if (bar != null)
@@ -77,7 +76,7 @@ namespace SezzUI.BarManager
 
             if (bar != null)
             {
-                _bars.Remove(bar);
+                Bars.Remove(bar);
                 bar.Dispose();
                 return true;
             }
@@ -87,32 +86,32 @@ namespace SezzUI.BarManager
 
         public void RemoveExpired()
         {
-            for (int i = _bars.Count - 1; i >= 0; i--)
+            for (int i = Bars.Count - 1; i >= 0; i--)
             {
-                if (!_bars[i].IsActive) {
-                    _bars.RemoveAt(i);
+                if (!Bars[i].IsActive) {
+                    Bars.RemoveAt(i);
                 }
             }
         }
 
         public void Clear()
         {
-            _bars.ForEach(bar => bar.Dispose());
-            _bars.Clear();
+            Bars.ForEach(bar => bar.Dispose());
+            Bars.Clear();
         }
 
-        public BarManagerBar? Get(uint id) => _bars.Where(bar => bar.Id == id).FirstOrDefault();
+        public BarManagerBar? Get(uint id) => Bars.Where(bar => bar.Id == id).FirstOrDefault();
 
         public void Draw(Vector2 origin)
         {
-            if (!_bars.Any()) { return; }
+            if (!Bars.Any()) { return; }
 
             RemoveExpired();
        
             Vector2 barPosition = DelvUI.Helpers.Utils.GetAnchoredPosition(Position, BarConfig.Size, Anchor);
             Vector2 offset = Vector2.Zero;
 
-            _bars.ForEach(bar =>
+            Bars.ForEach(bar =>
             {
                 if (bar.IsActive) {
                     bar.Draw(barPosition + offset);

@@ -19,7 +19,7 @@ namespace SezzUI.Modules.CooldownHud
 	public class CooldownHud : HudModule
 	{
 		private const ushort INITIAL_PULSE_CHARGES = 100; // Unreachable amount of charges.
-		private const ushort NOPULSE_AFTER_ELAPSEDFINISHED = 3000; // Don't show pulse if the cooldown finished ages ago...
+		private const ushort NO_PULSE_AFTER_ELAPSED_FINISHED = 3000; // Don't show pulse if the cooldown finished ages ago...
 		private readonly List<BarManager.BarManager> _barManagers = new();
 		private readonly Dictionary<uint, CooldownHudItem> _cooldowns = new();
 		private readonly Dictionary<uint, BasePreset> _presets = new();
@@ -75,6 +75,7 @@ namespace SezzUI.Modules.CooldownHud
 #endif
 
 			// Setup watched cooldowns
+			
 			if (_presets.TryGetValue(_currentJobId, out BasePreset? preset))
 			{
 				preset.Configure(this);
@@ -129,7 +130,7 @@ namespace SezzUI.Modules.CooldownHud
 			for (int i = _pulses.Count - 1; i >= 0; i--)
 			{
 				CooldownPulse pulse = _pulses[i];
-				bool expired = Environment.TickCount64 - pulse.Created >= NOPULSE_AFTER_ELAPSEDFINISHED;
+				bool expired = Environment.TickCount64 - pulse.Created >= NO_PULSE_AFTER_ELAPSED_FINISHED;
 				if (!expired || pulse.Animator.IsAnimating)
 				{
 					pulse.Draw((Vector2) origin);
@@ -354,12 +355,12 @@ namespace SezzUI.Modules.CooldownHud
 
 		protected override void InternalDispose()
 		{
+			_config.ValueChangeEvent -= OnConfigPropertyChanged;
+			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+
 			_barManagers.ForEach(manager => manager.Dispose());
 			_barManagers.Clear();
 			_presets.Clear();
-
-			_config.ValueChangeEvent -= OnConfigPropertyChanged;
-			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
 		}
 
 		~CooldownHud()
@@ -510,7 +511,7 @@ namespace SezzUI.Modules.CooldownHud
 				return;
 			}
 
-			if (elapsedFinish <= NOPULSE_AFTER_ELAPSEDFINISHED && CanPulse(actionId, data.CurrentCharges))
+			if (elapsedFinish <= NO_PULSE_AFTER_ELAPSED_FINISHED && CanPulse(actionId, data.CurrentCharges))
 			{
 				// Bar is very likely not available anymore here, because it was removed by BarManager.RemoveExpired
 				GetActionDisplayData(actionId, data.Type, out string? name, out TextureWrap? texture);
