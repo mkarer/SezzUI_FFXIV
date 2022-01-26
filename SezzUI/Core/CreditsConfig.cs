@@ -39,10 +39,11 @@ namespace SezzUI.Interface.GeneralElements
 			ImGui.Text("0ceal0t, CaiClone, goat, Lichie, lmcintyre, professorK, yomishino");
 			ImGui.NewLine();
 
-			ImGui.TextColored(_titleColor, "Images:");
-			ImGui.Text("Radar: FreePik (Flaticon.com)");
-			ImGui.Text("Fast Forward: Inkubators (Flaticon.com)");
-			ImGui.Text("Ripple: SmashingStocks (Flaticon.com)");
+			ImGui.TextColored(_titleColor, "Images/Icons:");
+			ImGui.Text("Radar: FreePik/Flaticon.com");
+			ImGui.Text("Fast Forward: Inkubators/Flaticon.com");
+			ImGui.Text("Network: SmashIcons/Flaticon.com");
+			ImGui.Text("Chart/Histogram: Flaticon.com");
 
 			return false;
 		}
