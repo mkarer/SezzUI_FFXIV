@@ -86,12 +86,6 @@ namespace SezzUI.Interface
 			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
 			ConfigurationManager.Instance.LockEvent -= OnHUDLockChanged;
 
-			_jobHud = null;
-			_cooldownHud = null;
-			_elementHider = null;
-			_actionBar = null;
-			_pluginMenu = null;
-
 			Instance = null!;
 		}
 
