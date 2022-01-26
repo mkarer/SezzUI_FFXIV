@@ -6,281 +6,297 @@ using System.Numerics;
 
 namespace DelvUI.Helpers
 {
-    public class TooltipsHelper : IDisposable
-    {
-        #region Singleton
-        private TooltipsHelper()
-        {
-        }
+	public class TooltipsHelper : IDisposable
+	{
+		#region Singleton
 
-        public static void Initialize() { Instance = new TooltipsHelper(); }
+		private TooltipsHelper()
+		{
+		}
 
-        public static TooltipsHelper Instance { get; private set; } = null!;
+		public static void Initialize()
+		{
+			Instance = new TooltipsHelper();
+		}
 
-        ~TooltipsHelper()
-        {
-            Dispose(false);
-        }
+		public static TooltipsHelper Instance { get; private set; } = null!;
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		~TooltipsHelper()
+		{
+			Dispose(false);
+		}
 
-        protected void Dispose(bool disposing)
-        {
-            if (!disposing)
-            {
-                return;
-            }
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
-            Instance = null!;
-        }
-        #endregion
+		protected void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
 
-        private static float MaxWidth = 300;
-        private static float Margin = 5;
+			Instance = null!;
+		}
 
-        private TooltipsConfig _config => ConfigurationManager.Instance.GetConfigObject<TooltipsConfig>();
+		#endregion
 
-        private string? _currentTooltipText = null;
-        private Vector2 _textSize;
-        private string? _currentTooltipTitle = null;
-        private Vector2 _titleSize;
-        private string? _previousRawText = null;
+		private static float MaxWidth = 300;
+		private static float Margin = 5;
 
-        private Vector2 _position;
-        private Vector2 _size;
+		private TooltipsConfig _config => ConfigurationManager.Instance.GetConfigObject<TooltipsConfig>();
 
-        private bool _dataIsValid = false;
+		private string? _currentTooltipText = null;
+		private Vector2 _textSize;
+		private string? _currentTooltipTitle = null;
+		private Vector2 _titleSize;
+		private string? _previousRawText = null;
 
-        public void ShowTooltipOnCursor(string text, string? title = null, uint id = 0, string name = "")
-        {
-            ShowTooltip(text, ImGui.GetMousePos(), title, id, name);
-        }
+		private Vector2 _position;
+		private Vector2 _size;
 
-        public void ShowTooltip(string text, Vector2 position, string? title = null, uint id = 0, string name = "")
-        {
-            if (text == null)
-            {
-                return;
-            }
+		private bool _dataIsValid = false;
 
-            // remove styling tags from text
-            if (_previousRawText != text)
-            {
-                _currentTooltipText = text;
-                _previousRawText = text;
-            }
+		public void ShowTooltipOnCursor(string text, string? title = null, uint id = 0, string name = "")
+		{
+			ShowTooltip(text, ImGui.GetMousePos(), title, id, name);
+		}
 
-            // calcualte title size
-            _titleSize = Vector2.Zero;
-            if (title != null)
-            {
-                _currentTooltipTitle = title;
+		public void ShowTooltip(string text, Vector2 position, string? title = null, uint id = 0, string name = "")
+		{
+			if (text == null)
+			{
+				return;
+			}
 
-                if (_config.ShowSourceName)
-                {
-                    _currentTooltipTitle += $" ({name})";
-                }
+			// remove styling tags from text
+			if (_previousRawText != text)
+			{
+				_currentTooltipText = text;
+				_previousRawText = text;
+			}
 
-                if (_config.ShowStatusIDs)
-                {
-                    _currentTooltipTitle += " (ID: " + id + ")";
-                }
+			// calcualte title size
+			_titleSize = Vector2.Zero;
+			if (title != null)
+			{
+				_currentTooltipTitle = title;
 
-                bool titleFontPushed = FontsManager.Instance.PushFont(_config.TitleFontID);
+				if (_config.ShowSourceName)
+				{
+					_currentTooltipTitle += $" ({name})";
+				}
 
-                _titleSize = ImGui.CalcTextSize(_currentTooltipTitle, MaxWidth);
-                _titleSize.Y += Margin;
+				if (_config.ShowStatusIDs)
+				{
+					_currentTooltipTitle += " (ID: " + id + ")";
+				}
 
-                if (titleFontPushed) { ImGui.PopFont(); }
-            }
+				bool titleFontPushed = FontsManager.Instance.PushFont(_config.TitleFontID);
 
-            // calculate text size
-            bool fontPushed = FontsManager.Instance.PushFont(_config.TextFontID);
-            _textSize = ImGui.CalcTextSize(_currentTooltipText, MaxWidth);
-            if (fontPushed) { ImGui.PopFont(); }
+				_titleSize = ImGui.CalcTextSize(_currentTooltipTitle, MaxWidth);
+				_titleSize.Y += Margin;
 
-            _size = new Vector2(Math.Max(_titleSize.X, _textSize.X) + Margin * 2, _titleSize.Y + _textSize.Y + Margin * 2);
+				if (titleFontPushed)
+				{
+					ImGui.PopFont();
+				}
+			}
 
-            // position tooltip using the given coordinates as bottom center
-            position.X = position.X - _size.X / 2f;
-            position.Y = position.Y - _size.Y;
+			// calculate text size
+			bool fontPushed = FontsManager.Instance.PushFont(_config.TextFontID);
+			_textSize = ImGui.CalcTextSize(_currentTooltipText, MaxWidth);
+			if (fontPushed)
+			{
+				ImGui.PopFont();
+			}
 
-            // correct tooltips off screen
-            _position = ConstrainPosition(position, _size);
+			_size = new Vector2(Math.Max(_titleSize.X, _textSize.X) + Margin * 2, _titleSize.Y + _textSize.Y + Margin * 2);
 
-            _dataIsValid = true;
-        }
+			// position tooltip using the given coordinates as bottom center
+			position.X = position.X - _size.X / 2f;
+			position.Y = position.Y - _size.Y;
 
-        public void RemoveTooltip()
-        {
-            _dataIsValid = false;
-        }
+			// correct tooltips off screen
+			_position = ConstrainPosition(position, _size);
 
-        public void Draw()
-        {
-            if (!_dataIsValid || ConfigurationManager.Instance.ShowingModalWindow)
-            {
-                return;
-            }
+			_dataIsValid = true;
+		}
 
-            // bg
-            ImGuiWindowFlags windowFlags =
-                  ImGuiWindowFlags.NoTitleBar
-                | ImGuiWindowFlags.NoMove
-                | ImGuiWindowFlags.NoDecoration
-                | ImGuiWindowFlags.NoBackground
-                | ImGuiWindowFlags.NoInputs
-                | ImGuiWindowFlags.NoSavedSettings;
+		public void RemoveTooltip()
+		{
+			_dataIsValid = false;
+		}
 
-            // imgui clips the left and right borders inside windows for some reason
-            // we make the window bigger so the actual drawable size is the expected one
-            var windowMargin = new Vector2(4, 0);
-            var windowPos = _position - windowMargin;
+		public void Draw()
+		{
+			if (!_dataIsValid || ConfigurationManager.Instance.ShowingModalWindow)
+			{
+				return;
+			}
 
-            ImGui.SetNextWindowPos(windowPos, ImGuiCond.Always);
-            ImGui.SetNextWindowSize(_size + windowMargin * 2);
-            ImGui.SetNextWindowFocus();
+			// bg
+			ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoFocusOnAppearing;
 
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
-            ImGui.Begin("SezzUI_tooltip", windowFlags);
-            var drawList = ImGui.GetWindowDrawList();
+			// imgui clips the left and right borders inside windows for some reason
+			// we make the window bigger so the actual drawable size is the expected one
+			var windowMargin = new Vector2(4, 0);
+			var windowPos = _position - windowMargin;
 
-            drawList.AddRectFilled(_position, _position + _size, _config.BackgroundColor.Base);
+			ImGui.SetNextWindowPos(windowPos, ImGuiCond.Always);
+			ImGui.SetNextWindowSize(_size + windowMargin * 2);
 
-            if (_config.BorderConfig.Enabled)
-            {
-                drawList.AddRect(_position, _position + _size, _config.BorderConfig.Color.Base, 0, ImDrawFlags.None, _config.BorderConfig.Thickness);
-            }
+			ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
+			ImGui.Begin("SezzUI_Tooltip", windowFlags);
+			var drawList = ImGui.GetWindowDrawList();
 
-            if (_currentTooltipTitle != null)
-            {
-                // title
-                bool fontPushed = FontsManager.Instance.PushFont(_config.TitleFontID);
+			drawList.AddRectFilled(_position, _position + _size, _config.BackgroundColor.Base);
 
-                var cursorPos = new Vector2(windowMargin.X + _size.X / 2f - _titleSize.X / 2f, Margin);
-                ImGui.SetCursorPos(cursorPos);
-                ImGui.PushTextWrapPos(cursorPos.X + _titleSize.X);
-                ImGui.TextColored(_config.TitleColor.Vector, _currentTooltipTitle);
-                ImGui.PopTextWrapPos();
+			if (_config.BorderConfig.Enabled)
+			{
+				drawList.AddRect(_position, _position + _size, _config.BorderConfig.Color.Base, 0, ImDrawFlags.None, _config.BorderConfig.Thickness);
+			}
 
-                if (fontPushed) { ImGui.PopFont(); }
+			if (_currentTooltipTitle != null)
+			{
+				// title
+				bool fontPushed = FontsManager.Instance.PushFont(_config.TitleFontID);
 
-                // text
-                fontPushed = FontsManager.Instance.PushFont(_config.TextFontID);
+				var cursorPos = new Vector2(windowMargin.X + _size.X / 2f - _titleSize.X / 2f, Margin);
+				ImGui.SetCursorPos(cursorPos);
+				ImGui.PushTextWrapPos(cursorPos.X + _titleSize.X);
+				ImGui.TextColored(_config.TitleColor.Vector, _currentTooltipTitle);
+				ImGui.PopTextWrapPos();
 
-                cursorPos = new Vector2(windowMargin.X + _size.X / 2f - _textSize.X / 2f, Margin + _titleSize.Y);
-                ImGui.SetCursorPos(cursorPos);
-                ImGui.PushTextWrapPos(cursorPos.X + _textSize.X);
-                ImGui.TextColored(_config.TextColor.Vector, _currentTooltipText);
-                ImGui.PopTextWrapPos();
+				if (fontPushed)
+				{
+					ImGui.PopFont();
+				}
 
-                if (fontPushed) { ImGui.PopFont(); }
-            }
-            else
-            {
-                // text
-                bool fontPushed = FontsManager.Instance.PushFont(_config.TextFontID);
+				// text
+				fontPushed = FontsManager.Instance.PushFont(_config.TextFontID);
 
-                var cursorPos = windowMargin + new Vector2(Margin, Margin);
-                var textWidth = _size.X - Margin * 2;
+				cursorPos = new Vector2(windowMargin.X + _size.X / 2f - _textSize.X / 2f, Margin + _titleSize.Y);
+				ImGui.SetCursorPos(cursorPos);
+				ImGui.PushTextWrapPos(cursorPos.X + _textSize.X);
+				ImGui.TextColored(_config.TextColor.Vector, _currentTooltipText);
+				ImGui.PopTextWrapPos();
 
-                ImGui.SetCursorPos(cursorPos);
-                ImGui.PushTextWrapPos(cursorPos.X + textWidth);
-                ImGui.TextColored(_config.TextColor.Vector, _currentTooltipText);
-                ImGui.PopTextWrapPos();
+				if (fontPushed)
+				{
+					ImGui.PopFont();
+				}
+			}
+			else
+			{
+				// text
+				bool fontPushed = FontsManager.Instance.PushFont(_config.TextFontID);
 
-                if (fontPushed) { ImGui.PopFont(); }
-            }
+				var cursorPos = windowMargin + new Vector2(Margin, Margin);
+				var textWidth = _size.X - Margin * 2;
 
-            ImGui.End();
-            ImGui.PopStyleVar();
+				ImGui.SetCursorPos(cursorPos);
+				ImGui.PushTextWrapPos(cursorPos.X + textWidth);
+				ImGui.TextColored(_config.TextColor.Vector, _currentTooltipText);
+				ImGui.PopTextWrapPos();
 
-            RemoveTooltip();
-        }
+				if (fontPushed)
+				{
+					ImGui.PopFont();
+				}
+			}
 
-        private Vector2 ConstrainPosition(Vector2 position, Vector2 size)
-        {
-            var screenSize = ImGui.GetWindowViewport().Size;
+			ImGui.End();
+			ImGui.PopStyleVar();
 
-            if (position.X < 0)
-            {
-                position.X = Margin;
-            }
-            else if (position.X + size.X > screenSize.X)
-            {
-                position.X = screenSize.X - size.X - Margin;
-            }
+			RemoveTooltip();
+		}
 
-            if (position.Y < 0)
-            {
-                position.Y = Margin;
-            }
+		private Vector2 ConstrainPosition(Vector2 position, Vector2 size)
+		{
+			var screenSize = ImGui.GetWindowViewport().Size;
 
-            return position;
-        }
-    }
+			if (position.X < 0)
+			{
+				position.X = Margin;
+			}
+			else if (position.X + size.X > screenSize.X)
+			{
+				position.X = screenSize.X - size.X - Margin;
+			}
 
-    [Section("Misc")]
-    [SubSection("Tooltips", 0)]
-    public class TooltipsConfig : PluginConfigObject
-    {
-        public new static TooltipsConfig DefaultConfig() { return new TooltipsConfig(); }
+			if (position.Y < 0)
+			{
+				position.Y = Margin;
+			}
 
-        [Checkbox("Show Status Effects IDs")]
-        [Order(5)]
-        public bool ShowStatusIDs = false;
+			return position;
+		}
+	}
 
-        [Checkbox("Show Source Name")]
-        [Order(10)]
-        public bool ShowSourceName = false;
+	[Section("Misc")]
+	[SubSection("Tooltips", 0)]
+	public class TooltipsConfig : PluginConfigObject
+	{
+		public new static TooltipsConfig DefaultConfig()
+		{
+			return new TooltipsConfig();
+		}
 
-        [ColorEdit4("Background Color")]
-        [Order(15)]
-        public PluginConfigColor BackgroundColor = new PluginConfigColor(new(19f / 255f, 19f / 255f, 19f / 255f, 190f / 250f));
+		[Checkbox("Show Status Effects IDs")]
+		[Order(5)]
+		public bool ShowStatusIDs = false;
 
-        [Font("Title Font and Size", spacing = true)]
-        [Order(20)]
-        public string? TitleFontID = null;
+		[Checkbox("Show Source Name")]
+		[Order(10)]
+		public bool ShowSourceName = false;
 
-        [ColorEdit4("Title Color")]
-        [Order(25)]
-        public PluginConfigColor TitleColor = new PluginConfigColor(new(255f / 255f, 210f / 255f, 31f / 255f, 100f / 100f));
+		[ColorEdit4("Background Color")]
+		[Order(15)]
+		public PluginConfigColor BackgroundColor = new PluginConfigColor(new(19f / 255f, 19f / 255f, 19f / 255f, 190f / 250f));
 
-        [Font("Text Font and Size", spacing = true)]
-        [Order(30)]
-        public string? TextFontID = null;
+		[Font("Title Font and Size", spacing = true)]
+		[Order(20)]
+		public string? TitleFontID = null;
 
-        [ColorEdit4("Text Color")]
-        [Order(35)]
-        public PluginConfigColor TextColor = new PluginConfigColor(new(255f / 255f, 255f / 255f, 255f / 255f, 100f / 100f));
+		[ColorEdit4("Title Color")]
+		[Order(25)]
+		public PluginConfigColor TitleColor = new PluginConfigColor(new(255f / 255f, 210f / 255f, 31f / 255f, 100f / 100f));
 
-        [NestedConfig("Border", 40, separator = false, spacing = true, collapsingHeader = false)]
-        public TooltipBorderConfig BorderConfig = new();
-    }
+		[Font("Text Font and Size", spacing = true)]
+		[Order(30)]
+		public string? TextFontID = null;
 
-    [Exportable(false)]
-    public class TooltipBorderConfig : PluginConfigObject
-    {
-        [ColorEdit4("Color")]
-        [Order(5)]
-        public PluginConfigColor Color = new(new Vector4(10f / 255f, 10f / 255f, 10f / 255f, 160f / 255f));
+		[ColorEdit4("Text Color")]
+		[Order(35)]
+		public PluginConfigColor TextColor = new PluginConfigColor(new(255f / 255f, 255f / 255f, 255f / 255f, 100f / 100f));
 
-        [DragInt("Thickness", min = 1, max = 100)]
-        [Order(10)]
-        public int Thickness = 4;
+		[NestedConfig("Border", 40, separator = false, spacing = true, collapsingHeader = false)]
+		public TooltipBorderConfig BorderConfig = new();
+	}
 
-        public TooltipBorderConfig()
-        {
-        }
+	[Exportable(false)]
+	public class TooltipBorderConfig : PluginConfigObject
+	{
+		[ColorEdit4("Color")]
+		[Order(5)]
+		public PluginConfigColor Color = new(new Vector4(10f / 255f, 10f / 255f, 10f / 255f, 160f / 255f));
 
-        public TooltipBorderConfig(PluginConfigColor color, int thickness)
-        {
-            Color = color;
-            Thickness = thickness;
-        }
-    }
+		[DragInt("Thickness", min = 1, max = 100)]
+		[Order(10)]
+		public int Thickness = 4;
+
+		public TooltipBorderConfig()
+		{
+		}
+
+		public TooltipBorderConfig(PluginConfigColor color, int thickness)
+		{
+			Color = color;
+			Thickness = thickness;
+		}
+	}
 }
