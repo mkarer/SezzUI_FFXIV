@@ -80,6 +80,14 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(4)]
 		public PluginConfigColor Color = new(new(255f / 255f, 255f / 255f, 255f / 255f, 100f / 100f));
 
+		[Checkbox("Toggle Color On Click")]
+		[Order(10)]
+		public bool Toggleable = false;
+
+		[ColorEdit4("Toggle Color")]
+		[Order(4, collapseWith = nameof(Toggleable))]
+		public PluginConfigColor ColorToggled = new(new(255f / 255f, 255f / 255f, 255f / 255f, 100f / 100f));
+
 		public PluginMenuItemConfig()
 		{
 			Enabled = false;

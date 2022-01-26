@@ -14,6 +14,9 @@ namespace SezzUI.Modules.PluginMenu
 		public Vector2 Size = new(60f, 30f);
 		public TextureWrap? Texture;
 
+		public Vector4 Color => !_toggleState ? Config.Color.Vector : Config.ColorToggled.Vector;
+		private bool _toggleState = false;
+		
 		/// <summary>
 		/// Recalculate required size upon configuration changes.
 		/// </summary>
@@ -54,6 +57,14 @@ namespace SezzUI.Modules.PluginMenu
 			}
 
 			Size.X = contentSize.X;
+		}
+
+		public void Toggle()
+		{
+			if (Config.Toggleable)
+			{
+				_toggleState = !_toggleState;
+			}
 		}
 		
 		public PluginMenuItem(PluginMenuItemConfig config)

@@ -88,6 +88,7 @@ namespace SezzUI.Modules.PluginMenu
 					if (ImGui.Button($"##SezzUI_PMB{i}", item.Size))
 					{
 						LogDebug($"Menu item clicked: {nameof(item)}");
+						item.Toggle();
 						if (item.Config.Command.StartsWith("/"))
 						{
 							LogDebug($"Executing command: {item.Config.Command}");
@@ -96,7 +97,7 @@ namespace SezzUI.Modules.PluginMenu
 					}
 					
 					// Text
-					Vector4 color = item.Config.Color.Vector.AddTransparency(opacity);
+					Vector4 color = item.Color.AddTransparency(opacity);
 					Vector2 buttonPos = new(menuPos.X + buttonOffset, menuPos.Y);
 					
 					if (item.Texture != null)
