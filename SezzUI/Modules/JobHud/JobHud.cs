@@ -104,41 +104,50 @@ namespace SezzUI.Modules.JobHud
 
 		private void Reset()
 		{
-			Hide(true);
-			Bars.ForEach(bar => bar.Dispose());
-			Bars.Clear();
-			_auraAlerts.ForEach(aa => aa.Dispose());
-			_auraAlerts.Clear();
-			_currentJobId = 0;
-			_currentLevel = 0;
+			lock (Bars)
+			{
+				Hide(true);
+				Bars.ForEach(bar => bar.Dispose());
+				Bars.Clear();
+				_auraAlerts.ForEach(aa => aa.Dispose());
+				_auraAlerts.Clear();
+				_currentJobId = 0;
+				_currentLevel = 0;
+			}
 		}
 
 		private void Configure()
 		{
-			Reset();
-
-			PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
-			_currentJobId = player?.ClassJob.Id ?? 0;
-			_currentLevel = player?.Level ?? 0;
-
-			if (_currentJobId == 0 || _currentLevel == 0)
+			lock (Bars)
 			{
-				return;
-			}
+				PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+				uint jobId = player?.ClassJob.Id ?? 0;
+				byte level = player?.Level ?? 0;
+				
+				if (_currentLevel == level && _currentJobId == jobId)
+				{
+					return;
+				}
+				
+				Reset();
 
-			if (!Defaults.JobColors.TryGetValue(_currentJobId, out AccentColor))
-			{
-				AccentColor = Defaults.IconBarColor;
-			}
+				_currentJobId = jobId;
+				_currentLevel = level;
 
-			if (_presets.TryGetValue(_currentJobId, out BasePreset? preset))
-			{
-				preset.Configure(this);
-			}
+				if (!Defaults.JobColors.TryGetValue(_currentJobId, out AccentColor))
+				{
+					AccentColor = Defaults.IconBarColor;
+				}
 
-			if (EventManager.Combat.IsInCombat())
-			{
-				Show();
+				if (_presets.TryGetValue(_currentJobId, out BasePreset? preset))
+				{
+					preset.Configure(this);
+				}
+
+				if (EventManager.Combat.IsInCombat())
+				{
+					Show();
+				}
 			}
 		}
 

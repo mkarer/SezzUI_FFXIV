@@ -36,59 +36,72 @@ namespace SezzUI.Modules.CooldownHud
 
 		private void Reset()
 		{
-			_currentJobId = 0;
-			_currentLevel = 0;
-
-			// Reset BarManagers
-			_barManagers.ForEach(manager => manager.Clear());
-
-			// Reset watched cooldowns
-			foreach ((uint actionId, CooldownHudItem item) in _cooldowns)
+			lock (_cooldowns)
 			{
-				EventManager.Cooldown.Unwatch(actionId);
-				item.Dispose();
+				_currentJobId = 0;
+				_currentLevel = 0;
+
+				// Reset BarManagers
+				_barManagers.ForEach(manager => manager.Clear());
+
+				// Reset watched cooldowns
+				foreach ((uint actionId, CooldownHudItem item) in _cooldowns)
+				{
+					EventManager.Cooldown.Unwatch(actionId);
+					item.Dispose();
+				}
+
+				_cooldowns.Clear();
+
+				// Remove all pulse animations
+				_pulses.ForEach(pulse => pulse.Dispose());
+				_pulses.Clear();
 			}
-
-			_cooldowns.Clear();
-
-			// Remove all pulse animations
-			_pulses.ForEach(pulse => pulse.Dispose());
-			_pulses.Clear();
 		}
 
 		private void Configure()
 		{
-			Reset();
-
-			PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
-			_currentJobId = player?.ClassJob.Id ?? 0;
-			_currentLevel = player?.Level ?? 0;
-
-			if (_currentJobId == 0 || _currentLevel == 0)
+			lock (_cooldowns)
 			{
-				return;
-			}
+				PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+				uint jobId = player?.ClassJob.Id ?? 0;
+				byte level = player?.Level ?? 0;
+				
+				if (_currentLevel == level && _currentJobId == jobId)
+				{
+					return;
+				}
+				
+				Reset();
+
+				_currentJobId = jobId;
+				_currentLevel = level;
+
+				if (_currentJobId == 0 || _currentLevel == 0)
+				{
+					return;
+				}
 
 #if DEBUG
-			if (_debugConfig.LogGeneral)
-			{
-				LogDebug("Configure", $"Setting up cooldowns for Job ID: {_currentJobId} Level: {_currentLevel}");
-			}
+				if (_debugConfig.LogGeneral)
+				{
+					LogDebug("Configure", $"Setting up cooldowns for Job ID: {_currentJobId} Level: {_currentLevel}");
+				}
 #endif
 
-			// Setup watched cooldowns
-			
-			if (_presets.TryGetValue(_currentJobId, out BasePreset? preset))
-			{
-				preset.Configure(this);
-			}
-			else
-			{
-				_presets[0].Configure(this);
-			}
+				// Setup watched cooldowns
+				if (_presets.TryGetValue(_currentJobId, out BasePreset? preset))
+				{
+					preset.Configure(this);
+				}
+				else
+				{
+					_presets[0].Configure(this);
+				}
 
-			ConfigureBarManagers();
-			AddRunningCooldowns();
+				ConfigureBarManagers();
+				AddRunningCooldowns();
+			}
 		}
 
 		private void ConfigureBarManagers()
@@ -159,6 +172,7 @@ namespace SezzUI.Modules.CooldownHud
 					{
 						_iconOverride[actionId] = Helpers.SpellHelper.GetGeneralActionIcon(4);
 					}
+
 					break;
 			}
 
@@ -236,6 +250,7 @@ namespace SezzUI.Modules.CooldownHud
 			{
 				iconId = actionType == ActionType.General ? Helpers.SpellHelper.GetGeneralActionIcon(actionId) : Helpers.SpellHelper.GetActionIcon(actionId);
 			}
+
 			texture = iconId != null ? TexturesCache.Instance.GetTextureFromIconId((uint) iconId) : null;
 		}
 
