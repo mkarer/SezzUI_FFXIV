@@ -1,9 +1,11 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Logging;
 using ImGuiNET;
 using ImGuiScene;
+using SezzUI.Helpers;
 using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Modules.PluginMenu
@@ -15,10 +17,10 @@ namespace SezzUI.Modules.PluginMenu
 		public TextureWrap? Texture;
 
 		public Vector4 Color => !_toggleState ? Config.Color.Vector : Config.ColorToggled.Vector;
-		private bool _toggleState = false;
-		
+		private bool _toggleState;
+
 		/// <summary>
-		/// Recalculate required size upon configuration changes.
+		///     Recalculate required size upon configuration changes.
 		/// </summary>
 		public void Update()
 		{
@@ -37,7 +39,7 @@ namespace SezzUI.Modules.PluginMenu
 				{
 					if (File.Exists(image))
 					{
-						Texture = Helpers.ImageCache.Instance.GetImageFromPath(image);
+						Texture = ImageCache.Instance.GetImageFromPath(image);
 						if (Texture != null)
 						{
 							contentSize.X = contentSize.Y;
@@ -46,7 +48,7 @@ namespace SezzUI.Modules.PluginMenu
 				}
 				catch (Exception ex)
 				{
-					PluginLog.Error(ex, $"[PluginMenuItem] Error reading image ({image}): {ex}");
+					PluginLog.Error(ex, $"[PluginMenuItem::Update] Error reading image ({image}): {ex}");
 				}
 			}
 			else
@@ -57,21 +59,51 @@ namespace SezzUI.Modules.PluginMenu
 			}
 
 			Size.X = contentSize.X;
+			Toggle(GetPluginToggleState(false));
 		}
 
 		public void Toggle()
 		{
 			if (Config.Toggleable)
 			{
-				_toggleState = !_toggleState;
+				Toggle(GetPluginToggleState(true) ?? !_toggleState);
 			}
 		}
-		
+
+		private void Toggle(bool? state)
+		{
+			if (state != null)
+			{
+				_toggleState = (bool) state;
+			}
+		}
+
+		private bool? GetPluginToggleState(bool invert)
+		{
+			if (Config.PluginToggleName != "" && Config.PluginToggleProperty != "")
+			{
+				try
+				{
+					DalamudHelper.RefreshPlugins();
+					DalamudHelper.PluginEntry? plugin = DalamudHelper.Plugins.FirstOrDefault(plugin => plugin.Name == Config.PluginToggleName);
+					PluginLog.Debug($"enabled{!plugin?.Enabled}");
+					return invert ? !plugin?.Enabled ?? null : plugin?.Enabled ?? null;
+				}
+				catch (Exception ex)
+				{
+					PluginLog.Error(ex, $"[PluginMenuItem::GetPluginToggleState] Error: {ex}");
+				}
+			}
+
+			return null;
+		}
+
 		public PluginMenuItem(PluginMenuItemConfig config)
 		{
 			Config = config;
+			Toggle(GetPluginToggleState(false));
 		}
-		
+
 		public void Dispose()
 		{
 			Dispose(true);
@@ -87,7 +119,6 @@ namespace SezzUI.Modules.PluginMenu
 		{
 			if (!disposing)
 			{
-				return;
 			}
 		}
 	}

@@ -20,9 +20,9 @@ namespace SezzUI.Modules.PluginMenu
 #if DEBUG
 		private PluginMenuDebugConfig _debugConfig;
 #endif
-		private XivCommonBase _xivCommon;
-		private List<PluginMenuItem> _items;
-		private static long _lastError = 0;
+		private readonly XivCommonBase _xivCommon;
+		private readonly List<PluginMenuItem> _items;
+		private static long _lastError;
 		private const byte BORDER_SIZE = 1;
 		private const byte BUTTON_PADDING = 4;
 
@@ -106,11 +106,11 @@ namespace SezzUI.Modules.PluginMenu
 							_xivCommon.Functions.Chat.SendMessage(item.Config.Command);
 						}
 					}
-					
+
 					// Content
 					Vector4 color = item.Color.AddTransparency(opacity);
 					Vector2 buttonPos = new(menuPos.X + buttonOffset, menuPos.Y);
-					
+
 					if (item.Texture != null)
 					{
 						Vector2 imageSize = new(item.Size.X - 8, item.Size.Y - 8);
@@ -137,7 +137,6 @@ namespace SezzUI.Modules.PluginMenu
 									color.Y = int.Parse(match.Groups[1].Value[6..8], NumberStyles.HexNumber) / 255f;
 									color.Z = int.Parse(match.Groups[1].Value[8..10], NumberStyles.HexNumber) / 255f;
 									color.W = int.Parse(match.Groups[1].Value[2..4], NumberStyles.HexNumber) / 255f * opacity;
-
 								}
 								else if (match.Groups[2].Success)
 								{
@@ -149,7 +148,7 @@ namespace SezzUI.Modules.PluginMenu
 						}
 						catch (Exception ex)
 						{
-							long now = System.Environment.TickCount64;
+							long now = Environment.TickCount64;
 							if (now - _lastError > 5000)
 							{
 								_lastError = now;
@@ -161,7 +160,7 @@ namespace SezzUI.Modules.PluginMenu
 					{
 						DrawHelper.DrawCenteredShadowText("MyriadProLightCond_16", item.Config.Title, buttonPos, item.Size / 2f, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)), shadowColor, drawList);
 					}
-					
+
 					if (i + 1 < enabledItems.Count())
 					{
 						buttonOffset += rightToLeft ? -enabledItems[i + 1].Size.X - BUTTON_PADDING : item.Size.X + BUTTON_PADDING;
@@ -172,7 +171,7 @@ namespace SezzUI.Modules.PluginMenu
 			ImGui.PopStyleColor(4);
 			ImGui.PopStyleVar(3);
 		}
-		
+
 		protected override bool Enable()
 		{
 			if (!base.Enable())
@@ -203,7 +202,7 @@ namespace SezzUI.Modules.PluginMenu
 			Config.Item8.ValueChangeEvent += OnConfigPropertyChanged;
 			Config.Item9.ValueChangeEvent += OnConfigPropertyChanged;
 			Config.Item10.ValueChangeEvent += OnConfigPropertyChanged;
-			
+
 			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
 			_items = new() {new(Config.Item1), new(Config.Item2), new(Config.Item3), new(Config.Item4), new(Config.Item5), new(Config.Item6), new(Config.Item7), new(Config.Item8), new(Config.Item9), new(Config.Item10)};
 			Toggle(Config.Enabled);
@@ -223,9 +222,10 @@ namespace SezzUI.Modules.PluginMenu
 				{
 					_items.Where(item => item.Config == itemConfig).FirstOrDefault()?.Update();
 				}
+
 				return;
 			}
-			
+
 			switch (args.PropertyName)
 			{
 				case "Enabled":
