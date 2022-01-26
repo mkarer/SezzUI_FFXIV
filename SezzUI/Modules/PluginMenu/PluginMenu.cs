@@ -96,7 +96,7 @@ namespace SezzUI.Modules.PluginMenu
 					}
 					
 					// Text
-					Vector4 color = item.Config.Color.Vector;
+					Vector4 color = item.Config.Color.Vector.AddTransparency(opacity);
 					Vector2 buttonPos = new(menuPos.X + buttonOffset, menuPos.Y);
 					
 					if (item.Texture != null)
@@ -124,7 +124,7 @@ namespace SezzUI.Modules.PluginMenu
 									color.X = int.Parse(match.Groups[1].Value[4..6], NumberStyles.HexNumber) / 255f;
 									color.Y = int.Parse(match.Groups[1].Value[6..8], NumberStyles.HexNumber) / 255f;
 									color.Z = int.Parse(match.Groups[1].Value[8..10], NumberStyles.HexNumber) / 255f;
-									color.W = int.Parse(match.Groups[1].Value[2..4], NumberStyles.HexNumber) / 255f;
+									color.W = int.Parse(match.Groups[1].Value[2..4], NumberStyles.HexNumber) / 255f * opacity;
 
 								}
 								else if (match.Groups[2].Success)
