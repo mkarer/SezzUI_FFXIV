@@ -109,6 +109,11 @@ namespace SezzUI
 			EventManager.Initialize();
 			HudManager.Initialize();
 
+			UiBuilder.DisableAutomaticUiHide = true;
+			UiBuilder.DisableCutsceneUiHide = true;
+			UiBuilder.DisableGposeUiHide = true;
+			UiBuilder.DisableUserUiHide = true;
+			
 			UiBuilder.Draw += Draw;
 			UiBuilder.BuildFonts += BuildFont;
 			UiBuilder.OpenConfigUi += OpenConfigUi;
@@ -277,12 +282,13 @@ namespace SezzUI
 			{
 				return DrawState.HiddenNotInGame;
 			}
-			else if (!ConfigurationManager.Instance.ShowHUD)
+			else if (!ConfigurationManager.Instance.ShowHUD || GameGui.GameUiHidden)
 			{
 				return DrawState.HiddenDisabled;
 			}
 			else if (Condition[ConditionFlag.WatchingCutscene] || Condition[ConditionFlag.WatchingCutscene78] || Condition[ConditionFlag.OccupiedInCutSceneEvent])
 			{
+				// WatchingCutscene includes Group Pose
 				return IsAddonVisible("_NaviMap") ? DrawState.Partially : DrawState.HiddenCutscene;
 			}
 			else if (Condition[ConditionFlag.OccupiedSummoningBell])
