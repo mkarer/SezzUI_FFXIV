@@ -87,16 +87,27 @@ namespace SezzUI.Modules.PluginMenu
 					// Button
 					if (ImGui.Button($"##SezzUI_PMB{i}", item.Size))
 					{
-						LogDebug($"Menu item clicked: {nameof(item)}");
+#if DEBUG
+						if (_debugConfig.LogGeneral)
+						{
+							LogDebug($"Menu item clicked: #{i}");
+						}
+#endif
 						item.Toggle();
 						if (item.Config.Command.StartsWith("/"))
 						{
-							LogDebug($"Executing command: {item.Config.Command}");
+#if DEBUG
+							if (_debugConfig.LogGeneral)
+							{
+								LogDebug($"Executing command: {item.Config.Command}");
+							}
+#endif
+
 							_xivCommon.Functions.Chat.SendMessage(item.Config.Command);
 						}
 					}
 					
-					// Text
+					// Content
 					Vector4 color = item.Color.AddTransparency(opacity);
 					Vector2 buttonPos = new(menuPos.X + buttonOffset, menuPos.Y);
 					
