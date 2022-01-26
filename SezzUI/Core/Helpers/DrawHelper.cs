@@ -16,7 +16,7 @@ namespace SezzUI.Helpers
 			{
 				DrawAnchor.Center => parentPosition + parentSize / 2f - elementSize / 2f,
 				DrawAnchor.Left => parentPosition + new Vector2(0, parentSize.Y / 2f - elementSize.Y / 2f),
-				DrawAnchor.Right => parentPosition + new Vector2(parentPosition.X + parentSize.X - elementSize.X, parentSize.Y / 2f - elementSize.Y / 2f),
+				DrawAnchor.Right => new(parentPosition.X + parentSize.X - elementSize.X, parentPosition.Y + parentSize.Y / 2f - elementSize.Y / 2f),
 				DrawAnchor.Top => parentPosition + new Vector2(parentSize.X / 2f - elementSize.X / 2f, 0),
 				DrawAnchor.TopLeft => parentPosition,
 				DrawAnchor.TopRight => parentPosition + new Vector2(parentSize.X - elementSize.X, 0),
@@ -38,7 +38,7 @@ namespace SezzUI.Helpers
 			drawList.AddRect(pos, pos + size, borderColor, 0, ImDrawFlags.None, 1);
 		}
 
-		private static readonly Vector2[] _edgeUV0s =
+		private static readonly Vector2[] _edgeUv0 =
 		{
 			new(0, 0), // Left
 			new(1f / 8f, 0), // Right
@@ -50,7 +50,7 @@ namespace SezzUI.Helpers
 			new(7f / 8f, 0) // Bottom Right
 		};
 
-		private static readonly Vector2[] _edgeUV1s =
+		private static readonly Vector2[] _edgeUv1 =
 		{
 			new(1f / 8f, 1), // Left
 			new(2f / 8f, 1), // Left
@@ -86,21 +86,21 @@ namespace SezzUI.Helpers
 			float verticalY2 = backdropPos.Y + backdropSize.Y - (inset > 0 ? inset : inset + size);
 
 			// Left
-			drawList.AddImage(texture.ImGuiHandle, new(leftX, verticalY1), new(leftX + size, verticalY2), _edgeUV0s[inset < 0 ? 0 : 1], _edgeUV1s[inset < 0 ? 0 : 1], glowColor);
+			drawList.AddImage(texture.ImGuiHandle, new(leftX, verticalY1), new(leftX + size, verticalY2), _edgeUv0[inset < 0 ? 0 : 1], _edgeUv1[inset < 0 ? 0 : 1], glowColor);
 			// Right
-			drawList.AddImage(texture.ImGuiHandle, new(rightX, verticalY1), new(rightX + size, verticalY2), _edgeUV0s[inset < 0 ? 1 : 0], _edgeUV1s[inset < 0 ? 1 : 0], glowColor);
+			drawList.AddImage(texture.ImGuiHandle, new(rightX, verticalY1), new(rightX + size, verticalY2), _edgeUv0[inset < 0 ? 1 : 0], _edgeUv1[inset < 0 ? 1 : 0], glowColor);
 			// Top
-			drawList.AddImage(texture.ImGuiHandle, new(horizontalX1, topY), new(horizontalX2, topY + size), _edgeUV0s[inset < 0 ? 2 : 3], _edgeUV1s[inset < 0 ? 2 : 3], glowColor);
+			drawList.AddImage(texture.ImGuiHandle, new(horizontalX1, topY), new(horizontalX2, topY + size), _edgeUv0[inset < 0 ? 2 : 3], _edgeUv1[inset < 0 ? 2 : 3], glowColor);
 			// Bottom
-			drawList.AddImage(texture.ImGuiHandle, new(horizontalX1, bottomY), new(horizontalX2, bottomY + size), _edgeUV0s[inset < 0 ? 3 : 2], _edgeUV1s[inset < 0 ? 3 : 2], glowColor);
+			drawList.AddImage(texture.ImGuiHandle, new(horizontalX1, bottomY), new(horizontalX2, bottomY + size), _edgeUv0[inset < 0 ? 3 : 2], _edgeUv1[inset < 0 ? 3 : 2], glowColor);
 			// Top Left
-			drawList.AddImage(texture.ImGuiHandle, new(leftX, topY), new(leftX + size, topY + size), _edgeUV0s[inset < 0 ? 4 : 7], _edgeUV1s[inset < 0 ? 4 : 7], glowColor);
+			drawList.AddImage(texture.ImGuiHandle, new(leftX, topY), new(leftX + size, topY + size), _edgeUv0[inset < 0 ? 4 : 7], _edgeUv1[inset < 0 ? 4 : 7], glowColor);
 			// Top Right
-			drawList.AddImage(texture.ImGuiHandle, new(rightX, topY), new(rightX + size, topY + size), _edgeUV0s[inset < 0 ? 5 : 6], _edgeUV1s[inset < 0 ? 5 : 6], glowColor);
+			drawList.AddImage(texture.ImGuiHandle, new(rightX, topY), new(rightX + size, topY + size), _edgeUv0[inset < 0 ? 5 : 6], _edgeUv1[inset < 0 ? 5 : 6], glowColor);
 			// Bottom Left
-			drawList.AddImage(texture.ImGuiHandle, new(leftX, bottomY), new(leftX + size, bottomY + size), _edgeUV0s[inset < 0 ? 6 : 5], _edgeUV1s[inset < 0 ? 6 : 5], glowColor);
+			drawList.AddImage(texture.ImGuiHandle, new(leftX, bottomY), new(leftX + size, bottomY + size), _edgeUv0[inset < 0 ? 6 : 5], _edgeUv1[inset < 0 ? 6 : 5], glowColor);
 			// Bottom Right
-			drawList.AddImage(texture.ImGuiHandle, new(rightX, bottomY), new(rightX + size, bottomY + size), _edgeUV0s[inset < 0 ? 7 : 4], _edgeUV1s[inset < 0 ? 7 : 4], glowColor);
+			drawList.AddImage(texture.ImGuiHandle, new(rightX, bottomY), new(rightX + size, bottomY + size), _edgeUv0[inset < 0 ? 7 : 4], _edgeUv1[inset < 0 ? 7 : 4], glowColor);
 		}
 
 		public static void DrawBackdropEdgeGlow(Vector2 backdropPos, Vector2 backdropSize, uint glowColor, ImDrawListPtr drawList, uint size = 8, short inset = -8)
@@ -265,16 +265,16 @@ namespace SezzUI.Helpers
 
 		public static (Vector2, Vector2) GetTexCoordinates(Vector2 size, float clipOffset = 0f, bool isStatus = false)
 		{
-			float uv0x = isStatus ? 4f : 1f;
-			float uv0y = isStatus ? 14f : 1f;
+			float uv0X = isStatus ? 4f : 1f;
+			float uv0Y = isStatus ? 14f : 1f;
 
-			float uv1x = isStatus ? 4f : 1f;
-			float uv1y = isStatus ? 9f : 1f;
+			float uv1X = isStatus ? 4f : 1f;
+			float uv1Y = isStatus ? 9f : 1f;
 
-			Vector2 uv0 = new(uv0x / size.X, uv0y / size.Y);
-			Vector2 uv1 = new(1f - uv1x / size.X, 1f - uv1y / size.Y);
+			Vector2 uv0 = new(uv0X / size.X, uv0Y / size.Y);
+			Vector2 uv1 = new(1f - uv1X / size.X, 1f - uv1Y / size.Y);
 
-			if (size.X != size.Y)
+			if (!size.X.Equals(size.Y))
 			{
 				float ratio = Math.Max(size.X, size.Y) / Math.Min(size.X, size.Y);
 				float crop = (1 - 1 / ratio) / 2;
