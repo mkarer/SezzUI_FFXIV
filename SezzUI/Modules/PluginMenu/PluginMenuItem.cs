@@ -86,7 +86,6 @@ namespace SezzUI.Modules.PluginMenu
 				{
 					DalamudHelper.RefreshPlugins();
 					DalamudHelper.PluginEntry? plugin = DalamudHelper.Plugins.FirstOrDefault(plugin => plugin.Name == Config.PluginToggleName);
-					PluginLog.Debug($"enabled{!plugin?.Enabled}");
 					return invert ? !plugin?.Enabled ?? null : plugin?.Enabled ?? null;
 				}
 				catch (Exception ex)
