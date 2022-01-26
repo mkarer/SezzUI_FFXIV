@@ -73,9 +73,9 @@ namespace SezzUI.Modules.JobHud
 					if (action != null)
 					{
 						bool useLocalTexture = false;
+						string path = Plugin.AssemblyLocation + $"Media\\Icons\\{action.Icon / 1000 * 1000:000000}\\{action.Icon:000000}.png";
 						try
 						{
-							string path = Plugin.AssemblyLocation + $"Media\\Icons\\{action.Icon / 1000 * 1000:000000}\\{action.Icon:000000}.png";
 							if (File.Exists(path))
 							{
 								_texture = ImageCache.Instance.GetImageFromPath(path);
@@ -86,8 +86,9 @@ namespace SezzUI.Modules.JobHud
 								}
 							}
 						}
-						catch
+						catch (Exception ex)
 						{
+							PluginLog.Error(ex, $"[Icon] Error reading image ({path}): {ex}");
 						}
 
 						if (!useLocalTexture)
