@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using DelvUI.Helpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using ImGuiNET;
 using ImGuiScene;
 using SezzUI.BarManager;
 using SezzUI.Config;
 using SezzUI.Enums;
 using SezzUI.GameEvents;
+using SezzUI.Helpers;
 using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Modules.CooldownHud
@@ -66,12 +65,12 @@ namespace SezzUI.Modules.CooldownHud
 				PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
 				uint jobId = player?.ClassJob.Id ?? 0;
 				byte level = player?.Level ?? 0;
-				
+
 				if (_currentLevel == level && _currentJobId == jobId)
 				{
 					return;
 				}
-				
+
 				Reset();
 
 				_currentJobId = jobId;
@@ -123,7 +122,7 @@ namespace SezzUI.Modules.CooldownHud
 
 		public override void Draw(DrawState state, Vector2? origin)
 		{
-			if (origin == null || (state != DrawState.Visible && state != DrawState.Partially))
+			if (origin == null || state != DrawState.Visible && state != DrawState.Partially)
 			{
 				return;
 			}
@@ -170,13 +169,13 @@ namespace SezzUI.Modules.CooldownHud
 					// Sprint Spell Icon != Sprint General Action Icon
 					if (!_iconOverride.ContainsKey(3))
 					{
-						_iconOverride[actionId] = Helpers.SpellHelper.GetGeneralActionIcon(4);
+						_iconOverride[actionId] = SpellHelper.GetGeneralActionIcon(4);
 					}
 
 					break;
 			}
 
-			actionId = adjustAction ? Helpers.SpellHelper.GetAdjustedActionId(actionId) : actionId;
+			actionId = adjustAction ? SpellHelper.GetAdjustedActionId(actionId) : actionId;
 			if (_cooldowns.ContainsKey(actionId))
 			{
 				if (!_cooldowns[actionId].BarManagers.Contains(barManager))
@@ -245,10 +244,10 @@ namespace SezzUI.Modules.CooldownHud
 
 		private void GetActionDisplayData(uint actionId, ActionType actionType, out string? name, out TextureWrap? texture)
 		{
-			name = actionType == ActionType.General ? Helpers.SpellHelper.GetGeneralActionName(actionId) : Helpers.SpellHelper.GetActionName(actionId);
+			name = actionType == ActionType.General ? SpellHelper.GetGeneralActionName(actionId) : SpellHelper.GetActionName(actionId);
 			if (!_iconOverride.TryGetValue(actionId, out int? iconId))
 			{
-				iconId = actionType == ActionType.General ? Helpers.SpellHelper.GetGeneralActionIcon(actionId) : Helpers.SpellHelper.GetActionIcon(actionId);
+				iconId = actionType == ActionType.General ? SpellHelper.GetGeneralActionIcon(actionId) : SpellHelper.GetActionIcon(actionId);
 			}
 
 			texture = iconId != null ? TexturesCache.Instance.GetTextureFromIconId((uint) iconId) : null;
@@ -350,15 +349,15 @@ namespace SezzUI.Modules.CooldownHud
 			// TEMPORARY CONFIGURATION
 			BarManager.BarManager primaryBarManager = new("Primary");
 			primaryBarManager.Anchor = DrawAnchor.BottomLeft;
-			primaryBarManager.Position = new(22f, ImGui.GetMainViewport().Size.Y - 634f);
+			primaryBarManager.Position = new(22f, -634f);
 			primaryBarManager.BarConfig.Style = BarManagerStyle.Ruri;
 			primaryBarManager.BarConfig.FillInverted = true;
 			primaryBarManager.BarConfig.ShowDurationRemaining = true;
 			_barManagers.Add(primaryBarManager);
 
 			BarManager.BarManager secondaryBarManager = new("Secondary");
-			secondaryBarManager.Anchor = DrawAnchor.BottomLeft;
-			secondaryBarManager.Position = new(1649f, 528f);
+			secondaryBarManager.Anchor = DrawAnchor.Center;
+			secondaryBarManager.Position = new(369, 0);
 			secondaryBarManager.BarConfig.Style = BarManagerStyle.Ruri;
 			secondaryBarManager.BarConfig.FillInverted = true;
 			secondaryBarManager.BarConfig.ShowDurationRemaining = true;

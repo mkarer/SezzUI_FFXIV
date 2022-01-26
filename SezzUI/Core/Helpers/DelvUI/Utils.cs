@@ -399,23 +399,6 @@ namespace DelvUI.Helpers
             return null;
         }
 
-        public static Vector2 GetAnchoredPosition(Vector2 position, Vector2 size, DrawAnchor anchor)
-        {
-            return anchor switch
-            {
-                DrawAnchor.Center => position - size / 2f,
-                DrawAnchor.Left => position + new Vector2(0, -size.Y / 2f),
-                DrawAnchor.Right => position + new Vector2(-size.X, -size.Y / 2f),
-                DrawAnchor.Top => position + new Vector2(-size.X / 2f, 0),
-                DrawAnchor.TopLeft => position,
-                DrawAnchor.TopRight => position + new Vector2(-size.X, 0),
-                DrawAnchor.Bottom => position + new Vector2(-size.X / 2f, -size.Y),
-                DrawAnchor.BottomLeft => position + new Vector2(0, -size.Y),
-                DrawAnchor.BottomRight => position + new Vector2(-size.X, -size.Y),
-                _ => position
-            };
-        }
-
         public static string UserFriendlyConfigName(string configTypeName) => UserFriendlyString(configTypeName, "Config");
 
         public static string UserFriendlyString(string str, string? remove)

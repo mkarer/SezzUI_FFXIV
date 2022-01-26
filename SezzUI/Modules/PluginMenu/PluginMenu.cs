@@ -158,7 +158,7 @@ namespace SezzUI.Modules.PluginMenu
 					}
 					else
 					{
-						DrawHelper.DrawCenteredShadowText("MyriadProLightCond_16", item.Config.Title, buttonPos, item.Size / 2f, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)), shadowColor, drawList);
+						DrawHelper.DrawCenteredShadowText("MyriadProLightCond_16", item.Config.Title, buttonPos, item.Size, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)), shadowColor, drawList);
 					}
 
 					if (i + 1 < enabledItems.Count())

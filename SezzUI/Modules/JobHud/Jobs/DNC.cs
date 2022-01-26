@@ -22,7 +22,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 			Bar roleBar = hud.Bars.Last();
 			roleBar.Add(new(roleBar) {TextureActionId = 16015, CooldownActionId = 16015}, 1); // Curing Waltz
-			roleBar.Add(new(roleBar) {TextureActionId = 16012, CooldownActionId = 16012, StatusIds = new[] { 1934u, 1826u, 1951u }, MaxStatusDuration = 15, StatusSourcePlayer = false}, 1); // Shield Samba
+			roleBar.Add(new(roleBar) {TextureActionId = 16012, CooldownActionId = 16012, StatusIds = new[] {1934u, 1826u, 1951u}, MaxStatusDuration = 15, StatusSourcePlayer = false}, 1); // Shield Samba
 			roleBar.Add(new(roleBar) {TextureActionId = 16014, CooldownActionId = 16014, StatusId = 1827, MaxStatusDuration = 15, StacksStatusId = 2696, GlowBorderStatusId = 2696, Features = IconFeatures.GlowIgnoresState}, 1); // Improvisation
 
 			// Threefold Fan Dance

@@ -13,7 +13,6 @@ using DrawHelper = SezzUI.Helpers.DrawHelper;
 using JobsHelper = SezzUI.Helpers.JobsHelper;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
-using SpellHelper = SezzUI.Helpers.SpellHelper;
 
 namespace SezzUI.Modules.JobHud
 {
@@ -106,10 +105,10 @@ namespace SezzUI.Modules.JobHud
 
 		private readonly bool _flipVertically = false;
 
-        /// <summary>
-        ///     Required job level to enable alert.
-        /// </summary>
-        public byte Level = 1;
+		/// <summary>
+		///     Required job level to enable alert.
+		/// </summary>
+		public byte Level = 1;
 
 		private readonly float _opacityMax = 0.95f;
 		private readonly float _opacityMin = 0.65f;
@@ -244,9 +243,7 @@ namespace SezzUI.Modules.JobHud
 
 				// Draw aura alert
 				Vector2 elementSize = Size * Animator.Data.Scale;
-				Vector2 elementPosition = Utils.GetAnchoredPosition(origin, elementSize, DrawAnchor.Center);
-				elementPosition.X += Position.X + Animator.Data.Offset.X;
-				elementPosition.Y += Position.Y + Animator.Data.Offset.Y;
+				Vector2 elementPosition = DrawHelper.GetAnchoredPosition(elementSize, DrawAnchor.Center) + Position + Animator.Data.Offset;
 
 				string windowId = "SezzUI_AuraAlert";
 				DelvUI.Helpers.DrawHelper.DrawInWindow(windowId, elementPosition, elementSize, false, false, drawList =>
@@ -276,7 +273,7 @@ namespace SezzUI.Modules.JobHud
 
 						bool fontPushed = FontsManager.Instance.PushFont("MyriadProLightCond_16");
 						Vector2 textSize = ImGui.CalcTextSize(windowId);
-						Vector2 textPosition = Utils.GetAnchoredPosition(elementPosition + elementSize / 2, textSize, DrawAnchor.Center);
+						Vector2 textPosition = DrawHelper.GetAnchoredPosition(elementPosition, elementSize, textSize, DrawAnchor.Center);
 						DelvUI.Helpers.DrawHelper.DrawShadowText(windowId, textPosition, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, Animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, Animator.Data.Opacity)), drawList);
 						if (fontPushed)
 						{
@@ -300,7 +297,7 @@ namespace SezzUI.Modules.JobHud
 							string textDuration = duration.ToString("0.00", Plugin.NumberFormatInfo);
 							bool fontPushed = FontsManager.Instance.PushFont("MyriadProLightCond_20");
 							Vector2 textSize = ImGui.CalcTextSize(textDuration);
-							Vector2 textPosition = Utils.GetAnchoredPosition(elementPosition + elementSize / 2, textSize, TextAnchor) + TextOffset;
+							Vector2 textPosition = DrawHelper.GetAnchoredPosition(elementPosition, elementSize, textSize, TextAnchor) + TextOffset;
 							DelvUI.Helpers.DrawHelper.DrawOutlinedText(textDuration, textPosition, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, 1)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList);
 							if (fontPushed)
 							{

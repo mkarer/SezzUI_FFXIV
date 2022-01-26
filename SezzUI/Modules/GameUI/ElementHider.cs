@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
 using SezzUI.Config;
 using SezzUI.Enums;
 using SezzUI.Interface.GeneralElements;
@@ -44,7 +43,7 @@ namespace SezzUI.Modules.GameUI
 			using (InteractableArea area = new(new()))
 			{
 				area.Elements.AddRange(new List<Element> {Element.MainMenu, Element.ActionBar4});
-				area.Position = new(4, ImGui.GetMainViewport().Size.Y - 4);
+				area.Position = new(4, -4);
 				area.Anchor = DrawAnchor.BottomLeft;
 				area.Size = new(780, 50); // TODO: Automatic sizing ? Node.Width * Node.ScaleX, Node.Height * Node.ScaleY
 				_areas.Add(area);
@@ -53,7 +52,7 @@ namespace SezzUI.Modules.GameUI
 			using (InteractableArea area = new(new()))
 			{
 				area.Elements.AddRange(new List<Element> {Element.ActionBar5, Element.ActionBar10});
-				area.Position = new(ImGui.GetMainViewport().Size.X / 2, ImGui.GetMainViewport().Size.Y - 4);
+				area.Position = new(0, -4);
 				area.Anchor = DrawAnchor.Bottom;
 				area.Size = new(500, 90);
 				_areas.Add(area);
@@ -62,7 +61,7 @@ namespace SezzUI.Modules.GameUI
 			using (InteractableArea area = new(new()))
 			{
 				area.Elements.AddRange(new List<Element> {Element.ActionBar7, Element.ActionBar8, Element.ActionBar9});
-				area.Position = new(ImGui.GetMainViewport().Size.X - 4, 710);
+				area.Position = new(-4, 710);
 				area.Anchor = DrawAnchor.Right;
 				area.Size = new(176, 670);
 				_areas.Add(area);
@@ -71,7 +70,7 @@ namespace SezzUI.Modules.GameUI
 			using (InteractableArea area = new(new()))
 			{
 				area.Elements.AddRange(new List<Element> {Element.ScenarioGuide});
-				area.Position = new(ImGui.GetMainViewport().Size.X - 4, 0);
+				area.Position = new(-4, 0);
 				area.Anchor = DrawAnchor.TopRight;
 				area.Size = new(340, 670);
 				area.Size = new(340, 100);

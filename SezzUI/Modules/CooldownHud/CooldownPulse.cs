@@ -6,6 +6,7 @@ using ImGuiScene;
 using SezzUI.Animator;
 using SezzUI.Core;
 using SezzUI.Enums;
+using DrawHelper = SezzUI.Helpers.DrawHelper;
 
 namespace SezzUI.Modules.CooldownHud
 {
@@ -22,8 +23,8 @@ namespace SezzUI.Modules.CooldownHud
 		public byte BorderSize = 1;
 		public ushort Charges = 0;
 
-		public Vector2 IconUV0 = Vector2.Zero;
-		public Vector2 IconUV1 = Vector2.One;
+		public Vector2 IconUv0 = Vector2.Zero;
+		public Vector2 IconUv1 = Vector2.One;
 		public Vector2 Position = Vector2.Zero;
 
 		public Vector2 Size = new(32f, 32f);
@@ -72,8 +73,8 @@ namespace SezzUI.Modules.CooldownHud
 				if (value != null)
 				{
 					float cutoff = 1.6f;
-					IconUV0 = new(cutoff / value.Width, cutoff / value.Height);
-					IconUV1 = new(1f - cutoff / value.Width, 1f - cutoff / value.Height);
+					IconUv0 = new(cutoff / value.Width, cutoff / value.Height);
+					IconUv1 = new(1f - cutoff / value.Width, 1f - cutoff / value.Height);
 				}
 			}
 		}
@@ -88,17 +89,15 @@ namespace SezzUI.Modules.CooldownHud
 			Animator.Update();
 
 			Vector2 elementSize = Size * Animator.Data.Scale;
-			Vector2 elementPosition = Utils.GetAnchoredPosition(origin, elementSize, DrawAnchor.Center);
-			elementPosition.X += Position.X + Animator.Data.Offset.X;
-			elementPosition.Y += Position.Y + Animator.Data.Offset.Y;
+			Vector2 elementPosition = DrawHelper.GetAnchoredPosition(elementSize, DrawAnchor.Center) + Position + Animator.Data.Offset;
 
 			string windowId = $"SezzUI_CooldownPulse{IconId}";
-			DrawHelper.DrawInWindow(windowId, elementPosition, elementSize, false, false, drawList =>
+			DelvUI.Helpers.DrawHelper.DrawInWindow(windowId, elementPosition, elementSize, false, false, drawList =>
 			{
 				if (_texture != null)
 				{
 					// Texture
-					drawList.AddImage(_texture.ImGuiHandle, elementPosition, elementPosition + elementSize, IconUV0, IconUV1, ImGui.ColorConvertFloat4ToU32(Vector4.One.AddTransparency(Animator.Data.Opacity)));
+					drawList.AddImage(_texture.ImGuiHandle, elementPosition, elementPosition + elementSize, IconUv0, IconUv1, ImGui.ColorConvertFloat4ToU32(Vector4.One.AddTransparency(Animator.Data.Opacity)));
 
 					// Border
 					if (BorderSize > 0)
@@ -114,8 +113,8 @@ namespace SezzUI.Modules.CooldownHud
 
 					bool fontPushed = FontsManager.Instance.PushFont("MyriadProLightCond_16");
 					Vector2 textSize = ImGui.CalcTextSize(windowId);
-					Vector2 textPosition = Utils.GetAnchoredPosition(elementPosition + elementSize / 2, textSize, DrawAnchor.Center);
-					DrawHelper.DrawShadowText(windowId, textPosition, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, Animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, Animator.Data.Opacity)), drawList);
+					Vector2 textPosition = DrawHelper.GetAnchoredPosition(elementPosition, elementSize, textSize, DrawAnchor.Center);
+					DelvUI.Helpers.DrawHelper.DrawShadowText(windowId, textPosition, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, Animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, Animator.Data.Opacity)), drawList);
 					if (fontPushed)
 					{
 						ImGui.PopFont();

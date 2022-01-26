@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Text;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.Text.SeStringHandling;
-using SezzUI.Interface.Bars;
+using SezzUI.Enums;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using static System.Globalization.CultureInfo;
 
@@ -133,14 +133,6 @@ namespace SezzUI
         public static bool IsInverted(this BarDirection direction)
         {
             return direction == BarDirection.Left || direction == BarDirection.Up;
-        }
-
-        public static void Draw(this BarHud[] bars, Vector2 origin)
-        {
-            foreach (BarHud bar in bars)
-            {
-                bar.Draw(origin);
-            }
         }
 
         public static string CheckForUpperCase(this string str)
@@ -279,14 +271,6 @@ namespace DelvUI
         public static bool IsInverted(this BarDirection direction)
         {
             return direction == BarDirection.Left || direction == BarDirection.Up;
-        }
-
-        public static void Draw(this BarHud[] bars, Vector2 origin)
-        {
-            foreach (BarHud bar in bars)
-            {
-                bar.Draw(origin);
-            }
         }
 
         public static string CheckForUpperCase(this string str)

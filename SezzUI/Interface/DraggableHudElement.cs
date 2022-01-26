@@ -1,299 +1,298 @@
-﻿using Dalamud.Logging;
-using SezzUI.Config;
-using SezzUI.Enums;
-using DelvUI.Helpers;
-using ImGuiNET;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using DelvUI.Helpers;
+using ImGuiNET;
+using SezzUI.Config;
+using SezzUI.Enums;
+using DrawHelper = SezzUI.Helpers.DrawHelper;
 
 namespace SezzUI.Interface
 {
-    public delegate void DraggableHudElementSelectHandler(DraggableHudElement element);
+	public delegate void DraggableHudElementSelectHandler(DraggableHudElement element);
 
-    public class DraggableHudElement : HudElement
-    {
-        public DraggableHudElement(MovablePluginConfigObject config, string? displayName = null) : base(config)
-        {
-            _displayName = displayName ?? ID;
-        }
+	public class DraggableHudElement : HudElement
+	{
+		public DraggableHudElement(MovablePluginConfigObject config, string? displayName = null) : base(config)
+		{
+			_displayName = displayName ?? ID;
+		}
 
-        public event DraggableHudElementSelectHandler? SelectEvent;
-        public bool Selected = false;
+		public event DraggableHudElementSelectHandler? SelectEvent;
+		public bool Selected = false;
 
-        private string _displayName;
-        protected bool _windowPositionSet = false;
-        private Vector2 _lastWindowPos = Vector2.Zero;
-        private Vector2 _positionOffset;
-        private Vector2 _contentMargin = new Vector2(4, 0);
+		private readonly string _displayName;
+		protected bool _windowPositionSet;
+		private Vector2 _lastWindowPos = Vector2.Zero;
+		private Vector2 _positionOffset;
+		private readonly Vector2 _contentMargin = new(4, 0);
 
-        private bool _draggingEnabled = false;
-        public bool DraggingEnabled
-        {
-            get => _draggingEnabled;
-            set
-            {
-                _draggingEnabled = value;
+		private bool _draggingEnabled;
 
-                if (_draggingEnabled)
-                {
-                    _windowPositionSet = false;
-                    _minPos = null;
-                    _maxPos = null;
-                }
-            }
-        }
+		public bool DraggingEnabled
+		{
+			get => _draggingEnabled;
+			set
+			{
+				_draggingEnabled = value;
 
-        public bool CanTakeInputForDrag = false;
-        public bool NeedsInputForDrag { get; private set; } = false;
+				if (_draggingEnabled)
+				{
+					_windowPositionSet = false;
+					_minPos = null;
+					_maxPos = null;
+				}
+			}
+		}
 
-        public virtual Vector2 ParentPos() { return Vector2.Zero; } // override
+		public bool CanTakeInputForDrag = false;
+		public bool NeedsInputForDrag { get; private set; }
 
-        public sealed override void Draw(Vector2 origin)
-        {
-            if (_draggingEnabled)
-            {
-                DrawDraggableArea(origin);
-                return;
-            }
+		public virtual Vector2 ParentPos() => Vector2.Zero; // override
 
-            DrawChildren(origin);
-        }
+		public sealed override void Draw(Vector2 origin)
+		{
+			if (_draggingEnabled)
+			{
+				DrawDraggableArea(origin);
+				return;
+			}
 
-        private bool CalculateNeedsInput(Vector2 pos, Vector2 size, bool selected)
-        {
-            Vector2 mousePos = ImGui.GetMousePos();
+			DrawChildren(origin);
+		}
 
-            if (ImGui.IsMouseHoveringRect(pos, pos + size))
-            {
-                return true;
-            }
+		private bool CalculateNeedsInput(Vector2 pos, Vector2 size, bool selected)
+		{
+			Vector2 mousePos = ImGui.GetMousePos();
 
-            if (!selected)
-            {
-                return false;
-            }
+			if (ImGui.IsMouseHoveringRect(pos, pos + size))
+			{
+				return true;
+			}
 
-            var arrowsPos = DraggablesHelper.GetArrowPositions(pos, size);
+			if (!selected)
+			{
+				return false;
+			}
 
-            foreach (Vector2 arrowPos in arrowsPos)
-            {
-                if (ImGui.IsMouseHoveringRect(arrowPos, arrowPos + DraggablesHelper.ArrowSize))
-                {
-                    return true;
-                }
-            }
+			Vector2[] arrowsPos = DraggablesHelper.GetArrowPositions(pos, size);
 
-            return false;
-        }
+			foreach (Vector2 arrowPos in arrowsPos)
+			{
+				if (ImGui.IsMouseHoveringRect(arrowPos, arrowPos + DraggablesHelper.ArrowSize))
+				{
+					return true;
+				}
+			}
 
-        protected virtual void DrawDraggableArea(Vector2 origin)
-        {
-            var windowFlags = ImGuiWindowFlags.NoScrollbar
-            | ImGuiWindowFlags.NoTitleBar
-            | ImGuiWindowFlags.NoResize
-            | ImGuiWindowFlags.NoBackground
-            | ImGuiWindowFlags.NoDecoration
-            | ImGuiWindowFlags.NoSavedSettings;
+			return false;
+		}
 
-            // always update size
-            var size = MaxPos - MinPos + _contentMargin * 2;
-            ImGui.SetNextWindowSize(size, ImGuiCond.Always);
+		protected virtual void DrawDraggableArea(Vector2 origin)
+		{
+			ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoSavedSettings;
 
-            // needs input?
-            NeedsInputForDrag = CanTakeInputForDrag && CalculateNeedsInput(_lastWindowPos, size, Selected);
+			// always update size
+			Vector2 size = MaxPos - MinPos + _contentMargin * 2;
+			ImGui.SetNextWindowSize(size, ImGuiCond.Always);
 
-            if (!NeedsInputForDrag)
-            {
-                windowFlags |= ImGuiWindowFlags.NoMove;
-            }
+			// needs input?
+			NeedsInputForDrag = CanTakeInputForDrag && CalculateNeedsInput(_lastWindowPos, size, Selected);
 
-            // set initial position
-            if (!_windowPositionSet)
-            {
-                ImGui.SetNextWindowPos(origin + MinPos - _contentMargin);
-                _windowPositionSet = true;
+			if (!NeedsInputForDrag)
+			{
+				windowFlags |= ImGuiWindowFlags.NoMove;
+			}
 
-                _positionOffset = _config.Position - MinPos + _contentMargin;
-            }
+			// set initial position
+			if (!_windowPositionSet)
+			{
+				ImGui.SetNextWindowPos(origin + MinPos - _contentMargin);
+				_windowPositionSet = true;
 
-            // update config object position
-            ImGui.Begin(ID + "_dragArea", windowFlags);
-            var windowPos = ImGui.GetWindowPos();
-            _lastWindowPos = windowPos;
-            _config.Position = windowPos + _positionOffset - origin;
+				_positionOffset = _config.Position - MinPos + _contentMargin;
+			}
 
-            // check selection
-            var tooltipText = "x: " + _config.Position.X.ToString() + "    y: " + _config.Position.Y.ToString();
+			// update config object position
+			ImGui.Begin(ID + "_dragArea", windowFlags);
+			Vector2 windowPos = ImGui.GetWindowPos();
+			_lastWindowPos = windowPos;
+			_config.Position = windowPos + _positionOffset - origin;
 
-            if (NeedsInputForDrag && ImGui.IsMouseHoveringRect(windowPos, windowPos + size))
-            {
-                bool cliked = ImGui.IsMouseClicked(ImGuiMouseButton.Left) || ImGui.IsMouseDown(ImGuiMouseButton.Left);
-                if (cliked && !Selected)
-                {
-                    SelectEvent?.Invoke(this);
-                }
+			// check selection
+			string tooltipText = "x: " + _config.Position.X + "    y: " + _config.Position.Y;
 
-                // tooltip
-                TooltipsHelper.Instance.ShowTooltipOnCursor(tooltipText);
-            }
+			if (NeedsInputForDrag && ImGui.IsMouseHoveringRect(windowPos, windowPos + size))
+			{
+				bool cliked = ImGui.IsMouseClicked(ImGuiMouseButton.Left) || ImGui.IsMouseDown(ImGuiMouseButton.Left);
+				if (cliked && !Selected)
+				{
+					SelectEvent?.Invoke(this);
+				}
 
-            // draw window
-            var drawList = ImGui.GetWindowDrawList();
-            var contentPos = windowPos + _contentMargin;
-            var contentSize = size - _contentMargin * 2;
+				// tooltip
+				TooltipsHelper.Instance.ShowTooltipOnCursor(tooltipText);
+			}
 
-            // draw draggable indicators
-            drawList.AddRectFilled(contentPos, contentPos + contentSize, 0x88444444, 3);
+			// draw window
+			ImDrawListPtr drawList = ImGui.GetWindowDrawList();
+			Vector2 contentPos = windowPos + _contentMargin;
+			Vector2 contentSize = size - _contentMargin * 2;
 
-            var lineColor = Selected ? 0xEEFFFFFF : 0x66FFFFFF;
-            drawList.AddRect(contentPos, contentPos + contentSize, lineColor, 3, ImDrawFlags.None, 2);
-            drawList.AddLine(contentPos + new Vector2(contentSize.X / 2f, 0), contentPos + new Vector2(contentSize.X / 2, contentSize.Y), lineColor);
-            drawList.AddLine(contentPos + new Vector2(0, contentSize.Y / 2f), contentPos + new Vector2(contentSize.X, contentSize.Y / 2), lineColor);
+			// draw draggable indicators
+			drawList.AddRectFilled(contentPos, contentPos + contentSize, 0x88444444, 3);
 
-            ImGui.End();
+			uint lineColor = Selected ? 0xEEFFFFFF : 0x66FFFFFF;
+			drawList.AddRect(contentPos, contentPos + contentSize, lineColor, 3, ImDrawFlags.None, 2);
+			drawList.AddLine(contentPos + new Vector2(contentSize.X / 2f, 0), contentPos + new Vector2(contentSize.X / 2, contentSize.Y), lineColor);
+			drawList.AddLine(contentPos + new Vector2(0, contentSize.Y / 2f), contentPos + new Vector2(contentSize.X, contentSize.Y / 2), lineColor);
 
-            // arrows
-            if (Selected)
-            {
-                if (DraggablesHelper.DrawArrows(windowPos, size, tooltipText, out var movement))
-                {
-                    _minPos = null;
-                    _maxPos = null;
-                    _config.Position += movement;
-                    _windowPositionSet = false;
-                }
-            }
+			ImGui.End();
 
-            // element name
-            var textSize = ImGui.CalcTextSize(_displayName);
-            var textColor = Selected ? 0xFFFFFFFF : 0xEEFFFFFF;
-            var textOutlineColor = Selected ? 0xFF000000 : 0xEE000000;
-            DrawHelper.DrawOutlinedText(_displayName, contentPos + contentSize / 2f - textSize / 2f, textColor, textOutlineColor, drawList);
-        }
+			// arrows
+			if (Selected)
+			{
+				if (DraggablesHelper.DrawArrows(windowPos, size, tooltipText, out Vector2 movement))
+				{
+					_minPos = null;
+					_maxPos = null;
+					_config.Position += movement;
+					_windowPositionSet = false;
+				}
+			}
 
-        public virtual void DrawChildren(Vector2 origin) { }
+			// element name
+			Vector2 textSize = ImGui.CalcTextSize(_displayName);
+			uint textColor = Selected ? 0xFFFFFFFF : 0xEEFFFFFF;
+			uint textOutlineColor = Selected ? 0xFF000000 : 0xEE000000;
+			DelvUI.Helpers.DrawHelper.DrawOutlinedText(_displayName, contentPos + contentSize / 2f - textSize / 2f, textColor, textOutlineColor, drawList);
+		}
 
-        #region draggable area
-        protected Vector2? _minPos = null;
-        public Vector2 MinPos
-        {
-            get
-            {
-                if (_minPos != null)
-                {
-                    return (Vector2)_minPos;
-                }
+		public virtual void DrawChildren(Vector2 origin)
+		{
+		}
 
-                var (positions, sizes) = ChildrenPositionsAndSizes();
-                if (positions.Count == 0 || sizes.Count == 0)
-                {
-                    return Vector2.Zero;
-                }
+		#region draggable area
 
-                float minX = float.MaxValue;
-                float minY = float.MaxValue;
+		protected Vector2? _minPos;
 
-                var anchorConfig = _config as AnchorablePluginConfigObject;
-                for (int i = 0; i < positions.Count; i++)
-                {
-                    var pos = GetAnchoredPosition(positions[i], sizes[i], anchorConfig?.Anchor ?? DrawAnchor.Center);
-                    minX = Math.Min(minX, pos.X);
-                    minY = Math.Min(minY, pos.Y);
-                }
+		public Vector2 MinPos
+		{
+			get
+			{
+				if (_minPos != null)
+				{
+					return (Vector2) _minPos;
+				}
 
-                _minPos = new Vector2(minX, minY);
-                return (Vector2)_minPos;
-            }
-        }
+				(List<Vector2> positions, List<Vector2> sizes) = ChildrenPositionsAndSizes();
+				if (positions.Count == 0 || sizes.Count == 0)
+				{
+					return Vector2.Zero;
+				}
 
-        protected Vector2? _maxPos = null;
-        public Vector2 MaxPos
-        {
-            get
-            {
-                if (_maxPos != null)
-                {
-                    return (Vector2)_maxPos;
-                }
+				float minX = float.MaxValue;
+				float minY = float.MaxValue;
 
-                var (positions, sizes) = ChildrenPositionsAndSizes();
-                if (positions.Count == 0 || sizes.Count == 0)
-                {
-                    return Vector2.Zero;
-                }
+				AnchorablePluginConfigObject? anchorConfig = _config as AnchorablePluginConfigObject;
+				for (int i = 0; i < positions.Count; i++)
+				{
+					Vector2 pos = GetAnchoredPosition(positions[i], sizes[i], anchorConfig?.Anchor ?? DrawAnchor.Center);
+					minX = Math.Min(minX, pos.X);
+					minY = Math.Min(minY, pos.Y);
+				}
 
-                float maxX = float.MinValue;
-                float maxY = float.MinValue;
+				_minPos = new Vector2(minX, minY);
+				return (Vector2) _minPos;
+			}
+		}
 
-                var anchorConfig = _config as AnchorablePluginConfigObject;
-                for (int i = 0; i < positions.Count; i++)
-                {
-                    var pos = GetAnchoredPosition(positions[i], sizes[i], anchorConfig?.Anchor ?? DrawAnchor.Center) + sizes[i];
-                    maxX = Math.Max(maxX, pos.X);
-                    maxY = Math.Max(maxY, pos.Y);
-                }
+		protected Vector2? _maxPos;
 
-                _maxPos = new Vector2(maxX, maxY);
-                return (Vector2)_maxPos;
-            }
-        }
-        public void FlagDraggableAreaDirty()
-        {
-            _minPos = null;
-            _maxPos = null;
-        }
+		public Vector2 MaxPos
+		{
+			get
+			{
+				if (_maxPos != null)
+				{
+					return (Vector2) _maxPos;
+				}
 
-        protected virtual Vector2 GetAnchoredPosition(Vector2 position, Vector2 size, DrawAnchor anchor)
-        {
-            return Utils.GetAnchoredPosition(ParentPos() + position, size, anchor);
-        }
+				(List<Vector2> positions, List<Vector2> sizes) = ChildrenPositionsAndSizes();
+				if (positions.Count == 0 || sizes.Count == 0)
+				{
+					return Vector2.Zero;
+				}
 
-        protected virtual (List<Vector2>, List<Vector2>) ChildrenPositionsAndSizes()
-        {
-            return (new List<Vector2>(), new List<Vector2>());
-        }
-        #endregion
-    }
+				float maxX = float.MinValue;
+				float maxY = float.MinValue;
 
-    public abstract class ParentAnchoredDraggableHudElement : DraggableHudElement
-    {
-        public ParentAnchoredDraggableHudElement(MovablePluginConfigObject config, string? displayName = null)
-            : base(config, displayName)
-        {
-        }
+				AnchorablePluginConfigObject? anchorConfig = _config as AnchorablePluginConfigObject;
+				for (int i = 0; i < positions.Count; i++)
+				{
+					Vector2 pos = GetAnchoredPosition(positions[i], sizes[i], anchorConfig?.Anchor ?? DrawAnchor.Center) + sizes[i];
+					maxX = Math.Max(maxX, pos.X);
+					maxY = Math.Max(maxY, pos.Y);
+				}
 
-        protected virtual bool AnchorToParent { get; }
-        protected virtual DrawAnchor ParentAnchor { get; }
-        public AnchorablePluginConfigObject? ParentConfig { get; set; }
+				_maxPos = new Vector2(maxX, maxY);
+				return (Vector2) _maxPos;
+			}
+		}
 
-        private Vector2? _lastParentPosition = null;
+		public void FlagDraggableAreaDirty()
+		{
+			_minPos = null;
+			_maxPos = null;
+		}
 
-        private bool IsAnchored => AnchorToParent && ParentConfig != null;
+		protected virtual Vector2 GetAnchoredPosition(Vector2 position, Vector2 size, DrawAnchor anchor) =>
+			// TODO: Untested, might need fixing!
+			DrawHelper.GetAnchoredPosition(ParentPos(), Vector2.Zero, size, anchor) + position;
 
-        public override Vector2 ParentPos()
-        {
-            if (!IsAnchored)
-            {
-                return Vector2.Zero;
-            }
+		protected virtual (List<Vector2>, List<Vector2>) ChildrenPositionsAndSizes() => (new(), new());
 
-            Vector2 parentAnchoredPos = Utils.GetAnchoredPosition(ParentConfig!.Position, ParentConfig!.Size, ParentConfig!.Anchor);
-            return Utils.GetAnchoredPosition(parentAnchoredPos, -ParentConfig!.Size, ParentAnchor);
-        }
+		#endregion
+	}
 
-        protected override void DrawDraggableArea(Vector2 origin)
-        {
-            // if the parent moved, update own draggable area
-            if (IsAnchored && (_lastParentPosition == null || _lastParentPosition != ParentConfig!.Position))
-            {
-                _windowPositionSet = false;
-                _minPos = null;
-                _maxPos = null;
-                _lastParentPosition = ParentConfig!.Position;
-            }
+	public abstract class ParentAnchoredDraggableHudElement : DraggableHudElement
+	{
+		public ParentAnchoredDraggableHudElement(MovablePluginConfigObject config, string? displayName = null) : base(config, displayName)
+		{
+		}
 
-            base.DrawDraggableArea(origin);
-        }
-    }
+		protected virtual bool AnchorToParent { get; }
+		protected virtual DrawAnchor ParentAnchor { get; }
+		public AnchorablePluginConfigObject? ParentConfig { get; set; }
+
+		private Vector2? _lastParentPosition;
+
+		private bool IsAnchored => AnchorToParent && ParentConfig != null;
+
+		public override Vector2 ParentPos()
+		{
+			// TODO: Untested, might need fixing!
+			if (!IsAnchored)
+			{
+				return Vector2.Zero;
+			}
+
+			Vector2 parentAnchoredPos = DrawHelper.GetAnchoredPosition(ParentConfig!.Size, ParentConfig!.Anchor) + ParentConfig!.Position;
+			return DrawHelper.GetAnchoredPosition(parentAnchoredPos, ParentConfig!.Size, Vector2.Zero, ParentAnchor);
+		}
+
+		protected override void DrawDraggableArea(Vector2 origin)
+		{
+			// if the parent moved, update own draggable area
+			if (IsAnchored && (_lastParentPosition == null || _lastParentPosition != ParentConfig!.Position))
+			{
+				_windowPositionSet = false;
+				_minPos = null;
+				_maxPos = null;
+				_lastParentPosition = ParentConfig!.Position;
+			}
+
+			base.DrawDraggableArea(origin);
+		}
+	}
 }

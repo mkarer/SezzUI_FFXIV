@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Numerics;
-using DelvUI.Helpers;
 using ImGuiNET;
 using SezzUI.Enums;
+using SezzUI.Helpers;
 using SezzUI.Interface;
 using SezzUI.Interface.GeneralElements;
-using DrawHelper = SezzUI.Helpers.DrawHelper;
 
 namespace SezzUI.Modules.GameUI
 {
@@ -28,7 +27,7 @@ namespace SezzUI.Modules.GameUI
 
 		public void Draw()
 		{
-			Vector2 pos = Utils.GetAnchoredPosition(Position, Size, Anchor);
+			Vector2 pos = DrawHelper.GetAnchoredPosition(Size, Anchor);
 			IsHovered = ImGui.IsMouseHoveringRect(pos, pos + Size); // TODO: Check if window is active?
 
 			if (DrawPlaceholder)

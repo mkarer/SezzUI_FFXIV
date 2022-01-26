@@ -14,7 +14,6 @@ using SezzUI.Animator;
 using SezzUI.Enums;
 using SezzUI.GameEvents;
 using SezzUI.Helpers;
-using CooldownData = SezzUI.GameEvents.CooldownData;
 using DrawHelper = SezzUI.Helpers.DrawHelper;
 using JobsHelper = SezzUI.Helpers.JobsHelper;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
@@ -27,27 +26,27 @@ namespace SezzUI.Modules.JobHud
 	{
 		Default = 0,
 
-        /// <summary>
-        ///     Disables the small progress bar below the actual icon that displays the uptime of a buff/debuff.
-        /// </summary>
-        NoStatusBar = 1L << 0,
+		/// <summary>
+		///     Disables the small progress bar below the actual icon that displays the uptime of a buff/debuff.
+		/// </summary>
+		NoStatusBar = 1L << 0,
 
-        /// <summary>
-        ///     Disables the duration text in the middle of the small status progress bar.
-        /// </summary>
-        NoStatusBarText = 1L << 1,
+		/// <summary>
+		///     Disables the duration text in the middle of the small status progress bar.
+		/// </summary>
+		NoStatusBarText = 1L << 1,
 
-        /// <summary>
-        ///     Usually only icons that are ready/usable glow, use this to ignore the button state and allow it glow whenever the
-        ///     status is found.
-        ///     Applies only when GlowBorderStatusId or GlowBorderStatusIds is defined.
-        /// </summary>
-        GlowIgnoresState = 1L << 2,
+		/// <summary>
+		///     Usually only icons that are ready/usable glow, use this to ignore the button state and allow it glow whenever the
+		///     status is found.
+		///     Applies only when GlowBorderStatusId or GlowBorderStatusIds is defined.
+		/// </summary>
+		GlowIgnoresState = 1L << 2,
 
-        /// <summary>
-        ///     Disables displaying big status duration when no cooldown is specified.
-        /// </summary>
-        NoStatusCooldownDisplay = 1L << 3
+		/// <summary>
+		///     Disables displaying big status duration when no cooldown is specified.
+		/// </summary>
+		NoStatusCooldownDisplay = 1L << 3
 	}
 
 	public class Icon : IDisposable
@@ -58,10 +57,10 @@ namespace SezzUI.Modules.JobHud
 		private readonly Animator.Animator _animatorTexture;
 		public IconFeatures Features = IconFeatures.Default;
 
-        /// <summary>
-        ///     Action ID that will be used to lookup the icon texture.
-        /// </summary>
-        public uint? TextureActionId
+		/// <summary>
+		///     Action ID that will be used to lookup the icon texture.
+		/// </summary>
+		public uint? TextureActionId
 		{
 			get => _textureActionId;
 			set
@@ -69,7 +68,7 @@ namespace SezzUI.Modules.JobHud
 				if (value != null)
 				{
 					uint actionIdAdjusted = SpellHelper.GetAdjustedActionId((uint) value);
-					LuminaAction? action = Helpers.SpellHelper.GetAction(actionIdAdjusted);
+					LuminaAction? action = SpellHelper.GetAction(actionIdAdjusted);
 					if (action != null)
 					{
 						bool useLocalTexture = false;
@@ -113,7 +112,7 @@ namespace SezzUI.Modules.JobHud
 
 				if (value != null)
 				{
-					LuminaStatus? status = Helpers.SpellHelper.GetStatus((uint) value);
+					LuminaStatus? status = SpellHelper.GetStatus((uint) value);
 					if (status != null)
 					{
 						bool useLocalTexture = false;
@@ -148,10 +147,10 @@ namespace SezzUI.Modules.JobHud
 
 		private TextureWrap? _texture;
 
-        /// <summary>
-        ///     Action ID that will be used to display cooldown spiral and text.
-        /// </summary>
-        public uint? CooldownActionId
+		/// <summary>
+		///     Action ID that will be used to display cooldown spiral and text.
+		/// </summary>
+		public uint? CooldownActionId
 		{
 			get => _cooldownActionId;
 			set => _cooldownActionId = value != null ? SpellHelper.GetAdjustedActionId((uint) value) : value;
@@ -160,29 +159,29 @@ namespace SezzUI.Modules.JobHud
 		private uint? _cooldownActionId;
 		public float CooldownWarningThreshold = 7f;
 
-        /// <summary>
-        ///     Status (NOT Action) ID for tracking the duration of a buff/debuff on a unit.
-        ///     By default this also shows a small progress bar unless there is no cooldown action to track.
-        ///     When not specifying a cooldown action the duration will be displayed like a cooldown.
-        /// </summary>
-        public uint? StatusId;
+		/// <summary>
+		///     Status (NOT Action) ID for tracking the duration of a buff/debuff on a unit.
+		///     By default this also shows a small progress bar unless there is no cooldown action to track.
+		///     When not specifying a cooldown action the duration will be displayed like a cooldown.
+		/// </summary>
+		public uint? StatusId;
 
 		public uint[]? StatusIds;
 		public bool StatusSourcePlayer = true;
 		public bool StatusRequired = false;
 
-        /// <summary>
-        ///     Status (NOT Action) ID used for displaying stacks only.
-        ///     Overrides other stack counters!
-        /// </summary>
-        public uint? StacksStatusId;
+		/// <summary>
+		///     Status (NOT Action) ID used for displaying stacks only.
+		///     Overrides other stack counters!
+		/// </summary>
+		public uint? StacksStatusId;
 
 		public Func<(byte, byte)>? CustomStacks;
 
-        /// <summary>
-        ///     Action ID to lookup Status ID by name.
-        /// </summary>
-        public uint? StatusActionId
+		/// <summary>
+		///     Action ID to lookup Status ID by name.
+		/// </summary>
+		public uint? StatusActionId
 		{
 			get => _statusActionId;
 			set
@@ -192,7 +191,7 @@ namespace SezzUI.Modules.JobHud
 				if (value != null)
 				{
 					uint actionIdAdjusted = SpellHelper.GetAdjustedActionId((uint) value);
-					LuminaStatus? status = Helpers.SpellHelper.GetStatusByAction(actionIdAdjusted);
+					LuminaStatus? status = SpellHelper.GetStatusByAction(actionIdAdjusted);
 					if (status != null)
 					{
 						StatusId = status.RowId;
@@ -212,22 +211,22 @@ namespace SezzUI.Modules.JobHud
 		public uint? GlowBorderStatusId;
 		public uint[]? GlowBorderStatusIds;
 
-        /// <summary>
-        ///     Additional status check when GlowBorderUsable is true AND GlowBorderInvertCheck is true AND GlowBorderStatusId(s)
-        ///     is set.
-        ///     Only show the glowing border when this status is found on the player (in addition to all the other conditions).
-        /// </summary>
-        public uint? GlowBorderStatusIdForced;
+		/// <summary>
+		///     Additional status check when GlowBorderUsable is true AND GlowBorderInvertCheck is true AND GlowBorderStatusId(s)
+		///     is set.
+		///     Only show the glowing border when this status is found on the player (in addition to all the other conditions).
+		/// </summary>
+		public uint? GlowBorderStatusIdForced;
 
-        /// <summary>
-        ///     Show glowing border if the action is usable instead of checking for a status.
-        /// </summary>
-        public bool GlowBorderUsable = false;
+		/// <summary>
+		///     Show glowing border if the action is usable instead of checking for a status.
+		/// </summary>
+		public bool GlowBorderUsable = false;
 
-        /// <summary>
-        ///     Show glowing border if the status is not found/the action is not usable.
-        /// </summary>
-        public bool GlowBorderInvertCheck = false;
+		/// <summary>
+		///     Show glowing border if the status is not found/the action is not usable.
+		/// </summary>
+		public bool GlowBorderInvertCheck = false;
 
 		public JobsHelper.PowerType? RequiredPowerType;
 		public int? RequiredPowerAmount;
@@ -235,25 +234,25 @@ namespace SezzUI.Modules.JobHud
 		public Func<bool>? CustomPowerCondition;
 		public JobsHelper.PowerType? StacksPowerType;
 
-        /// <summary>
-        ///     Required job level to show icon.
-        /// </summary>
-        public byte Level = 0;
+		/// <summary>
+		///     Required job level to show icon.
+		/// </summary>
+		public byte Level = 0;
 
-        /// <summary>
-        ///     Action can only be executed while in combat.
-        /// </summary>
-        public bool RequiresCombat = false;
+		/// <summary>
+		///     Action can only be executed while in combat.
+		/// </summary>
+		public bool RequiresCombat = false;
 
 		public bool RequiresPet = false;
 		public Func<bool>? CustomCondition;
 
-        /// <summary>
-        ///     If the icon size is not 1:1 the visible area will be cropped.
-        ///     You can specify a negative value to moves the visible area up or left, or a positive value to move it down or
-        ///     right.
-        /// </summary>
-        public float IconClipOffset
+		/// <summary>
+		///     If the icon size is not 1:1 the visible area will be cropped.
+		///     You can specify a negative value to moves the visible area up or left, or a positive value to move it down or
+		///     right.
+		/// </summary>
+		public float IconClipOffset
 		{
 			set
 			{
@@ -286,11 +285,11 @@ namespace SezzUI.Modules.JobHud
 			_animatorTexture.Data.Reset(_animatorTexture.Timelines.OnShow.Data);
 		}
 
-        /// <summary>
-        ///     Checks level, cooldown action and texture action (in this priority) to decide if this should be shown.
-        /// </summary>
-        /// <returns></returns>
-        public bool ShouldShow()
+		/// <summary>
+		///     Checks level, cooldown action and texture action (in this priority) to decide if this should be shown.
+		/// </summary>
+		/// <returns></returns>
+		public bool ShouldShow()
 		{
 			if (Level > 0)
 			{
@@ -381,11 +380,11 @@ namespace SezzUI.Modules.JobHud
 
 				if (StatusId != null)
 				{
-					status = StatusTarget is Unit.TargetOrPlayer ? Helpers.SpellHelper.GetStatus((uint) StatusId, Unit.Target, StatusSourcePlayer) ?? Helpers.SpellHelper.GetStatus((uint) StatusId, Unit.Player, StatusSourcePlayer) : Helpers.SpellHelper.GetStatus((uint) StatusId, StatusTarget, StatusSourcePlayer);
+					status = StatusTarget is Unit.TargetOrPlayer ? SpellHelper.GetStatus((uint) StatusId, Unit.Target, StatusSourcePlayer) ?? SpellHelper.GetStatus((uint) StatusId, Unit.Player, StatusSourcePlayer) : SpellHelper.GetStatus((uint) StatusId, StatusTarget, StatusSourcePlayer);
 				}
 				else if (StatusIds != null)
 				{
-					status = StatusTarget is Unit.TargetOrPlayer ? Helpers.SpellHelper.GetStatus(StatusIds, Unit.Target, StatusSourcePlayer) ?? Helpers.SpellHelper.GetStatus(StatusIds, Unit.Player, StatusSourcePlayer) : Helpers.SpellHelper.GetStatus(StatusIds, StatusTarget, StatusSourcePlayer);
+					status = StatusTarget is Unit.TargetOrPlayer ? SpellHelper.GetStatus(StatusIds, Unit.Target, StatusSourcePlayer) ?? SpellHelper.GetStatus(StatusIds, Unit.Player, StatusSourcePlayer) : SpellHelper.GetStatus(StatusIds, StatusTarget, StatusSourcePlayer);
 				}
 
 				if (status != null)
@@ -453,7 +452,7 @@ namespace SezzUI.Modules.JobHud
 
 			if (StacksStatusId != null)
 			{
-				Status? status = Helpers.SpellHelper.GetStatus((uint) StacksStatusId, Unit.Player);
+				Status? status = SpellHelper.GetStatus((uint) StacksStatusId, Unit.Player);
 				if (status != null)
 				{
 					float duration = Math.Abs(status?.RemainingTime ?? 0f);
@@ -543,7 +542,7 @@ namespace SezzUI.Modules.JobHud
 				}
 				else if (GlowBorderStatusId != null)
 				{
-					Status? status = Helpers.SpellHelper.GetStatus((uint) GlowBorderStatusId, Unit.Player);
+					Status? status = SpellHelper.GetStatus((uint) GlowBorderStatusId, Unit.Player);
 					float remaining = status?.RemainingTime ?? 0f;
 					displayGlow = status != null && (remaining == Constants.PERMANENT_STATUS_DURATION || remaining > 0);
 					if (GlowBorderInvertCheck)
@@ -555,7 +554,7 @@ namespace SezzUI.Modules.JobHud
 				}
 				else if (GlowBorderStatusIds != null)
 				{
-					Status? status = Helpers.SpellHelper.GetStatus(GlowBorderStatusIds, Unit.Player);
+					Status? status = SpellHelper.GetStatus(GlowBorderStatusIds, Unit.Player);
 					float remaining = status?.RemainingTime ?? 0f;
 					displayGlow = status != null && (remaining == Constants.PERMANENT_STATUS_DURATION || remaining > 0);
 					if (GlowBorderInvertCheck)
@@ -570,19 +569,19 @@ namespace SezzUI.Modules.JobHud
 			{
 				if (GlowBorderStatusId != null)
 				{
-					bool hasForcedStatus = GlowBorderStatusIdForced == null || Helpers.SpellHelper.GetStatus((uint) GlowBorderStatusIdForced, Unit.Player) != null;
+					bool hasForcedStatus = GlowBorderStatusIdForced == null || SpellHelper.GetStatus((uint) GlowBorderStatusIdForced, Unit.Player) != null;
 					if (hasForcedStatus)
 					{
-						Status? status = Helpers.SpellHelper.GetStatus((uint) GlowBorderStatusId, Unit.Player);
+						Status? status = SpellHelper.GetStatus((uint) GlowBorderStatusId, Unit.Player);
 						displayGlow = status == null;
 					}
 				}
 				else if (GlowBorderStatusIds != null)
 				{
-					bool hasForcedStatus = GlowBorderStatusIdForced == null || Helpers.SpellHelper.GetStatus((uint) GlowBorderStatusIdForced, Unit.Player) != null;
+					bool hasForcedStatus = GlowBorderStatusIdForced == null || SpellHelper.GetStatus((uint) GlowBorderStatusIdForced, Unit.Player) != null;
 					if (hasForcedStatus)
 					{
-						Status? status = Helpers.SpellHelper.GetStatus(GlowBorderStatusIds, Unit.Player);
+						Status? status = SpellHelper.GetStatus(GlowBorderStatusIds, Unit.Player);
 						displayGlow = status == null;
 					}
 				}
@@ -620,7 +619,7 @@ namespace SezzUI.Modules.JobHud
 				_animatorTexture.Update();
 
 				DrawHelper.DrawBackdrop(pos, size, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 0.5f * animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(_animatorBorder.Data.Color.AddTransparency(animator.Data.Opacity)), drawList);
-				drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, _iconUV0 != null ? (Vector2) _iconUV0 : Parent.IconUV0, _iconUV1 != null ? (Vector2) _iconUV1 : Parent.IconUV1, ImGui.ColorConvertFloat4ToU32(_animatorTexture.Data.Color.AddTransparency(animator.Data.Opacity)));
+				drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, _iconUV0 != null ? (Vector2) _iconUV0 : Parent.IconUv0, _iconUV1 != null ? (Vector2) _iconUV1 : Parent.IconUv1, ImGui.ColorConvertFloat4ToU32(_animatorTexture.Data.Color.AddTransparency(animator.Data.Opacity)));
 			}
 			else
 			{

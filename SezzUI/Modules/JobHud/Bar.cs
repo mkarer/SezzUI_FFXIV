@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using DelvUI.Helpers;
 using SezzUI.Enums;
-using DrawHelper = SezzUI.Helpers.DrawHelper;
+using SezzUI.Helpers;
 
 namespace SezzUI.Modules.JobHud
 {
@@ -21,12 +20,12 @@ namespace SezzUI.Modules.JobHud
 			set
 			{
 				_iconSize = value;
-				(IconUV0, IconUV1) = DrawHelper.GetTexCoordinates(IconSize);
+				(IconUv0, IconUv1) = DrawHelper.GetTexCoordinates(IconSize);
 			}
 		}
 
-		public Vector2 IconUV0 = new(0, 0);
-		public Vector2 IconUV1 = new(1, 1);
+		public Vector2 IconUv0 = new(0, 0);
+		public Vector2 IconUv1 = new(1, 1);
 		public uint IconPadding = 8;
 		private Vector2 _iconSize; // 36px Icon + 1px Borders
 
@@ -65,14 +64,14 @@ namespace SezzUI.Modules.JobHud
 			Size.X = IconSize.X * _icons.Count() + (_icons.Count() - 1) * IconPadding;
 		}
 
-		public void Draw(Vector2 origin, Animator.Animator animator)
+		public void Draw(Vector2 anchor, Animator.Animator animator)
 		{
 			if (!HasIcons)
 			{
 				return;
 			}
 
-			Vector2 pos = Utils.GetAnchoredPosition(origin, Size, DrawAnchor.Top);
+			Vector2 pos = DrawHelper.GetAnchoredPosition(anchor, Vector2.Zero, Size, DrawAnchor.Top);
 
 			DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_JobHudBar", pos, Size, false, false, drawList =>
 			{

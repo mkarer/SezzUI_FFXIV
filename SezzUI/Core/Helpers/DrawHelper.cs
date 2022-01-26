@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Numerics;
 using Dalamud.Logging;
 using DelvUI.Helpers;
@@ -63,13 +62,13 @@ namespace SezzUI.Helpers
 			new(1, 1) // Bottom Right
 		};
 
-        /// <summary>
-        ///     Draws an edgeFile from World of Warcraft around another element.
-        ///     See: https://wowpedia.fandom.com/wiki/EdgeFiles
-        ///     Please note: Currently you need to rotate the top and bottom (3rd and 4th segment) correctly until i figure out how
-        ///     to rotate textures using Dear ImGui.
-        /// </summary>
-        public static void DrawBackdropEdge(string edgeFile, Vector2 backdropPos, Vector2 backdropSize, uint glowColor, ImDrawListPtr drawList, uint size = 8, short inset = -8)
+		/// <summary>
+		///     Draws an edgeFile from World of Warcraft around another element.
+		///     See: https://wowpedia.fandom.com/wiki/EdgeFiles
+		///     Please note: Currently you need to rotate the top and bottom (3rd and 4th segment) correctly until i figure out how
+		///     to rotate textures using Dear ImGui.
+		/// </summary>
+		public static void DrawBackdropEdge(string edgeFile, Vector2 backdropPos, Vector2 backdropSize, uint glowColor, ImDrawListPtr drawList, uint size = 8, short inset = -8)
 		{
 			TextureWrap? texture = ImageCache.Instance.GetImageFromPath(edgeFile);
 			if (texture == null)
@@ -114,7 +113,7 @@ namespace SezzUI.Helpers
 			bool fontPushed = FontsManager.Instance.PushFont(font);
 
 			Vector2 textSize = ImGui.CalcTextSize(textPosCalc != "" ? textPosCalc : text);
-			Vector2 textPosition = Utils.GetAnchoredPosition(pos + size, textSize, anchor);
+			Vector2 textPosition = GetAnchoredPosition(pos, size, textSize, anchor);
 			textPosition.X += xOffset;
 			textPosition.Y += 1 + yOffset;
 
@@ -163,7 +162,7 @@ namespace SezzUI.Helpers
 			drawList.AddLine(new(pos.X + 1, pos.Y + size.Y - 2), new(pos.X + size.X - 1, pos.Y + 1), colorLines, 1); // Bottom Left -> Top Right
 
 			// Text
-			DrawCenteredShadowText("MyriadProLightCond_16", text, pos, size / 2f, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
+			DrawCenteredShadowText("MyriadProLightCond_16", text, pos, size, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
 		}
 
 		public static void DrawProgressBar(Vector2 pos, Vector2 size, float min, float max, float current, uint barColor, uint bgColor, ImDrawListPtr drawList)
@@ -252,15 +251,15 @@ namespace SezzUI.Helpers
 
 			if (cooldown >= 60)
 			{
-				DrawCenteredOutlineText(font, FormatDuration(cooldown), pos, size / 2f, ImGui.ColorConvertFloat4ToU32(new(0.6f, 0.6f, 0.6f, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
+				DrawCenteredOutlineText(font, FormatDuration(cooldown), pos, size, ImGui.ColorConvertFloat4ToU32(new(0.6f, 0.6f, 0.6f, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
 			}
 			else if (cooldown > msThreshold)
 			{
-				DrawCenteredOutlineText(font, FormatDuration(cooldown, msThreshold), pos, size / 2f, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
+				DrawCenteredOutlineText(font, FormatDuration(cooldown, msThreshold), pos, size, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
 			}
 			else
 			{
-				DrawCenteredOutlineText(font, FormatDuration(cooldown, msThreshold), pos, size / 2f, ImGui.ColorConvertFloat4ToU32(new(1, 0, 0, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
+				DrawCenteredOutlineText(font, FormatDuration(cooldown, msThreshold), pos, size, ImGui.ColorConvertFloat4ToU32(new(1, 0, 0, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
 			}
 		}
 

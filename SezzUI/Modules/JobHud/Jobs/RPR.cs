@@ -4,8 +4,8 @@ using Dalamud.Game.ClientState.JobGauge.Types;
 using Dalamud.Game.ClientState.Statuses;
 using DelvUI.Helpers;
 using SezzUI.Enums;
+using SezzUI.Helpers;
 using JobsHelper = SezzUI.Helpers.JobsHelper;
-using SpellHelper = SezzUI.Helpers.SpellHelper;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {

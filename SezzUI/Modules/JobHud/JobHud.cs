@@ -123,12 +123,12 @@ namespace SezzUI.Modules.JobHud
 				PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
 				uint jobId = player?.ClassJob.Id ?? 0;
 				byte level = player?.Level ?? 0;
-				
+
 				if (_currentLevel == level && _currentJobId == jobId)
 				{
 					return;
 				}
-				
+
 				Reset();
 
 				_currentJobId = jobId;
@@ -171,17 +171,16 @@ namespace SezzUI.Modules.JobHud
 			{
 				_animator.Update();
 
-				float yOffset = 0;
+				Vector2 hudPos = DrawHelper.GetAnchoredPosition(Vector2.Zero, DrawAnchor.Center) + _config.Position + _animator.Data.Offset;
+				Vector2 offset = Vector2.Zero;
 
 				for (int i = 0; i < Bars.Count; i++)
 				{
 					Bar bar = Bars[i];
 					if (bar.HasIcons)
 					{
-						Vector2 pos = origin + Config.Position + _animator.Data.Offset;
-						pos.Y += yOffset;
-						bar.Draw(pos, _animator);
-						yOffset += bar.IconSize.Y + bar.IconPadding;
+						bar.Draw(hudPos + offset, _animator);
+						offset.Y += bar.IconSize.Y + bar.IconPadding;
 					}
 				}
 			}
