@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
@@ -23,6 +24,7 @@ namespace SezzUI.Modules.CooldownHud
 		private readonly List<BarManager.BarManager> _barManagers = new();
 		private readonly Dictionary<uint, CooldownHudItem> _cooldowns = new();
 		private readonly Dictionary<uint, BasePreset> _presets = new();
+		private readonly Dictionary<uint, int?> _iconOverride = new();
 		private readonly List<CooldownPulse> _pulses = new();
 
 		private uint _currentJobId;
@@ -149,6 +151,17 @@ namespace SezzUI.Modules.CooldownHud
 
 		public void RegisterCooldown(uint actionId, BarManager.BarManager barManager, bool adjustAction = true)
 		{
+			switch (actionId)
+			{
+				case 3:
+					// Sprint Spell Icon != Sprint General Action Icon
+					if (!_iconOverride.ContainsKey(3))
+					{
+						_iconOverride[actionId] = Helpers.SpellHelper.GetGeneralActionIcon(4);
+					}
+					break;
+			}
+
 			actionId = adjustAction ? Helpers.SpellHelper.GetAdjustedActionId(actionId) : actionId;
 			if (_cooldowns.ContainsKey(actionId))
 			{
@@ -216,10 +229,13 @@ namespace SezzUI.Modules.CooldownHud
 			RegisterCooldown(actionId, 0, adjustAction);
 		}
 
-		private static void GetActionDisplayData(uint actionId, ActionType actionType, out string? name, out TextureWrap? texture)
+		private void GetActionDisplayData(uint actionId, ActionType actionType, out string? name, out TextureWrap? texture)
 		{
 			name = actionType == ActionType.General ? Helpers.SpellHelper.GetGeneralActionName(actionId) : Helpers.SpellHelper.GetActionName(actionId);
-			int? iconId = actionType == ActionType.General ? Helpers.SpellHelper.GetGeneralActionIcon(actionId) : Helpers.SpellHelper.GetActionIcon(actionId);
+			if (!_iconOverride.TryGetValue(actionId, out int? iconId))
+			{
+				iconId = actionType == ActionType.General ? Helpers.SpellHelper.GetGeneralActionIcon(actionId) : Helpers.SpellHelper.GetActionIcon(actionId);
+			}
 			texture = iconId != null ? TexturesCache.Instance.GetTextureFromIconId((uint) iconId) : null;
 		}
 
@@ -361,6 +377,7 @@ namespace SezzUI.Modules.CooldownHud
 			_barManagers.ForEach(manager => manager.Dispose());
 			_barManagers.Clear();
 			_presets.Clear();
+			_iconOverride.Clear();
 		}
 
 		~CooldownHud()
