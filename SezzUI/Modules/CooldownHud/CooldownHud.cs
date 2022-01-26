@@ -108,7 +108,7 @@ namespace SezzUI.Modules.CooldownHud
 
 		public override void Draw(DrawState state, Vector2? origin)
 		{
-			if (origin == null || state != DrawState.Visible && state != DrawState.Partially)
+			if (origin == null || (state != DrawState.Visible && state != DrawState.Partially))
 			{
 				return;
 			}
@@ -131,7 +131,7 @@ namespace SezzUI.Modules.CooldownHud
 			{
 				CooldownPulse pulse = _pulses[i];
 				bool expired = Environment.TickCount64 - pulse.Created >= NO_PULSE_AFTER_ELAPSED_FINISHED;
-				if (!expired || pulse.Animator.IsAnimating)
+				if (!expired && pulse.Animator.IsAnimating)
 				{
 					pulse.Draw((Vector2) origin);
 					continue;
