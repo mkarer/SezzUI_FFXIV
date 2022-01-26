@@ -37,6 +37,12 @@ namespace SezzUI.Interface.GeneralElements
 
 			ImGui.TextColored(_titleColor, "Additional credits:");
 			ImGui.Text("0ceal0t, CaiClone, Lichie, lmcintyre, professorK, yomishino");
+			ImGui.NewLine();
+
+			ImGui.TextColored(_titleColor, "Images:");
+			ImGui.Text("Radar: FreePik (Flaticon.com)");
+			ImGui.Text("Fast Forward: Inkubators (Flaticon.com)");
+			ImGui.Text("Ripple: SmashingStocks (Flaticon.com)");
 
 			return false;
 		}

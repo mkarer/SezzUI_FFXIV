@@ -64,7 +64,7 @@ namespace SezzUI.Interface.GeneralElements
 	[Exportable(false)]
 	public class PluginMenuItemConfig : PluginConfigObject
 	{
-		[Combo("Type", "SezzUI Configuration", "Chat Command")]
+		[Combo("Type", "SezzUI Configuration", "Chat Command", isMonitored = true)]
 		[Order(1)]
 		public ItemType Type = ItemType.ChatCommand;
 
@@ -72,13 +72,13 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(2)]
 		public string Command = "";
 
-		[InputText("Title", formattable = false, help = "Text/Icon ::IconFile (has to a square image in Media\\Icons)).\nText color can be changed using |cAARRGGBB notation.")]
+		[InputText("Title", formattable = false, help = "Text/Icon ::IconFile - has to be in the plugin media folder, example: ::Images\\Icon.png\nText color can be changed using |cAARRGGBB notation.", isMonitored = true)]
 		[Order(3)]
 		public string Title = "";
 
-		[ColorEdit4("Text Color")]
+		[ColorEdit4("Color")]
 		[Order(4)]
-		public PluginConfigColor TextColor = new(new(255f / 255f, 255f / 255f, 255f / 255f, 100f / 100f));
+		public PluginConfigColor Color = new(new(255f / 255f, 255f / 255f, 255f / 255f, 100f / 100f));
 
 		public PluginMenuItemConfig()
 		{

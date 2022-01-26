@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Text.RegularExpressions;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SezzUI.Config;
@@ -17,8 +20,12 @@ namespace SezzUI.Modules.PluginMenu
 #if DEBUG
 		private PluginMenuDebugConfig _debugConfig;
 #endif
-		private XivCommonBase xivCommon;
-		
+		private XivCommonBase _xivCommon;
+		private List<PluginMenuItem> _items;
+		private static long _lastError = 0;
+		private const byte BORDER_SIZE = 1;
+		private const byte BUTTON_PADDING = 4;
+
 		public override unsafe void Draw(DrawState drawState, Vector2? origin)
 		{
 			if (!Enabled || drawState != DrawState.Visible && drawState != DrawState.Partially)
@@ -31,9 +38,9 @@ namespace SezzUI.Modules.PluginMenu
 			// {
 			// 	return;
 			// }
-			
-			int enabledButtons = Config.Items.Count(item => item.Enabled);
-			if (enabledButtons == 0)
+
+			List<PluginMenuItem> enabledItems = _items.Where(item => item.Config.Enabled).ToList();
+			if (enabledItems.Count() == 0)
 			{
 				return;
 			}
@@ -41,15 +48,14 @@ namespace SezzUI.Modules.PluginMenu
 			IntPtr nowLoading = Plugin.GameGui.GetAddonByName("NowLoading", 1);
 			AtkResNode* nowLoadingNode = ((AtkUnitBase*) nowLoading)->RootNode;
 			float opacity = !nowLoadingNode->IsVisible ? 1f : Math.Min(160f, 160 - nowLoadingNode->Alpha_2) / 160f; // At about 172 the _NaviMap is hidden here.
+			if (opacity <= 0)
+			{
+				return;
+			}
 
-			Vector2 buttonSize = new(60f, 30f);
-			uint buttonPadding = 4;
-			uint borderSize = 1;
 			bool rightToLeft = Config.Anchor is DrawAnchor.Right or DrawAnchor.TopRight or DrawAnchor.BottomRight;
 
-			// TODO: Calculate real size upon OnConfigPropertyChanged/OnEnable
-			Vector2 menuSize = new(enabledButtons * buttonSize.X + (enabledButtons - 1) * buttonPadding + borderSize, buttonSize.Y + 2);
-			menuSize.X += rightToLeft ? borderSize : 0; // Needed for R2L?
+			Vector2 menuSize = new(enabledItems.Sum(item => item.Size.X) + 2 * BORDER_SIZE + (enabledItems.Count() - 1) * BUTTON_PADDING, enabledItems[0].Size.Y + 2 * BORDER_SIZE);
 			Vector2 menuPos = DrawHelper.GetAnchoredPosition(menuSize, Config.Anchor);
 			menuPos.X += Config.Position.X;
 			menuPos.Y += Config.Position.Y;
@@ -59,58 +65,111 @@ namespace SezzUI.Modules.PluginMenu
 			ImGui.SetNextWindowContentSize(menuSize);
 			ImGui.SetNextWindowPos(menuPos);
 
-			ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(borderSize, borderSize)); // Would clip some borders otherwise...
+			ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(BORDER_SIZE, BORDER_SIZE)); // Would clip some borders otherwise...
 			ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0);
-			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, borderSize);
+			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, BORDER_SIZE);
 
 			ImGui.PushStyleColor(ImGuiCol.Button, ImGui.ColorConvertFloat4ToU32(new(0f, 0f, 0f, 0.5f * opacity)));
 			ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.15f * opacity)));
 			ImGui.PushStyleColor(ImGuiCol.ButtonActive, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.25f * opacity)));
 			ImGui.PushStyleColor(ImGuiCol.Border, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 77f / 255f * opacity)));
 
-			float buttonOffset = rightToLeft ? menuSize.X - buttonSize.X - borderSize : 0f;
-
 			DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_PluginMenu_Buttons", menuPos, menuSize, true, false, drawList =>
 			{
-				uint buttonId = 0;
-				foreach (PluginMenuItemConfig item in Config.Items.Where(item => item.Enabled))
+				float buttonOffset = rightToLeft ? menuSize.X - enabledItems[0].Size.X - BORDER_SIZE : BORDER_SIZE; // Need to add border size here for R2L or it will clip the right border. 
+				uint shadowColor = ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity));
+
+				for (int i = 0; i < enabledItems.Count(); i++)
 				{
-					// ReSharper disable once AccessToModifiedClosure
+					PluginMenuItem item = enabledItems[i];
 					ImGui.SameLine(buttonOffset, 0f);
 
-					if (ImGui.Button($"##SezzUI_PMB{buttonId}", buttonSize))
+					// Button
+					if (ImGui.Button($"##SezzUI_PMB{i}", item.Size))
 					{
 						LogDebug($"Menu item clicked: {nameof(item)}");
-						if (item.Command.StartsWith("/"))
+						if (item.Config.Command.StartsWith("/"))
 						{
-							LogDebug($"Executing command: {item.Command}");
-							xivCommon.Functions.Chat.SendMessage(item.Command);
+							LogDebug($"Executing command: {item.Config.Command}");
+							_xivCommon.Functions.Chat.SendMessage(item.Config.Command);
 						}
 					}
 					
-					// ReSharper disable once AccessToModifiedClosure
-					buttonOffset += rightToLeft ? -buttonSize.X - buttonPadding : buttonSize.X + buttonPadding;
-					buttonId++;
+					// Text
+					Vector4 color = item.Config.Color.Vector;
+					Vector2 buttonPos = new(menuPos.X + buttonOffset, menuPos.Y);
+					
+					if (item.Texture != null)
+					{
+						Vector2 imageSize = new(item.Size.X - 8, item.Size.Y - 8);
+						Vector2 imagePos = DrawHelper.GetAnchoredPosition(buttonPos, item.Size, imageSize, DrawAnchor.Center);
+						imagePos.Y += BORDER_SIZE;
+						drawList.AddImage(item.Texture.ImGuiHandle, imagePos, imagePos + imageSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)));
+					}
+					else if (Tags.RegexColorTags.IsMatch(item.Config.Title))
+					{
+						string cleanTitle = Tags.RegexColorTags.Replace(item.Config.Title, "");
+						Vector2 cleanTitleSize = ImGui.CalcTextSize(cleanTitle);
+						Vector2 textPosition = DrawHelper.GetAnchoredPosition(buttonPos, item.Size, cleanTitleSize, DrawAnchor.Center);
+						textPosition.Y += 1;
+
+						MatchCollection matches = Tags.RegexColor.Matches(item.Config.Title);
+						try
+						{
+							foreach (Match match in matches)
+							{
+								if (match.Groups[1].Success)
+								{
+									// Color
+									color.X = int.Parse(match.Groups[1].Value[4..6], NumberStyles.HexNumber) / 255f;
+									color.Y = int.Parse(match.Groups[1].Value[6..8], NumberStyles.HexNumber) / 255f;
+									color.Z = int.Parse(match.Groups[1].Value[8..10], NumberStyles.HexNumber) / 255f;
+									color.W = int.Parse(match.Groups[1].Value[2..4], NumberStyles.HexNumber) / 255f;
+
+								}
+								else if (match.Groups[2].Success)
+								{
+									// Text
+									DelvUI.Helpers.DrawHelper.DrawShadowText(match.Groups[2].Value, textPosition, ImGui.ColorConvertFloat4ToU32(color), shadowColor, drawList);
+									textPosition.X += ImGui.CalcTextSize(match.Groups[2].Value).X;
+								}
+							}
+						}
+						catch (Exception ex)
+						{
+							long now = System.Environment.TickCount64;
+							if (now - _lastError > 5000)
+							{
+								_lastError = now;
+								LogError(ex, "Draw", $"Error: {ex}");
+							}
+						}
+					}
+					else
+					{
+						DrawHelper.DrawCenteredShadowText("MyriadProLightCond_16", item.Config.Title, buttonPos, item.Size / 2f, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)), shadowColor, drawList);
+					}
+					
+					if (i + 1 < enabledItems.Count())
+					{
+						buttonOffset += rightToLeft ? -enabledItems[i + 1].Size.X - BUTTON_PADDING : item.Size.X + BUTTON_PADDING;
+					}
 				}
 			});
 
 			ImGui.PopStyleColor(4);
 			ImGui.PopStyleVar(3);
-
-			// Content
-			ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(borderSize, borderSize)); // Would clip some borders otherwise...
-			ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0);
-			buttonOffset = rightToLeft ? menuSize.X - buttonSize.X - borderSize : 0f;
-
-			DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_PluginMenu_Content", menuPos, menuSize, false, false, drawList =>
+		}
+		
+		protected override bool Enable()
+		{
+			if (!base.Enable())
 			{
-				foreach (PluginMenuItemConfig item in Config.Items.Where(item => item.Enabled))
-				{
-					DrawHelper.DrawCenteredShadowText("MyriadProLightCond_16", item.Title, new(menuPos.X + buttonOffset, menuPos.Y), buttonSize / 2f, ImGui.ColorConvertFloat4ToU32(item.TextColor.Vector.AddTransparency(opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0,  opacity)), drawList);
-					buttonOffset += rightToLeft ? -((int) buttonSize.X + buttonPadding) : (int) buttonSize.X + buttonPadding;
-				}
-			});
-			ImGui.PopStyleVar(2);
+				return false;
+			}
+
+			_items.ForEach(item => item.Update());
+			return true;
 		}
 
 		#region Constructor
@@ -120,9 +179,21 @@ namespace SezzUI.Modules.PluginMenu
 #if DEBUG
 			_debugConfig = ConfigurationManager.Instance.GetConfigObject<PluginMenuDebugConfig>();
 #endif
-			xivCommon = new();
+			_xivCommon = new();
 			config.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item1.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item2.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item3.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item4.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item5.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item6.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item7.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item8.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item9.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item10.ValueChangeEvent += OnConfigPropertyChanged;
+			
 			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+			_items = new() {new(Config.Item1), new(Config.Item2), new(Config.Item3), new(Config.Item4), new(Config.Item5), new(Config.Item6), new(Config.Item7), new(Config.Item8), new(Config.Item9), new(Config.Item10)};
 			Toggle(Config.Enabled);
 		}
 
@@ -132,6 +203,17 @@ namespace SezzUI.Modules.PluginMenu
 
 		private void OnConfigPropertyChanged(object sender, OnChangeBaseArgs args)
 		{
+			_lastError = 0;
+
+			if (sender is PluginMenuItemConfig itemConfig)
+			{
+				if (Config.Enabled)
+				{
+					_items.Where(item => item.Config == itemConfig).FirstOrDefault()?.Update();
+				}
+				return;
+			}
+			
 			switch (args.PropertyName)
 			{
 				case "Enabled":
@@ -148,6 +230,7 @@ namespace SezzUI.Modules.PluginMenu
 
 		private void OnConfigReset(ConfigurationManager sender)
 		{
+			_lastError = 0;
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
@@ -158,10 +241,30 @@ namespace SezzUI.Modules.PluginMenu
 			if (_config != null)
 			{
 				_config.ValueChangeEvent -= OnConfigPropertyChanged;
+				Config.Item1.ValueChangeEvent -= OnConfigPropertyChanged;
+				Config.Item2.ValueChangeEvent -= OnConfigPropertyChanged;
+				Config.Item3.ValueChangeEvent -= OnConfigPropertyChanged;
+				Config.Item4.ValueChangeEvent -= OnConfigPropertyChanged;
+				Config.Item5.ValueChangeEvent -= OnConfigPropertyChanged;
+				Config.Item6.ValueChangeEvent -= OnConfigPropertyChanged;
+				Config.Item7.ValueChangeEvent -= OnConfigPropertyChanged;
+				Config.Item8.ValueChangeEvent -= OnConfigPropertyChanged;
+				Config.Item9.ValueChangeEvent -= OnConfigPropertyChanged;
+				Config.Item10.ValueChangeEvent -= OnConfigPropertyChanged;
 			}
 
 			_config = sender.GetConfigObject<PluginMenuConfig>();
 			_config.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item1.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item2.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item3.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item4.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item5.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item6.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item7.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item8.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item9.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Item10.ValueChangeEvent += OnConfigPropertyChanged;
 
 #if DEBUG
 			_debugConfig = sender.GetConfigObject<PluginMenuDebugConfig>();
@@ -181,7 +284,9 @@ namespace SezzUI.Modules.PluginMenu
 		{
 			Disable();
 			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
-			xivCommon.Dispose();
+			_items.ForEach(item => item.Dispose());
+			_items.Clear();
+			_xivCommon.Dispose();
 		}
 
 		#endregion
