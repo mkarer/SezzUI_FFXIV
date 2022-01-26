@@ -76,8 +76,12 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(3)]
 		public string Title = "";
 
-		[ColorEdit4("Color")]
+		[InputText("Tooltip", formattable = false)]
 		[Order(4)]
+		public string Tooltip = "";
+		
+		[ColorEdit4("Color")]
+		[Order(7)]
 		public PluginConfigColor Color = new(new(255f / 255f, 255f / 255f, 255f / 255f, 100f / 100f));
 
 		[Checkbox("Toggle Color On Click/Enable", isMonitored = true)]

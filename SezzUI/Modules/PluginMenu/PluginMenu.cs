@@ -4,13 +4,14 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
+using DelvUI.Helpers;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SezzUI.Config;
 using SezzUI.Enums;
-using SezzUI.Helpers;
 using SezzUI.Interface.GeneralElements;
 using XivCommon;
+using DrawHelper = SezzUI.Helpers.DrawHelper;
 
 namespace SezzUI.Modules.PluginMenu
 {
@@ -159,6 +160,12 @@ namespace SezzUI.Modules.PluginMenu
 					else
 					{
 						DrawHelper.DrawCenteredShadowText("MyriadProLightCond_16", item.Config.Title, buttonPos, item.Size, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)), shadowColor, drawList);
+					}
+
+					// Tooltip
+					if (item.Config.Tooltip != "" && ImGui.IsMouseHoveringRect(buttonPos, buttonPos + item.Size))
+					{
+						TooltipsHelper.Instance.ShowTooltipOnCursor(item.Config.Tooltip);
 					}
 
 					if (i + 1 < enabledItems.Count())
