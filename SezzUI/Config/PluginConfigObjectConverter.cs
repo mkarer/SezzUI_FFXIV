@@ -1,277 +1,293 @@
-﻿using Dalamud.Logging;
-using SezzUI.Interface.GeneralElements;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
+using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Config
 {
-    public abstract class PluginConfigObjectConverter : JsonConverter
-    {
-        protected Dictionary<string, PluginConfigObjectFieldConverter> FieldConvertersMap = new Dictionary<string, PluginConfigObjectFieldConverter>();
+	public abstract class PluginConfigObjectConverter : JsonConverter
+	{
+		protected Dictionary<string, PluginConfigObjectFieldConverter> FieldConvertersMap = new();
+		internal PluginLogger Logger;
 
-        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
-        {
-            var genericMethod = GetType().GetMethod("ConvertJson");
-            var method = genericMethod?.MakeGenericMethod(objectType);
-            return method?.Invoke(this, new object[] { reader, serializer });
-        }
+		protected PluginConfigObjectConverter()
+		{
+			Logger = new(GetType().Name);
+		}
 
-        public T? ConvertJson<T>(JsonReader reader, JsonSerializer serializer) where T : PluginConfigObject
-        {
-            Type type = typeof(T);
-            T? config = null;
+		public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
+		{
+			MethodInfo? genericMethod = GetType().GetMethod("ConvertJson");
+			MethodInfo? method = genericMethod?.MakeGenericMethod(objectType);
+			return method?.Invoke(this, new object[] {reader, serializer});
+		}
 
-            try
-            {
-                ConstructorInfo? constructor = type.GetConstructor(new Type[] { });
-                if (constructor != null)
-                {
-                    config = (T?)Activator.CreateInstance<T>();
-                }
-                else
-                {
-                    config = (T?)ConfigurationManager.GetDefaultConfigObjectForType(type);
-                }
+		public T? ConvertJson<T>(JsonReader reader, JsonSerializer serializer) where T : PluginConfigObject
+		{
+			Type type = typeof(T);
+			T? config = null;
 
-                // last resource, hackily create an instance without calling the constructor
-                if (config == null)
-                {
-                    config = (T)FormatterServices.GetUninitializedObject(type);
-                }
-            }
-            catch (Exception e)
-            {
-                PluginLog.Error($"Error creating a {type.Name}: " + e.Message);
-            }
+			try
+			{
+				ConstructorInfo? constructor = type.GetConstructor(new Type[] { });
+				if (constructor != null)
+				{
+					config = (T?) Activator.CreateInstance<T>();
+				}
+				else
+				{
+					config = (T?) ConfigurationManager.GetDefaultConfigObjectForType(type);
+				}
 
-            if (config == null) { return null; }
+				// last resource, hackily create an instance without calling the constructor
+				if (config == null)
+				{
+					config = (T) FormatterServices.GetUninitializedObject(type);
+				}
+			}
+			catch (Exception e)
+			{
+				Logger.Error("ConvertJson", $"Error creating a {type.Name}: " + e.Message);
+			}
 
-            try
-            {
-                JObject? jsonObject = (JObject?)serializer.Deserialize(reader);
-                if (jsonObject == null) { return null; }
+			if (config == null)
+			{
+				return null;
+			}
 
-                Dictionary<string, object> ValuesMap = new Dictionary<string, object>();
+			try
+			{
+				JObject? jsonObject = (JObject?) serializer.Deserialize(reader);
+				if (jsonObject == null)
+				{
+					return null;
+				}
 
-                // get values from json
-                foreach (JProperty property in jsonObject.Properties())
-                {
-                    string propertyName = property.Name;
-                    object? value = null;
+				Dictionary<string, object> ValuesMap = new();
 
-                    // convert values if needed
-                    if (FieldConvertersMap.TryGetValue(propertyName, out PluginConfigObjectFieldConverter? fieldConverter) && fieldConverter != null)
-                    {
-                        (propertyName, value) = fieldConverter.Convert(property.Value);
-                    }
-                    // read value from json
-                    else
-                    {
-                        FieldInfo? field = type.GetField(propertyName);
-                        if (field != null)
-                        {
-                            value = property.Value.ToObject(field.FieldType);
-                        }
-                    }
+				// get values from json
+				foreach (JProperty property in jsonObject.Properties())
+				{
+					string propertyName = property.Name;
+					object? value = null;
 
-                    if (value != null)
-                    {
-                        ValuesMap.Add(propertyName, value);
-                    }
-                }
+					// convert values if needed
+					if (FieldConvertersMap.TryGetValue(propertyName, out PluginConfigObjectFieldConverter? fieldConverter) && fieldConverter != null)
+					{
+						(propertyName, value) = fieldConverter.Convert(property.Value);
+					}
+					// read value from json
+					else
+					{
+						FieldInfo? field = type.GetField(propertyName);
+						if (field != null)
+						{
+							value = property.Value.ToObject(field.FieldType);
+						}
+					}
 
-                // apply values
-                foreach (string key in ValuesMap.Keys)
-                {
-                    string[] fields = key.Split(".", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                    object? currentObject = config;
-                    object value = ValuesMap[key];
+					if (value != null)
+					{
+						ValuesMap.Add(propertyName, value);
+					}
+				}
 
-                    for (int i = 0; i < fields.Length; i++)
-                    {
-                        FieldInfo? field = currentObject?.GetType().GetField(fields[i]);
-                        if (field == null) { break; }
+				// apply values
+				foreach (string key in ValuesMap.Keys)
+				{
+					string[] fields = key.Split(".", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+					object? currentObject = config;
+					object value = ValuesMap[key];
 
-                        if (i == fields.Length - 1 && value.GetType() == field.FieldType)
-                        {
-                            field.SetValue(currentObject, value);
-                        }
-                        else
-                        {
-                            currentObject = field.GetValue(currentObject);
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                PluginLog.Error($"Error deserializing {type.Name}: " + e.Message);
-            }
+					for (int i = 0; i < fields.Length; i++)
+					{
+						FieldInfo? field = currentObject?.GetType().GetField(fields[i]);
+						if (field == null)
+						{
+							break;
+						}
 
-            return config;
-        }
+						if (i == fields.Length - 1 && value.GetType() == field.FieldType)
+						{
+							field.SetValue(currentObject, value);
+						}
+						else
+						{
+							currentObject = field.GetValue(currentObject);
+						}
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Logger.Error("ConvertJson", $"Error deserializing {type.Name}: " + e.Message);
+			}
+
+			return config;
+		}
 
 
-        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
-        {
-            if (value == null) { return; }
+		public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
+		{
+			if (value == null)
+			{
+				return;
+			}
 
-            JObject jsonObject = new JObject();
-            Type type = value.GetType();
-            jsonObject.Add("$type", type.FullName + ", SezzUI");
+			JObject jsonObject = new();
+			Type type = value.GetType();
+			jsonObject.Add("$type", type.FullName + ", SezzUI");
 
-            FieldInfo[] fields = type.GetFields();
+			FieldInfo[] fields = type.GetFields();
 
-            foreach (FieldInfo field in fields)
-            {
-                if (field.GetCustomAttribute<JsonIgnoreAttribute>() != null) { continue; }
+			foreach (FieldInfo field in fields)
+			{
+				if (field.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+				{
+					continue;
+				}
 
-                object? fieldValue = field.GetValue(value);
-                if (fieldValue != null)
-                {
-                    jsonObject.Add(field.Name, JToken.FromObject(fieldValue, serializer));
-                }
-            }
+				object? fieldValue = field.GetValue(value);
+				if (fieldValue != null)
+				{
+					jsonObject.Add(field.Name, JToken.FromObject(fieldValue, serializer));
+				}
+			}
 
-            jsonObject.WriteTo(writer);
-        }
-    }
+			jsonObject.WriteTo(writer);
+		}
+	}
 
-    #region contract resolver
-    public class PluginConfigObjectsContractResolver : DefaultContractResolver
-    {
-        private static Dictionary<Type, Type> ConvertersMap = new Dictionary<Type, Type>()
-        {
-            [typeof(HUDOptionsConfig)] = typeof(HUDOptionsConfigConverter),
-        };
+	#region contract resolver
 
-        protected override JsonObjectContract CreateObjectContract(Type objectType)
-        {
-            JsonObjectContract contract = base.CreateObjectContract(objectType);
+	public class PluginConfigObjectsContractResolver : DefaultContractResolver
+	{
+		private static readonly Dictionary<Type, Type> ConvertersMap = new()
+		{
+			[typeof(HUDOptionsConfig)] = typeof(HUDOptionsConfigConverter)
+		};
 
-            if (ConvertersMap.TryGetValue(objectType, out Type? converterType) && converterType != null)
-            {
-                contract.Converter = (JsonConverter?)Activator.CreateInstance(converterType);
-            }
+		protected override JsonObjectContract CreateObjectContract(Type objectType)
+		{
+			JsonObjectContract contract = base.CreateObjectContract(objectType);
 
-            return contract;
-        }
-    }
-    #endregion
+			if (ConvertersMap.TryGetValue(objectType, out Type? converterType) && converterType != null)
+			{
+				contract.Converter = (JsonConverter?) Activator.CreateInstance(converterType);
+			}
 
-    #region field converters
-    public abstract class PluginConfigObjectFieldConverter
-    {
-        public readonly string NewFieldPath;
-        public PluginConfigObjectFieldConverter(string newFieldPath)
-        {
-            NewFieldPath = newFieldPath;
-        }
+			return contract;
+		}
+	}
 
-        public abstract (string, object) Convert(JToken token);
-    }
+	#endregion
 
-    public class NewTypeFieldConverter<TOld, TNew> : PluginConfigObjectFieldConverter
-        where TOld : struct
-        where TNew : struct
-    {
-        private TNew DefaultValue;
-        private Func<TOld, TNew> Func;
+	#region field converters
 
-        public NewTypeFieldConverter(string newFieldPath, TNew defaultValue, Func<TOld, TNew> func) : base(newFieldPath)
-        {
-            DefaultValue = defaultValue;
-            Func = func;
-        }
+	public abstract class PluginConfigObjectFieldConverter
+	{
+		public readonly string NewFieldPath;
 
-        public override (string, object) Convert(JToken token)
-        {
-            TNew result = DefaultValue;
+		public PluginConfigObjectFieldConverter(string newFieldPath)
+		{
+			NewFieldPath = newFieldPath;
+		}
 
-            TOld? oldValue = token.ToObject<TOld>();
-            if (oldValue.HasValue)
-            {
-                result = Func(oldValue.Value);
-            }
+		public abstract (string, object) Convert(JToken token);
+	}
 
-            return (NewFieldPath, result);
-        }
-    }
+	public class NewTypeFieldConverter<TOld, TNew> : PluginConfigObjectFieldConverter where TOld : struct where TNew : struct
+	{
+		private readonly TNew DefaultValue;
+		private readonly Func<TOld, TNew> Func;
 
-    public class SameTypeFieldConverter<T> : NewTypeFieldConverter<T, T> where T : struct
-    {
-        public SameTypeFieldConverter(string newFieldPath, T defaultValue)
-            : base(newFieldPath, defaultValue, (oldValue) => { return oldValue; })
-        {
-        }
-    }
+		public NewTypeFieldConverter(string newFieldPath, TNew defaultValue, Func<TOld, TNew> func) : base(newFieldPath)
+		{
+			DefaultValue = defaultValue;
+			Func = func;
+		}
 
-    public class NewClassFieldConverter<TOld, TNew> : PluginConfigObjectFieldConverter
-        where TOld : class
-        where TNew : class
-    {
-        private TNew DefaultValue;
-        private Func<TOld, TNew> Func;
+		public override (string, object) Convert(JToken token)
+		{
+			TNew result = DefaultValue;
 
-        public NewClassFieldConverter(string newFieldPath, TNew defaultValue, Func<TOld, TNew> func)
-            : base(newFieldPath)
-        {
-            DefaultValue = defaultValue;
-            Func = func;
-        }
+			TOld? oldValue = token.ToObject<TOld>();
+			if (oldValue.HasValue)
+			{
+				result = Func(oldValue.Value);
+			}
 
-        public override (string, object) Convert(JToken token)
-        {
-            TNew result = DefaultValue;
+			return (NewFieldPath, result);
+		}
+	}
 
-            TOld? oldValue = token.ToObject<TOld>();
-            if (oldValue != null)
-            {
-                result = Func(oldValue);
-            }
+	public class SameTypeFieldConverter<T> : NewTypeFieldConverter<T, T> where T : struct
+	{
+		public SameTypeFieldConverter(string newFieldPath, T defaultValue) : base(newFieldPath, defaultValue, oldValue => { return oldValue; })
+		{
+		}
+	}
 
-            return (NewFieldPath, result);
-        }
-    }
+	public class NewClassFieldConverter<TOld, TNew> : PluginConfigObjectFieldConverter where TOld : class where TNew : class
+	{
+		private readonly TNew DefaultValue;
+		private readonly Func<TOld, TNew> Func;
 
-    public class SameClassFieldConverter<T> : NewClassFieldConverter<T, T> where T : class
-    {
-        public SameClassFieldConverter(string newFieldPath, T defaultValue)
-            : base(newFieldPath, defaultValue, (oldValue) => { return oldValue; })
-        {
-        }
-    }
+		public NewClassFieldConverter(string newFieldPath, TNew defaultValue, Func<TOld, TNew> func) : base(newFieldPath)
+		{
+			DefaultValue = defaultValue;
+			Func = func;
+		}
 
-    public class TypeToClassFieldConverter<TOld, TNew> : PluginConfigObjectFieldConverter
-    where TOld : struct
-    where TNew : class
-    {
-        private TNew DefaultValue;
-        private Func<TOld, TNew> Func;
+		public override (string, object) Convert(JToken token)
+		{
+			TNew result = DefaultValue;
 
-        public TypeToClassFieldConverter(string newFieldPath, TNew defaultValue, Func<TOld, TNew> func) : base(newFieldPath)
-        {
-            DefaultValue = defaultValue;
-            Func = func;
-        }
+			TOld? oldValue = token.ToObject<TOld>();
+			if (oldValue != null)
+			{
+				result = Func(oldValue);
+			}
 
-        public override (string, object) Convert(JToken token)
-        {
-            TNew result = DefaultValue;
+			return (NewFieldPath, result);
+		}
+	}
 
-            TOld? oldValue = token.ToObject<TOld>();
-            if (oldValue.HasValue)
-            {
-                result = Func(oldValue.Value);
-            }
+	public class SameClassFieldConverter<T> : NewClassFieldConverter<T, T> where T : class
+	{
+		public SameClassFieldConverter(string newFieldPath, T defaultValue) : base(newFieldPath, defaultValue, oldValue => { return oldValue; })
+		{
+		}
+	}
 
-            return (NewFieldPath, result);
-        }
-    }
-    #endregion
+	public class TypeToClassFieldConverter<TOld, TNew> : PluginConfigObjectFieldConverter where TOld : struct where TNew : class
+	{
+		private readonly TNew DefaultValue;
+		private readonly Func<TOld, TNew> Func;
+
+		public TypeToClassFieldConverter(string newFieldPath, TNew defaultValue, Func<TOld, TNew> func) : base(newFieldPath)
+		{
+			DefaultValue = defaultValue;
+			Func = func;
+		}
+
+		public override (string, object) Convert(JToken token)
+		{
+			TNew result = DefaultValue;
+
+			TOld? oldValue = token.ToObject<TOld>();
+			if (oldValue.HasValue)
+			{
+				result = Func(oldValue.Value);
+			}
+
+			return (NewFieldPath, result);
+		}
+	}
+
+	#endregion
 }

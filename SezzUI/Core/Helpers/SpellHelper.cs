@@ -4,7 +4,6 @@ using System.Linq;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Statuses;
-using Dalamud.Logging;
 using Dalamud.Utility;
 using DelvUI.Helpers;
 using Lumina.Excel;
@@ -23,9 +22,12 @@ namespace SezzUI.Helpers
 		private static readonly ExcelSheet<LuminaGeneralAction>? _sheetGeneralAction;
 		private static readonly ExcelSheet<LuminaStatus>? _sheetStatus;
 		private static readonly Dictionary<uint, Dictionary<uint, uint>> _actionAdjustments;
+		internal static PluginLogger Logger;
 
 		static SpellHelper()
 		{
+			Logger = new("SpellHelper");
+
 			_sheetAction = Plugin.DataManager.Excel.GetSheet<LuminaAction>();
 			_sheetGeneralAction = Plugin.DataManager.Excel.GetSheet<LuminaGeneralAction>();
 			_sheetStatus = Plugin.DataManager.Excel.GetSheet<LuminaStatus>();
@@ -41,7 +43,7 @@ namespace SezzUI.Helpers
 
 			// TODO: Test at level 80, Aethercharge gets upgraded by traits and also is in ActionIndirection.
 			// ActionIndirection data: 25800 (Aethercharge) -> 25831 (Summon Phoenix)
-			List<uint> adjustmentWhitelist = new(){ 25800u };
+			List<uint> adjustmentWhitelist = new() {25800u};
 
 			ExcelSheet<LuminaActionIndirection>? sheetActionIndirection = Plugin.DataManager.Excel.GetSheet<LuminaActionIndirection>();
 			sheetActionIndirection?.Where(a => a.ClassJob.Value?.RowId > 0 && a.PreviousComboAction.Value is {RowId: > 0} && !adjustmentWhitelist.Contains(a.PreviousComboAction.Value.RowId)).ToList().ForEach(a =>
@@ -65,8 +67,9 @@ namespace SezzUI.Helpers
 			uint actionIdAdjusted = _actionAdjustments.TryGetValue(actionId, out Dictionary<uint, uint>? actionAdjustments) ? actionAdjustments.Where(a => level >= a.Key).OrderByDescending(a => a.Key).Select(a => a.Value).FirstOrDefault() : 0;
 			if (debug)
 			{
-				PluginLog.Debug($"[GetAdjustedActionId] actionId: {actionId} actionIdAdjusted: {actionIdAdjusted} OriginalFunctionManager.GetAdjustedActionId: {OriginalFunctionManager.GetAdjustedActionId(actionId)}");
+				Logger.Debug("GetAdjustedActionId", $"actionId: {actionId} actionIdAdjusted: {actionIdAdjusted} OriginalFunctionManager.GetAdjustedActionId: {OriginalFunctionManager.GetAdjustedActionId(actionId)}");
 			}
+
 			return actionIdAdjusted > 0 ? actionIdAdjusted : OriginalFunctionManager.GetAdjustedActionId(actionId);
 		}
 

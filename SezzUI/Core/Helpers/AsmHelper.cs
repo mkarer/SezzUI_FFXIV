@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Dalamud.Logging;
 using FFXIVClientStructs.Attributes;
 using Iced.Intel;
 
@@ -10,6 +9,13 @@ namespace SezzUI.Helpers
 {
 	public static class AsmHelper
 	{
+		internal static PluginLogger Logger;
+
+		static AsmHelper()
+		{
+			Logger = new("AsmHelper");
+		}
+
 		public static string CleanHexString(string s) => Regex.Replace(s, "[^A-Fa-f0-9]*", "");
 
 		public static void DumpInstructions(byte[] bytes, IntPtr ip)
@@ -18,7 +24,7 @@ namespace SezzUI.Helpers
 			string pad = "D" + instructions.Count.ToString("D").Length;
 			for (int i = 0; i < instructions.Count; i++)
 			{
-				PluginLog.Debug($"[OriginalFunction::DumpInstructions] Instruction {i.ToString(pad)}: {instructions[i]}");
+				Logger.Debug("DumpInstructions", $"Instruction {i.ToString(pad)}: {instructions[i]}");
 			}
 		}
 
@@ -28,7 +34,7 @@ namespace SezzUI.Helpers
 			decoder.IP = (ulong) ip;
 			ulong endRip = decoder.IP + (uint) bytes.Length;
 
-			List<Instruction> instructions = new List<Instruction>();
+			List<Instruction> instructions = new();
 			while (decoder.IP < endRip)
 			{
 				Instruction instr = decoder.Decode();
