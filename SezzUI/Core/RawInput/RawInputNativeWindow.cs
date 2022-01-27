@@ -24,12 +24,12 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.UI.Input;
 using Windows.Win32.UI.Accessibility;
-using System.Threading;
+using Windows.Win32.UI.Input;
 
 namespace SezzUI.NativeMethods.RawInput
 {
@@ -50,7 +50,7 @@ namespace SezzUI.NativeMethods.RawInput
 		internal PluginLogger Logger;
 
 		/// <summary>
-		/// Returns TRUE if the parent process is in foreground.
+		///     Returns TRUE if the parent process is in foreground.
 		/// </summary>
 		private bool ShouldParse => ENABLE_BACKGROUND_PARSING || !IsInBackground;
 
@@ -58,7 +58,7 @@ namespace SezzUI.NativeMethods.RawInput
 		private HWND _hwnd;
 
 		/// <summary>
-		/// Ignore repeated keys while holding down a key.
+		///     Ignore repeated keys while holding down a key.
 		/// </summary>
 		public bool IgnoreRepeat = false;
 
@@ -67,7 +67,7 @@ namespace SezzUI.NativeMethods.RawInput
 		private static bool _devicesRegistered;
 
 		/// <summary>
-		/// Allow processing keys while parent process is not in foreground.
+		///     Allow processing keys while parent process is not in foreground.
 		/// </summary>
 		private const bool ENABLE_BACKGROUND_PARSING = false;
 
@@ -76,7 +76,7 @@ namespace SezzUI.NativeMethods.RawInput
 		private static WINEVENTPROC? _winEventHookProc;
 		private UnhookWinEventSafeHandle? _winEventHookHandle;
 		private CancellationTokenSource _unhookCts = new();
-		private static int _unhookTimeout = 5000;
+		private static readonly int _unhookTimeout = 5000;
 
 		public delegate void OnKeyStateChangedDelegate(ushort vkCode, KeyState state);
 
@@ -115,7 +115,7 @@ namespace SezzUI.NativeMethods.RawInput
 					// https://referencesource.microsoft.com/System.Windows.Forms/winforms/Managed/System/WinForms/NativeMethods.cs.html#bc3d3295a2b10729
 					// private static HandleRef HWND_MESSAGE = new HandleRef(null, new IntPtr(-3));
 
-					CreateHandle(new CreateParams
+					CreateHandle(new()
 					{
 						Style = 0,
 						ExStyle = 0,
@@ -182,7 +182,7 @@ namespace SezzUI.NativeMethods.RawInput
 #if DEBUG
 				if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
 				{
-					Logger.Debug("SetWinEventHook", $"Enabling hook");
+					Logger.Debug("SetWinEventHook", "Enabling hook");
 				}
 #endif
 				// ReSharper disable once RedundantDelegateCreation
@@ -218,7 +218,7 @@ namespace SezzUI.NativeMethods.RawInput
 #if DEBUG
 					if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
 					{
-						Logger.Debug("UnhookWinEvent", $"Success!");
+						Logger.Debug("UnhookWinEvent", "Success!");
 					}
 #endif
 				}
@@ -280,7 +280,7 @@ namespace SezzUI.NativeMethods.RawInput
 					{
 						if (!_unhookCts.IsCancellationRequested)
 						{
-							Logger.Error("DestroyWindow", $"Error: UnhookWinEvent timeout, something went terribly wrong.");
+							Logger.Error("DestroyWindow", "Error: UnhookWinEvent timeout, something went terribly wrong.");
 						}
 					}
 				}
@@ -311,12 +311,13 @@ namespace SezzUI.NativeMethods.RawInput
 			{
 				return;
 			}
-			else if (m.Msg == WM_INPUT)
+
+			if (m.Msg == WM_INPUT)
 			{
 #if DEBUG
 				if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
 				{
-					Logger.Debug("WndProc", $"WM_INPUT");
+					Logger.Debug("WndProc", "WM_INPUT");
 				}
 #endif
 				ParseRawInput(m.LParam);
@@ -328,7 +329,7 @@ namespace SezzUI.NativeMethods.RawInput
 #if DEBUG
 				if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
 				{
-					Logger.Debug("WndProc", $"WM_CLOSE");
+					Logger.Debug("WndProc", "WM_CLOSE");
 				}
 #endif
 				UnhookWinEvent();
@@ -362,16 +363,17 @@ namespace SezzUI.NativeMethods.RawInput
 		{
 			if (_devicesRegistered)
 			{
-				Logger.Error("RegisterDevices", $"Error: Only one window per raw input device class may be registered to receive raw input within a process!");
-				return false;
-			}
-			else if (Handle == IntPtr.Zero)
-			{
-				Logger.Error("RegisterDevices", $"Error: Window doesn't exist!");
+				Logger.Error("RegisterDevices", "Error: Only one window per raw input device class may be registered to receive raw input within a process!");
 				return false;
 			}
 
-			RAWINPUTDEVICE[] rawDevices = new RAWINPUTDEVICE[]
+			if (Handle == IntPtr.Zero)
+			{
+				Logger.Error("RegisterDevices", "Error: Window doesn't exist!");
+				return false;
+			}
+
+			RAWINPUTDEVICE[] rawDevices =
 			{
 				new()
 				{
@@ -397,11 +399,9 @@ namespace SezzUI.NativeMethods.RawInput
 						_devicesRegistered = true;
 						return true;
 					}
-					else
-					{
-						Logger.Error("RegisterDevices", $"RegisterRawInputDevices Error: " + Marshal.GetLastWin32Error());
-						return false;
-					}
+
+					Logger.Error("RegisterDevices", "RegisterRawInputDevices Error: " + Marshal.GetLastWin32Error());
+					return false;
 				}
 				catch (Exception ex)
 				{
@@ -419,17 +419,17 @@ namespace SezzUI.NativeMethods.RawInput
 			}
 
 			uint dwSize;
-			if (PInvoke.GetRawInputData(new HRAWINPUT(lParam), RAW_INPUT_DATA_COMMAND_FLAGS.RID_INPUT, IntPtr.Zero.ToPointer(), &dwSize, (uint) sizeof(RAWINPUTHEADER)) == 0 && dwSize != 0)
+			if (PInvoke.GetRawInputData(new(lParam), RAW_INPUT_DATA_COMMAND_FLAGS.RID_INPUT, IntPtr.Zero.ToPointer(), &dwSize, (uint) sizeof(RAWINPUTHEADER)) == 0 && dwSize != 0)
 			{
-				var lpb = Marshal.AllocHGlobal((int) dwSize);
+				IntPtr lpb = Marshal.AllocHGlobal((int) dwSize);
 
-				if (PInvoke.GetRawInputData(new HRAWINPUT(lParam), RAW_INPUT_DATA_COMMAND_FLAGS.RID_INPUT, lpb.ToPointer(), &dwSize, (uint) sizeof(RAWINPUTHEADER)) != dwSize)
+				if (PInvoke.GetRawInputData(new(lParam), RAW_INPUT_DATA_COMMAND_FLAGS.RID_INPUT, lpb.ToPointer(), &dwSize, (uint) sizeof(RAWINPUTHEADER)) != dwSize)
 				{
-					Logger.Error("ParseRawInput", $"Error: GetRawInputData did not return the correct size!");
+					Logger.Error("ParseRawInput", "Error: GetRawInputData did not return the correct size!");
 				}
 				else
 				{
-					var raw = (RAWINPUT*) lpb;
+					RAWINPUT* raw = (RAWINPUT*) lpb;
 					if (raw->header.dwType == 1u) // Keyboard
 					{
 						switch ((KeyState) raw->data.keyboard.Message)
@@ -451,7 +451,7 @@ namespace SezzUI.NativeMethods.RawInput
 			}
 			else
 			{
-				Logger.Error("ParseRawInput", $"GetRawInputData Error: Unsuccessful.");
+				Logger.Error("ParseRawInput", "GetRawInputData Error: Unsuccessful.");
 			}
 		}
 

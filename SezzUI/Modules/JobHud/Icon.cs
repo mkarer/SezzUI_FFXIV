@@ -6,7 +6,6 @@ using System.IO;
 using System.Numerics;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Statuses;
-using Dalamud.Logging;
 using DelvUI.Helpers;
 using ImGuiNET;
 using ImGuiScene;
@@ -52,6 +51,7 @@ namespace SezzUI.Modules.JobHud
 	public class Icon : IDisposable
 	{
 		public Bar Parent { get; }
+		internal PluginLogger Logger;
 
 		private readonly Animator.Animator _animatorBorder;
 		private readonly Animator.Animator _animatorTexture;
@@ -87,7 +87,7 @@ namespace SezzUI.Modules.JobHud
 						}
 						catch (Exception ex)
 						{
-							PluginLog.Error(ex, $"[Icon] Error reading image ({path}): {ex}");
+							Logger.Error(ex, "SetTextureActionId", $"Error reading image ({path}): {ex}");
 						}
 
 						if (!useLocalTexture)
@@ -131,6 +131,7 @@ namespace SezzUI.Modules.JobHud
 						}
 						catch
 						{
+							//
 						}
 
 						if (!useLocalTexture)
@@ -195,7 +196,7 @@ namespace SezzUI.Modules.JobHud
 					if (status != null)
 					{
 						StatusId = status.RowId;
-						PluginLog.Debug($"Found matching status for {value}: {StatusId}");
+						Logger.Debug("SetStatusActionId", $"Found matching status for {value}: {StatusId}");
 					}
 				}
 			}
@@ -274,6 +275,7 @@ namespace SezzUI.Modules.JobHud
 
 		public Icon(Bar parent)
 		{
+			Logger = new(GetType().Name);
 			Parent = parent;
 			_animatorBorder = new();
 			_animatorBorder.Timelines.OnShow.Data.DefaultColor = Defaults.StateColors[_state].Border;
