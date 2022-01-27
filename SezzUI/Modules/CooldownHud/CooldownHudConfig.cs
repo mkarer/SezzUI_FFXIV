@@ -11,7 +11,14 @@ namespace SezzUI.Interface.GeneralElements
 		[NestedConfig("Pulse Animation", 20)]
 		public CooldownHudPulseConfig CooldownHudPulse = new();
 
-		public new static CooldownHudConfig DefaultConfig() => new() {Enabled = true};
+		public CooldownHudConfig Reset()
+		{
+			Enabled = true;
+			CooldownHudPulse.Reset();
+			return this;
+		}
+
+		public new static CooldownHudConfig DefaultConfig() => new CooldownHudConfig().Reset();
 	}
 
 	public class CooldownHudPulseConfig : AnchorablePluginConfigObject
@@ -20,14 +27,16 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(30, collapseWith = nameof(Enabled))]
 		public int Delay = -400;
 
-		public new static CooldownHudPulseConfig DefaultConfig() =>
-			new()
-			{
-				Enabled = false,
-				Position = new(430f, -208f),
-				Delay = -400,
-				Size = new(32f, 32f),
-				Anchor = DrawAnchor.Center
-			};
+		public CooldownHudPulseConfig Reset()
+		{
+			Enabled = true;
+			Delay = -400;
+			Position = new(430f, -208f);
+			Size = new(32f, 32f);
+			Anchor = DrawAnchor.Center;
+			return this;
+		}
+
+		public new static CooldownHudPulseConfig DefaultConfig() => new CooldownHudPulseConfig().Reset();
 	}
 }

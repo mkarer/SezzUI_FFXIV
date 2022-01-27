@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Numerics;
 using Newtonsoft.Json;
 using SezzUI.Config;
 using SezzUI.Config.Attributes;
@@ -50,15 +51,34 @@ namespace SezzUI.Interface.GeneralElements
 			Items = new() {Item1, Item2, Item3, Item4, Item5, Item6, Item7, Item8, Item9, Item10};
 		}
 
-		public new static PluginMenuConfig DefaultConfig() =>
-			new()
-			{
-				Enabled = true,
-				Anchor = DrawAnchor.BottomRight,
-				Size = new(300, 80),
-				Position = new(-8, -22),
-				Item1 = new() {Enabled = true, Type = ItemType.SezzUI}
-			};
+		public PluginMenuConfig Reset()
+		{
+			Enabled = true;
+			Anchor = DrawAnchor.BottomRight;
+			Size = new(300, 80);
+			Position = new(-9, -19);
+
+			Item1.Reset();
+			Item2.Reset();
+			Item3.Reset();
+			Item4.Reset();
+			Item5.Reset();
+			Item6.Reset();
+			Item7.Reset();
+			Item8.Reset();
+			Item9.Reset();
+			Item10.Reset();
+
+			// SezzUI
+			Item1.Enabled = true;
+			Item1.Type = ItemType.SezzUI;
+			Item1.Command = "/sezz";
+			Item1.Title = "Sezz|cFFFFFFFFUI";
+			Item1.Color.Vector = new(1, 182, 214, 255);
+			return this;
+		}
+
+		public new static PluginMenuConfig DefaultConfig() => new PluginMenuConfig().Reset();
 	}
 
 	[Exportable(false)]
@@ -66,7 +86,7 @@ namespace SezzUI.Interface.GeneralElements
 	{
 		[Combo("Type", "SezzUI Configuration", "Chat Command", isMonitored = true)]
 		[Order(1)]
-		public ItemType Type = ItemType.ChatCommand;
+		public ItemType Type = 0;
 
 		[InputText("Command", formattable = false, help = "Only for custom \"Chat Command\" items, will be ignored otherwise.")]
 		[Order(2)]
@@ -79,18 +99,18 @@ namespace SezzUI.Interface.GeneralElements
 		[InputText("Tooltip", formattable = false)]
 		[Order(4)]
 		public string Tooltip = "";
-		
+
 		[ColorEdit4("Color")]
 		[Order(7)]
-		public PluginConfigColor Color = new(new(255f / 255f, 255f / 255f, 255f / 255f, 100f / 100f));
+		public PluginConfigColor Color = new(Vector4.One); // White
 
 		[Checkbox("Toggle Color On Click/Enable", isMonitored = true)]
 		[Order(10)]
-		public bool Toggleable = false;
+		public bool Toggleable;
 
 		[ColorEdit4("Toggle Color")]
 		[Order(4, collapseWith = nameof(Toggleable))]
-		public PluginConfigColor ColorToggled = new(new(255f / 255f, 255f / 255f, 255f / 255f, 100f / 100f));
+		public PluginConfigColor ColorToggled = new(Vector4.One); // White
 
 		[InputText("Plugin Name", formattable = false, isMonitored = true)]
 		[Order(5, collapseWith = nameof(Toggleable))]
@@ -100,15 +120,21 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(6, collapseWith = nameof(Toggleable))]
 		public string PluginToggleProperty = "";
 
-		public PluginMenuItemConfig()
+		public PluginMenuItemConfig Reset()
 		{
 			Enabled = false;
+			Type = ItemType.ChatCommand;
+			Command = "";
+			Title = "";
+			Tooltip = "";
+			Color.Vector = Vector4.One; // White
+			Toggleable = false;
+			ColorToggled.Vector = Vector4.One; // White
+			PluginToggleName = "";
+			PluginToggleProperty = "";
+			return this;
 		}
 
-		public new static PluginMenuItemConfig DefaultConfig() =>
-			new()
-			{
-				Enabled = false
-			};
+		public new static PluginMenuItemConfig DefaultConfig() => new PluginMenuItemConfig().Reset();
 	}
 }

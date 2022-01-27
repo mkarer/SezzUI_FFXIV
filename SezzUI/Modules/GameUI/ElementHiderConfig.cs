@@ -9,12 +9,15 @@ namespace SezzUI.Interface.GeneralElements
 	{
 		[Checkbox("Hide ActionBar Lock", isMonitored = true)]
 		[Order(1)]
-		public bool HideActionBarLock = false;
+		public bool HideActionBarLock;
 
-		public new static ElementHiderConfig DefaultConfig() =>
-			new()
-			{
-				Enabled = true
-			};
+		public ElementHiderConfig Reset()
+		{
+			Enabled = true;
+			HideActionBarLock = true;
+			return this;
+		}
+
+		public new static ElementHiderConfig DefaultConfig() => new ElementHiderConfig().Reset();
 	}
 }

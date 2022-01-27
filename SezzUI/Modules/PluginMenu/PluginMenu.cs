@@ -19,7 +19,7 @@ namespace SezzUI.Modules.PluginMenu
 	{
 		private PluginMenuConfig Config => (PluginMenuConfig) _config;
 #if DEBUG
-		private PluginMenuDebugConfig _debugConfig;
+		private readonly PluginMenuDebugConfig _debugConfig;
 #endif
 		private readonly XivCommonBase _xivCommon;
 		private readonly List<PluginMenuItem> _items;
@@ -210,7 +210,7 @@ namespace SezzUI.Modules.PluginMenu
 			Config.Item9.ValueChangeEvent += OnConfigPropertyChanged;
 			Config.Item10.ValueChangeEvent += OnConfigPropertyChanged;
 
-			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+			ConfigurationManager.Instance.Reset += OnConfigReset;
 			_items = new() {new(Config.Item1), new(Config.Item2), new(Config.Item3), new(Config.Item4), new(Config.Item5), new(Config.Item6), new(Config.Item7), new(Config.Item8), new(Config.Item9), new(Config.Item10)};
 
 			Toggle(Config.Enabled);
@@ -248,8 +248,13 @@ namespace SezzUI.Modules.PluginMenu
 			}
 		}
 
-		private void OnConfigReset(ConfigurationManager sender)
+		private void OnConfigReset(ConfigurationManager sender, PluginConfigObject config)
 		{
+			if (config is not PluginMenuConfig)
+			{
+				return;
+			}
+
 			_lastError = 0;
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
@@ -258,36 +263,7 @@ namespace SezzUI.Modules.PluginMenu
 			}
 #endif
 			Disable();
-			if (_config != null)
-			{
-				_config.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Item1.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Item2.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Item3.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Item4.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Item5.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Item6.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Item7.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Item8.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Item9.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Item10.ValueChangeEvent -= OnConfigPropertyChanged;
-			}
-
-			_config = sender.GetConfigObject<PluginMenuConfig>();
-			_config.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Item1.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Item2.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Item3.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Item4.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Item5.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Item6.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Item7.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Item8.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Item9.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Item10.ValueChangeEvent += OnConfigPropertyChanged;
-
 #if DEBUG
-			_debugConfig = sender.GetConfigObject<PluginMenuDebugConfig>();
 			if (_debugConfig.LogConfigurationManager)
 			{
 				Logger.Debug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
@@ -303,7 +279,7 @@ namespace SezzUI.Modules.PluginMenu
 		protected override void InternalDispose()
 		{
 			Disable();
-			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+			ConfigurationManager.Instance.Reset -= OnConfigReset;
 			_items.ForEach(item => item.Dispose());
 			_items.Clear();
 			_xivCommon.Dispose();

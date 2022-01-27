@@ -1,21 +1,22 @@
-using Dalamud.Interface.Windowing;
-using Dalamud.Logging;
-using SezzUI.Config.Profiles;
-using SezzUI.Config.Tree;
-using SezzUI.Config.Windows;
-using DelvUI.Helpers;
-using SezzUI.Interface;
-using SezzUI.Interface.GeneralElements;
-using ImGuiScene;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Dalamud.Interface.Windowing;
+using DelvUI.Helpers;
+using ImGuiScene;
+using SezzUI.Config.Profiles;
+using SezzUI.Config.Tree;
+using SezzUI.Config.Windows;
+using SezzUI.Interface;
+using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Config
 {
 	public delegate void ConfigurationManagerEventHandler(ConfigurationManager configurationManager);
+
+	public delegate void ConfigObjectResetDelegate(ConfigurationManager configurationManager, PluginConfigObject config);
 
 	public class ConfigurationManager : IDisposable
 	{
@@ -36,9 +37,9 @@ namespace SezzUI.Config
 			}
 		}
 
-		private WindowSystem _windowSystem;
-		private MainConfigWindow _mainConfigWindow;
-		private GridWindow _gridWindow;
+		private readonly WindowSystem _windowSystem;
+		private readonly MainConfigWindow _mainConfigWindow;
+		private readonly GridWindow _gridWindow;
 
 		public bool IsConfigWindowOpened => _mainConfigWindow.IsOpen;
 		public bool ShowingModalWindow = false;
@@ -47,7 +48,7 @@ namespace SezzUI.Config
 		{
 			get
 			{
-				var config = Instance.GetConfigObject<MiscColorConfig>();
+				MiscColorConfig? config = Instance.GetConfigObject<MiscColorConfig>();
 				return config != null ? config.GradientDirection : GradientDirection.None;
 			}
 		}
@@ -55,9 +56,9 @@ namespace SezzUI.Config
 		public string ConfigDirectory;
 
 		public string CurrentVersion => Plugin.Version;
-		public string? PreviousVersion { get; private set; } = null;
+		public string? PreviousVersion { get; private set; }
 
-		private bool _needsProfileUpdate = false;
+		private bool _needsProfileUpdate;
 		private bool _lockHUD = true;
 
 		public bool LockHUD
@@ -85,6 +86,11 @@ namespace SezzUI.Config
 
 		public bool ShowHUD = true;
 
+		/// <summary>
+		///     Triggers when a specific PluginConfigObject is reset.
+		/// </summary>
+		public event ConfigObjectResetDelegate? Reset;
+
 		public event ConfigurationManagerEventHandler? ResetEvent;
 		public event ConfigurationManagerEventHandler? LockEvent;
 		public event ConfigurationManagerEventHandler? ConfigClosedEvent;
@@ -95,11 +101,11 @@ namespace SezzUI.Config
 			BannerImage = Plugin.BannerTexture;
 			ConfigDirectory = Plugin.PluginInterface.GetPluginConfigDirectory();
 
-			_configBaseNode = new BaseNode();
+			_configBaseNode = new();
 			InitializeBaseNode(_configBaseNode);
-			_configBaseNode.ConfigObjectResetEvent += OnConfigObjectReset;
+			_configBaseNode.ConfigObjectResetEvent += OnConfigNodeReset;
 
-			_mainConfigWindow = new MainConfigWindow("SezzUI Settings");
+			_mainConfigWindow = new("SezzUI Settings");
 			_mainConfigWindow.node = _configBaseNode;
 			_mainConfigWindow.CloseAction = () =>
 			{
@@ -117,9 +123,9 @@ namespace SezzUI.Config
 				}
 			};
 
-			_gridWindow = new GridWindow("Grid ##SezzUI");
+			_gridWindow = new("Grid ##SezzUI");
 
-			_windowSystem = new WindowSystem("SezzUI_Windows");
+			_windowSystem = new("SezzUI_Windows");
 			_windowSystem.AddWindow(_mainConfigWindow);
 			_windowSystem.AddWindow(_gridWindow);
 
@@ -146,7 +152,7 @@ namespace SezzUI.Config
 				return;
 			}
 
-			ConfigBaseNode.ConfigObjectResetEvent -= OnConfigObjectReset;
+			ConfigBaseNode.ConfigObjectResetEvent -= OnConfigNodeReset;
 			Plugin.ClientState.Logout -= OnLogout;
 			BannerImage?.Dispose();
 
@@ -155,12 +161,21 @@ namespace SezzUI.Config
 
 		public static void Initialize()
 		{
-			Instance = new ConfigurationManager();
+			Instance = new();
 		}
 
-		private void OnConfigObjectReset(BaseNode sender)
+		private void OnConfigNodeReset(BaseNode sender)
 		{
+			// TODO: Test what a profile reset actually does.
+			Logger.Debug("OnConfigNodeReset", $"Node: {sender.GetType()}");
 			ResetEvent?.Invoke(this);
+		}
+
+		public void OnConfigObjectReset(PluginConfigObject config)
+		{
+			// TODO: Test what a profile reset actually does.
+			Logger.Debug("OnConfigObjectReset", $"ConfigObject: {config.GetType()}");
+			Reset?.Invoke(this, config);
 		}
 
 		private void OnLogout(object? sender, EventArgs? args)
@@ -340,20 +355,17 @@ namespace SezzUI.Config
 			ProfilesManager.Instance.UpdateCurrentProfile();
 		}
 
-		public string? ExportCurrentConfigs()
-		{
-			return ConfigBaseNode.GetBase64String();
-		}
+		public string? ExportCurrentConfigs() => ConfigBaseNode.GetBase64String();
 
 		public bool ImportProfile(string rawString)
 		{
-			List<string> importStrings = new List<string>(rawString.Trim().Split(new string[] {"|"}, StringSplitOptions.RemoveEmptyEntries));
+			List<string> importStrings = new(rawString.Trim().Split(new[] {"|"}, StringSplitOptions.RemoveEmptyEntries));
 			ImportData[] imports = importStrings.Select(str => new ImportData(str)).ToArray();
 
-			BaseNode node = new BaseNode();
+			BaseNode node = new();
 			InitializeBaseNode(node);
 
-			Dictionary<Type, PluginConfigObject> OldConfigObjects = new Dictionary<Type, PluginConfigObject>();
+			Dictionary<Type, PluginConfigObject> OldConfigObjects = new();
 
 			foreach (ImportData importData in imports)
 			{
@@ -376,8 +388,8 @@ namespace SezzUI.Config
 				{
 					foreach (Type type in types)
 					{
-						var genericMethod = node.GetType().GetMethod("GetConfigObject");
-						var method = genericMethod?.MakeGenericMethod(type);
+						MethodInfo? genericMethod = node.GetType().GetMethod("GetConfigObject");
+						MethodInfo? method = genericMethod?.MakeGenericMethod(type);
 						PluginConfigObject? config = (PluginConfigObject?) method?.Invoke(node, null);
 
 						if (config != null)
@@ -399,9 +411,9 @@ namespace SezzUI.Config
 			node.SelectedOptionName = oldSelection;
 			node.AddExtraSectionNode(ProfilesManager.Instance.ProfilesNode);
 
-			ConfigBaseNode.ConfigObjectResetEvent -= OnConfigObjectReset;
+			ConfigBaseNode.ConfigObjectResetEvent -= OnConfigNodeReset;
 			ConfigBaseNode = node;
-			ConfigBaseNode.ConfigObjectResetEvent += OnConfigObjectReset;
+			ConfigBaseNode.ConfigObjectResetEvent += OnConfigNodeReset;
 
 			ResetEvent?.Invoke(this);
 
@@ -423,13 +435,13 @@ namespace SezzUI.Config
 			// creates node tree in the right order...
 			foreach (Type type in ConfigObjectTypes)
 			{
-				var genericMethod = node.GetType().GetMethod("GetConfigPageNode");
-				var method = genericMethod?.MakeGenericMethod(type);
+				MethodInfo? genericMethod = node.GetType().GetMethod("GetConfigPageNode");
+				MethodInfo? method = genericMethod?.MakeGenericMethod(type);
 				method?.Invoke(node, null);
 			}
 		}
 
-		private static Type[] ConfigObjectTypes = new Type[]
+		private static readonly Type[] ConfigObjectTypes =
 		{
 			// Core
 			typeof(GeneralConfig),
@@ -439,6 +451,9 @@ namespace SezzUI.Config
 
 			// Modules
 			typeof(JobHudConfig),
+#if DEBUG
+			typeof(JobHudDebugConfig),
+#endif
 			typeof(CooldownHudConfig),
 #if DEBUG
 			typeof(CooldownHudDebugConfig),
@@ -472,12 +487,12 @@ namespace SezzUI.Config
 			typeof(CreditsConfig),
 
 			// Profiles
-			typeof(ImportConfig),
+			typeof(ImportConfig)
 		};
 
-		private static Dictionary<string, List<Type>> UnmergeableConfigTypesPerVersion = new Dictionary<string, List<Type>>()
+		private static readonly Dictionary<string, List<Type>> UnmergeableConfigTypesPerVersion = new()
 		{
-			["0.0.0.3"] = new List<Type>() { }
+			["0.0.0.3"] = new()
 		};
 
 		#endregion

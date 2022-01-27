@@ -17,6 +17,9 @@ namespace SezzUI.Modules.JobHud
 	public class JobHud : DraggableHudElement, IHudElementWithActor
 	{
 		private JobHudConfig Config => (JobHudConfig) _config;
+#if DEBUG
+		private readonly JobHudDebugConfig _debugConfig;
+#endif
 		public GameObject? Actor { get; set; } = null;
 		internal PluginLogger Logger;
 
@@ -41,8 +44,11 @@ namespace SezzUI.Modules.JobHud
 		public JobHud(JobHudConfig config, string displayName) : base(config, displayName)
 		{
 			Logger = new(GetType().Name);
+#if DEBUG
+			_debugConfig = ConfigurationManager.Instance.GetConfigObject<JobHudDebugConfig>();
+#endif
 			config.ValueChangeEvent += OnConfigPropertyChanged;
-			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+			ConfigurationManager.Instance.Reset += OnConfigReset;
 
 			_animator.Timelines.OnShow.Data.DefaultOpacity = 0;
 			_animator.Timelines.OnShow.Data.DefaultOffset.Y = -20;
@@ -70,10 +76,21 @@ namespace SezzUI.Modules.JobHud
 
 		public void Toggle(bool enable = true)
 		{
-			Logger.Debug("Toggle", $"State: {enable}");
+#if DEBUG
+			if (_debugConfig.LogGeneral)
+			{
+				Logger.Debug("Toggle", $"State: {enable}");
+			}
+#endif
+
 			if (enable && !_isEnabled)
 			{
-				Logger.Debug("Toggle", "Enable");
+#if DEBUG
+				if (_debugConfig.LogGeneral)
+				{
+					Logger.Debug("Toggle", "Enable");
+				}
+#endif
 				_isEnabled = !_isEnabled;
 				Plugin.ClientState.Login += OnLogin;
 				Plugin.ClientState.Logout += OnLogout;
@@ -87,7 +104,12 @@ namespace SezzUI.Modules.JobHud
 			}
 			else if (!enable && _isEnabled)
 			{
-				Logger.Debug("Toggle", "Disable");
+#if DEBUG
+				if (_debugConfig.LogGeneral)
+				{
+					Logger.Debug("Toggle", "Disable");
+				}
+#endif
 				_isEnabled = !_isEnabled;
 				Reset();
 
@@ -233,7 +255,7 @@ namespace SezzUI.Modules.JobHud
 			Toggle(false);
 			_presets.Clear();
 
-			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+			ConfigurationManager.Instance.Reset -= OnConfigReset;
 			_config.ValueChangeEvent -= OnConfigPropertyChanged;
 		}
 
@@ -250,19 +272,26 @@ namespace SezzUI.Modules.JobHud
 			}
 		}
 
-		private void OnConfigReset(ConfigurationManager sender)
+		private void OnConfigReset(ConfigurationManager sender, PluginConfigObject config)
 		{
-			// Configuration doesn't change on reset? 
-			Logger.Debug("OnConfigReset");
-			if (_config != null)
+			if (config is not JobHudConfig)
 			{
-				_config.ValueChangeEvent -= OnConfigPropertyChanged;
+				return;
 			}
-
-			_config = sender.GetConfigObject<JobHudConfig>();
-			_config.ValueChangeEvent += OnConfigPropertyChanged;
+#if DEBUG
+			if (_debugConfig.LogConfigurationManager)
+			{
+				Logger.Debug("OnConfigReset", "Resetting...");
+			}
+#endif
+			Toggle(false);
+#if DEBUG
+			if (_debugConfig.LogConfigurationManager)
+			{
+				Logger.Debug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
+			}
+#endif
 			Toggle(Config.Enabled);
-			Logger.Debug("OnConfigReset", "Config.Enabled: {Config.Enabled}");
 		}
 
 		#endregion

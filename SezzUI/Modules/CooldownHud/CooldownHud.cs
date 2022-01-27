@@ -29,7 +29,7 @@ namespace SezzUI.Modules.CooldownHud
 		private uint _currentJobId;
 		private byte _currentLevel;
 #if DEBUG
-		private CooldownHudDebugConfig _debugConfig;
+		private readonly CooldownHudDebugConfig _debugConfig;
 #endif
 		private CooldownHudConfig Config => (CooldownHudConfig) _config;
 
@@ -341,7 +341,7 @@ namespace SezzUI.Modules.CooldownHud
 		public CooldownHud(CooldownHudConfig config) : base(config)
 		{
 			_config.ValueChangeEvent += OnConfigPropertyChanged;
-			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+			ConfigurationManager.Instance.Reset += OnConfigReset;
 #if DEBUG
 			_debugConfig = ConfigurationManager.Instance.GetConfigObject<CooldownHudDebugConfig>();
 #endif
@@ -386,7 +386,7 @@ namespace SezzUI.Modules.CooldownHud
 		protected override void InternalDispose()
 		{
 			_config.ValueChangeEvent -= OnConfigPropertyChanged;
-			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+			ConfigurationManager.Instance.Reset -= OnConfigReset;
 
 			_barManagers.ForEach(manager => manager.Dispose());
 			_barManagers.Clear();
@@ -427,8 +427,13 @@ namespace SezzUI.Modules.CooldownHud
 			}
 		}
 
-		private void OnConfigReset(ConfigurationManager sender)
+		private void OnConfigReset(ConfigurationManager sender, PluginConfigObject config)
 		{
+			if (config is not CooldownHudConfig)
+			{
+				return;
+			}
+
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
@@ -436,17 +441,7 @@ namespace SezzUI.Modules.CooldownHud
 			}
 #endif
 			Disable();
-
-			if (_config != null)
-			{
-				_config.ValueChangeEvent -= OnConfigPropertyChanged;
-			}
-
-			_config = sender.GetConfigObject<CooldownHudConfig>();
-			_config.ValueChangeEvent += OnConfigPropertyChanged;
-
 #if DEBUG
-			_debugConfig = ConfigurationManager.Instance.GetConfigObject<CooldownHudDebugConfig>();
 			if (_debugConfig.LogConfigurationManager)
 			{
 				Logger.Debug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");

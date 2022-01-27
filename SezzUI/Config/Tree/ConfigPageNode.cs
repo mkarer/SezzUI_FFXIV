@@ -143,7 +143,7 @@ namespace SezzUI.Config.Tree
 					}
 					else if (attribute is OrderAttribute orderAttribute)
 					{
-						FieldNode fieldNode = new FieldNode(field, ConfigObject, ID);
+						FieldNode fieldNode = new(field, ConfigObject, ID);
 						fieldNode.Position = orderAttribute.pos;
 						fieldNode.ParentName = orderAttribute.collapseWith;
 						fieldMap.Add(field.Name, fieldNode);
@@ -270,7 +270,34 @@ namespace SezzUI.Config.Tree
 
 		public override void Reset()
 		{
-			ConfigObject = ConfigurationManager.GetDefaultConfigObjectForType(ConfigObject.GetType());
+			bool hasReset = false;
+
+			try
+			{
+				// TODO: Every PluginConfigObject should implement Reset()
+				MethodInfo? resetMethod = ConfigObject.GetType().GetMethod("Reset", BindingFlags.Public | BindingFlags.Instance);
+				if (resetMethod != null)
+				{
+					Logger.Debug("Reset", $"Resetting {ConfigObject.GetType()} to defaults...");
+					resetMethod!.Invoke(ConfigObject, null);
+					hasReset = true;
+				}
+				else
+				{
+					Logger.Warning("Reset", $"{ConfigObject.GetType()} should implement Reset(), will create a new instance instead!");
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Error(ex, "Reset", $"Error resetting {ConfigObject.GetType()}: {ex}");
+			}
+
+			if (!hasReset)
+			{
+				ConfigObject = ConfigurationManager.GetDefaultConfigObjectForType(ConfigObject.GetType());
+			}
+
+			ConfigurationManager.Instance.OnConfigObjectReset(ConfigObject);
 		}
 
 		public override ConfigPageNode? GetOrAddConfig<T>() => this;

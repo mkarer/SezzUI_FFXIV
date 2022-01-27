@@ -31,7 +31,7 @@ namespace SezzUI.Modules.GameUI
 		private static readonly byte _maxButtons = 12;
 		private readonly Dictionary<Element, Dictionary<uint, Vector2<float>>> _originalPositions = new();
 #if DEBUG
-		private ActionBarDebugConfig _debugConfig;
+		private readonly ActionBarDebugConfig _debugConfig;
 #endif
 
 		private SetActionBarPageDelegate? _setActionBarPage;
@@ -448,7 +448,7 @@ namespace SezzUI.Modules.GameUI
 						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} State: {state} (HoldingCtrl)");
 					}
 #endif
-					SetActionBarPage((byte)Config.BarPagingPageCtrl);
+					SetActionBarPage((byte) Config.BarPagingPageCtrl);
 				}
 				else if (vkCode == VK_MENU)
 				{
@@ -458,7 +458,7 @@ namespace SezzUI.Modules.GameUI
 						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} State: {state} (HoldingAlt)");
 					}
 #endif
-					SetActionBarPage((byte)Config.BarPagingPageAlt);
+					SetActionBarPage((byte) Config.BarPagingPageAlt);
 				}
 			}
 			else if (state == KeyState.KeyUp)
@@ -494,7 +494,7 @@ namespace SezzUI.Modules.GameUI
 						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (ReleasedAlt)");
 					}
 #endif
-					SetActionBarPage(pressedCtrl ? (byte)Config.BarPagingPageCtrl : _pageDefault);
+					SetActionBarPage(pressedCtrl ? (byte) Config.BarPagingPageCtrl : _pageDefault);
 				}
 				else if (vkCode == VK_CONTROL)
 				{
@@ -505,7 +505,7 @@ namespace SezzUI.Modules.GameUI
 						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (ReleasedCtrl)");
 					}
 #endif
-					SetActionBarPage(pressedAlt ? (byte)Config.BarPagingPageAlt : _pageDefault);
+					SetActionBarPage(pressedAlt ? (byte) Config.BarPagingPageAlt : _pageDefault);
 				}
 			}
 		}
@@ -629,7 +629,7 @@ namespace SezzUI.Modules.GameUI
 			Config.Bar9.ValueChangeEvent += OnConfigPropertyChanged;
 			Config.Bar10.ValueChangeEvent += OnConfigPropertyChanged;
 
-			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+			ConfigurationManager.Instance.Reset += OnConfigReset;
 			Enable();
 		}
 
@@ -654,7 +654,7 @@ namespace SezzUI.Modules.GameUI
 			Config.Bar9.ValueChangeEvent -= OnConfigPropertyChanged;
 			Config.Bar10.ValueChangeEvent -= OnConfigPropertyChanged;
 			Config.ValueChangeEvent -= OnConfigPropertyChanged;
-			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+			ConfigurationManager.Instance.Reset -= OnConfigReset;
 		}
 
 		~ActionBar()
@@ -732,52 +732,18 @@ namespace SezzUI.Modules.GameUI
 			}
 		}
 
-		private void OnConfigReset(ConfigurationManager sender)
+		private void OnConfigReset(ConfigurationManager sender, PluginConfigObject config)
 		{
+			if (config is not ActionBarConfig)
+			{
+				return;
+			}
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
 				Logger.Debug("OnConfigReset", "Resetting...");
 			}
 #endif
-
-			if (_config != null)
-			{
-				_config.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Bar1.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Bar2.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Bar3.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Bar4.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Bar5.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Bar6.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Bar7.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Bar8.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Bar9.ValueChangeEvent -= OnConfigPropertyChanged;
-				Config.Bar10.ValueChangeEvent -= OnConfigPropertyChanged;
-			}
-
-			_config = sender.GetConfigObject<ActionBarConfig>();
-			_config.ValueChangeEvent += OnConfigPropertyChanged;
-
-			Config.Bar1.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Bar2.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Bar3.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Bar4.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Bar5.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Bar6.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Bar7.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Bar8.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Bar9.ValueChangeEvent += OnConfigPropertyChanged;
-			Config.Bar10.ValueChangeEvent += OnConfigPropertyChanged;
-
-#if DEBUG
-			_debugConfig = sender.GetConfigObject<ActionBarDebugConfig>();
-			if (_debugConfig.LogConfigurationManager)
-			{
-				Logger.Debug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
-			}
-#endif
-
 			Reset();
 			Update();
 		}

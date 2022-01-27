@@ -42,8 +42,8 @@ namespace SezzUI.Interface.GeneralElements
 
 		[Checkbox("Enable Bar Paging", isMonitored = true)]
 		[Order(5)]
-		public bool EnableBarPaging = false;
-		
+		public bool EnableBarPaging;
+
 		[Combo("CTRL", "Page 1", "Page 2", "Page 3", "Page 4", "Page 5", "Page 6", "Page 7", "Page 8", "Page 9", "Page 10")]
 		[Order(6, collapseWith = nameof(EnableBarPaging))]
 		public int BarPagingPageCtrl = 5;
@@ -52,27 +52,49 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(6, collapseWith = nameof(EnableBarPaging))]
 		public int BarPagingPageAlt = 2;
 
-		public new static ActionBarConfig DefaultConfig() =>
-			new()
-			{
-				Enabled = true
-			};
+		public ActionBarConfig Reset()
+		{
+			Enabled = true;
+			Bar1.Reset();
+			Bar2.Reset();
+			Bar3.Reset();
+			Bar4.Reset();
+			Bar5.Reset();
+			Bar6.Reset();
+			Bar7.Reset();
+			Bar8.Reset();
+			Bar9.Reset();
+			Bar10.Reset();
+			EnableBarPaging = true;
+			BarPagingPageCtrl = 5;
+			BarPagingPageAlt = 2;
+			return this;
+		}
+
+		public new static ActionBarConfig DefaultConfig() => new ActionBarConfig().Reset();
 	}
 
 	[Exportable(false)]
 	public class SingleActionBarConfig : PluginConfigObject
 	{
 		[JsonIgnore]
-		public Element Bar = Element.Unknown;
+		public Element Bar;
 
 		[Checkbox("Invert Row Ordering" + "##MP", isMonitored = true)]
 		[Order(5)]
-		public bool InvertRowOrdering = false;
+		public bool InvertRowOrdering;
+
+		public SingleActionBarConfig Reset()
+		{
+			Enabled = false;
+			InvertRowOrdering = false;
+			return this;
+		}
 
 		public SingleActionBarConfig(Element bar)
 		{
+			Reset();
 			Bar = bar;
-			Enabled = false;
 		}
 	}
 }

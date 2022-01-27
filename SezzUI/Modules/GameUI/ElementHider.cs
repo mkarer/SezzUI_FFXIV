@@ -26,7 +26,7 @@ namespace SezzUI.Modules.GameUI
 		private bool _initialUpdate = true;
 		private ElementHiderConfig Config => (ElementHiderConfig) _config;
 #if DEBUG
-		private ElementHiderDebugConfig _debugConfig;
+		private readonly ElementHiderDebugConfig _debugConfig;
 #endif
 
 		protected override bool Enable()
@@ -445,7 +445,7 @@ namespace SezzUI.Modules.GameUI
 			_debugConfig = ConfigurationManager.Instance.GetConfigObject<ElementHiderDebugConfig>();
 #endif
 			config.ValueChangeEvent += OnConfigPropertyChanged;
-			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+			ConfigurationManager.Instance.Reset += OnConfigReset;
 			Toggle(Config.Enabled);
 		}
 
@@ -459,7 +459,7 @@ namespace SezzUI.Modules.GameUI
 		protected override void InternalDispose()
 		{
 			_config.ValueChangeEvent -= OnConfigPropertyChanged;
-			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+			ConfigurationManager.Instance.Reset -= OnConfigReset;
 		}
 
 		~ElementHider()
@@ -502,8 +502,12 @@ namespace SezzUI.Modules.GameUI
 			}
 		}
 
-		private void OnConfigReset(ConfigurationManager sender)
+		private void OnConfigReset(ConfigurationManager sender, PluginConfigObject config)
 		{
+			if (config is not ElementHiderConfig)
+			{
+				return;
+			}
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
@@ -511,16 +515,7 @@ namespace SezzUI.Modules.GameUI
 			}
 #endif
 			Disable();
-			if (_config != null)
-			{
-				_config.ValueChangeEvent -= OnConfigPropertyChanged;
-			}
-
-			_config = sender.GetConfigObject<ElementHiderConfig>();
-			_config.ValueChangeEvent += OnConfigPropertyChanged;
-
 #if DEBUG
-			_debugConfig = sender.GetConfigObject<ElementHiderDebugConfig>();
 			if (_debugConfig.LogConfigurationManager)
 			{
 				Logger.Debug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
