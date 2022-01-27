@@ -44,7 +44,7 @@ namespace SezzUI
 
 		protected BaseGameEvent()
 		{
-			Logger.Initialize($"Event::{GetType().Name}");
+			Logger.Initialize($"Event:{GetType().Name}");
 			Initialize();
 		}
 

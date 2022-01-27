@@ -27,7 +27,7 @@ namespace SezzUI
 		protected HudModule(PluginConfigObject config)
 		{
 			_config = config;
-			Logger.Initialize($"HudModule::{GetType().Name}");
+			Logger.Initialize($"HudModule:{GetType().Name}");
 		}
 
 		protected virtual bool Enabled => _isEnabled;

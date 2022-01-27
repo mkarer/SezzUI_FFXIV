@@ -12,7 +12,6 @@ using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
 using Dalamud.Interface;
-using Dalamud.Logging;
 using Dalamud.Plugin;
 using DelvUI.Helpers;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -29,8 +28,10 @@ using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI
 {
-	public class Plugin : IDalamudPlugin
+	public class Plugin : IPluginLogger, IDalamudPlugin
 	{
+		#region Dalamud Services
+
 		public static BuddyList BuddyList { get; private set; } = null!;
 		public static ClientState ClientState { get; private set; } = null!;
 		private static CommandManager CommandManager { get; set; } = null!;
@@ -46,6 +47,18 @@ namespace SezzUI
 		public static UiBuilder UiBuilder { get; private set; } = null!;
 		public static ChatGui ChatGui { get; private set; } = null!;
 
+		#endregion
+
+		#region Logger
+
+		string IPluginLogger.LogPrefixBase { get; set; } = null!;
+
+		string IPluginLogger.LogPrefix { get; set; } = null!;
+
+		internal IPluginLogger Logger => this;
+
+		#endregion
+
 		public static TextureWrap? BannerTexture;
 
 		public static string AssemblyLocation { get; private set; } = "";
@@ -59,6 +72,8 @@ namespace SezzUI
 
 		public Plugin(BuddyList buddyList, ClientState clientState, CommandManager commandManager, Condition condition, DalamudPluginInterface pluginInterface, DataManager dataManager, Framework framework, GameGui gameGui, JobGauges jobGauges, ObjectTable objectTable, SigScanner sigScanner, TargetManager targetManager, ChatGui chatGui)
 		{
+			Logger.Initialize("Plugin");
+
 			BuddyList = buddyList;
 			ClientState = clientState;
 			CommandManager = commandManager;
@@ -152,7 +167,7 @@ namespace SezzUI
 			FontsManager.Instance.BuildFonts();
 		}
 
-		private static void LoadBanner()
+		private void LoadBanner()
 		{
 			string bannerImage = Path.Combine(Path.GetDirectoryName(AssemblyLocation) ?? "", "Media", "Images", "banner_short_x150.png");
 
@@ -164,12 +179,12 @@ namespace SezzUI
 				}
 				catch (Exception ex)
 				{
-					PluginLog.Error(ex, $"[LoadBanner] Error loading banner from file ({bannerImage}): {ex}");
+					Logger.Error(ex, "LoadBanner", "Error loading banner from file ({bannerImage}): {ex}");
 				}
 			}
 			else
 			{
-				PluginLog.Error($"[LoadBanner] Banner image doesn't exist. {bannerImage}");
+				Logger.Error("LoadBanner", $"Banner image doesn't exist. {bannerImage}");
 			}
 		}
 
@@ -234,7 +249,7 @@ namespace SezzUI
 #if DEBUG
 					if (DebugConfig.LogEvents && DebugConfig.LogEventPluginDrawStateChanged)
 					{
-						PluginLog.Debug($"[Plugin::DrawStateChanged] State: {drawState}");
+						Logger.Debug("Draw", $"DrawStateChanged: {drawState}");
 					}
 #endif
 				}
@@ -249,7 +264,7 @@ namespace SezzUI
 #if DEBUG
 			else if (DebugConfig.LogEvents && DebugConfig.LogEventPluginDrawStateChanged)
 			{
-				PluginLog.Debug("[Plugin::DrawStateChanged] HudManager is NULL!");
+				Logger.Debug("Draw", "HudManager is NULL!");
 			}
 #endif
 		}
@@ -258,7 +273,7 @@ namespace SezzUI
 
 		private DrawState _lastDrawState = DrawState.Unknown;
 
-		private static unsafe bool IsAddonVisible(string name)
+		private unsafe bool IsAddonVisible(string name)
 		{
 			try
 			{
@@ -267,13 +282,13 @@ namespace SezzUI
 			}
 			catch (Exception ex)
 			{
-				PluginLog.Error(ex, $"[IsAddonVisible] Error: {ex}");
+				Logger.Error(ex, $"[IsAddonVisible] Error: {ex}");
 			}
 
 			return false;
 		}
 
-		private static DrawState GetDrawState()
+		private DrawState GetDrawState()
 		{
 			// TODO: Flags for partial state (_NaviMap,  _ActionBar, others?)
 			// Dalamud conditions
@@ -356,7 +371,7 @@ namespace SezzUI
 			// This needs to remain last to avoid race conditions
 			ConfigurationManager.Instance.Dispose();
 
-			PluginLog.Debug("Goodbye!");
+			Logger.Debug("Goodbye!");
 		}
 	}
 }
