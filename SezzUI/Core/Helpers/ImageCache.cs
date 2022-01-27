@@ -1,84 +1,96 @@
-﻿using ImGuiScene;
-using System;
-using System.IO;
+﻿using System;
 using System.Collections.Concurrent;
-using Dalamud.Logging;
+using System.IO;
+using ImGuiScene;
 
 namespace SezzUI.Helpers
 {
-    public class ImageCache : IDisposable
-    {
-        private ConcurrentDictionary<string, TextureWrap> _pathCache = new();
+	public class ImageCache : IDisposable
+	{
+		private readonly ConcurrentDictionary<string, TextureWrap> _pathCache = new();
+		internal PluginLogger Logger;
 
-        public TextureWrap? GetImageFromPath(string path)
-        {
-            if (_pathCache.ContainsKey(path))
-            {
-                return _pathCache[path];
-            }
+		public TextureWrap? GetImageFromPath(string path)
+		{
+			if (_pathCache.ContainsKey(path))
+			{
+				return _pathCache[path];
+			}
 
-            TextureWrap? newTexture = LoadImage(path);
-            if (newTexture == null)
-            {
-                return null;
-            }
+			TextureWrap? newTexture = LoadImage(path);
+			if (newTexture == null)
+			{
+				return null;
+			}
 
-            if (!_pathCache.TryAdd(path, newTexture)) { PluginLog.Debug($"{this.GetType().Name} Failed to cache texture path {path}."); }
+			if (!_pathCache.TryAdd(path, newTexture))
+			{
+				Logger.Error("GetImageFromPath", $"Failed to cache texture path {path}.");
+			}
 
-            return newTexture;
-        }
+			return newTexture;
+		}
 
-        private TextureWrap? LoadImage(string path)
-        {
-            try
-            {
-                if (File.Exists(path))
+		private TextureWrap? LoadImage(string path)
+		{
+			try
+			{
+				if (File.Exists(path))
 				{
-                    return Plugin.PluginInterface.UiBuilder.LoadImage(path);
-                }
-            }
-            catch { }
+					return Plugin.PluginInterface.UiBuilder.LoadImage(path);
+				}
+			}
+			catch
+			{
+				//
+			}
 
-            return null;
-        }
+			return null;
+		}
 
-        #region Singleton
-        private ImageCache()
-        {
-        }
+		#region Singleton
 
-        public static void Initialize() { Instance = new ImageCache(); }
+		private ImageCache()
+		{
+			Logger = new(GetType().Name);
+		}
 
-        public static ImageCache Instance { get; private set; } = null!;
+		public static void Initialize()
+		{
+			Instance = new();
+		}
 
-        ~ImageCache()
-        {
-            Dispose(false);
-        }
+		public static ImageCache Instance { get; private set; } = null!;
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		~ImageCache()
+		{
+			Dispose(false);
+		}
 
-        protected void Dispose(bool disposing)
-        {
-            if (!disposing)
-            {
-                return;
-            }
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
-            foreach (var path in _pathCache.Keys)
-            {
-                var tex = _pathCache[path];
-                tex?.Dispose();
-            }
+		protected void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
 
-            _pathCache.Clear();
+			foreach (string path in _pathCache.Keys)
+			{
+				TextureWrap? tex = _pathCache[path];
+				tex?.Dispose();
+			}
 
-            Instance = null!;
-        }
-        #endregion
-    }
+			_pathCache.Clear();
+
+			Instance = null!;
+		}
+
+		#endregion
+	}
 }

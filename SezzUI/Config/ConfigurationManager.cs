@@ -20,6 +20,7 @@ namespace SezzUI.Config
 	public class ConfigurationManager : IDisposable
 	{
 		public static ConfigurationManager Instance { get; private set; } = null!;
+		internal PluginLogger Logger;
 
 		public readonly TextureWrap? BannerImage;
 
@@ -90,6 +91,7 @@ namespace SezzUI.Config
 
 		public ConfigurationManager()
 		{
+			Logger = new(GetType().Name);
 			BannerImage = Plugin.BannerTexture;
 			ConfigDirectory = Plugin.PluginInterface.GetPluginConfigDirectory();
 
@@ -179,7 +181,7 @@ namespace SezzUI.Config
 			}
 			catch (Exception e)
 			{
-				PluginLog.Error("Error loading changelog: " + e.Message);
+				Logger.Error("LoadChangelog", "Error loading changelog: " + e.Message);
 			}
 
 			return "";
@@ -213,7 +215,7 @@ namespace SezzUI.Config
 			}
 			catch (Exception e)
 			{
-				PluginLog.Error("Error checking version: " + e.Message);
+				Logger.Error("CheckVersion", "Error checking version: " + e.Message);
 			}
 		}
 
@@ -290,11 +292,11 @@ namespace SezzUI.Config
 			}
 			catch (Exception e)
 			{
-				PluginLog.Error("Error initializing configurations: " + e.Message);
+				Logger.Error("LoadOrInitializeFiles", "Error initializing configurations: " + e.Message);
 
 				if (e.StackTrace != null)
 				{
-					PluginLog.Error(e.StackTrace);
+					Logger.Error(e.StackTrace);
 				}
 			}
 		}
