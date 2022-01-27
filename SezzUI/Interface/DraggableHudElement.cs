@@ -124,8 +124,8 @@ namespace SezzUI.Interface
 
 			if (NeedsInputForDrag && ImGui.IsMouseHoveringRect(windowPos, windowPos + size))
 			{
-				bool cliked = ImGui.IsMouseClicked(ImGuiMouseButton.Left) || ImGui.IsMouseDown(ImGuiMouseButton.Left);
-				if (cliked && !Selected)
+				bool clicked = ImGui.IsMouseClicked(ImGuiMouseButton.Left) || ImGui.IsMouseDown(ImGuiMouseButton.Left);
+				if (clicked && !Selected)
 				{
 					SelectEvent?.Invoke(this);
 				}
