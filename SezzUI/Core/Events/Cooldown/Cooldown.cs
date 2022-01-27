@@ -276,6 +276,8 @@ namespace SezzUI.GameEvents
 
 		private bool TryUpdateIfWatched(uint actionId, ActionType actionType, [UsedImplicitly] bool isAdjusted = false, bool isGroupItem = false, bool isModifyingAction = false)
 		{
+			bool success = false;
+			
 			if (_watchedActions.ContainsKey(actionId))
 			{
 				// Action should be on cooldown now!
@@ -286,7 +288,7 @@ namespace SezzUI.GameEvents
 					//Logger.Debug($"ScheduleMultipleUpdates/1: {actionId} {SpellHelper.GetActionName(actionId) ?? "?"}");
 				}
 
-				return true;
+				success = true;
 			}
 
 			if (!isGroupItem && !isModifyingAction && _actionsModifyingCooldowns.ContainsKey(actionId))
@@ -295,7 +297,7 @@ namespace SezzUI.GameEvents
 				TryUpdateIfWatched(_actionsModifyingCooldowns[actionId], actionType, isAdjusted, isGroupItem, true);
 				ScheduleMultipleUpdates(_actionsModifyingCooldowns[actionId]);
 				//Logger.Debug($"ScheduleMultipleUpdates/2: {actionId} {SpellHelper.GetActionName(actionId) ?? "?"}");
-				return true;
+				success = true;
 			}
 
 			if (!isGroupItem)
@@ -304,10 +306,11 @@ namespace SezzUI.GameEvents
 				foreach (List<uint> group in _cooldownGroups.Where(cdg => cdg.Contains(actionId)))
 				{
 					group.ForEach(groupedActionId => { TryUpdateAdjusted(groupedActionId, actionType, true); });
+					success |= true;
 				}
 			}
 
-			return false;
+			return success;
 		}
 
 		private bool TryUpdateAdjusted(uint actionId, ActionType actionType, bool isGroupItem = false)
