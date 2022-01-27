@@ -32,7 +32,7 @@ namespace SezzUI.GameStructs
 
 		[FieldOffset(0x1c)]
 		public ushort AnimationId;
-		
+
 		[FieldOffset(0x1f)]
 		public byte Type;
 

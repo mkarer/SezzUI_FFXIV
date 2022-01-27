@@ -172,7 +172,7 @@ namespace SezzUI.Interface
 		{
 		}
 
-		#region draggable area
+		#region Draggable Area
 
 		protected Vector2? _minPos;
 

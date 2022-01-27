@@ -5,8 +5,8 @@ namespace SezzUI.Core
 {
     public abstract class AnimatedHudElement : IDisposable
     {
-        public bool IsShown { get { return _isShown; } }
-        internal bool _isShown = false;
+        public bool IsShown => _isShown;
+		private bool _isShown = false;
         public Animator.Animator Animator = new();
 
         public virtual void Show()
