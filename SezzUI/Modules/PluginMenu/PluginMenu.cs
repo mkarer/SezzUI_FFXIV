@@ -124,7 +124,7 @@ namespace SezzUI.Modules.PluginMenu
 						string cleanTitle = Tags.RegexColorTags.Replace(item.Config.Title, "");
 						Vector2 cleanTitleSize = ImGui.CalcTextSize(cleanTitle);
 						Vector2 textPosition = DrawHelper.GetAnchoredPosition(buttonPos, item.Size, cleanTitleSize, DrawAnchor.Center);
-						textPosition.Y += 1;
+						textPosition.Y += 2;
 
 						MatchCollection matches = Tags.RegexColor.Matches(item.Config.Title);
 						try
@@ -159,7 +159,7 @@ namespace SezzUI.Modules.PluginMenu
 					}
 					else
 					{
-						DrawHelper.DrawCenteredShadowText("MyriadProLightCond_16", item.Config.Title, buttonPos, item.Size, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)), shadowColor, drawList);
+						DrawHelper.DrawCenteredShadowText("MyriadProLightCond_16", item.Config.Title, new(buttonPos.X, buttonPos.Y + 1), item.Size, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)), shadowColor, drawList);
 					}
 
 					// Tooltip
