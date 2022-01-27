@@ -10,7 +10,6 @@ namespace SezzUI
 		internal static Game Game => Game.Instance;
 		internal static Player Player => Player.Instance;
 		internal static Combat Combat => Combat.Instance;
-		internal static CombatLog CombatLog => CombatLog.Instance;
 		internal static Cooldown Cooldown => Cooldown.Instance;
 
 #if DEBUG
@@ -71,11 +70,6 @@ namespace SezzUI
 			if (Cooldown.Initialized)
 			{
 				Cooldown.Dispose();
-			}
-
-			if (CombatLog.Initialized)
-			{
-				CombatLog.Dispose();
 			}
 
 #if DEBUG

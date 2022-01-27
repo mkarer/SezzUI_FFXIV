@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
-using System.Globalization;
 using Dalamud.Data;
 using Dalamud.Game;
 using Dalamud.Game.ClientState;
@@ -11,20 +11,21 @@ using Dalamud.Game.ClientState.JobGauge;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
-using Dalamud.Game.Network;
 using Dalamud.Interface;
 using Dalamud.Logging;
 using Dalamud.Plugin;
-using SezzUI.Enums;
-using SezzUI.Config;
-using SezzUI.Config.Profiles;
-using SezzUI.Interface;
-using SezzUI.Interface.GeneralElements;
+using DelvUI.Helpers;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using ImGuiScene;
-using SigScanner = Dalamud.Game.SigScanner;
-using FFXIVClientStructs.FFXIV.Component.GUI;
+using SezzUI.Config;
+using SezzUI.Config.Profiles;
+using SezzUI.Core;
+using SezzUI.Enums;
+using SezzUI.Helpers;
 using SezzUI.Hooking;
+using SezzUI.Interface;
+using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI
 {
@@ -38,7 +39,6 @@ namespace SezzUI
 		public static DataManager DataManager { get; private set; } = null!;
 		public static Framework Framework { get; private set; } = null!;
 		public static GameGui GameGui { get; private set; } = null!;
-		public static GameNetwork GameNetwork { get; private set; } = null!;
 		public static JobGauges JobGauges { get; private set; } = null!;
 		public static ObjectTable ObjectTable { get; private set; } = null!;
 		public static SigScanner SigScanner { get; private set; } = null!;
@@ -57,7 +57,7 @@ namespace SezzUI
 
 		public static readonly NumberFormatInfo NumberFormatInfo = CultureInfo.GetCultureInfo("en-GB").NumberFormat;
 
-		public Plugin(BuddyList buddyList, ClientState clientState, CommandManager commandManager, Condition condition, DalamudPluginInterface pluginInterface, DataManager dataManager, Framework framework, GameGui gameGui, GameNetwork gameNetwork, JobGauges jobGauges, ObjectTable objectTable, SigScanner sigScanner, TargetManager targetManager, ChatGui chatGui)
+		public Plugin(BuddyList buddyList, ClientState clientState, CommandManager commandManager, Condition condition, DalamudPluginInterface pluginInterface, DataManager dataManager, Framework framework, GameGui gameGui, JobGauges jobGauges, ObjectTable objectTable, SigScanner sigScanner, TargetManager targetManager, ChatGui chatGui)
 		{
 			BuddyList = buddyList;
 			ClientState = clientState;
@@ -67,7 +67,6 @@ namespace SezzUI
 			DataManager = dataManager;
 			Framework = framework;
 			GameGui = gameGui;
-			GameNetwork = gameNetwork;
 			JobGauges = jobGauges;
 			ObjectTable = objectTable;
 			SigScanner = sigScanner;
@@ -86,7 +85,7 @@ namespace SezzUI
 
 			Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.6";
 
-			DelvUI.Helpers.FontsManager.Initialize(AssemblyLocation);
+			FontsManager.Initialize(AssemblyLocation);
 			LoadBanner();
 
 			// initialize a not-necessarily-defaults configuration
@@ -98,13 +97,13 @@ namespace SezzUI
 			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
 #endif
 
-			DelvUI.Helpers.FontsManager.Instance.LoadConfig();
+			FontsManager.Instance.LoadConfig();
 
-			DelvUI.Helpers.ClipRectsHelper.Initialize();
+			ClipRectsHelper.Initialize();
 			GlobalColors.Initialize();
-			DelvUI.Helpers.TexturesCache.Initialize();
-			Helpers.ImageCache.Initialize();
-			DelvUI.Helpers.TooltipsHelper.Initialize();
+			TexturesCache.Initialize();
+			ImageCache.Initialize();
+			TooltipsHelper.Initialize();
 			OriginalFunctionManager.Initialize();
 			EventManager.Initialize();
 			HudManager.Initialize();
@@ -113,7 +112,7 @@ namespace SezzUI
 			UiBuilder.DisableCutsceneUiHide = true;
 			UiBuilder.DisableGposeUiHide = true;
 			UiBuilder.DisableUserUiHide = true;
-			
+
 			UiBuilder.Draw += Draw;
 			UiBuilder.BuildFonts += BuildFont;
 			UiBuilder.OpenConfigUi += OpenConfigUi;
@@ -150,7 +149,7 @@ namespace SezzUI
 
 		private static void BuildFont()
 		{
-			DelvUI.Helpers.FontsManager.Instance.BuildFonts();
+			FontsManager.Instance.BuildFonts();
 		}
 
 		private static void LoadBanner()
@@ -199,7 +198,7 @@ namespace SezzUI
 						break;
 
 					case "test":
-						Core.Test.RunTest();
+						Test.RunTest();
 						break;
 
 					case { } argument when argument.StartsWith("profile"):
@@ -226,7 +225,7 @@ namespace SezzUI
 			// ReSharper disable once ConditionIsAlwaysTrueOrFalse
 			if (HudManager.Instance != null)
 			{
-				bool fontPushed = DelvUI.Helpers.FontsManager.Instance.PushDefaultFont();
+				bool fontPushed = FontsManager.Instance.PushDefaultFont();
 
 				DrawState drawState = GetDrawState();
 				if (_lastDrawState != drawState)
@@ -250,7 +249,7 @@ namespace SezzUI
 #if DEBUG
 			else if (DebugConfig.LogEvents && DebugConfig.LogEventPluginDrawStateChanged)
 			{
-				PluginLog.Debug($"[Plugin::DrawStateChanged] HudManager is NULL!");
+				PluginLog.Debug("[Plugin::DrawStateChanged] HudManager is NULL!");
 			}
 #endif
 		}
@@ -264,7 +263,7 @@ namespace SezzUI
 			try
 			{
 				IntPtr addon = GameGui.GetAddonByName(name, 1);
-				return (addon != IntPtr.Zero && ((AtkUnitBase*) addon)->IsVisible);
+				return addon != IntPtr.Zero && ((AtkUnitBase*) addon)->IsVisible;
 			}
 			catch (Exception ex)
 			{
@@ -282,16 +281,19 @@ namespace SezzUI
 			{
 				return DrawState.HiddenNotInGame;
 			}
-			else if (!ConfigurationManager.Instance.ShowHUD || GameGui.GameUiHidden)
+
+			if (!ConfigurationManager.Instance.ShowHUD || GameGui.GameUiHidden)
 			{
 				return DrawState.HiddenDisabled;
 			}
-			else if (Condition[ConditionFlag.WatchingCutscene] || Condition[ConditionFlag.WatchingCutscene78] || Condition[ConditionFlag.OccupiedInCutSceneEvent])
+
+			if (Condition[ConditionFlag.WatchingCutscene] || Condition[ConditionFlag.WatchingCutscene78] || Condition[ConditionFlag.OccupiedInCutSceneEvent])
 			{
 				// WatchingCutscene includes Group Pose
 				return IsAddonVisible("_NaviMap") ? DrawState.Partially : DrawState.HiddenCutscene;
 			}
-			else if (Condition[ConditionFlag.OccupiedSummoningBell])
+
+			if (Condition[ConditionFlag.OccupiedSummoningBell])
 			{
 				return DrawState.Partially;
 			}
@@ -342,19 +344,19 @@ namespace SezzUI
 			UiBuilder.OpenConfigUi -= OpenConfigUi;
 			UiBuilder.RebuildFonts();
 
-			DelvUI.Helpers.ClipRectsHelper.Instance.Dispose();
-			DelvUI.Helpers.FontsManager.Instance.Dispose();
+			ClipRectsHelper.Instance.Dispose();
+			FontsManager.Instance.Dispose();
 			GlobalColors.Instance.Dispose();
 			ProfilesManager.Instance.Dispose();
-			DelvUI.Helpers.TexturesCache.Instance.Dispose();
-			Helpers.ImageCache.Instance.Dispose();
-			DelvUI.Helpers.TooltipsHelper.Instance.Dispose();
+			TexturesCache.Instance.Dispose();
+			ImageCache.Instance.Dispose();
+			TooltipsHelper.Instance.Dispose();
 			OriginalFunctionManager.Instance.Dispose();
 
 			// This needs to remain last to avoid race conditions
 			ConfigurationManager.Instance.Dispose();
 
-			PluginLog.Debug($"Goodbye!");
+			PluginLog.Debug("Goodbye!");
 		}
 	}
 }
