@@ -1,290 +1,278 @@
-using Dalamud.Logging;
-using SezzUI.Config.Attributes;
-using SezzUI.Config.Profiles;
-using DelvUI.Helpers;
-using ImGuiNET;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Reflection;
+using DelvUI.Helpers;
+using ImGuiNET;
+using Newtonsoft.Json;
+using SezzUI.Config.Attributes;
+using SezzUI.Config.Profiles;
 
 namespace SezzUI.Config.Tree
 {
-    public class ConfigPageNode : SubSectionNode
-    {
-        private PluginConfigObject _configObject = null!;
-        private List<ConfigNode>? _drawList = null;
-        private Dictionary<string, ConfigPageNode> _nestedConfigPageNodes = null!;
+	public class ConfigPageNode : SubSectionNode
+	{
+		private PluginConfigObject _configObject = null!;
+		private List<ConfigNode>? _drawList;
+		private Dictionary<string, ConfigPageNode> _nestedConfigPageNodes = null!;
+		internal PluginLogger Logger;
 
-        public PluginConfigObject ConfigObject
-        {
-            get => _configObject;
-            set
-            {
-                _configObject = value;
-                GenerateNestedConfigPageNodes();
-                _drawList = null;
-            }
-        }
+		public ConfigPageNode()
+		{
+			Logger = new(GetType().Name);
+		}
 
-        private void GenerateNestedConfigPageNodes()
-        {
-            _nestedConfigPageNodes = new Dictionary<string, ConfigPageNode>();
+		public PluginConfigObject ConfigObject
+		{
+			get => _configObject;
+			set
+			{
+				_configObject = value;
+				GenerateNestedConfigPageNodes();
+				_drawList = null;
+			}
+		}
 
-            FieldInfo[] fields = _configObject.GetType().GetFields();
+		private void GenerateNestedConfigPageNodes()
+		{
+			_nestedConfigPageNodes = new();
 
-            foreach (var field in fields)
-            {
-                foreach (var attribute in field.GetCustomAttributes(true))
-                {
-                    if (attribute is not NestedConfigAttribute nestedConfigAttribute)
-                    {
-                        continue;
-                    }
+			FieldInfo[] fields = _configObject.GetType().GetFields();
 
-                    var value = field.GetValue(_configObject);
+			foreach (FieldInfo field in fields)
+			{
+				foreach (object attribute in field.GetCustomAttributes(true))
+				{
+					if (attribute is not NestedConfigAttribute nestedConfigAttribute)
+					{
+						continue;
+					}
 
-                    if (value is not PluginConfigObject nestedConfig)
-                    {
-                        continue;
-                    }
+					object? value = field.GetValue(_configObject);
 
-                    ConfigPageNode configPageNode = new();
-                    configPageNode.ConfigObject = nestedConfig;
-                    configPageNode.Name = nestedConfigAttribute.friendlyName;
+					if (value is not PluginConfigObject nestedConfig)
+					{
+						continue;
+					}
 
-                    if (nestedConfig.Disableable)
-                    {
-                        configPageNode.Name += "##" + nestedConfig.GetHashCode();
-                    }
+					ConfigPageNode configPageNode = new();
+					configPageNode.ConfigObject = nestedConfig;
+					configPageNode.Name = nestedConfigAttribute.friendlyName;
 
-                    _nestedConfigPageNodes.Add(field.Name, configPageNode);
-                }
-            }
-        }
+					if (nestedConfig.Disableable)
+					{
+						configPageNode.Name += "##" + nestedConfig.GetHashCode();
+					}
 
-        public override string? GetBase64String()
-        {
-            if (!AllowShare())
-            {
-                return null;
-            }
+					_nestedConfigPageNodes.Add(field.Name, configPageNode);
+				}
+			}
+		}
 
-            return ImportExportHelper.GenerateExportString(ConfigObject);
-        }
+		public override string? GetBase64String()
+		{
+			if (!AllowShare())
+			{
+				return null;
+			}
 
-        protected override bool AllowExport()
-        {
-            return ConfigObject.Exportable;
-        }
+			return ImportExportHelper.GenerateExportString(ConfigObject);
+		}
 
-        protected override bool AllowShare()
-        {
-            return ConfigObject.Shareable;
-        }
+		protected override bool AllowExport() => ConfigObject.Exportable;
 
-        protected override bool AllowReset()
-        {
-            return ConfigObject.Resettable;
-        }
+		protected override bool AllowShare() => ConfigObject.Shareable;
 
-        public override bool Draw(ref bool changed) { return DrawWithID(ref changed); }
+		protected override bool AllowReset() => ConfigObject.Resettable;
 
-        private bool DrawWithID(ref bool changed, string? ID = null)
-        {
-            bool didReset = false;
+		public override bool Draw(ref bool changed) => DrawWithID(ref changed);
 
-            // Only do this stuff the first time the config page is loaded
-            if (_drawList is null)
-            {
-                _drawList = GenerateDrawList();
-            }
+		private bool DrawWithID(ref bool changed, string? ID = null)
+		{
+			bool didReset = false;
 
-            if (_drawList is not null)
-            {
-                foreach (var fieldNode in _drawList)
-                {
-                    didReset |= fieldNode.Draw(ref changed);
-                }
-            }
+			// Only do this stuff the first time the config page is loaded
+			if (_drawList is null)
+			{
+				_drawList = GenerateDrawList();
+			}
 
-            didReset |= DrawPortableSection();
+			if (_drawList is not null)
+			{
+				foreach (ConfigNode fieldNode in _drawList)
+				{
+					didReset |= fieldNode.Draw(ref changed);
+				}
+			}
 
-            ImGui.NewLine(); // fixes some long pages getting cut off
+			didReset |= DrawPortableSection();
 
-            return didReset;
-        }
+			ImGui.NewLine(); // fixes some long pages getting cut off
 
-        private List<ConfigNode> GenerateDrawList(string? ID = null)
-        {
-            Dictionary<string, ConfigNode> fieldMap = new Dictionary<string, ConfigNode>();
+			return didReset;
+		}
 
-            FieldInfo[] fields = ConfigObject.GetType().GetFields();
-            foreach (var field in fields)
-            {
-                if (ConfigObject.DisableParentSettings != null && ConfigObject.DisableParentSettings.Contains(field.Name))
-                {
-                    continue;
-                }
+		private List<ConfigNode> GenerateDrawList(string? ID = null)
+		{
+			Dictionary<string, ConfigNode> fieldMap = new();
 
-                foreach (object attribute in field.GetCustomAttributes(true))
-                {
-                    if (attribute is NestedConfigAttribute nestedConfigAttribute && _nestedConfigPageNodes.TryGetValue(field.Name, out ConfigPageNode? node))
-                    {
-                        var newNodes = node.GenerateDrawList(node.Name);
-                        foreach (var newNode in newNodes)
-                        {
-                            newNode.Position = nestedConfigAttribute.pos;
-                            newNode.Separator = nestedConfigAttribute.separator;
-                            newNode.Spacing = nestedConfigAttribute.spacing;
-                            newNode.ParentName = nestedConfigAttribute.collapseWith;
-                            newNode.Nest = nestedConfigAttribute.nest;
-                            newNode.CollapsingHeader = nestedConfigAttribute.collapsingHeader;
-                            fieldMap.Add($"{node.Name}_{newNode.Name}", newNode);
-                        }
-                    }
-                    else if (attribute is OrderAttribute orderAttribute)
-                    {
-                        var fieldNode = new FieldNode(field, ConfigObject, ID);
-                        fieldNode.Position = orderAttribute.pos;
-                        fieldNode.ParentName = orderAttribute.collapseWith;
-                        fieldMap.Add(field.Name, fieldNode);
-                    }
-                }
-            }
+			FieldInfo[] fields = ConfigObject.GetType().GetFields();
+			foreach (FieldInfo field in fields)
+			{
+				if (ConfigObject.DisableParentSettings != null && ConfigObject.DisableParentSettings.Contains(field.Name))
+				{
+					continue;
+				}
 
-            var manualDrawMethods = ConfigObject.GetType().GetMethods().Where(m => Attribute.IsDefined(m, typeof(ManualDrawAttribute), false));
-            foreach (var method in manualDrawMethods)
-            {
-                string id = $"ManualDraw##{method.GetHashCode()}";
-                fieldMap.Add(id, new ManualDrawNode(method, ConfigObject, id));
-            }
+				foreach (object attribute in field.GetCustomAttributes(true))
+				{
+					if (attribute is NestedConfigAttribute nestedConfigAttribute && _nestedConfigPageNodes.TryGetValue(field.Name, out ConfigPageNode? node))
+					{
+						List<ConfigNode> newNodes = node.GenerateDrawList(node.Name);
+						foreach (ConfigNode newNode in newNodes)
+						{
+							newNode.Position = nestedConfigAttribute.pos;
+							newNode.Separator = nestedConfigAttribute.separator;
+							newNode.Spacing = nestedConfigAttribute.spacing;
+							newNode.ParentName = nestedConfigAttribute.collapseWith;
+							newNode.Nest = nestedConfigAttribute.nest;
+							newNode.CollapsingHeader = nestedConfigAttribute.collapsingHeader;
+							fieldMap.Add($"{node.Name}_{newNode.Name}", newNode);
+						}
+					}
+					else if (attribute is OrderAttribute orderAttribute)
+					{
+						FieldNode fieldNode = new FieldNode(field, ConfigObject, ID);
+						fieldNode.Position = orderAttribute.pos;
+						fieldNode.ParentName = orderAttribute.collapseWith;
+						fieldMap.Add(field.Name, fieldNode);
+					}
+				}
+			}
 
-            foreach (var configNode in fieldMap.Values)
-            {
-                if (configNode.ParentName is not null &&
-                    fieldMap.TryGetValue(configNode.ParentName, out ConfigNode? parentNode))
-                {
-                    if (!ConfigObject.Disableable &&
-                        parentNode.Name.Equals("Enabled") &&
-                        parentNode.ID is null)
-                    {
-                        continue;
-                    }
+			IEnumerable<MethodInfo> manualDrawMethods = ConfigObject.GetType().GetMethods().Where(m => Attribute.IsDefined(m, typeof(ManualDrawAttribute), false));
+			foreach (MethodInfo method in manualDrawMethods)
+			{
+				string id = $"ManualDraw##{method.GetHashCode()}";
+				fieldMap.Add(id, new ManualDrawNode(method, ConfigObject, id));
+			}
 
-                    if (parentNode is FieldNode parentFieldNode)
-                    {
-                        parentFieldNode.CollapseControl = true;
-                        parentFieldNode.AddChild(configNode.Position, configNode);
-                    }
-                }
-            }
+			foreach (ConfigNode configNode in fieldMap.Values)
+			{
+				if (configNode.ParentName is not null && fieldMap.TryGetValue(configNode.ParentName, out ConfigNode? parentNode))
+				{
+					if (!ConfigObject.Disableable && parentNode.Name.Equals("Enabled") && parentNode.ID is null)
+					{
+						continue;
+					}
 
-            var fieldNodes = fieldMap.Values.ToList();
-            fieldNodes.RemoveAll(f => f.IsChild);
-            fieldNodes.Sort((x, y) => x.Position - y.Position);
-            return fieldNodes;
-        }
+					if (parentNode is FieldNode parentFieldNode)
+					{
+						parentFieldNode.CollapseControl = true;
+						parentFieldNode.AddChild(configNode.Position, configNode);
+					}
+				}
+			}
 
-        private bool DrawPortableSection()
-        {
-            if (!AllowExport())
-            {
-                return false;
-            }
+			List<ConfigNode> fieldNodes = fieldMap.Values.ToList();
+			fieldNodes.RemoveAll(f => f.IsChild);
+			fieldNodes.Sort((x, y) => x.Position - y.Position);
+			return fieldNodes;
+		}
 
-            ImGuiHelper.DrawSeparator(2, 1);
+		private bool DrawPortableSection()
+		{
+			if (!AllowExport())
+			{
+				return false;
+			}
 
-            const float buttonWidth = 120;
+			ImGuiHelper.DrawSeparator(2, 1);
 
-            ImGui.BeginGroup();
+			const float buttonWidth = 120;
 
-            ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionWidth() / 2f - buttonWidth - 5, ImGui.GetCursorPosY()));
+			ImGui.BeginGroup();
 
-            if (ImGui.Button("Export", new Vector2(120, 24)))
-            {
-                var exportString = ImportExportHelper.GenerateExportString(ConfigObject);
-                ImGui.SetClipboardText(exportString);
-            }
+			ImGui.SetCursorPos(new(ImGui.GetWindowContentRegionWidth() / 2f - buttonWidth - 5, ImGui.GetCursorPosY()));
 
-            ImGui.SameLine();
+			if (ImGui.Button("Export", new(120, 24)))
+			{
+				string exportString = ImportExportHelper.GenerateExportString(ConfigObject);
+				ImGui.SetClipboardText(exportString);
+			}
 
-            if (ImGui.Button("Reset", new Vector2(120, 24)))
-            {
-                _nodeToReset = this;
-                _nodeToResetName = Utils.UserFriendlyConfigName(ConfigObject.GetType().Name);
-            }
+			ImGui.SameLine();
 
-            ImGui.NewLine();
-            ImGui.EndGroup();
+			if (ImGui.Button("Reset", new(120, 24)))
+			{
+				_nodeToReset = this;
+				_nodeToResetName = Utils.UserFriendlyConfigName(ConfigObject.GetType().Name);
+			}
 
-            return DrawResetModal();
-        }
+			ImGui.NewLine();
+			ImGui.EndGroup();
 
-        private static string ReplaceLastOccurrence(string Source, string Find, string Replace)
-        {
-            int place = Source.LastIndexOf(Find);
-            if (place == -1)
-            {
-                return Source;
-            }
-                
-            string result = Source.Remove(place, Find.Length).Insert(place, Replace);
-            return result;
-        }
+			return DrawResetModal();
+		}
 
-        public override void Save(string path)
-        {
-            string[] splits = path.Split("\\", StringSplitOptions.RemoveEmptyEntries);
-            string directory = ReplaceLastOccurrence(path, splits.Last(), "");
-            Directory.CreateDirectory(directory);
+		private static string ReplaceLastOccurrence(string Source, string Find, string Replace)
+		{
+			int place = Source.LastIndexOf(Find);
+			if (place == -1)
+			{
+				return Source;
+			}
 
-            string finalPath = path + ".json";
+			string result = Source.Remove(place, Find.Length).Insert(place, Replace);
+			return result;
+		}
 
-            try
-            {
-                File.WriteAllText(
-                    finalPath,
-                    JsonConvert.SerializeObject(
-                        ConfigObject,
-                        Formatting.Indented,
-                        new JsonSerializerSettings { TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple, TypeNameHandling = TypeNameHandling.Objects }
-                    )
-                );
-            }
-            catch (Exception e)
-            {
-                PluginLog.Error("Error when saving config object: " + e.Message);
-            }
-        }
+		public override void Save(string path)
+		{
+			string[] splits = path.Split("\\", StringSplitOptions.RemoveEmptyEntries);
+			string directory = ReplaceLastOccurrence(path, splits.Last(), "");
+			Directory.CreateDirectory(directory);
 
-        public override void Load(string path, string currentVersion, string? previousVersion = null)
-        {
-            if (ConfigObject is not PluginConfigObject) { return; }
+			string finalPath = path + ".json";
 
-            FileInfo finalPath = new(path + ".json");
+			try
+			{
+				File.WriteAllText(finalPath, JsonConvert.SerializeObject(ConfigObject, Formatting.Indented, new JsonSerializerSettings {TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple, TypeNameHandling = TypeNameHandling.Objects}));
+			}
+			catch (Exception ex)
+			{
+				Logger.Error("Save", "Error while saving config object: " + ex.Message);
+			}
+		}
 
-            // Use reflection to call the LoadForType method, this allows us to specify a type at runtime.
-            // While in general use this is important as the conversion from the superclass 'PluginConfigObject' to a specific subclass (e.g. 'BlackMageHudConfig') would
-            // be handled by Json.NET, when the plugin is reloaded with a different assembly (as is the case when using LivePluginLoader, or updating the plugin in-game)
-            // it fails. In order to fix this we need to specify the specific subclass, in order to do this during runtime we must use reflection to set the generic.
-            MethodInfo? methodInfo = ConfigObject.GetType().GetMethod("Load");
-            MethodInfo? function = methodInfo?.MakeGenericMethod(ConfigObject.GetType());
+		public override void Load(string path, string currentVersion, string? previousVersion = null)
+		{
+			if (ConfigObject is not PluginConfigObject)
+			{
+				return;
+			}
 
-            object[] args = previousVersion != null ? new object[] { finalPath, currentVersion, previousVersion } : new object[] { finalPath, currentVersion };
-            PluginConfigObject? config = (PluginConfigObject?)function?.Invoke(ConfigObject, args);
+			FileInfo finalPath = new(path + ".json");
 
-            ConfigObject = config ?? ConfigObject;
-        }
+			// Use reflection to call the LoadForType method, this allows us to specify a type at runtime.
+			// While in general use this is important as the conversion from the superclass 'PluginConfigObject' to a specific subclass (e.g. 'BlackMageHudConfig') would
+			// be handled by Json.NET, when the plugin is reloaded with a different assembly (as is the case when using LivePluginLoader, or updating the plugin in-game)
+			// it fails. In order to fix this we need to specify the specific subclass, in order to do this during runtime we must use reflection to set the generic.
+			MethodInfo? methodInfo = ConfigObject.GetType().GetMethod("Load");
+			MethodInfo? function = methodInfo?.MakeGenericMethod(ConfigObject.GetType());
 
-        public override void Reset()
-        {
-            ConfigObject = ConfigurationManager.GetDefaultConfigObjectForType(ConfigObject.GetType());
-        }
+			object[] args = previousVersion != null ? new object[] {finalPath, currentVersion, previousVersion} : new object[] {finalPath, currentVersion};
+			PluginConfigObject? config = (PluginConfigObject?) function?.Invoke(ConfigObject, args);
 
-        public override ConfigPageNode? GetOrAddConfig<T>() => this;
-    }
+			ConfigObject = config ?? ConfigObject;
+		}
+
+		public override void Reset()
+		{
+			ConfigObject = ConfigurationManager.GetDefaultConfigObjectForType(ConfigObject.GetType());
+		}
+
+		public override ConfigPageNode? GetOrAddConfig<T>() => this;
+	}
 }

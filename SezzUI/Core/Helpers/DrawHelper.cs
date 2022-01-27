@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using Dalamud.Logging;
 using DelvUI.Helpers;
 using ImGuiNET;
 using ImGuiScene;
@@ -10,6 +9,13 @@ namespace SezzUI.Helpers
 {
 	public static class DrawHelper
 	{
+		internal static PluginLogger Logger;
+
+		static DrawHelper()
+		{
+			Logger = new("DrawHelper");
+		}
+
 		public static Vector2 GetAnchoredPosition(Vector2 parentPosition, Vector2 parentSize, Vector2 elementSize, DrawAnchor anchor)
 		{
 			return anchor switch
@@ -181,7 +187,7 @@ namespace SezzUI.Helpers
 				if (remaining > total)
 				{
 					// avoid crashes
-					PluginLog.Warning($"[DrawProgressSwipe] Adjusted remaining duration {remaining} to not exceed total {total}. FIX YOUR CODE!");
+					Logger.Warning("DrawProgressSwipe", $"Adjusted remaining duration {remaining} to not exceed total {total}. FIX YOUR CODE!");
 					remaining = total;
 				}
 

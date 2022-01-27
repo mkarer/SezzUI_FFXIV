@@ -343,7 +343,7 @@ namespace SezzUI.GameEvents
 			{
 				_delayedUpdates.Add(new(Environment.TickCount64 + delay, actionId));
 				_delayedUpdates.Sort(_delayedCooldownUpdateComparer);
-				//_delayedUpdates.ForEach(x => PluginLog.Debug($"_delayedUpdates {x.Item1} {x.Item2}"));
+				//_delayedUpdates.ForEach(x => Logger.Debug("ScheduleUpdate", $"_delayedUpdates {x.Item1} {x.Item2}"));
 			}
 		}
 

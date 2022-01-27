@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Dalamud.Logging;
 using Dalamud.Plugin;
 
 namespace SezzUI.Helpers
@@ -22,6 +21,7 @@ namespace SezzUI.Helpers
 		}
 
 		public static IReadOnlyList<PluginEntry> Plugins { get; private set; }
+		internal static PluginLogger Logger;
 
 		public static void RefreshPlugins()
 		{
@@ -48,11 +48,11 @@ namespace SezzUI.Helpers
 						{
 							case "TextAdvance":
 								enabled = plugin.GetFieldValue<IDalamudPlugin>("instance").GetFieldValue<bool>("Enabled");
-								//PluginLog.Debug($"Plugin: {name} Enabled: {enabled}");
+								//Logger.Debug("RefreshPlugins", $"Plugin: {name} Enabled: {enabled}");
 								break;
 						}
 
-						//PluginLog.Debug($"Plugin: {name} Enabled: {enabled}");
+						//Logger.Debug("RefreshPlugins", $"Plugin: {name} Enabled: {enabled}");
 						PluginEntry entry = new()
 						{
 							Name = name,
@@ -64,7 +64,7 @@ namespace SezzUI.Helpers
 				}
 				catch (Exception ex)
 				{
-					PluginLog.Error(ex, $"Error: {ex}");
+					Logger.Error(ex, "RefreshPlugins", $"Error: {ex}");
 				}
 			}
 
@@ -73,6 +73,7 @@ namespace SezzUI.Helpers
 
 		static DalamudHelper()
 		{
+			Logger = new("DalamudHelper");
 			Plugins = new List<PluginEntry>();
 		}
 	}

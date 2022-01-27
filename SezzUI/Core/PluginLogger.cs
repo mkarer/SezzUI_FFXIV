@@ -15,6 +15,8 @@ namespace SezzUI
 			_logPrefix = prefixBase != "" ? $"[{prefixBase}] " : "";
 		}
 
+		#region Debug
+
 		public void Debug(string messageTemplate, params object[] values)
 		{
 #if DEBUG
@@ -43,6 +45,10 @@ namespace SezzUI
 #endif
 		}
 
+		#endregion
+
+		#region Error
+
 		public void Error(string messageTemplate, params object[] values)
 		{
 			PluginLog.Error(new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
@@ -62,5 +68,31 @@ namespace SezzUI
 		{
 			PluginLog.Error(exception, new StringBuilder("[").Append(_logPrefixBase).Append(_logPrefixBase != "" ? "::" : "").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
 		}
+
+		#endregion
+
+		#region Warning
+
+		public void Warning(string messageTemplate, params object[] values)
+		{
+			PluginLog.Warning(new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
+		}
+
+		public void Warning(string messagePrefix, string messageTemplate, params object[] values)
+		{
+			PluginLog.Warning(new StringBuilder("[").Append(_logPrefixBase).Append(_logPrefixBase != "" ? "::" : "").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
+		}
+
+		public void Warning(Exception exception, string messageTemplate, params object[] values)
+		{
+			PluginLog.Warning(exception, new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
+		}
+
+		public void Warning(Exception exception, string messagePrefix, string messageTemplate, params object[] values)
+		{
+			PluginLog.Warning(exception, new StringBuilder("[").Append(_logPrefixBase).Append(_logPrefixBase != "" ? "::" : "").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
+		}
+
+		#endregion
 	}
 }

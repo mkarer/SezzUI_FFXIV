@@ -1,169 +1,171 @@
-﻿using SezzUI.Config;
-using SezzUI.Interface.GeneralElements;
-using ImGuiNET;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Dalamud.Logging;
+using ImGuiNET;
+using SezzUI;
+using SezzUI.Config;
+using SezzUI.Interface.GeneralElements;
 
 namespace DelvUI.Helpers
 {
-    public class FontsManager : IDisposable
-    {
-        #region Singleton
-        private FontsManager(string basePath)
-        {
-            DefaultFontsPath = Path.GetDirectoryName(basePath) + "\\Media\\Fonts\\";
-        }
+	public class FontsManager : IDisposable
+	{
+		#region Singleton
 
-        public static void Initialize(string basePath)
-        {
-            Instance = new FontsManager(basePath);
-        }
+		private FontsManager(string basePath)
+		{
+			Logger = new(GetType().Name);
+			DefaultFontsPath = Path.GetDirectoryName(basePath) + "\\Media\\Fonts\\";
+		}
 
-        public static FontsManager Instance { get; private set; } = null!;
-        private FontsConfig? _config;
+		public static void Initialize(string basePath)
+		{
+			Instance = new(basePath);
+		}
 
-        public void LoadConfig()
-        {
-            if (_config != null)
-            {
-                return;
-            }
+		public static FontsManager Instance { get; private set; } = null!;
+		private FontsConfig? _config;
+		internal PluginLogger Logger;
 
-            _config = ConfigurationManager.Instance.GetConfigObject<FontsConfig>();
-            ConfigurationManager.Instance.ResetEvent += OnConfigReset;
-        }
+		public void LoadConfig()
+		{
+			if (_config != null)
+			{
+				return;
+			}
 
-        private void OnConfigReset(ConfigurationManager sender)
-        {
-            _config = sender.GetConfigObject<FontsConfig>();
-        }
+			_config = ConfigurationManager.Instance.GetConfigObject<FontsConfig>();
+			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+		}
 
-        ~FontsManager()
-        {
-            Dispose(false);
-        }
+		private void OnConfigReset(ConfigurationManager sender)
+		{
+			_config = sender.GetConfigObject<FontsConfig>();
+		}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		~FontsManager()
+		{
+			Dispose(false);
+		}
 
-        protected void Dispose(bool disposing)
-        {
-            if (!disposing)
-            {
-                return;
-            }
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
-            ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
-            Instance = null!;
-        }
-        #endregion
+		protected void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
 
-        public readonly string DefaultFontsPath;
+			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+			Instance = null!;
+		}
 
-        public bool DefaultFontBuilt { get; private set; }
-        public ImFontPtr DefaultFont { get; private set; } = null;
+		#endregion
 
-        private List<ImFontPtr> _fonts = new List<ImFontPtr>();
-        public IReadOnlyCollection<ImFontPtr> Fonts => _fonts.AsReadOnly();
+		public readonly string DefaultFontsPath;
 
-        public bool PushDefaultFont()
-        {
-            if (DefaultFontBuilt)
-            {
-                ImGui.PushFont(DefaultFont);
-                return true;
-            }
+		public bool DefaultFontBuilt { get; private set; }
+		public ImFontPtr DefaultFont { get; private set; } = null;
 
-            return false;
-        }
+		private readonly List<ImFontPtr> _fonts = new();
+		public IReadOnlyCollection<ImFontPtr> Fonts => _fonts.AsReadOnly();
 
-        public bool PushFont(string? fontId)
-        {
-            if (fontId == null || _config == null || !_config.Fonts.ContainsKey(fontId))
-            {
-                return false;
-            }
+		public bool PushDefaultFont()
+		{
+			if (DefaultFontBuilt)
+			{
+				ImGui.PushFont(DefaultFont);
+				return true;
+			}
 
-            var index = _config.Fonts.IndexOfKey(fontId);
-            if (index < 0 || index >= _fonts.Count)
-            {
-                return false;
-            }
+			return false;
+		}
 
-            ImGui.PushFont(_fonts[index]);
-            return true;
-        }
+		public bool PushFont(string? fontId)
+		{
+			if (fontId == null || _config == null || !_config.Fonts.ContainsKey(fontId))
+			{
+				return false;
+			}
 
-        public unsafe void BuildFonts()
-        {
-            _fonts.Clear();
-            DefaultFontBuilt = false;
+			int index = _config.Fonts.IndexOfKey(fontId);
+			if (index < 0 || index >= _fonts.Count)
+			{
+				return false;
+			}
 
-            var config = ConfigurationManager.Instance.GetConfigObject<FontsConfig>();
-            ImGuiIOPtr io = ImGui.GetIO();
-            var ranges = GetCharacterRanges(config, io);
+			ImGui.PushFont(_fonts[index]);
+			return true;
+		}
 
-            foreach (var fontData in config.Fonts)
-            {
-                var path = DefaultFontsPath + fontData.Value.Name + ".ttf";
-                if (!File.Exists(path))
-                {
-                    path = config.ValidatedFontsPath + fontData.Value.Name + ".ttf";
-                    if (!File.Exists(path))
-                    {
-                        continue;
-                    }
-                }
+		public void BuildFonts()
+		{
+			_fonts.Clear();
+			DefaultFontBuilt = false;
 
-                try
-                {
-                    ImFontPtr font = ranges == null ? io.Fonts.AddFontFromFileTTF(path, fontData.Value.Size)
-                        : io.Fonts.AddFontFromFileTTF(path, fontData.Value.Size, null, ranges.Value.Data);
-                    _fonts.Add(font);
+			FontsConfig config = ConfigurationManager.Instance.GetConfigObject<FontsConfig>();
+			ImGuiIOPtr io = ImGui.GetIO();
+			ImVector? ranges = GetCharacterRanges(config, io);
 
-                    if (fontData.Key == FontsConfig.DefaultMediumFontKey)
-                    {
-                        DefaultFont = font;
-                        DefaultFontBuilt = true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    PluginLog.Log($"Font failed to load: {path}");
-                    PluginLog.Log(ex.ToString());
-                }
-            }
-        }
+			foreach (KeyValuePair<string, FontData> fontData in config.Fonts)
+			{
+				string path = DefaultFontsPath + fontData.Value.Name + ".ttf";
+				if (!File.Exists(path))
+				{
+					path = config.ValidatedFontsPath + fontData.Value.Name + ".ttf";
+					if (!File.Exists(path))
+					{
+						continue;
+					}
+				}
 
-        private unsafe ImVector? GetCharacterRanges(FontsConfig config, ImGuiIOPtr io)
-        {
-            if (!config.SupportChineseCharacters && !config.SupportKoreanCharacters)
-            {
-                return null;
-            }
+				try
+				{
+					ImFontPtr font = ranges == null ? io.Fonts.AddFontFromFileTTF(path, fontData.Value.Size) : io.Fonts.AddFontFromFileTTF(path, fontData.Value.Size, null, ranges.Value.Data);
+					_fonts.Add(font);
 
-            var builder = new ImFontGlyphRangesBuilderPtr(ImGuiNative.ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder());
+					if (fontData.Key == FontsConfig.DefaultMediumFontKey)
+					{
+						DefaultFont = font;
+						DefaultFontBuilt = true;
+					}
+				}
+				catch (Exception ex)
+				{
+					Logger.Error(ex, "BuildFonts", $"Error loading fonts ({path}): {ex}");
+				}
+			}
+		}
 
-            if (config.SupportChineseCharacters)
-            {
-                // GetGlyphRangesChineseFull() includes Default + Hiragana, Katakana, Half-Width, Selection of 1946 Ideographs
-                // https://skia.googlesource.com/external/github.com/ocornut/imgui/+/v1.53/extra_fonts/README.txt
-                builder.AddRanges(io.Fonts.GetGlyphRangesChineseFull());
-            }
+		private unsafe ImVector? GetCharacterRanges(FontsConfig config, ImGuiIOPtr io)
+		{
+			if (!config.SupportChineseCharacters && !config.SupportKoreanCharacters)
+			{
+				return null;
+			}
 
-            if (config.SupportKoreanCharacters)
-            {
-                builder.AddRanges(io.Fonts.GetGlyphRangesKorean());
-            }
+			ImFontGlyphRangesBuilderPtr builder = new ImFontGlyphRangesBuilderPtr(ImGuiNative.ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder());
 
-            builder.BuildRanges(out ImVector ranges);
+			if (config.SupportChineseCharacters)
+			{
+				// GetGlyphRangesChineseFull() includes Default + Hiragana, Katakana, Half-Width, Selection of 1946 Ideographs
+				// https://skia.googlesource.com/external/github.com/ocornut/imgui/+/v1.53/extra_fonts/README.txt
+				builder.AddRanges(io.Fonts.GetGlyphRangesChineseFull());
+			}
 
-            return ranges;
-        }
-    }
+			if (config.SupportKoreanCharacters)
+			{
+				builder.AddRanges(io.Fonts.GetGlyphRangesKorean());
+			}
+
+			builder.BuildRanges(out ImVector ranges);
+
+			return ranges;
+		}
+	}
 }

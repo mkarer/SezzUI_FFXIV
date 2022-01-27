@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Dalamud.Logging;
 using Iced.Intel;
 using Reloaded.Hooks.Tools;
 using Reloaded.Memory.Buffers;
@@ -19,6 +18,8 @@ namespace SezzUI.Hooking
 	/// <typeparam name="T"></typeparam>
 	public class OriginalFunction<T> : IDisposable where T : Delegate
 	{
+		internal PluginLogger Logger = null!;
+
 		private readonly IntPtr _originalPointer;
 		public IntPtr OriginalAddress => _originalPointer;
 		private byte[] _originalBytes;
@@ -36,8 +37,14 @@ namespace SezzUI.Hooking
 
 		#region Constructor
 
+		private void InitializeLogger()
+		{
+			Logger = new(GetType().Name + ":" + typeof(T).Name);
+		}
+
 		public OriginalFunction(string signature, string originalBytesString = "")
 		{
+			InitializeLogger();
 			_originalPointer = Plugin.SigScanner.ScanText(signature);
 			_originalBytes = Convert.FromHexString(AsmHelper.CleanHexString(originalBytesString));
 			Initialize();
@@ -45,6 +52,7 @@ namespace SezzUI.Hooking
 
 		public OriginalFunction(string signature, byte[] originalBytes)
 		{
+			InitializeLogger();
 			_originalPointer = Plugin.SigScanner.ScanText(signature);
 			_originalBytes = originalBytes;
 			Initialize();
@@ -52,6 +60,7 @@ namespace SezzUI.Hooking
 
 		public OriginalFunction(IntPtr originalPointer, string originalBytesString = "")
 		{
+			InitializeLogger();
 			_originalPointer = originalPointer;
 			_originalBytes = Convert.FromHexString(AsmHelper.CleanHexString(originalBytesString));
 			Initialize();
@@ -59,6 +68,7 @@ namespace SezzUI.Hooking
 
 		public OriginalFunction(IntPtr originalPointer, byte[] originalBytes)
 		{
+			InitializeLogger();
 			_originalPointer = originalPointer;
 			_originalBytes = originalBytes;
 			Initialize();
@@ -71,7 +81,7 @@ namespace SezzUI.Hooking
 #if DEBUG
 			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
 			{
-				PluginLog.Debug($"[OriginalFunction::Initialize] Original address: {_originalPointer.ToInt64():X}");
+				Logger.Debug("Initialize", $"Original address: {_originalPointer.ToInt64():X}");
 			}
 #endif
 			// Read current memory
@@ -79,7 +89,7 @@ namespace SezzUI.Hooking
 #if DEBUG
 			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
 			{
-				PluginLog.Debug("[OriginalFunction::Initialize] Byte code: " + Convert.ToHexString(currentBytes));
+				Logger.Debug("Initialize", "Byte code: " + Convert.ToHexString(currentBytes));
 			}
 #endif
 
@@ -128,7 +138,7 @@ namespace SezzUI.Hooking
 #if DEBUG
 				if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
 				{
-					PluginLog.Debug("[OriginalFunction::Initialize] Original function is already hooked.");
+					Logger.Debug("Initialize", "Original function is already hooked.");
 				}
 #endif
 				for (int i = 0; i < currentInstructions.Count; i++)
@@ -158,13 +168,13 @@ namespace SezzUI.Hooking
 #if DEBUG
 			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
 			{
-				PluginLog.Debug($"[OriginalFunction::Initialize] Length of instructions we're going to skip: 0x{hookLength:X}");
+				Logger.Debug("Initialize", $"Length of instructions we're going to skip: 0x{hookLength:X}");
 
 				// Dump
-				PluginLog.Debug("[OriginalFunction::Initialize] Current instructions:");
+				Logger.Debug("Initialize", "Current instructions:");
 				AsmHelper.DumpInstructions(currentBytes[..hookLength], _originalPointer);
 
-				PluginLog.Debug("[OriginalFunction::Initialize] Original instructions:");
+				Logger.Debug("Initialize", "Original instructions:");
 				AsmHelper.DumpInstructions(_originalBytes[..hookLength], _originalPointer);
 			}
 #endif
@@ -204,13 +214,13 @@ namespace SezzUI.Hooking
 #if DEBUG
 			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
 			{
-				PluginLog.Debug("[OriginalFunction::Initialize] New instructions:");
+				Logger.Debug("Initialize", "New instructions:");
 				AsmHelper.DumpInstructions(opCodes.ToArray(), _newPointer);
-				PluginLog.Debug("[OriginalFunction::Initialize] New byte code: " + Convert.ToHexString(opCodes.ToArray()));
-				PluginLog.Debug($"[OriginalFunction::Initialize] New address: {_newPointer.ToInt64():X}");
+				Logger.Debug("Initialize", "New byte code: " + Convert.ToHexString(opCodes.ToArray()));
+				Logger.Debug("Initialize", $"New address: {_newPointer.ToInt64():X}");
 			}
 #endif
-			
+
 			// Done
 			Invoke = Marshal.GetDelegateForFunctionPointer<T>(_newPointer);
 		}

@@ -1,11 +1,13 @@
 ﻿using System;
-using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using SezzUI.Helpers;
 
 namespace SezzUI.Hooking
 {
 	internal class OriginalFunctionManager : IDisposable
 	{
+		internal static PluginLogger Logger = null!;
+
 		#region GetAdjustedActionId
 
 		private delegate uint GetAdjustedActionIdDelegate(IntPtr actionManager, uint actionId);
@@ -22,7 +24,7 @@ namespace SezzUI.Hooking
 				try
 				{
 					// Client::Game::ActionManager.GetAdjustedActionId
-					string getAdjustedActionIdSig = Helpers.AsmHelper.GetSignature<ActionManager>("GetAdjustedActionId") ?? "E8 ?? ?? ?? ?? 8B F8 3B DF";
+					string getAdjustedActionIdSig = AsmHelper.GetSignature<ActionManager>("GetAdjustedActionId") ?? "E8 ?? ?? ?? ?? 8B F8 3B DF";
 					_originalGetAdjustedActionId = new(getAdjustedActionIdSig, "81 FA 2D 01 00 00 7F 42 0F 84 4B 01 00 00 8D 42 EB");
 				}
 				catch (Exception ex)
@@ -30,7 +32,7 @@ namespace SezzUI.Hooking
 					Plugin.ChatGui.PrintError("SezzUI failed to reassemble GetAdjustedActionId to work around hooking issues.");
 					Plugin.ChatGui.PrintError("If you're using XIVCombo or a similar plugin most action-related features won't work correctly.");
 					Plugin.ChatGui.PrintError("You can (and should) check the Dalamud logfile for further details.");
-					PluginLog.Error(ex, $"[OriginalFunctionManager::GetAdjustedActionId] Error: {ex.Message}");
+					Logger.Error(ex, "GetAdjustedActionId", $"Error: {ex.Message}");
 				}
 			}
 
@@ -49,6 +51,7 @@ namespace SezzUI.Hooking
 
 		public OriginalFunctionManager()
 		{
+			Logger = new("OriginalFunctionManager");
 			_triedUnhookingGetAdjustedActionId = false;
 		}
 
