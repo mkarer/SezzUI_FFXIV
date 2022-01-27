@@ -84,7 +84,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 				if (_debugConfig.LogGeneral)
 				{
-					LogDebug("Configure", $"Setting up cooldowns for Job ID: {_currentJobId} Level: {_currentLevel}");
+					Logger.Debug("Configure", $"Setting up cooldowns for Job ID: {_currentJobId} Level: {_currentLevel}");
 				}
 #endif
 
@@ -153,7 +153,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 				if (_debugConfig.LogCooldownPulseAnimations)
 				{
-					LogDebug("Draw", $"Removing CooldownPulse: Action ID: {pulse.ActionId} Charges: {pulse.Charges} Created: {pulse.Created} Expired: {expired} Animating: {pulse.Animator.IsAnimating}");
+					Logger.Debug("Draw", $"Removing CooldownPulse: Action ID: {pulse.ActionId} Charges: {pulse.Charges} Created: {pulse.Created} Expired: {expired} Animating: {pulse.Animator.IsAnimating}");
 				}
 #endif
 				pulse.Dispose();
@@ -184,13 +184,13 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 					if (_debugConfig.LogCooldownRegistration)
 					{
-						LogDebug("RegisterCooldown", $"Action ID: {actionId} Bar Manager ID: {barManager.Id} ({string.Join(", ", _cooldowns[actionId].BarManagers.Select(x => x.Id))})");
+						Logger.Debug("RegisterCooldown", $"Action ID: {actionId} Bar Manager ID: {barManager.Id} ({string.Join(", ", _cooldowns[actionId].BarManagers.Select(x => x.Id))})");
 					}
 #endif
 				}
 				else
 				{
-					LogError("RegisterCooldown", $"Action ID: {actionId} Failed to register cooldown - already registered to Bar Manager ID: {barManager.Id}");
+					Logger.Error("RegisterCooldown", $"Action ID: {actionId} Failed to register cooldown - already registered to Bar Manager ID: {barManager.Id}");
 				}
 			}
 			else
@@ -206,7 +206,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 				if (_debugConfig.LogCooldownRegistration)
 				{
-					LogDebug("RegisterCooldown", $"Action ID: {actionId} Bar Manager ID: {barManager.Id}");
+					Logger.Debug("RegisterCooldown", $"Action ID: {actionId} Bar Manager ID: {barManager.Id}");
 				}
 #endif
 			}
@@ -221,7 +221,7 @@ namespace SezzUI.Modules.CooldownHud
 			}
 			else
 			{
-				LogError("RegisterCooldown", $"Action ID: {actionId} Failed to register cooldown - invalid Bar Manager ID: {barManagerId}");
+				Logger.Error("RegisterCooldown", $"Action ID: {actionId} Failed to register cooldown - invalid Bar Manager ID: {barManagerId}");
 			}
 		}
 
@@ -233,7 +233,7 @@ namespace SezzUI.Modules.CooldownHud
 			}
 			else
 			{
-				LogError("RegisterCooldown", $"Action ID: {actionId} Failed to register cooldown - invalid Bar Manager Index: {barManagerIndex}");
+				Logger.Error("RegisterCooldown", $"Action ID: {actionId} Failed to register cooldown - invalid Bar Manager Index: {barManagerIndex}");
 			}
 		}
 
@@ -303,13 +303,13 @@ namespace SezzUI.Modules.CooldownHud
 			if (!_cooldowns.ContainsKey(actionId))
 			{
 				// This should actually never happen.
-				LogError("Pulse", $"Action ID: {actionId} Tried to show cooldown pulse for unknown cooldown!");
+				Logger.Error("Pulse", $"Action ID: {actionId} Tried to show cooldown pulse for unknown cooldown!");
 				return;
 			}
 #if DEBUG
 			if (_debugConfig.LogCooldownPulseAnimations)
 			{
-				LogDebug("Pulse", $"Action ID: {actionId} Charges: {charges}");
+				Logger.Debug("Pulse", $"Action ID: {actionId} Charges: {charges}");
 			}
 #endif
 			_cooldowns[actionId].LastPulseCharges = charges;
@@ -369,7 +369,7 @@ namespace SezzUI.Modules.CooldownHud
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, $"Error loading presets: {ex}");
+				Logger.Error(ex, $"Error loading presets: {ex}");
 			}
 
 			Toggle(Config.Enabled);
@@ -411,7 +411,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 					if (_debugConfig.LogConfigurationManager)
 					{
-						LogDebug("OnConfigPropertyChanged", $"{args.PropertyName}: {Config.Enabled}");
+						Logger.Debug("OnConfigPropertyChanged", $"{args.PropertyName}: {Config.Enabled}");
 					}
 #endif
 					Toggle(Config.Enabled);
@@ -432,7 +432,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
-				LogDebug("OnConfigReset", "Resetting...");
+				Logger.Debug("OnConfigReset", "Resetting...");
 			}
 #endif
 			Disable();
@@ -449,7 +449,7 @@ namespace SezzUI.Modules.CooldownHud
 			_debugConfig = ConfigurationManager.Instance.GetConfigObject<CooldownHudDebugConfig>();
 			if (_debugConfig.LogConfigurationManager)
 			{
-				LogDebug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
+				Logger.Debug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
 			}
 #endif
 			Toggle(Config.Enabled);
@@ -494,7 +494,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 				if (_debugConfig.LogCooldownEventHandling)
 				{
-					LogDebug("OnCooldownStarted", $"BarManager Result: {result} Active Bars: {barManager.Count}");
+					Logger.Debug("OnCooldownStarted", $"BarManager Result: {result} Active Bars: {barManager.Count}");
 				}
 #endif
 			});
@@ -514,7 +514,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 				if (_debugConfig.LogCooldownEventHandling)
 				{
-					LogDebug("OnCooldownChanged", $"BarManager Result: {result} Active Bars: {barManager.Count}");
+					Logger.Debug("OnCooldownChanged", $"BarManager Result: {result} Active Bars: {barManager.Count}");
 				}
 #endif
 
@@ -556,7 +556,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 				if (_debugConfig.LogCooldownEventHandling)
 				{
-					LogDebug("OnCooldownFinished", $"BarManager Result: {result} Active Bars: {barManager.Count}");
+					Logger.Debug("OnCooldownFinished", $"BarManager Result: {result} Active Bars: {barManager.Count}");
 				}
 #endif
 			});

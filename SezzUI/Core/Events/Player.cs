@@ -55,7 +55,7 @@ namespace SezzUI.GameEvents
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, "OnFrameworkUpdate", $"Error: {ex}");
+				Logger.Error(ex, "OnFrameworkUpdate", $"Error: {ex}");
 			}
 		}
 
@@ -73,7 +73,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 					if (EventManager.Config.LogEvents && EventManager.Config.LogEventPlayerJobChanged)
 					{
-						LogDebug("JobChanged", $"Job ID: {jobId}");
+						Logger.Debug("JobChanged", $"Job ID: {jobId}");
 					}
 #endif
 					JobChanged?.Invoke(jobId);
@@ -81,7 +81,7 @@ namespace SezzUI.GameEvents
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, "JobChanged", $"Failed invoking {nameof(JobChanged)}: {ex}");
+				Logger.Error(ex, "JobChanged", $"Failed invoking {nameof(JobChanged)}: {ex}");
 			}
 
 			try
@@ -94,7 +94,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 					if (EventManager.Config.LogEvents && EventManager.Config.LogEventPlayerLevelChanged)
 					{
-						LogDebug("LevelChanged", $"Level: {level}");
+						Logger.Debug("LevelChanged", $"Level: {level}");
 					}
 #endif
 					LevelChanged?.Invoke(level);
@@ -102,7 +102,7 @@ namespace SezzUI.GameEvents
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, "LevelChanged", $"Failed invoking {nameof(LevelChanged)}: {ex}");
+				Logger.Error(ex, "LevelChanged", $"Failed invoking {nameof(LevelChanged)}: {ex}");
 			}
 		}
 	}

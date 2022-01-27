@@ -51,7 +51,7 @@ namespace SezzUI.GameEvents
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, "OnFrameworkUpdate", $"Error: {ex}");
+				Logger.Error(ex, "OnFrameworkUpdate", $"Error: {ex}");
 			}
 		}
 
@@ -64,7 +64,7 @@ namespace SezzUI.GameEvents
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, "IsInCombat", $"Error: {ex}");
+				Logger.Error(ex, "IsInCombat", $"Error: {ex}");
 			}
 
 			return state;
@@ -83,7 +83,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 						if (EventManager.Config.LogEvents && EventManager.Config.LogEventCombatEnteringCombat)
 						{
-							LogDebug("EnteringCombat");
+							Logger.Debug("EnteringCombat");
 						}
 #endif
 						try
@@ -92,7 +92,7 @@ namespace SezzUI.GameEvents
 						}
 						catch (Exception ex)
 						{
-							LogError(ex, "EnteringCombat", $"Failed invoking {nameof(EnteringCombat)}: {ex}");
+							Logger.Error(ex, "EnteringCombat", $"Failed invoking {nameof(EnteringCombat)}: {ex}");
 						}
 					}
 					else
@@ -100,7 +100,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 						if (EventManager.Config.LogEvents && EventManager.Config.LogEventCombatLeavingCombat)
 						{
-							LogDebug("LeavingCombat");
+							Logger.Debug("LeavingCombat");
 						}
 #endif
 						try
@@ -109,14 +109,14 @@ namespace SezzUI.GameEvents
 						}
 						catch (Exception ex)
 						{
-							LogError(ex, "LeavingCombat", $"Failed invoking {nameof(LeavingCombat)}: {ex}");
+							Logger.Error(ex, "LeavingCombat", $"Failed invoking {nameof(LeavingCombat)}: {ex}");
 						}
 					}
 				}
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, "Update", $"Error: {ex}");
+				Logger.Error(ex, "Update", $"Error: {ex}");
 			}
 		}
 	}

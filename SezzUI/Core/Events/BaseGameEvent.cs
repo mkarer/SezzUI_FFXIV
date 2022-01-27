@@ -1,139 +1,92 @@
 ﻿using System;
-using System.Text;
-using Dalamud.Logging;
 
 namespace SezzUI
 {
-    internal abstract class BaseGameEvent : IDisposable
-    {
-        public virtual bool Enabled { get; protected set; }
-        protected string _logPrefix;
-        protected string _logPrefixBase;
+	internal abstract class BaseGameEvent : IPluginLogger, IDisposable
+	{
+		public virtual bool Enabled { get; protected set; }
 
-        public virtual bool Enable()
-        {
-            if (!Enabled)
-            {
-                LogDebug("Enable");
-                Enabled = true;
-                return true;
-            }
-            else
-            {
-                LogDebug("Enable", "Not disabled!");
-                return false;
-            }
-        }
+		#region Logger
 
-        public virtual bool Disable()
-        {
-            if (Enabled)
-            {
-                LogDebug("Disable");
-                Enabled = false;
-                return true;
-            }
-            else
-            {
-                LogDebug("Disable", "Not enabled!");
-                return false;
-            }
-        }
+		string IPluginLogger.LogPrefixBase { get; set; } = null!;
 
-        protected BaseGameEvent()
-        {
-            _logPrefixBase = new StringBuilder("Event:").Append(GetType().Name).ToString();
-            _logPrefix = new StringBuilder("[").Append(_logPrefixBase).Append("] ").ToString();
+		string IPluginLogger.LogPrefix { get; set; } = null!;
 
-            Initialize();
-        }
+		internal IPluginLogger Logger => this;
 
-        protected virtual void Initialize()
-        {
-            // override
-            if (!Enabled) { Enable(); }
-        }
+		#endregion
 
-        #region Logging
-        protected void LogDebug(string messageTemplate, params object[] values)
-        {
-#if DEBUG
-            PluginLog.Debug(new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
-#endif
-        }
+		public virtual bool Enable()
+		{
+			if (!Enabled)
+			{
+				Logger.Debug("Enable");
+				Enabled = true;
+				return true;
+			}
 
-        protected void LogDebug(string messagePrefix, string messageTemplate, params object[] values)
-        {
-#if DEBUG
-            PluginLog.Debug(new StringBuilder("[").Append(_logPrefixBase).Append("::").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
-#endif
-        }
+			Logger.Debug("Enable", "Not disabled!");
+			return false;
+		}
 
-        protected void LogDebug(Exception exception, string messageTemplate, params object[] values)
-        {
-#if DEBUG
-            PluginLog.Debug(exception, new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
-#endif
-        }
+		public virtual bool Disable()
+		{
+			if (Enabled)
+			{
+				Logger.Debug("Disable");
+				Enabled = false;
+				return true;
+			}
 
-        protected void LogDebug(Exception exception, string messagePrefix, string messageTemplate, params object[] values)
-        {
-#if DEBUG
-            PluginLog.Debug(exception, new StringBuilder("[").Append(_logPrefixBase).Append("::").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
-#endif
-        }
+			Logger.Debug("Disable", "Not enabled!");
+			return false;
+		}
 
-        protected void LogError(string messageTemplate, params object[] values)
-        {
-            PluginLog.Error(new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
-        }
+		protected BaseGameEvent()
+		{
+			Logger.Initialize($"Event::{GetType().Name}");
+			Initialize();
+		}
 
-        protected void LogError(string messagePrefix, string messageTemplate, params object[] values)
-        {
-            PluginLog.Error(new StringBuilder("[").Append(_logPrefixBase).Append("::").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
-        }
+		protected virtual void Initialize()
+		{
+			// override
+			if (!Enabled)
+			{
+				Enable();
+			}
+		}
 
-        protected void LogError(Exception exception, string messageTemplate, params object[] values)
-        {
-            PluginLog.Error(exception, new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
-        }
+		~BaseGameEvent()
+		{
+			Dispose(false);
+		}
 
-        protected void LogError(Exception exception, string messagePrefix, string messageTemplate, params object[] values)
-        {
-            PluginLog.Error(exception, new StringBuilder("[").Append(_logPrefixBase).Append("::").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
-        }
-        #endregion
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
-        ~BaseGameEvent()
-        {
-            Dispose(false);
-        }
+		protected void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+			Logger.Debug("Dispose");
+			if (Enabled)
+			{
+				Disable();
+			}
 
-        protected void Dispose(bool disposing)
-        {
-            if (!disposing)
-            {
-                return;
-            }
+			InternalDispose();
+		}
 
-            LogDebug("Dispose");
-            if (Enabled)
-            {
-                Disable();
-            }
-
-            InternalDispose();
-        }
-
-        protected virtual void InternalDispose()
-        {
-            // override
-        }
-    }
+		protected virtual void InternalDispose()
+		{
+			// override
+		}
+	}
 }

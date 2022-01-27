@@ -108,7 +108,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownUsage)
 			{
-				LogDebug("Watch", $"Action ID: {actionId}");
+				Logger.Debug("Watch", $"Action ID: {actionId}");
 			}
 #endif
 
@@ -133,7 +133,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownUsage)
 			{
-				LogDebug("Unwatch", $"Action ID: {actionId} All: {all}");
+				Logger.Debug("Unwatch", $"Action ID: {actionId} All: {all}");
 			}
 #endif
 
@@ -154,7 +154,7 @@ namespace SezzUI.GameEvents
 		{
 			if (!_watchedActions.ContainsKey(actionId))
 			{
-				LogError("Get", $"Error: Cannot retrieve data for unwatched cooldown! Action ID: {actionId}");
+				Logger.Error("Get", $"Error: Cannot retrieve data for unwatched cooldown! Action ID: {actionId}");
 			}
 			else if (_cache.ContainsKey(actionId))
 			{
@@ -183,9 +183,9 @@ namespace SezzUI.GameEvents
 			float chargesMod = maxChargesCurrentLevel != maxChargesMaxLevel ? 1f / maxChargesMaxLevel * maxChargesCurrentLevel : 1;
 			float totalCooldownAdjusted = totalCooldown * chargesMod; // GetRecastTime returns total cooldown for max level charges (but only if we have multiple charges right now?)
 
-			//LogDebug($"maxChargesCurrentLevel {maxChargesCurrentLevel} maxChargesMaxLevel {maxChargesMaxLevel}");
-			//LogDebug($"totalCooldown {totalCooldown} totalElapsed {totalElapsed} totalElapsedMS {(int)(totalElapsed * 1000f)} DateTime.UtcNow.Ticks {DateTime.UtcNow.Ticks} DateTime.UtcNow.Ticks-totalElapsed {DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(totalElapsed)).Ticks}");
-			//LogDebug($"totalCooldownAdjusted {totalCooldownAdjusted} chargesMod {chargesMod}");
+			//Logger.Debug($"maxChargesCurrentLevel {maxChargesCurrentLevel} maxChargesMaxLevel {maxChargesMaxLevel}");
+			//Logger.Debug($"totalCooldown {totalCooldown} totalElapsed {totalElapsed} totalElapsedMS {(int)(totalElapsed * 1000f)} DateTime.UtcNow.Ticks {DateTime.UtcNow.Ticks} DateTime.UtcNow.Ticks-totalElapsed {DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(totalElapsed)).Ticks}");
+			//Logger.Debug($"totalCooldownAdjusted {totalCooldownAdjusted} chargesMod {chargesMod}");
 
 			bool isFinished = totalCooldownAdjusted <= 0;
 			if (!isFinished)
@@ -214,13 +214,13 @@ namespace SezzUI.GameEvents
 
 				data.Type = actionType;
 
-				//LogDebug($"now {Environment.TickCount64}");
-				//LogDebug($"totalCooldownAdjusted {totalCooldownAdjusted}");
-				//LogDebug($"totalElapsedAdjusted {totalElapsedAdjusted}");
-				//LogDebug($"oneChargeCooldown {totalElapsedAdjusted % cooldownPerCharge}");
-				//LogDebug($"totalCooldown {totalCooldown}");
-				//LogDebug($"chargesMod {chargesMod}");
-				//LogDebug($"StartTime {data.StartTime} ElapsedCalculated {Environment.TickCount64 - data.StartTime}ms elapsed {totalElapsedAdjusted % cooldownPerCharge}s {(totalElapsedAdjusted % cooldownPerCharge) * 1000}ms {(long)((totalElapsedAdjusted % cooldownPerCharge) * 1000)}ms ");
+				//Logger.Debug($"now {Environment.TickCount64}");
+				//Logger.Debug($"totalCooldownAdjusted {totalCooldownAdjusted}");
+				//Logger.Debug($"totalElapsedAdjusted {totalElapsedAdjusted}");
+				//Logger.Debug($"oneChargeCooldown {totalElapsedAdjusted % cooldownPerCharge}");
+				//Logger.Debug($"totalCooldown {totalCooldown}");
+				//Logger.Debug($"chargesMod {chargesMod}");
+				//Logger.Debug($"StartTime {data.StartTime} ElapsedCalculated {Environment.TickCount64 - data.StartTime}ms elapsed {totalElapsedAdjusted % cooldownPerCharge}s {(totalElapsedAdjusted % cooldownPerCharge) * 1000}ms {(long)((totalElapsedAdjusted % cooldownPerCharge) * 1000)}ms ");
 
 				isFinished = !data.IsActive;
 				if (!isFinished)
@@ -256,7 +256,7 @@ namespace SezzUI.GameEvents
 				{
 					CooldownData data = _cache[actionId];
 					data.CurrentCharges = data.MaxCharges;
-					//LogDebug("Update", $"ActionID {actionId} FinishedBecauseTotalCooldownAdjusted {totalCooldownAdjusted <= 0} Now {Environment.TickCount64} StartTime {data.StartTime} Duration {data.Duration} Elapsed {Environment.TickCount64 - data.StartTime - data.Duration}");
+					//Logger.Debug("Update", $"ActionID {actionId} FinishedBecauseTotalCooldownAdjusted {totalCooldownAdjusted <= 0} Now {Environment.TickCount64} StartTime {data.StartTime} Duration {data.Duration} Elapsed {Environment.TickCount64 - data.StartTime - data.Duration}");
 					long elapsedFinished = Environment.TickCount64 - data.StartTime - data.Duration;
 					InvokeCooldownFinished(actionId, data, elapsedFinished < 0 ? 0 : (uint) elapsedFinished); // elapsedFinished can be negative!
 					_cache.Remove(actionId);
@@ -283,7 +283,7 @@ namespace SezzUI.GameEvents
 				{
 					// Apparently it's not.
 					ScheduleMultipleUpdates(actionId);
-					//LogDebug($"ScheduleMultipleUpdates/1: {actionId} {SpellHelper.GetActionName(actionId) ?? "?"}");
+					//Logger.Debug($"ScheduleMultipleUpdates/1: {actionId} {SpellHelper.GetActionName(actionId) ?? "?"}");
 				}
 
 				return true;
@@ -294,7 +294,7 @@ namespace SezzUI.GameEvents
 				// Delay update, cooldown won't get changed instantly.
 				TryUpdateIfWatched(_actionsModifyingCooldowns[actionId], actionType, isAdjusted, isGroupItem, true);
 				ScheduleMultipleUpdates(_actionsModifyingCooldowns[actionId]);
-				//LogDebug($"ScheduleMultipleUpdates/2: {actionId} {SpellHelper.GetActionName(actionId) ?? "?"}");
+				//Logger.Debug($"ScheduleMultipleUpdates/2: {actionId} {SpellHelper.GetActionName(actionId) ?? "?"}");
 				return true;
 			}
 
@@ -368,7 +368,7 @@ namespace SezzUI.GameEvents
 				while (_delayedUpdates.Any() && _delayedUpdates[^1].Item1 <= Environment.TickCount64)
 				{
 					uint actionId = _delayedUpdates[^1].Item2;
-					//LogDebug("OnFrameworkUpdate", $"TickCount64 {Environment.TickCount64} UpdateTickCount64 {_delayedUpdates[^1].Item1} ActionID {actionId}");
+					//Logger.Debug("OnFrameworkUpdate", $"TickCount64 {Environment.TickCount64} UpdateTickCount64 {_delayedUpdates[^1].Item1} ActionID {actionId}");
 					_delayedUpdates.RemoveAt(_delayedUpdates.Count - 1);
 					Update(actionId, ActionType.Spell);
 				}
@@ -387,7 +387,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
 			{
-				LogDebug("OnActionEffect", $"Action ID: {actionId}");
+				Logger.Debug("OnActionEffect", $"Action ID: {actionId}");
 			}
 #endif
 
@@ -426,7 +426,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownStarted)
 			{
-				LogDebug("CooldownStarted", $"ActionID {actionId} StartTime {data.StartTime} Duration {data.Duration / 1000}s Charges {data.CurrentCharges}/{data.MaxCharges} Elapsed {Environment.TickCount64 - data.StartTime}ms Remaining {data.Remaining}ms");
+				Logger.Debug("CooldownStarted", $"ActionID {actionId} StartTime {data.StartTime} Duration {data.Duration / 1000}s Charges {data.CurrentCharges}/{data.MaxCharges} Elapsed {Environment.TickCount64 - data.StartTime}ms Remaining {data.Remaining}ms");
 			}
 #endif
 			try
@@ -435,7 +435,7 @@ namespace SezzUI.GameEvents
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, "CooldownStarted", $"Failed invoking {nameof(CooldownStarted)}: {ex}");
+				Logger.Error(ex, "CooldownStarted", $"Failed invoking {nameof(CooldownStarted)}: {ex}");
 			}
 		}
 
@@ -444,7 +444,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownChanged)
 			{
-				LogDebug("CooldownChanged", $"ActionID {actionId} StartTime {data.StartTime} Duration {data.Duration / 1000}s Charges {data.CurrentCharges}/{data.MaxCharges} (Charges Changed: {chargesChanged}{(chargesChanged ? $" Previously: {previousCharges}" : "")}) Elapsed {Environment.TickCount64 - data.StartTime}ms Remaining {data.Remaining}ms");
+				Logger.Debug("CooldownChanged", $"ActionID {actionId} StartTime {data.StartTime} Duration {data.Duration / 1000}s Charges {data.CurrentCharges}/{data.MaxCharges} (Charges Changed: {chargesChanged}{(chargesChanged ? $" Previously: {previousCharges}" : "")}) Elapsed {Environment.TickCount64 - data.StartTime}ms Remaining {data.Remaining}ms");
 			}
 #endif
 			try
@@ -453,7 +453,7 @@ namespace SezzUI.GameEvents
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, "CooldownChanged", $"Failed invoking {nameof(CooldownChanged)}: {ex}");
+				Logger.Error(ex, "CooldownChanged", $"Failed invoking {nameof(CooldownChanged)}: {ex}");
 			}
 		}
 
@@ -462,7 +462,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownFinished)
 			{
-				LogDebug("CooldownFinished", $"ActionID {actionId} StartTime {data.StartTime} Duration {data.Duration / 1000}s Charges {data.CurrentCharges}/{data.MaxCharges} Elapsed {Environment.TickCount64 - data.StartTime}ms Remaining {data.Remaining}ms ElapsedFinished {elapsedFinish}ms");
+				Logger.Debug("CooldownFinished", $"ActionID {actionId} StartTime {data.StartTime} Duration {data.Duration / 1000}s Charges {data.CurrentCharges}/{data.MaxCharges} Elapsed {Environment.TickCount64 - data.StartTime}ms Remaining {data.Remaining}ms ElapsedFinished {elapsedFinish}ms");
 			}
 #endif
 			try
@@ -471,7 +471,7 @@ namespace SezzUI.GameEvents
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, "CooldownFinished", $"Failed invoking {nameof(CooldownFinished)}: {ex}");
+				Logger.Error(ex, "CooldownFinished", $"Failed invoking {nameof(CooldownFinished)}: {ex}");
 			}
 		}
 
@@ -491,13 +491,13 @@ namespace SezzUI.GameEvents
 #if DEBUG
 					if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
 					{
-						LogDebug($"Hooked: UseAction (ptr = {useActionPtr.ToInt64():X})");
+						Logger.Debug($"Hooked: UseAction (ptr = {useActionPtr.ToInt64():X})");
 					}
 #endif
 				}
 				else
 				{
-					LogError($"Signature not found: UseAction");
+					Logger.Error($"Signature not found: UseAction");
 				}
 				*/
 
@@ -507,13 +507,13 @@ namespace SezzUI.GameEvents
 #if DEBUG
 					if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
 					{
-						LogDebug($"Hooked: SendAction (ptr = {sendActionPtr.ToInt64():X})");
+						Logger.Debug($"Hooked: SendAction (ptr = {sendActionPtr.ToInt64():X})");
 					}
 #endif
 					return true;
 				}
 
-				LogError("Signature not found: SendAction");
+				Logger.Error("Signature not found: SendAction");
 
 				/*
 				if (Plugin.SigScanner.TryScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 81 FB FB 1C 00 00", out var useActionLocationPtr))
@@ -522,19 +522,19 @@ namespace SezzUI.GameEvents
 #if DEBUG
 					if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
 					{
-						LogDebug($"Hooked: UseActionLocation (ptr = {useActionLocationPtr.ToInt64():X})");
+						Logger.Debug($"Hooked: UseActionLocation (ptr = {useActionLocationPtr.ToInt64():X})");
 					}
 #endif
 				}
 				else
 				{
-					LogError($"Signature not found: SendAction");
+					Logger.Error($"Signature not found: SendAction");
 				}
 			*/
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, $"Failed to setup action hooks: {ex}");
+				Logger.Error(ex, $"Failed to setup action hooks: {ex}");
 			}
 
 			return false;
@@ -546,7 +546,7 @@ namespace SezzUI.GameEvents
 // #if DEBUG
 // 			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
 // 			{
-// 				LogDebug("UseActionLocationDetour", $"Result: {ret} Action ID: {actionId} Action Type: {actionType} Target: 0x{targetObjectId:X} ({Plugin.ObjectTable.SearchById((uint)targetObjectId)?.Name.TextValue ?? "??"})");
+// 				Logger.Debug("UseActionLocationDetour", $"Result: {ret} Action ID: {actionId} Action Type: {actionType} Target: 0x{targetObjectId:X} ({Plugin.ObjectTable.SearchById((uint)targetObjectId)?.Name.TextValue ?? "??"})");
 // 			}
 // #endif
 // 			return ret;
@@ -558,7 +558,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
 			{
-				LogDebug("SendActionDetour", $"Action ID: {actionId} Type: {actionType} Name: {((ActionType) actionType == ActionType.Spell ? SpellHelper.GetActionName(actionId) ?? "?" : "?")} Target: 0x{targetObjectId:X} ({Plugin.ObjectTable.SearchById((uint) targetObjectId)?.Name.TextValue ?? "??"})");
+				Logger.Debug("SendActionDetour", $"Action ID: {actionId} Type: {actionType} Name: {((ActionType) actionType == ActionType.Spell ? SpellHelper.GetActionName(actionId) ?? "?" : "?")} Target: 0x{targetObjectId:X} ({Plugin.ObjectTable.SearchById((uint) targetObjectId)?.Name.TextValue ?? "??"})");
 			}
 #endif
 
@@ -578,7 +578,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
 			{
-				LogDebug("UseActionDetour", $"Result: {ret} Action ID: {actionId} Action Type: {actionType}");
+				Logger.Debug("UseActionDetour", $"Result: {ret} Action ID: {actionId} Action Type: {actionType}");
 			}
 #endif
 
@@ -591,7 +591,7 @@ namespace SezzUI.GameEvents
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, "UseActionDetour", $"Error: {ex}");
+				Logger.Error(ex, "UseActionDetour", $"Error: {ex}");
 			}
 
 			return ret;
@@ -608,17 +608,17 @@ namespace SezzUI.GameEvents
 #if DEBUG
 					if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
 					{
-						LogDebug($"Hooked: ReceiveActionEffect (ptr = {receiveActionEffectPtr.ToInt64():X})");
+						Logger.Debug($"Hooked: ReceiveActionEffect (ptr = {receiveActionEffectPtr.ToInt64():X})");
 					}
 #endif
 					return true;
 				}
 
-				LogError("Signature not found: ReceiveActionEffect");
+				Logger.Error("Signature not found: ReceiveActionEffect");
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, $"Failed to setup hooks: {ex}");
+				Logger.Error(ex, $"Failed to setup hooks: {ex}");
 			}
 
 			return false;
@@ -639,7 +639,7 @@ namespace SezzUI.GameEvents
 #if DEBUG
 				if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
 				{
-					LogDebug("ReceiveActionEffectDetour", $"Action ID: {header.ActionId} Type: {header.Type} Name: {(((ActionType) header.Type) == ActionType.Spell ? SpellHelper.GetActionName(header.ActionId) ?? "?" : "?")} Source: 0x{sourceActorId:X} ({Plugin.ObjectTable.SearchById((uint) sourceActorId)?.Name.TextValue ?? "??"}) Target: 0x{header.TargetObjectId:X} ({Plugin.ObjectTable.SearchById((uint) header.TargetObjectId)?.Name.TextValue ?? "??"})");
+					Logger.Debug("ReceiveActionEffectDetour", $"Action ID: {header.ActionId} Type: {header.Type} Name: {((ActionType) header.Type == ActionType.Spell ? SpellHelper.GetActionName(header.ActionId) ?? "?" : "?")} Source: 0x{sourceActorId:X} ({Plugin.ObjectTable.SearchById((uint) sourceActorId)?.Name.TextValue ?? "??"}) Target: 0x{header.TargetObjectId:X} ({Plugin.ObjectTable.SearchById((uint) header.TargetObjectId)?.Name.TextValue ?? "??"})");
 				}
 #endif
 				if ((ActionType) header.Type == ActionType.Spell)
@@ -649,7 +649,7 @@ namespace SezzUI.GameEvents
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, "ReceiveActionEffectDetour", $"Error: {ex}");
+				Logger.Error(ex, "ReceiveActionEffectDetour", $"Error: {ex}");
 			}
 		}
 

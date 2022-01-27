@@ -91,7 +91,7 @@ namespace SezzUI.Modules.PluginMenu
 #if DEBUG
 						if (_debugConfig.LogGeneral)
 						{
-							LogDebug($"Menu item clicked: #{i}");
+							Logger.Debug($"Menu item clicked: #{i}");
 						}
 #endif
 						item.Toggle();
@@ -100,7 +100,7 @@ namespace SezzUI.Modules.PluginMenu
 #if DEBUG
 							if (_debugConfig.LogGeneral)
 							{
-								LogDebug($"Executing command: {item.Config.Command}");
+								Logger.Debug($"Executing command: {item.Config.Command}");
 							}
 #endif
 
@@ -153,7 +153,7 @@ namespace SezzUI.Modules.PluginMenu
 							if (now - _lastError > 5000)
 							{
 								_lastError = now;
-								LogError(ex, "Draw", $"Error: {ex}");
+								Logger.Error(ex, "Draw", $"Error: {ex}");
 							}
 						}
 					}
@@ -212,6 +212,7 @@ namespace SezzUI.Modules.PluginMenu
 
 			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
 			_items = new() {new(Config.Item1), new(Config.Item2), new(Config.Item3), new(Config.Item4), new(Config.Item5), new(Config.Item6), new(Config.Item7), new(Config.Item8), new(Config.Item9), new(Config.Item10)};
+
 			Toggle(Config.Enabled);
 		}
 
@@ -239,7 +240,7 @@ namespace SezzUI.Modules.PluginMenu
 #if DEBUG
 					if (_debugConfig.LogConfigurationManager)
 					{
-						LogDebug("OnConfigPropertyChanged", $"{args.PropertyName}: {Config.Enabled}");
+						Logger.Debug("OnConfigPropertyChanged", $"{args.PropertyName}: {Config.Enabled}");
 					}
 #endif
 					Toggle(Config.Enabled);
@@ -253,7 +254,7 @@ namespace SezzUI.Modules.PluginMenu
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
-				LogDebug("OnConfigReset", "Resetting...");
+				Logger.Debug("OnConfigReset", "Resetting...");
 			}
 #endif
 			Disable();
@@ -289,7 +290,7 @@ namespace SezzUI.Modules.PluginMenu
 			_debugConfig = sender.GetConfigObject<PluginMenuDebugConfig>();
 			if (_debugConfig.LogConfigurationManager)
 			{
-				LogDebug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
+				Logger.Debug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
 			}
 #endif
 			Toggle(Config.Enabled);

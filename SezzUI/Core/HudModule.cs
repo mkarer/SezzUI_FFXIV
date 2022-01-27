@@ -1,154 +1,110 @@
 ﻿using System;
-using System.Text;
-using Dalamud.Logging;
 using System.Numerics;
 using SezzUI.Config;
 using SezzUI.Enums;
 
 namespace SezzUI
 {
-    public abstract class HudModule : IDisposable
-    {
-        protected PluginConfigObject _config;
-        public PluginConfigObject GetConfig() { return _config; }
-        private readonly string _logPrefix;
-        private readonly string _logPrefixBase;
+	/// <summary>
+	///     Basic plugin module that can be enabled and disabled and provides logging.
+	/// </summary>
+	public abstract class HudModule : IPluginLogger, IDisposable
+	{
+		protected PluginConfigObject _config;
 
-        protected HudModule(PluginConfigObject config)
-        {
-            _config = config;
-            _logPrefixBase = new StringBuilder("HudModule:").Append(GetType().Name).ToString();
-            _logPrefix = new StringBuilder("[").Append(_logPrefixBase).Append("] ").ToString();
-        }
+		public PluginConfigObject GetConfig() => _config;
 
-        protected virtual bool Enabled => _isEnabled;
-        private bool _isEnabled = false;
+		#region Logger
 
-        protected virtual bool Enable()
-        {
-            if (!_isEnabled)
-            {
-                LogDebug("Enable");
-                _isEnabled = true;
-                return true;
-            }
-            else
-            {
-                LogDebug("Enable skipped");
-                return false;
-            }
-        }
+		string IPluginLogger.LogPrefixBase { get; set; } = null!;
 
-        protected virtual bool Disable()
-        {
-            if (_isEnabled)
-            {
-                LogDebug("Disable");
-                _isEnabled = false;
-                return true;
-            }
-            else
-            {
-                LogDebug("Disable skipped");
-                return false;
-            }
-        }
+		string IPluginLogger.LogPrefix { get; set; } = null!;
 
-        protected virtual bool Toggle(bool enable)
-        {
-            if (enable != _isEnabled)
-            {
-                return enable ? Enable() : Disable();
-            }
-            return false;
-        }
+		internal IPluginLogger Logger => this;
 
-        #region Logging
-        protected void LogDebug(string messageTemplate, params object[] values)
-        {
-#if DEBUG
-            PluginLog.Debug(new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
-#endif
-        }
+		#endregion
 
-        protected void LogDebug(string messagePrefix, string messageTemplate, params object[] values)
-        {
-#if DEBUG
-            PluginLog.Debug(new StringBuilder("[").Append(_logPrefixBase).Append("::").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
-#endif
-        }
+		protected HudModule(PluginConfigObject config)
+		{
+			_config = config;
+			Logger.Initialize($"HudModule::{GetType().Name}");
+		}
 
-        protected void LogDebug(Exception exception, string messageTemplate, params object[] values)
-        {
-#if DEBUG
-            PluginLog.Debug(exception, new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
-#endif
-        }
+		protected virtual bool Enabled => _isEnabled;
+		private bool _isEnabled;
 
-        protected void LogDebug(Exception exception, string messagePrefix, string messageTemplate, params object[] values)
-        {
-#if DEBUG
-            PluginLog.Debug(exception, new StringBuilder("[").Append(_logPrefixBase).Append("::").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
-#endif
-        }
+		protected virtual bool Enable()
+		{
+			if (!_isEnabled)
+			{
+				Logger.Debug("Enable");
+				_isEnabled = true;
+				return true;
+			}
 
-        protected void LogError(string messageTemplate, params object[] values)
-        {
-            PluginLog.Error(new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
-        }
+			Logger.Debug("Enable skipped");
+			return false;
+		}
 
-        protected void LogError(string messagePrefix, string messageTemplate, params object[] values)
-        {
-            PluginLog.Error(new StringBuilder("[").Append(_logPrefixBase).Append("::").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
-        }
+		protected virtual bool Disable()
+		{
+			if (_isEnabled)
+			{
+				Logger.Debug("Disable");
+				_isEnabled = false;
+				return true;
+			}
 
-        protected void LogError(Exception exception, string messageTemplate, params object[] values)
-        {
-            PluginLog.Error(exception, new StringBuilder(_logPrefix).Append(messageTemplate).ToString(), values);
-        }
+			Logger.Debug("Disable skipped");
+			return false;
+		}
 
-        protected void LogError(Exception exception, string messagePrefix, string messageTemplate, params object[] values)
-        {
-            PluginLog.Error(exception, new StringBuilder("[").Append(_logPrefixBase).Append("::").Append(messagePrefix).Append("] ").Append(messageTemplate).ToString(), values);
-        }
-        #endregion
+		protected virtual bool Toggle(bool enable)
+		{
+			if (enable != _isEnabled)
+			{
+				return enable ? Enable() : Disable();
+			}
 
-        public virtual void Draw(DrawState state, Vector2? origin)
-        {
-            // override
-        }
+			return false;
+		}
 
-        ~HudModule()
-        {
-            Dispose(false);
-        }
+		public virtual void Draw(DrawState state, Vector2? origin)
+		{
+			// override
+		}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		~HudModule()
+		{
+			Dispose(false);
+		}
 
-        protected void Dispose(bool disposing)
-        {
-            if (!disposing)
-            {
-                return;
-            }
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
-            LogDebug("Dispose");
+		protected void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
 
-            if (_isEnabled)
-            {
-                Disable();
-            }
+			Logger.Debug("Dispose");
 
-            InternalDispose();
-        }
+			if (_isEnabled)
+			{
+				Disable();
+			}
 
-        protected virtual void InternalDispose()
-        {
-            // override
-        }
-    }
+			InternalDispose();
+		}
+
+		protected virtual void InternalDispose()
+		{
+			// override
+		}
+	}
 }

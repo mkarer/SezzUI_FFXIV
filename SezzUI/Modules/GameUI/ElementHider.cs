@@ -114,7 +114,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 			if (_debugConfig.LogAddonsEventHandling)
 			{
-				LogDebug("OnAddonsVisibilityChanged", $"Visibility: {visible} InitialUpdate: {_initialUpdate}");
+				Logger.Debug("OnAddonsVisibilityChanged", $"Visibility: {visible} InitialUpdate: {_initialUpdate}");
 			}
 #endif
 
@@ -124,7 +124,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 				if (_debugConfig.LogAddonsEventHandling)
 				{
-					LogDebug("OnAddonsVisibilityChanged", "Resetting cached visibility states.");
+					Logger.Debug("OnAddonsVisibilityChanged", "Resetting cached visibility states.");
 				}
 #endif
 				foreach (KeyValuePair<Element, bool> expected in _expectedVisibility)
@@ -139,7 +139,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 				if (_debugConfig.LogAddonsEventHandling)
 				{
-					LogDebug("OnAddonsVisibilityChanged", "Hiding all addons, ignoring expected states.");
+					Logger.Debug("OnAddonsVisibilityChanged", "Hiding all addons, ignoring expected states.");
 				}
 #endif
 				UpdateAddons(_expectedVisibility, false);
@@ -150,7 +150,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 				if (_debugConfig.LogAddonsEventHandling)
 				{
-					LogDebug("OnAddonsVisibilityChanged", "Updating visibility based on expected states.");
+					Logger.Debug("OnAddonsVisibilityChanged", "Updating visibility based on expected states.");
 				}
 #endif
 				Dictionary<Element, bool>? update = null;
@@ -163,7 +163,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 						if (_debugConfig.LogAddonsEventHandling || _debugConfig.LogVisibilityStates || _debugConfig.LogVisibilityStatesVerbose)
 						{
-							LogDebug("OnAddonsVisibilityChanged", $"Addon needs update: {expected.Key} (Current: {_currentVisibility[expected.Key]} Expected: {expected.Value})");
+							Logger.Debug("OnAddonsVisibilityChanged", $"Addon needs update: {expected.Key} (Current: {_currentVisibility[expected.Key]} Expected: {expected.Value})");
 						}
 #endif
 						update[expected.Key] = expected.Value;
@@ -184,7 +184,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 			if (_debugConfig.LogAddonsEventHandling)
 			{
-				LogDebug("OnAddonsLoaded", $"Loaded: {loaded} Ready: {ready}");
+				Logger.Debug("OnAddonsLoaded", $"Loaded: {loaded} Ready: {ready}");
 			}
 #endif
 			if (loaded)
@@ -193,7 +193,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 				if (_debugConfig.LogAddonsEventHandling)
 				{
-					LogDebug("OnAddonsLoaded", "Forcing initial update...");
+					Logger.Debug("OnAddonsLoaded", "Forcing initial update...");
 				}
 #endif
 				_initialUpdate = true;
@@ -222,7 +222,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 						if (_debugConfig.LogVisibilityUpdates && (!_currentVisibility.ContainsKey(element) || _currentVisibility[element] != _expectedVisibility[element]))
 						{
-							LogDebug("Draw", $"Addon needs update: {element} (Current: {(_currentVisibility.ContainsKey(element) ? _currentVisibility[element] : "Unknown")} Expected: {_expectedVisibility[element]})");
+							Logger.Debug("Draw", $"Addon needs update: {element} (Current: {(_currentVisibility.ContainsKey(element) ? _currentVisibility[element] : "Unknown")} Expected: {_expectedVisibility[element]})");
 						}
 #endif
 						updateNeeded |= !_currentVisibility.ContainsKey(element) || _currentVisibility[element] != _expectedVisibility[element];
@@ -235,7 +235,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 				if (_debugConfig.LogVisibilityUpdates)
 				{
-					LogDebug("Draw", "Updating addons...");
+					Logger.Debug("Draw", "Updating addons...");
 				}
 #endif
 				UpdateAddons(_expectedVisibility);
@@ -267,7 +267,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 				if (_debugConfig.LogVisibilityUpdates && shouldShow != rootNode->IsVisible)
 				{
-					LogDebug("UpdateAddonVisibility", $"Addon: {element} ShouldShow: {shouldShow} IsVisible: {rootNode->IsVisible}");
+					Logger.Debug("UpdateAddonVisibility", $"Addon: {element} ShouldShow: {shouldShow} IsVisible: {rootNode->IsVisible}");
 				}
 #endif
 				rootNode->Flags ^= 0x10;
@@ -281,7 +281,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogVisibilityUpdates)
 					{
-						LogDebug("UpdateAddonVisibility", $"Addon: {element} DrawNodeList -> Update");
+						Logger.Debug("UpdateAddonVisibility", $"Addon: {element} DrawNodeList -> Update");
 					}
 #endif
 					addonUnitBase->UldManager.UpdateDrawNodeList();
@@ -291,7 +291,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogVisibilityUpdates)
 					{
-						LogDebug("UpdateAddonVisibility", $"Addon: {element} NodeListCount -> 0");
+						Logger.Debug("UpdateAddonVisibility", $"Addon: {element} NodeListCount -> 0");
 					}
 #endif
 					addonUnitBase->UldManager.NodeListCount = 0;
@@ -304,7 +304,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 			if (_debugConfig.LogVisibilityStatesVerbose)
 			{
-				LogDebug("UpdateAddons", $"Watched Addons: {elements.Count} ForcedVisibility: {forcedVisibility}");
+				Logger.Debug("UpdateAddons", $"Watched Addons: {elements.Count} ForcedVisibility: {forcedVisibility}");
 			}
 #endif
 
@@ -331,7 +331,7 @@ namespace SezzUI.Modules.GameUI
 			{
 				foreach ((Element k, bool v) in _expectedVisibility)
 				{
-					LogDebug("UpdateAddons", $"Addon: {k} ExpectedVisibility: {v} UpdatedVisibility {forcedVisibility ?? v}");
+					Logger.Debug("UpdateAddons", $"Addon: {k} ExpectedVisibility: {v} UpdatedVisibility {forcedVisibility ?? v}");
 				}
 			}
 #endif
@@ -427,7 +427,7 @@ namespace SezzUI.Modules.GameUI
 								break;
 
 							default:
-								LogError("UpdateAddons", $"Unsupported UI Element: {element}");
+								Logger.Error("UpdateAddons", $"Unsupported UI Element: {element}");
 								break;
 						}
 					}
@@ -479,7 +479,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogConfigurationManager)
 					{
-						LogDebug("OnConfigPropertyChanged", $"{args.PropertyName}: {Config.Enabled}");
+						Logger.Debug("OnConfigPropertyChanged", $"{args.PropertyName}: {Config.Enabled}");
 					}
 #endif
 					Toggle(Config.Enabled);
@@ -489,7 +489,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogConfigurationManager)
 					{
-						LogDebug("OnConfigPropertyChanged", $"{args.PropertyName}: {Config.HideActionBarLock}");
+						Logger.Debug("OnConfigPropertyChanged", $"{args.PropertyName}: {Config.HideActionBarLock}");
 					}
 #endif
 					if (Config.Enabled)
@@ -507,7 +507,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
-				LogDebug("OnConfigReset", "Resetting...");
+				Logger.Debug("OnConfigReset", "Resetting...");
 			}
 #endif
 			Disable();
@@ -523,7 +523,7 @@ namespace SezzUI.Modules.GameUI
 			_debugConfig = sender.GetConfigObject<ElementHiderDebugConfig>();
 			if (_debugConfig.LogConfigurationManager)
 			{
-				LogDebug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
+				Logger.Debug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
 			}
 #endif
 			Toggle(Config.Enabled);

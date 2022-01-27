@@ -1,12 +1,7 @@
 using System;
-using System.Linq;
-using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Network;
 using Machina.FFXIV.Headers;
-using SezzUI.Helpers;
-using Dalamud.Game.ClientState.Objects.Types;
-using Dalamud.Utility;
 
 namespace SezzUI.GameEvents
 {
@@ -14,7 +9,9 @@ namespace SezzUI.GameEvents
 	{
 #pragma warning disable 67
 		public event EventHandler? CombatLogEvent;
+
 		public delegate void ActionEffectDelegate(uint actorId, uint actionId);
+
 		public event ActionEffectDelegate? ActionEffect;
 #pragma warning restore 67
 
@@ -61,16 +58,13 @@ namespace SezzUI.GameEvents
 			}
 			catch (Exception ex)
 			{
-				LogError(ex, "OnNetworkMessage", $"Error: {ex}");
+				Logger.Error(ex, "OnNetworkMessage", $"Error: {ex}");
 			}
 		}
 
-		private static string FixedLength(string input, int length)
-		{
-			return input.Length > length ? input[..length] : input.PadRight(length, ' ');
-		}
+		private static string FixedLength(string input, int length) => input.Length > length ? input[..length] : input.PadRight(length, ' ');
 
-		private unsafe void ParseNetworkMessage(ushort opCode, IntPtr data, uint sourceActorId, uint targetActorId)
+		private void ParseNetworkMessage(ushort opCode, IntPtr data, uint sourceActorId, uint targetActorId)
 		{
 			// https://github.com/ravahn/machina/blob/master/Machina.FFXIV/Headers/Opcodes/Server_MessageType.cs
 			switch (opCode)
@@ -129,32 +123,32 @@ namespace SezzUI.GameEvents
 					break;
 				*/
 				case 0x033e:
-					{
-						// Similar to UNIT_SPELLCAST_SUCCEEDED?
-						// Not sure when the other opcodes are used (Server_ActionEffect*) 
-						Server_ActionEffect1 packet = Deserialize<Server_ActionEffect1>(data);
-						ActionEffect?.Invoke(targetActorId, packet.Header.actionId);
+				{
+					// Similar to UNIT_SPELLCAST_SUCCEEDED?
+					// Not sure when the other opcodes are used (Server_ActionEffect*) 
+					Server_ActionEffect1 packet = Deserialize<Server_ActionEffect1>(data);
+					ActionEffect?.Invoke(targetActorId, packet.Header.actionId);
 
-						// LogDebug("ParseNetworkMessage", "Type: Server_ActionEffect1 " +
-						// 								$"Action: {FixedLength(SpellHelper.GetActionName(packet.Header.actionId) ?? "Unknown", 20)} [{FixedLength(packet.Header.actionId.ToString(), 5)}] " +
-						// 								$"TargetID: 0x{((IntPtr) packet.TargetID).ToInt64():X} " +
-						// 								$"sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} " +
-						// 								$"unkn {packet.Header.unknown} displayType {packet.Header.effectDisplayType} SomeTargetID {packet.Header.SomeTargetID} 0x{packet.Header.SomeTargetID:X} vari {packet.Header.variation} unk20 {packet.Header.unknown20}");
-					}
+					// LogDebug("ParseNetworkMessage", "Type: Server_ActionEffect1 " +
+					// 								$"Action: {FixedLength(SpellHelper.GetActionName(packet.Header.actionId) ?? "Unknown", 20)} [{FixedLength(packet.Header.actionId.ToString(), 5)}] " +
+					// 								$"TargetID: 0x{((IntPtr) packet.TargetID).ToInt64():X} " +
+					// 								$"sourceActorId 0x{sourceActorId:X} targetActorId 0x{targetActorId:X} " +
+					// 								$"unkn {packet.Header.unknown} displayType {packet.Header.effectDisplayType} SomeTargetID {packet.Header.SomeTargetID} 0x{packet.Header.SomeTargetID:X} vari {packet.Header.variation} unk20 {packet.Header.unknown20}");
+				}
 					break;
 
 				case 0x01f4:
 					ActionEffect?.Invoke(targetActorId, Deserialize<Server_ActionEffect8>(data).Header.actionId);
 					break;
-				
+
 				case 0x01fa:
 					ActionEffect?.Invoke(targetActorId, Deserialize<Server_ActionEffect16>(data).Header.actionId);
 					break;
-				
+
 				case 0x0300:
 					ActionEffect?.Invoke(targetActorId, Deserialize<Server_ActionEffect24>(data).Header.actionId);
 					break;
-				
+
 				case 0x03cd:
 					ActionEffect?.Invoke(targetActorId, Deserialize<Server_ActionEffect32>(data).Header.actionId);
 					break;
@@ -265,7 +259,7 @@ namespace SezzUI.GameEvents
 				}
 
 					break;
-				
+
 				case 0x00f4:
 					//ParseCombatLogEvent(Deserialize<Server_UpdateHpMpTp>(data));
 					break;
@@ -281,14 +275,11 @@ namespace SezzUI.GameEvents
 				case 0x027a:
 					//ParseCombatLogEvent(Deserialize<Server_SystemLogMessage>(data));
 					break;
-				default:
-					//throw new NotImplementedException();
-					break;
 			}
 		}
 
 		private static T Deserialize<T>(IntPtr data) where T : struct => Marshal.PtrToStructure<T>(data);
-		
+
 		public static unsafe byte[] Serialize<T>(T value) where T : unmanaged
 		{
 			byte[] buffer = new byte[sizeof(T)];
@@ -300,7 +291,7 @@ namespace SezzUI.GameEvents
 
 			return buffer;
 		}
-		
+
 		[StructLayout(LayoutKind.Sequential, Pack = 1)]
 		public struct StatusEffectListEntry
 		{
@@ -310,7 +301,7 @@ namespace SezzUI.GameEvents
 			public float Duration;
 			public uint ActorID;
 		}
-		
+
 		[StructLayout(LayoutKind.Sequential, Pack = 1)]
 		public struct StatusEffectList
 		{
@@ -326,7 +317,9 @@ namespace SezzUI.GameEvents
 			public byte DamageShield;
 			public ushort Unknown1; // used to be TP
 			public byte Unknown2;
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 30 * 3 * 4)] public StatusEffectListEntry[] Effects;
+
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 30 * 3 * 4)]
+			public StatusEffectListEntry[] Effects;
 		}
 	}
 }
