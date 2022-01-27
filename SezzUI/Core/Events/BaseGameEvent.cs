@@ -2,19 +2,10 @@
 
 namespace SezzUI
 {
-	internal abstract class BaseGameEvent : IPluginLogger, IDisposable
+	internal abstract class BaseGameEvent : IDisposable
 	{
 		public virtual bool Enabled { get; protected set; }
-
-		#region Logger
-
-		string IPluginLogger.LogPrefixBase { get; set; } = null!;
-
-		string IPluginLogger.LogPrefix { get; set; } = null!;
-
-		internal IPluginLogger Logger => this;
-
-		#endregion
+		internal PluginLogger Logger;
 
 		public virtual bool Enable()
 		{
@@ -44,7 +35,7 @@ namespace SezzUI
 
 		protected BaseGameEvent()
 		{
-			Logger.Initialize($"Event:{GetType().Name}");
+			Logger = new($"Event:{GetType().Name}");
 			Initialize();
 		}
 

@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using Dalamud.Logging;
 using ImGuiNET;
 using ImGuiScene;
 using SezzUI.Helpers;
@@ -15,6 +14,7 @@ namespace SezzUI.Modules.PluginMenu
 		public PluginMenuItemConfig Config;
 		public Vector2 Size = new(60f, 30f);
 		public TextureWrap? Texture;
+		internal PluginLogger Logger;
 
 		public Vector4 Color => !_toggleState ? Config.Color.Vector : Config.ColorToggled.Vector;
 		private bool _toggleState;
@@ -48,7 +48,7 @@ namespace SezzUI.Modules.PluginMenu
 				}
 				catch (Exception ex)
 				{
-					PluginLog.Error(ex, $"[PluginMenuItem::Update] Error reading image ({image}): {ex}");
+					Logger.Error(ex, $"[PluginMenuItem::Update] Error reading image ({image}): {ex}");
 				}
 			}
 			else
@@ -90,7 +90,7 @@ namespace SezzUI.Modules.PluginMenu
 				}
 				catch (Exception ex)
 				{
-					PluginLog.Error(ex, $"[PluginMenuItem::GetPluginToggleState] Error: {ex}");
+					Logger.Error(ex, $"[PluginMenuItem::GetPluginToggleState] Error: {ex}");
 				}
 			}
 
@@ -99,6 +99,7 @@ namespace SezzUI.Modules.PluginMenu
 
 		public PluginMenuItem(PluginMenuItemConfig config)
 		{
+			Logger = new(GetType().Name);
 			Config = config;
 			Toggle(GetPluginToggleState(false));
 		}

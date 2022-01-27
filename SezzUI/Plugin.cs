@@ -28,7 +28,7 @@ using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI
 {
-	public class Plugin : IPluginLogger, IDalamudPlugin
+	public class Plugin : IDalamudPlugin
 	{
 		#region Dalamud Services
 
@@ -49,18 +49,8 @@ namespace SezzUI
 
 		#endregion
 
-		#region Logger
-
-		string IPluginLogger.LogPrefixBase { get; set; } = null!;
-
-		string IPluginLogger.LogPrefix { get; set; } = null!;
-
-		internal IPluginLogger Logger => this;
-
-		#endregion
-
+		public static PluginLogger Logger = new();
 		public static TextureWrap? BannerTexture;
-
 		public static string AssemblyLocation { get; private set; } = "";
 		public string Name => "SezzUI";
 		public static string Version { get; private set; } = "";
@@ -72,8 +62,6 @@ namespace SezzUI
 
 		public Plugin(BuddyList buddyList, ClientState clientState, CommandManager commandManager, Condition condition, DalamudPluginInterface pluginInterface, DataManager dataManager, Framework framework, GameGui gameGui, JobGauges jobGauges, ObjectTable objectTable, SigScanner sigScanner, TargetManager targetManager, ChatGui chatGui)
 		{
-			Logger.Initialize("Plugin");
-
 			BuddyList = buddyList;
 			ClientState = clientState;
 			CommandManager = commandManager;
@@ -167,7 +155,7 @@ namespace SezzUI
 			FontsManager.Instance.BuildFonts();
 		}
 
-		private void LoadBanner()
+		private static void LoadBanner()
 		{
 			string bannerImage = Path.Combine(Path.GetDirectoryName(AssemblyLocation) ?? "", "Media", "Images", "banner_short_x150.png");
 
@@ -273,7 +261,7 @@ namespace SezzUI
 
 		private DrawState _lastDrawState = DrawState.Unknown;
 
-		private unsafe bool IsAddonVisible(string name)
+		private static unsafe bool IsAddonVisible(string name)
 		{
 			try
 			{
@@ -288,7 +276,7 @@ namespace SezzUI
 			return false;
 		}
 
-		private DrawState GetDrawState()
+		private static DrawState GetDrawState()
 		{
 			// TODO: Flags for partial state (_NaviMap,  _ActionBar, others?)
 			// Dalamud conditions

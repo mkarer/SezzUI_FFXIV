@@ -8,26 +8,16 @@ namespace SezzUI
 	/// <summary>
 	///     Basic plugin module that can be enabled and disabled and provides logging.
 	/// </summary>
-	public abstract class HudModule : IPluginLogger, IDisposable
+	public abstract class HudModule : IDisposable
 	{
 		protected PluginConfigObject _config;
-
 		public PluginConfigObject GetConfig() => _config;
-
-		#region Logger
-
-		string IPluginLogger.LogPrefixBase { get; set; } = null!;
-
-		string IPluginLogger.LogPrefix { get; set; } = null!;
-
-		internal IPluginLogger Logger => this;
-
-		#endregion
+		internal PluginLogger Logger;
 
 		protected HudModule(PluginConfigObject config)
 		{
+			Logger = new($"HudModule:{GetType().Name}");
 			_config = config;
-			Logger.Initialize($"HudModule:{GetType().Name}");
 		}
 
 		protected virtual bool Enabled => _isEnabled;
