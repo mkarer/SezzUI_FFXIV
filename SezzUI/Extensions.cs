@@ -5,9 +5,9 @@ using System.Numerics;
 using System.Text;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.Text.SeStringHandling;
-using SezzUI.Enums;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using static System.Globalization.CultureInfo;
+using SezzUI.Enums;
 
 namespace SezzUI
 {
