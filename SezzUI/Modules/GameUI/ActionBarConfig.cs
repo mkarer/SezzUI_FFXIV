@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using SezzUI.Config;
 using SezzUI.Config.Attributes;
-using SezzUI.Modules.GameUI;
+using SezzUI.Enums;
 
 namespace SezzUI.Interface.GeneralElements
 {
@@ -11,34 +11,34 @@ namespace SezzUI.Interface.GeneralElements
 	public class ActionBarConfig : PluginConfigObject
 	{
 		[NestedConfig("ActionBar 1", 60, collapsingHeader = false)]
-		public SingleActionBarConfig Bar1 = new(Element.ActionBar1);
+		public SingleActionBarConfig Bar1 = new(Addon.ActionBar1);
 
 		[NestedConfig("ActionBar 2", 61, collapsingHeader = false)]
-		public SingleActionBarConfig Bar2 = new(Element.ActionBar2);
+		public SingleActionBarConfig Bar2 = new(Addon.ActionBar2);
 
 		[NestedConfig("ActionBar 3", 62, collapsingHeader = false)]
-		public SingleActionBarConfig Bar3 = new(Element.ActionBar3);
+		public SingleActionBarConfig Bar3 = new(Addon.ActionBar3);
 
 		[NestedConfig("ActionBar 4", 64, collapsingHeader = false)]
-		public SingleActionBarConfig Bar4 = new(Element.ActionBar4);
+		public SingleActionBarConfig Bar4 = new(Addon.ActionBar4);
 
 		[NestedConfig("ActionBar 5", 65, collapsingHeader = false)]
-		public SingleActionBarConfig Bar5 = new(Element.ActionBar5);
+		public SingleActionBarConfig Bar5 = new(Addon.ActionBar5);
 
 		[NestedConfig("ActionBar 6", 65, collapsingHeader = false)]
-		public SingleActionBarConfig Bar6 = new(Element.ActionBar6);
+		public SingleActionBarConfig Bar6 = new(Addon.ActionBar6);
 
 		[NestedConfig("ActionBar 7", 66, collapsingHeader = false)]
-		public SingleActionBarConfig Bar7 = new(Element.ActionBar7);
+		public SingleActionBarConfig Bar7 = new(Addon.ActionBar7);
 
 		[NestedConfig("ActionBar 8", 67, collapsingHeader = false)]
-		public SingleActionBarConfig Bar8 = new(Element.ActionBar8);
+		public SingleActionBarConfig Bar8 = new(Addon.ActionBar8);
 
 		[NestedConfig("ActionBar 9", 68, collapsingHeader = false)]
-		public SingleActionBarConfig Bar9 = new(Element.ActionBar9);
+		public SingleActionBarConfig Bar9 = new(Addon.ActionBar9);
 
 		[NestedConfig("ActionBar 10", 69, collapsingHeader = false)]
-		public SingleActionBarConfig Bar10 = new(Element.ActionBar10);
+		public SingleActionBarConfig Bar10 = new(Addon.ActionBar10);
 
 		[Checkbox("Enable Bar Paging", isMonitored = true)]
 		[Order(5)]
@@ -78,7 +78,7 @@ namespace SezzUI.Interface.GeneralElements
 	public class SingleActionBarConfig : PluginConfigObject
 	{
 		[JsonIgnore]
-		public Element Bar;
+		public Addon Bar;
 
 		[Checkbox("Invert Row Ordering" + "##MP", isMonitored = true)]
 		[Order(5)]
@@ -91,7 +91,7 @@ namespace SezzUI.Interface.GeneralElements
 			return this;
 		}
 
-		public SingleActionBarConfig(Element bar)
+		public SingleActionBarConfig(Addon bar)
 		{
 			Reset();
 			Bar = bar;

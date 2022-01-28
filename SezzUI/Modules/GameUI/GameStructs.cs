@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SezzUI.Modules.GameUI;
+using SezzUI.Enums;
 
 namespace SezzUI.GameStructs
 {

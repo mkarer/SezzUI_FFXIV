@@ -3,6 +3,7 @@ using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using SezzUI.Enums;
 using SezzUI.Modules.GameUI;
 
 namespace SezzUI.GameEvents
@@ -182,7 +183,7 @@ namespace SezzUI.GameEvents
 
 		private bool AreActionBarsLoaded()
 		{
-			AtkUnitBase* addon = (AtkUnitBase*) Plugin.GameGui.GetAddonByName(Addons.Names[Element.ActionBar1], 1);
+			AtkUnitBase* addon = (AtkUnitBase*) Plugin.GameGui.GetAddonByName(Addons.Names[Addon.ActionBar1], 1);
 			return addon != null && addon->UldManager.LoadedState == 3 && addon->RootNode->DrawFlags == 12;
 		}
 

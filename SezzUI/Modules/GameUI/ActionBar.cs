@@ -29,7 +29,7 @@ namespace SezzUI.Modules.GameUI
 		};
 
 		private static readonly byte _maxButtons = 12;
-		private readonly Dictionary<Element, Dictionary<uint, Vector2<float>>> _originalPositions = new();
+		private readonly Dictionary<Addon, Dictionary<uint, Vector2<float>>> _originalPositions = new();
 #if DEBUG
 		private readonly ActionBarDebugConfig _debugConfig;
 #endif
@@ -80,19 +80,19 @@ namespace SezzUI.Modules.GameUI
 		private void Update()
 		{
 			// TODO
-			UpdateActionBar(Element.ActionBar1, Config.Bar1);
-			UpdateActionBar(Element.ActionBar2, Config.Bar2);
-			UpdateActionBar(Element.ActionBar3, Config.Bar3);
-			UpdateActionBar(Element.ActionBar4, Config.Bar4);
-			UpdateActionBar(Element.ActionBar5, Config.Bar5);
-			UpdateActionBar(Element.ActionBar6, Config.Bar6);
-			UpdateActionBar(Element.ActionBar7, Config.Bar7);
-			UpdateActionBar(Element.ActionBar8, Config.Bar8);
-			UpdateActionBar(Element.ActionBar9, Config.Bar9);
-			UpdateActionBar(Element.ActionBar10, Config.Bar10);
+			UpdateActionBar(Addon.ActionBar1, Config.Bar1);
+			UpdateActionBar(Addon.ActionBar2, Config.Bar2);
+			UpdateActionBar(Addon.ActionBar3, Config.Bar3);
+			UpdateActionBar(Addon.ActionBar4, Config.Bar4);
+			UpdateActionBar(Addon.ActionBar5, Config.Bar5);
+			UpdateActionBar(Addon.ActionBar6, Config.Bar6);
+			UpdateActionBar(Addon.ActionBar7, Config.Bar7);
+			UpdateActionBar(Addon.ActionBar8, Config.Bar8);
+			UpdateActionBar(Addon.ActionBar9, Config.Bar9);
+			UpdateActionBar(Addon.ActionBar10, Config.Bar10);
 		}
 
-		private unsafe void UpdateActionBar(Element bar, SingleActionBarConfig config)
+		private unsafe void UpdateActionBar(Addon bar, SingleActionBarConfig config)
 		{
 			if (!config.Enabled)
 			{
@@ -164,7 +164,7 @@ namespace SezzUI.Modules.GameUI
 			}
 		}
 
-		private unsafe void InvertActionBarRows(Element bar, IntPtr addonPtr, ActionBarLayout layout)
+		private unsafe void InvertActionBarRows(Addon bar, IntPtr addonPtr, ActionBarLayout layout)
 		{
 #if DEBUG
 			if (_debugConfig.LogLayout)
@@ -215,7 +215,7 @@ namespace SezzUI.Modules.GameUI
 			}
 		}
 
-		private unsafe bool CacheActionBarPositions(Element bar, IntPtr addonPtr)
+		private unsafe bool CacheActionBarPositions(Addon bar, IntPtr addonPtr)
 		{
 			AtkUnitBase* addon = (AtkUnitBase*) addonPtr;
 
@@ -279,19 +279,19 @@ namespace SezzUI.Modules.GameUI
 		private void Reset()
 		{
 			// TODO
-			ResetActionBar(Element.ActionBar1, Config.Bar1);
-			ResetActionBar(Element.ActionBar2, Config.Bar2);
-			ResetActionBar(Element.ActionBar3, Config.Bar3);
-			ResetActionBar(Element.ActionBar4, Config.Bar4);
-			ResetActionBar(Element.ActionBar5, Config.Bar5);
-			ResetActionBar(Element.ActionBar6, Config.Bar6);
-			ResetActionBar(Element.ActionBar7, Config.Bar7);
-			ResetActionBar(Element.ActionBar8, Config.Bar8);
-			ResetActionBar(Element.ActionBar9, Config.Bar9);
-			ResetActionBar(Element.ActionBar10, Config.Bar10);
+			ResetActionBar(Addon.ActionBar1, Config.Bar1);
+			ResetActionBar(Addon.ActionBar2, Config.Bar2);
+			ResetActionBar(Addon.ActionBar3, Config.Bar3);
+			ResetActionBar(Addon.ActionBar4, Config.Bar4);
+			ResetActionBar(Addon.ActionBar5, Config.Bar5);
+			ResetActionBar(Addon.ActionBar6, Config.Bar6);
+			ResetActionBar(Addon.ActionBar7, Config.Bar7);
+			ResetActionBar(Addon.ActionBar8, Config.Bar8);
+			ResetActionBar(Addon.ActionBar9, Config.Bar9);
+			ResetActionBar(Addon.ActionBar10, Config.Bar10);
 		}
 
-		private unsafe void ResetActionBar(Element bar, SingleActionBarConfig config)
+		private unsafe void ResetActionBar(Addon bar, SingleActionBarConfig config)
 		{
 			if (!_originalPositions.ContainsKey(bar))
 			{
