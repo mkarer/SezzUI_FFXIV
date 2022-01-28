@@ -15,7 +15,7 @@ using DrawHelper = SezzUI.Helpers.DrawHelper;
 
 namespace SezzUI.Modules.PluginMenu
 {
-	public class PluginMenu : HudModule
+	public class PluginMenu : PluginModule
 	{
 		private PluginMenuConfig Config => (PluginMenuConfig) _config;
 #if DEBUG
@@ -33,12 +33,6 @@ namespace SezzUI.Modules.PluginMenu
 			{
 				return;
 			}
-
-			// IntPtr naviMap = Plugin.GameGui.GetAddonByName("_NaviMap", 1);
-			// if (naviMap == IntPtr.Zero || !((AtkUnitBase*) naviMap)->IsVisible)
-			// {
-			// 	return;
-			// }
 
 			List<PluginMenuItem> enabledItems = _items.Where(item => item.Config.Enabled).ToList();
 			if (enabledItems.Count() == 0)

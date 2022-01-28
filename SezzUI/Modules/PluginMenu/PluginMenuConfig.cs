@@ -55,7 +55,7 @@ namespace SezzUI.Interface.GeneralElements
 		{
 			Enabled = true;
 			Anchor = DrawAnchor.BottomRight;
-			Size = new(300, 80);
+			Size = new(300, 30);
 			Position = new(-9, -19);
 
 			Item1.Reset();
@@ -116,7 +116,7 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(5, collapseWith = nameof(Toggleable))]
 		public string PluginToggleName = "";
 
-		[InputText("Plugin Enabled Property", formattable = false, isMonitored = true)]
+		[InputText("Plugin Enabled Property", formattable = false, isMonitored = true, help = "Boolean property to check using reflection.")]
 		[Order(6, collapseWith = nameof(Toggleable))]
 		public string PluginToggleProperty = "";
 

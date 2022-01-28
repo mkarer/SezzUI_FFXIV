@@ -18,7 +18,7 @@ namespace SezzUI.Interface
 		private HUDOptionsConfig? _hudOptions;
 		private DraggableHudElement? _selectedElement = null;
 
-		private List<HudModule> _hudModules = null!;
+		private List<PluginModule> _hudModules = null!;
 		private List<DraggableHudElement> _hudElements = null!;
 		private List<IHudElementWithActor> _hudElementsUsingPlayer = null!;
 		private List<IHudElementWithActor> _hudElementsUsingTarget = null!;

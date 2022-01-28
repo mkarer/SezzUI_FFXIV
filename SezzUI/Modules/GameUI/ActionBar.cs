@@ -16,7 +16,7 @@ using SezzUI.NativeMethods.RawInput;
 
 namespace SezzUI.Modules.GameUI
 {
-	public class ActionBar : HudModule
+	public class ActionBar : PluginModule
 	{
 		private static readonly Dictionary<ActionBarLayout, Vector2<byte>> _dimensions = new()
 		{

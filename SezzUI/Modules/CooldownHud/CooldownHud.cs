@@ -16,7 +16,7 @@ using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Modules.CooldownHud
 {
-	public class CooldownHud : HudModule
+	public class CooldownHud : PluginModule
 	{
 		private const ushort INITIAL_PULSE_CHARGES = 100; // Unreachable amount of charges.
 		private const ushort NO_PULSE_AFTER_ELAPSED_FINISHED = 3000; // Don't show pulse if the cooldown finished ages ago...

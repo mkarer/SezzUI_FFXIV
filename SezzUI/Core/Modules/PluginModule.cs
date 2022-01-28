@@ -8,13 +8,13 @@ namespace SezzUI
 	/// <summary>
 	///     Basic plugin module that can be enabled and disabled and provides logging.
 	/// </summary>
-	public abstract class HudModule : IDisposable
+	public abstract class PluginModule : IDisposable
 	{
 		protected PluginConfigObject _config;
 		public PluginConfigObject GetConfig() => _config;
 		internal PluginLogger Logger;
 
-		protected HudModule(PluginConfigObject config)
+		protected PluginModule(PluginConfigObject config)
 		{
 			Logger = new($"HudModule:{GetType().Name}");
 			_config = config;
@@ -64,7 +64,7 @@ namespace SezzUI
 			// override
 		}
 
-		~HudModule()
+		~PluginModule()
 		{
 			Dispose(false);
 		}

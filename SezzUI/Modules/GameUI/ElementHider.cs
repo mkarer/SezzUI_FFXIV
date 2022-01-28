@@ -9,7 +9,7 @@ using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Modules.GameUI
 {
-	public class ElementHider : HudModule
+	public class ElementHider : PluginModule
 	{
 		private readonly List<InteractableArea> _areas = new();
 
