@@ -53,6 +53,7 @@ namespace SezzUI.Modules.GameUI
 				// Enabled module after logging in.
 				OnAddonsVisibilityChanged(true);
 			}
+
 			return true;
 		}
 
@@ -74,7 +75,8 @@ namespace SezzUI.Modules.GameUI
 
 		private void OnAddonsVisibilityChanged(bool visible)
 		{
-			if (!Plugin.ClientState.IsLoggedIn || !_initialUpdate)
+			// TODO: Remove _initialUpdate and update all addons everytime when this event is fired?
+			if (!Plugin.ClientState.IsLoggedIn)
 			{
 				return;
 			}
@@ -125,7 +127,7 @@ namespace SezzUI.Modules.GameUI
 
 				foreach (KeyValuePair<Addon, bool> expected in _expectedVisibility)
 				{
-					if (expected.Value != _currentVisibility[expected.Key])
+					if (expected.Value != _currentVisibility[expected.Key] || expected.Value != visible)
 					{
 						update ??= new();
 #if DEBUG
@@ -171,8 +173,9 @@ namespace SezzUI.Modules.GameUI
 
 		public override void Draw(DrawState drawState, Vector2? origin)
 		{
-			if (!Enabled || drawState != DrawState.Visible)
+			if (!Enabled || drawState != DrawState.Visible && drawState != DrawState.Partially)
 			{
+				_initialUpdate |= true; // Force update when DrawState changes back to Visible.
 				return;
 			}
 
@@ -219,58 +222,58 @@ namespace SezzUI.Modules.GameUI
 
 		#region Addons
 
-		private unsafe void UpdateAddonVisibility(Addon element, IntPtr addon, bool shouldShow, bool modifyNodeList = true, bool isRootNode = false)
+		private unsafe void UpdateAddonNodeList(Addon element, AtkUnitBase* addonUnitBase, bool emptyList)
+		{
+			Logger.Debug("UpdateAddonVisibility", $"Addon: {element} emptyList {emptyList}");
+			if (!emptyList && addonUnitBase->UldManager.NodeListCount == 0)
+			{
+#if DEBUG
+				if (_debugConfig.LogVisibilityUpdates)
+				{
+					Logger.Debug("UpdateAddonVisibility", $"Addon: {element} DrawNodeList -> Update");
+				}
+#endif
+				addonUnitBase->UldManager.UpdateDrawNodeList();
+			}
+			else if (emptyList && addonUnitBase->UldManager.NodeListCount != 0)
+			{
+#if DEBUG
+				if (_debugConfig.LogVisibilityUpdates)
+				{
+					Logger.Debug("UpdateAddonVisibility", $"Addon: {element} NodeListCount -> 0");
+				}
+#endif
+				addonUnitBase->UldManager.NodeListCount = 0;
+			}
+		}
+
+		private unsafe void UpdateAddonVisibility(Addon element, IntPtr addon, bool shouldShow, bool isRootNode = false)
 		{
 			_currentVisibility[element] = shouldShow; // Assume the update went as expected...
-			AtkResNode* rootNode = isRootNode ? (AtkResNode*) addon : ((AtkUnitBase*) addon)->RootNode;
-			modifyNodeList &= !isRootNode;
 
-			// This hides them from the HUD layout manager aswell and showing doesn't work on the Scenario Guide.
-			// Also it makes them fade out and in (although not really smooth).
-			//if (shouldShow)
-			//{
-			//    addon->Show(0, false);
-			//}
-			//else
-			//{
-			//    addon->Hide(false);
-			//}
-
-			// This seems fine but doesn't trigger MouseOut I guess.
-			if (shouldShow != rootNode->IsVisible)
+			byte visibilityFlag = (byte) (isRootNode ? 0x10 : 0x20);
+			bool isVisible = isRootNode ? ((AtkResNode*) addon)->IsVisible : ((AtkUnitBase*) addon)->IsVisible;
+			if (isVisible != shouldShow)
 			{
 #if DEBUG
-				if (_debugConfig.LogVisibilityUpdates && shouldShow != rootNode->IsVisible)
+				if (_debugConfig.LogVisibilityUpdates)
 				{
-					Logger.Debug("UpdateAddonVisibility", $"Addon: {element} ShouldShow: {shouldShow} IsVisible: {rootNode->IsVisible}");
+					Logger.Debug("UpdateAddonVisibility", $"Addon: {element} ShouldShow: {shouldShow} IsVisible: {isVisible}");
 				}
 #endif
-				rootNode->Flags ^= 0x10;
+				if (isRootNode)
+				{
+					((AtkResNode*) addon)->Flags ^= visibilityFlag;
+				}
+				else
+				{
+					((AtkUnitBase*) addon)->Flags ^= visibilityFlag;
+				}
 			}
 
-			if (modifyNodeList)
+			if (!isRootNode)
 			{
-				AtkUnitBase* addonUnitBase = (AtkUnitBase*) addon;
-				if (addonUnitBase->RootNode->IsVisible && addonUnitBase->UldManager.NodeListCount == 0)
-				{
-#if DEBUG
-					if (_debugConfig.LogVisibilityUpdates)
-					{
-						Logger.Debug("UpdateAddonVisibility", $"Addon: {element} DrawNodeList -> Update");
-					}
-#endif
-					addonUnitBase->UldManager.UpdateDrawNodeList();
-				}
-				else if (!addonUnitBase->RootNode->IsVisible && addonUnitBase->UldManager.NodeListCount != 0)
-				{
-#if DEBUG
-					if (_debugConfig.LogVisibilityUpdates)
-					{
-						Logger.Debug("UpdateAddonVisibility", $"Addon: {element} NodeListCount -> 0");
-					}
-#endif
-					addonUnitBase->UldManager.NodeListCount = 0;
-				}
+				UpdateAddonNodeList(element, (AtkUnitBase*) addon, !EventManager.Game.AreAddonsVisible);
 			}
 		}
 
@@ -357,7 +360,7 @@ namespace SezzUI.Modules.GameUI
 												if (objectInfo->ComponentType == ComponentType.CheckBox)
 												{
 													// This should be the lock!
-													UpdateAddonVisibility(element, (IntPtr) node, shouldShow, false, true);
+													UpdateAddonVisibility(element, (IntPtr) node, shouldShow, true);
 													break;
 												}
 											}
@@ -470,8 +473,10 @@ namespace SezzUI.Modules.GameUI
 					{
 						_expectedVisibility[element] = true;
 					}
+
 					UpdateAddons(_expectedVisibility);
 				}
+
 				return;
 			}
 
