@@ -1,81 +1,32 @@
-﻿using System;
-using System.Numerics;
+﻿using System.Collections.Generic;
 using SezzUI.Config;
-using SezzUI.Enums;
+using SezzUI.Interface;
 
-namespace SezzUI
+namespace SezzUI.Modules
 {
 	/// <summary>
-	///     Basic plugin module that can be enabled and disabled and provides logging.
+	///     Plugin module that also provides a configuration and might have draggable UI elements.
 	/// </summary>
-	public abstract class PluginModule : IDisposable
+	public abstract class PluginModule : BaseModule
 	{
 		protected PluginConfigObject _config;
 		public PluginConfigObject GetConfig() => _config;
-		internal PluginLogger Logger;
 
+		public readonly List<DraggableHudElement> DraggableElements;
+		
 		protected PluginModule(PluginConfigObject config)
 		{
-			Logger = new($"HudModule:{GetType().Name}");
+			Logger.SetPrefix($"PluginModule:{GetType().Name}");
+			DraggableElements = new();
 			_config = config;
-		}
-
-		protected virtual bool Enabled => _isEnabled;
-		private bool _isEnabled;
-
-		protected virtual bool Enable()
-		{
-			if (!_isEnabled)
-			{
-				Logger.Debug("Enable");
-				_isEnabled = true;
-				return true;
-			}
-
-			Logger.Debug("Enable skipped");
-			return false;
-		}
-
-		protected virtual bool Disable()
-		{
-			if (_isEnabled)
-			{
-				Logger.Debug("Disable");
-				_isEnabled = false;
-				return true;
-			}
-
-			Logger.Debug("Disable skipped");
-			return false;
-		}
-
-		protected virtual bool Toggle(bool enable)
-		{
-			if (enable != _isEnabled)
-			{
-				return enable ? Enable() : Disable();
-			}
-
-			return false;
-		}
-
-		public virtual void Draw(DrawState state, Vector2? origin)
-		{
-			// override
 		}
 
 		~PluginModule()
 		{
 			Dispose(false);
 		}
-
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		protected void Dispose(bool disposing)
+		
+		protected new void Dispose(bool disposing)
 		{
 			if (!disposing)
 			{
@@ -84,17 +35,15 @@ namespace SezzUI
 
 			Logger.Debug("Dispose");
 
-			if (_isEnabled)
+			if (Enabled)
 			{
 				Disable();
 			}
 
-			InternalDispose();
-		}
+			DraggableElements.ForEach(x => x.Dispose());
+			DraggableElements.Clear();
 
-		protected virtual void InternalDispose()
-		{
-			// override
+			InternalDispose();
 		}
 	}
 }

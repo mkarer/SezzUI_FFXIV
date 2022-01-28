@@ -1,14 +1,19 @@
-using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Interface;
-using SezzUI.Enums;
-using SezzUI.Config;
-using DelvUI.Helpers;
-using SezzUI.Interface.GeneralElements;
-using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Interface;
+using DelvUI.Helpers;
+using ImGuiNET;
+using SezzUI.Config;
+using SezzUI.Enums;
+using SezzUI.Interface.GeneralElements;
+using SezzUI.Modules;
+using SezzUI.Modules.CooldownHud;
+using SezzUI.Modules.GameUI;
+using SezzUI.Modules.JobHud;
+using SezzUI.Modules.PluginMenu;
 
 namespace SezzUI.Interface
 {
@@ -16,29 +21,30 @@ namespace SezzUI.Interface
 	{
 		private GridConfig? _gridConfig;
 		private HUDOptionsConfig? _hudOptions;
-		private DraggableHudElement? _selectedElement = null;
+		private DraggableHudElement? _selectedElement;
 
-		private List<PluginModule> _hudModules = null!;
-		private List<DraggableHudElement> _hudElements = null!;
+		private List<PluginModule> _modules = null!;
+		private List<DraggableHudElement> _draggableElements = null!;
+		
 		private List<IHudElementWithActor> _hudElementsUsingPlayer = null!;
 		private List<IHudElementWithActor> _hudElementsUsingTarget = null!;
 		private List<IHudElementWithActor> _hudElementsUsingTargetOfTarget = null!;
 		private List<IHudElementWithActor> _hudElementsUsingFocusTarget = null!;
 		private List<IHudElementWithPreview> _hudElementsWithPreview = null!;
 
-		private static Modules.JobHud.JobHud? _jobHud;
-		private static Modules.CooldownHud.CooldownHud? _cooldownHud;
-		private static Modules.GameUI.ElementHider? _elementHider;
-		private static Modules.GameUI.ActionBar? _actionBar;
-		private static Modules.PluginMenu.PluginMenu? _pluginMenu;
+		private static JobHud? _jobHud;
+		private static CooldownHud? _cooldownHud;
+		private static ElementHider? _elementHider;
+		private static ActionBar? _actionBar;
+		private static PluginMenu? _pluginMenu;
 
-		private readonly HudHelper _hudHelper = new HudHelper();
+		private readonly HudHelper _hudHelper = new();
 
 		#region Singleton
 
 		public static void Initialize()
 		{
-			Instance = new HudManager();
+			Instance = new();
 		}
 
 		public static HudManager Instance { get; private set; } = null!;
@@ -47,7 +53,7 @@ namespace SezzUI.Interface
 		{
 			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
 			ConfigurationManager.Instance.LockEvent += OnHUDLockChanged;
-			ConfigurationManager.Instance.ConfigClosedEvent += OnConfingWindowClosed;
+			ConfigurationManager.Instance.ConfigClosedEvent += OnConfigWindowClosed;
 
 			CreateHudElements();
 		}
@@ -74,10 +80,10 @@ namespace SezzUI.Interface
 
 			_jobHud?.Dispose();
 
-			_hudModules.ForEach(module => module.Dispose());
-			_hudModules.Clear();
+			_modules.ForEach(module => module.Dispose());
+			_modules.Clear();
 
-			_hudElements.Clear();
+			_draggableElements.Clear();
 			_hudElementsUsingPlayer.Clear();
 			_hudElementsUsingTarget.Clear();
 			_hudElementsUsingTargetOfTarget.Clear();
@@ -98,9 +104,9 @@ namespace SezzUI.Interface
 
 		private void OnHUDLockChanged(ConfigurationManager sender)
 		{
-			var draggingEnabled = !sender.LockHUD;
+			bool draggingEnabled = !sender.LockHUD;
 
-			foreach (var element in _hudElements)
+			foreach (DraggableHudElement element in _draggableElements)
 			{
 				element.DraggingEnabled = draggingEnabled;
 				element.Selected = false;
@@ -109,7 +115,7 @@ namespace SezzUI.Interface
 			_selectedElement = null;
 		}
 
-		private void OnConfingWindowClosed(ConfigurationManager sender)
+		private void OnConfigWindowClosed(ConfigurationManager sender)
 		{
 			if (_hudOptions == null || !_hudOptions.AutomaticPreviewDisabling)
 			{
@@ -124,7 +130,7 @@ namespace SezzUI.Interface
 
 		private void OnDraggableElementSelected(DraggableHudElement sender)
 		{
-			foreach (var element in _hudElements)
+			foreach (DraggableHudElement element in _draggableElements)
 			{
 				element.Selected = element == sender;
 			}
@@ -137,18 +143,31 @@ namespace SezzUI.Interface
 			_gridConfig = ConfigurationManager.Instance.GetConfigObject<GridConfig>();
 			_hudOptions = ConfigurationManager.Instance.GetConfigObject<HUDOptionsConfig>();
 
-			_hudModules = new();
-			_hudElements = new List<DraggableHudElement>();
-			_hudElementsUsingPlayer = new List<IHudElementWithActor>();
-			_hudElementsUsingTarget = new List<IHudElementWithActor>();
-			_hudElementsUsingTargetOfTarget = new List<IHudElementWithActor>();
-			_hudElementsUsingFocusTarget = new List<IHudElementWithActor>();
-			_hudElementsWithPreview = new List<IHudElementWithPreview>();
+			_modules = new();
+			_hudElementsUsingPlayer = new();
+			_hudElementsUsingTarget = new();
+			_hudElementsUsingTargetOfTarget = new();
+			_hudElementsUsingFocusTarget = new();
+			_hudElementsWithPreview = new();
 
 			CreateModules();
 			CreateMiscElements();
 
-			foreach (var element in _hudElements)
+			UpdateDraggableElements();
+		}
+
+		public void UpdateDraggableElements()
+		{
+			_draggableElements = new();
+
+			if (_jobHud != null) // TODO
+			{
+				_draggableElements.Add(_jobHud);
+			}
+
+			_modules.ForEach(module => { _draggableElements.AddRange(module.DraggableElements); });
+
+			foreach (DraggableHudElement element in _draggableElements)
 			{
 				element.SelectEvent += OnDraggableElementSelected;
 			}
@@ -162,7 +181,6 @@ namespace SezzUI.Interface
 				_jobHud = new(ConfigurationManager.Instance.GetConfigObject<JobHudConfig>(), "Job HUD");
 			}
 
-			_hudElements.Add(_jobHud);
 			_hudElementsUsingPlayer.Add(_jobHud);
 		}
 
@@ -171,37 +189,37 @@ namespace SezzUI.Interface
 			// Cooldown HUD
 			if (_cooldownHud == null)
 			{
-				_cooldownHud = Modules.CooldownHud.CooldownHud.Initialize();
+				_cooldownHud = CooldownHud.Initialize();
 			}
 
-			_hudModules.Add(_cooldownHud);
+			_modules.Add(_cooldownHud);
 
 			// Game UI Tweaks
 			if (_actionBar == null)
 			{
 				// Load this module before ActionBars are getting hidden.
-				Modules.GameUI.ActionBar.Initialize();
-				_actionBar = Modules.GameUI.ActionBar.Instance;
+				ActionBar.Initialize();
+				_actionBar = ActionBar.Instance;
 			}
 
-			_hudModules.Add(_actionBar);
+			_modules.Add(_actionBar);
 
 			if (_elementHider == null)
 			{
-				Modules.GameUI.ElementHider.Initialize();
-				_elementHider = Modules.GameUI.ElementHider.Instance;
+				ElementHider.Initialize();
+				_elementHider = ElementHider.Instance;
 			}
 
-			_hudModules.Add(_elementHider);
+			_modules.Add(_elementHider);
 
 			// Plugin Menu
 			if (_pluginMenu == null)
 			{
-				Modules.PluginMenu.PluginMenu.Initialize();
-				_pluginMenu = Modules.PluginMenu.PluginMenu.Instance;
+				PluginMenu.Initialize();
+				_pluginMenu = PluginMenu.Instance;
 			}
 
-			_hudModules.Add(_pluginMenu);
+			_modules.Add(_pluginMenu);
 		}
 
 		public void Draw(DrawState drawState)
@@ -216,7 +234,7 @@ namespace SezzUI.Interface
 			// don't draw hud when it's not supposed to be visible
 			if (drawState == DrawState.HiddenNotInGame || drawState == DrawState.HiddenDisabled)
 			{
-				_hudModules.ForEach(module => module.Draw(drawState, null));
+				_modules.ForEach(module => module.Draw(drawState, null));
 				return;
 			}
 
@@ -226,7 +244,7 @@ namespace SezzUI.Interface
 			ImGui.SetNextWindowPos(Vector2.Zero);
 			ImGui.SetNextWindowSize(ImGui.GetMainViewport().Size);
 
-			var begin = ImGui.Begin("SezzUI_HUD", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoSavedSettings);
+			bool begin = ImGui.Begin("SezzUI_HUD", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoSavedSettings);
 
 			if (!begin)
 			{
@@ -238,7 +256,7 @@ namespace SezzUI.Interface
 
 			AssignActors();
 
-			var origin = ImGui.GetMainViewport().Size / 2f;
+			Vector2 origin = ImGui.GetMainViewport().Size / 2f;
 			if (_hudOptions is {UseGlobalHudShift: true})
 			{
 				origin += _hudOptions.HudOffset;
@@ -247,7 +265,7 @@ namespace SezzUI.Interface
 			// don't draw grid during cutscenes or quest events
 			if (drawState == DrawState.HiddenCutscene || drawState == DrawState.Partially)
 			{
-				_hudModules.ForEach(module => module.Draw(drawState, origin));
+				_modules.ForEach(module => module.Draw(drawState, origin));
 				ImGui.End();
 				return;
 			}
@@ -259,12 +277,12 @@ namespace SezzUI.Interface
 			}
 
 			// draw modules
-			_hudModules.ForEach(module => module.Draw(drawState, origin));
+			_modules.ForEach(module => module.Draw(drawState, origin));
 
-			// draw elements
-			lock (_hudElements)
+			// draw draggable elements
+			lock (_draggableElements)
 			{
-				DraggablesHelper.DrawElements(origin, _hudHelper, _hudElements, _selectedElement);
+				DraggablesHelper.DrawElements(origin, _hudHelper, _draggableElements, _selectedElement);
 			}
 
 			// draw tooltip
@@ -276,43 +294,32 @@ namespace SezzUI.Interface
 		private void AssignActors()
 		{
 			// player
-			var player = Plugin.ClientState.LocalPlayer;
-			foreach (var element in _hudElementsUsingPlayer)
+			PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+			foreach (IHudElementWithActor element in _hudElementsUsingPlayer)
 			{
 				element.Actor = player;
 			}
 
 			// target
-			var target = Plugin.TargetManager.SoftTarget ?? Plugin.TargetManager.Target;
-			foreach (var element in _hudElementsUsingTarget)
+			GameObject? target = Plugin.TargetManager.SoftTarget ?? Plugin.TargetManager.Target;
+			foreach (IHudElementWithActor element in _hudElementsUsingTarget)
 			{
 				element.Actor = target;
 			}
 
 			// target of target
-			var targetOfTarget = Utils.FindTargetOfTarget(target, player, Plugin.ObjectTable);
-			foreach (var element in _hudElementsUsingTargetOfTarget)
+			GameObject? targetOfTarget = Utils.FindTargetOfTarget(target, player, Plugin.ObjectTable);
+			foreach (IHudElementWithActor element in _hudElementsUsingTargetOfTarget)
 			{
 				element.Actor = targetOfTarget;
 			}
 
 			// focus
-			var focusTarget = Plugin.TargetManager.FocusTarget;
-			foreach (var element in _hudElementsUsingFocusTarget)
+			GameObject? focusTarget = Plugin.TargetManager.FocusTarget;
+			foreach (IHudElementWithActor element in _hudElementsUsingFocusTarget)
 			{
 				element.Actor = focusTarget;
 			}
 		}
-	}
-
-	internal static class HUDConstants
-	{
-		internal static int BaseHUDOffsetY = (int) (ImGui.GetMainViewport().Size.Y * 0.3f);
-		internal static int UnitFramesOffsetX = 160;
-		internal static int PlayerCastbarY = BaseHUDOffsetY - 13;
-		internal static int JobHudsBaseY = PlayerCastbarY - 14;
-		internal static Vector2 DefaultBigUnitFrameSize = new Vector2(270, 50);
-		internal static Vector2 DefaultSmallUnitFrameSize = new Vector2(120, 20);
-		internal static Vector2 DefaultStatusEffectsListSize = new Vector2(292, 82);
 	}
 }

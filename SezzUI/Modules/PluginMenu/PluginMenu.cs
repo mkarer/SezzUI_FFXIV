@@ -186,7 +186,7 @@ namespace SezzUI.Modules.PluginMenu
 
 		#region Constructor
 
-		private PluginMenu(PluginConfigObject config) : base(config)
+		private PluginMenu(AnchorablePluginConfigObject config) : base(config)
 		{
 #if DEBUG
 			_debugConfig = ConfigurationManager.Instance.GetConfigObject<PluginMenuDebugConfig>();
@@ -206,7 +206,8 @@ namespace SezzUI.Modules.PluginMenu
 
 			ConfigurationManager.Instance.Reset += OnConfigReset;
 			_items = new() {new(Config.Item1), new(Config.Item2), new(Config.Item3), new(Config.Item4), new(Config.Item5), new(Config.Item6), new(Config.Item7), new(Config.Item8), new(Config.Item9), new(Config.Item10)};
-
+			
+			DraggableElements.Add(new(config, "Plugin Menu"));
 			Toggle(Config.Enabled);
 		}
 
