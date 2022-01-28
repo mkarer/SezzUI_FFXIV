@@ -18,7 +18,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			bar1.Add(new(bar1) {TextureActionId = 7521, CooldownActionId = 7521, CustomPowerCondition = IsManaficationNotOvercapping, RequiresCombat = true}); // Manafication
 			bar1.Add(new(bar1) {TextureActionId = 7520, CooldownActionId = 7520, StatusId = 1239, MaxStatusDuration = 20, StatusSourcePlayer = false}); // Embolden
 			hud.AddBar(bar1);
-			
+
 			// TODO: Arrows for Mana (<< White | Black >>)
 
 			// Dualcast

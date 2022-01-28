@@ -176,7 +176,7 @@ namespace SezzUI.Modules.JobHud
 
 		public override void DrawChildren(Vector2 origin)
 		{
-			if (!Config.Enabled || Actor == null || Actor is not PlayerCharacter player || SpellHelper.GetStatus(1534, Unit.Player, false) != null)
+			if (!Config.Enabled || Actor == null || Actor is not PlayerCharacter || SpellHelper.GetStatus(1534, Unit.Player, false) != null)
 			{
 				// 1534: Role-playing
 				// Condition.RolePlaying ?
