@@ -6,10 +6,15 @@ namespace SezzUI
 {
 	public class PluginLogger
 	{
-		private readonly string _logPrefixBase;
-		private readonly string _logPrefix;
+		private string _logPrefixBase = null!;
+		private string _logPrefix = null!;
 
 		public PluginLogger(string prefixBase = "")
+		{
+			SetPrefix(prefixBase);
+		}
+
+		public void SetPrefix(string prefixBase)
 		{
 			_logPrefixBase = prefixBase;
 			_logPrefix = prefixBase != "" ? $"[{prefixBase}] " : "";
