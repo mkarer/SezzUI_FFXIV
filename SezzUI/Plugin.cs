@@ -220,6 +220,10 @@ namespace SezzUI
 			}
 		}
 
+		public delegate void DrawStateChangedDelegate(DrawState drawState);
+
+		public static event DrawStateChangedDelegate? DrawStateChanged;
+		
 		private void Draw()
 		{
 			UiBuilder.OverrideGameCursor = false;
@@ -238,6 +242,7 @@ namespace SezzUI
 					if (DebugConfig.LogEvents && DebugConfig.LogEventPluginDrawStateChanged)
 					{
 						Logger.Debug("Draw", $"DrawStateChanged: {drawState}");
+						DrawStateChanged?.Invoke(drawState);
 					}
 #endif
 				}
@@ -259,7 +264,8 @@ namespace SezzUI
 
 		#region Draw State
 
-		private DrawState _lastDrawState = DrawState.Unknown;
+		private static DrawState _lastDrawState = DrawState.Unknown;
+		public static DrawState DrawState => _lastDrawState;
 
 		private static unsafe bool IsAddonVisible(string name)
 		{
