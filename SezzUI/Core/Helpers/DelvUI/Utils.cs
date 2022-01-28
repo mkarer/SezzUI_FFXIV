@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using Windows.Win32;
 using Colourful;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Objects.Enums;
@@ -17,9 +19,16 @@ using SezzUI.Interface.GeneralElements;
 
 namespace DelvUI.Helpers
 {
+	public sealed class NaturalStringComparer : IComparer<string>
+	{
+		public int Compare(string? x, string? y) => PInvoke.StrCmpLogical(x ?? "", y ?? "");
+	}
+
 	internal static class Utils
 	{
 		internal static PluginLogger Logger;
+
+		public static NaturalStringComparer NaturalStringComparer = new();
 
 		static Utils()
 		{

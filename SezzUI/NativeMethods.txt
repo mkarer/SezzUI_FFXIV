@@ -8,3 +8,4 @@ PostMessage
 GetCurrentThreadId
 GetWindowThreadProcessId
 RegisterWindowMessage
+StrCmpLogical
