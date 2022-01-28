@@ -224,7 +224,6 @@ namespace SezzUI.Modules.GameUI
 
 		private unsafe void UpdateAddonNodeList(Addon element, AtkUnitBase* addonUnitBase, bool emptyList)
 		{
-			Logger.Debug("UpdateAddonVisibility", $"Addon: {element} emptyList {emptyList}");
 			if (!emptyList && addonUnitBase->UldManager.NodeListCount == 0)
 			{
 #if DEBUG
