@@ -57,22 +57,12 @@ namespace SezzUI.Interface.GeneralElements
 			Anchor = DrawAnchor.BottomRight;
 			Size = new(300, 30);
 			Position = new(-9, -19);
-
-			Item1.Reset();
-			Item2.Reset();
-			Item3.Reset();
-			Item4.Reset();
-			Item5.Reset();
-			Item6.Reset();
-			Item7.Reset();
-			Item8.Reset();
-			Item9.Reset();
-			Item10.Reset();
+			Items.ForEach(item => item.Reset());
 
 			// SezzUI
 			Item1.Enabled = true;
 			Item1.Type = ItemType.SezzUI;
-			Item1.Command = "/sezz";
+			Item1.Command = "/sezzui";
 			Item1.Title = "Sezz|cFFFFFFFFUI";
 			Item1.Color.Vector = new(1, 182, 214, 255);
 			return this;
@@ -81,7 +71,6 @@ namespace SezzUI.Interface.GeneralElements
 		public new static PluginMenuConfig DefaultConfig() => new PluginMenuConfig().Reset();
 	}
 
-	[Exportable(false)]
 	public class PluginMenuItemConfig : PluginConfigObject
 	{
 		[Combo("Type", "SezzUI Configuration", "Chat Command", isMonitored = true)]
