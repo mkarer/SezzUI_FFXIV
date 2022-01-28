@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SezzUI.Config;
 using SezzUI.Enums;
+using SezzUI.GameEvents;
 using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Modules.GameUI
@@ -16,12 +18,12 @@ namespace SezzUI.Modules.GameUI
 		/// <summary>
 		///     Contains the current (assumed) visibility state of default game elements.
 		/// </summary>
-		private readonly Dictionary<Element, bool> _currentVisibility = new();
+		private readonly Dictionary<Addon, bool> _currentVisibility = new();
 
 		/// <summary>
 		///     Contains the expected visibility state of default game elements based on mouseover state or other events.
 		/// </summary>
-		private readonly Dictionary<Element, bool> _expectedVisibility = new();
+		private readonly Dictionary<Addon, bool> _expectedVisibility = new();
 
 		private bool _initialUpdate = true;
 		private ElementHiderConfig Config => (ElementHiderConfig) _config;
@@ -38,52 +40,19 @@ namespace SezzUI.Modules.GameUI
 
 			_initialUpdate = true;
 
-			// TEMPORARY CONFIGURATION
-			// TODO: Add to configuration UI with placeholders
-			using (InteractableArea area = new(new()))
-			{
-				area.Elements.AddRange(new List<Element> {Element.MainMenu, Element.ActionBar4});
-				area.Position = new(4, -4);
-				area.Anchor = DrawAnchor.BottomLeft;
-				area.Size = new(780, 50); // TODO: Automatic sizing ? Node.Width * Node.ScaleX, Node.Height * Node.ScaleY
-				_areas.Add(area);
-			}
-
-			using (InteractableArea area = new(new()))
-			{
-				area.Elements.AddRange(new List<Element> {Element.ActionBar5, Element.ActionBar10});
-				area.Position = new(0, -4);
-				area.Anchor = DrawAnchor.Bottom;
-				area.Size = new(500, 90);
-				_areas.Add(area);
-			}
-
-			using (InteractableArea area = new(new()))
-			{
-				area.Elements.AddRange(new List<Element> {Element.ActionBar7, Element.ActionBar8, Element.ActionBar9});
-				area.Position = new(-4, 710);
-				area.Anchor = DrawAnchor.Right;
-				area.Size = new(176, 670);
-				_areas.Add(area);
-			}
-
-			using (InteractableArea area = new(new()))
-			{
-				area.Elements.AddRange(new List<Element> {Element.ScenarioGuide});
-				area.Position = new(-4, 0);
-				area.Anchor = DrawAnchor.TopRight;
-				area.Size = new(340, 670);
-				area.Size = new(340, 100);
-				_areas.Add(area);
-			}
-
 			if (Config.HideActionBarLock)
 			{
-				_expectedVisibility[Element.ActionBarLock] = false;
+				_expectedVisibility[Addon.ActionBarLock] = false;
 			}
 
 			EventManager.Game.AddonsLoaded += OnAddonsLoaded;
 			EventManager.Game.AddonsVisibilityChanged += OnAddonsVisibilityChanged;
+
+			if (Game.Instance.IsInGame() && EventManager.Game.AreAddonsShown())
+			{
+				// Enabled module after logging in.
+				OnAddonsVisibilityChanged(true);
+			}
 			return true;
 		}
 
@@ -97,7 +66,6 @@ namespace SezzUI.Modules.GameUI
 			EventManager.Game.AddonsLoaded -= OnAddonsLoaded;
 			EventManager.Game.AddonsVisibilityChanged -= OnAddonsVisibilityChanged;
 			UpdateAddons(_expectedVisibility, EventManager.Game.AreAddonsShown());
-			_areas.Clear();
 			_expectedVisibility.Clear();
 			_currentVisibility.Clear();
 
@@ -127,7 +95,7 @@ namespace SezzUI.Modules.GameUI
 					Logger.Debug("OnAddonsVisibilityChanged", "Resetting cached visibility states.");
 				}
 #endif
-				foreach (KeyValuePair<Element, bool> expected in _expectedVisibility)
+				foreach (KeyValuePair<Addon, bool> expected in _expectedVisibility)
 				{
 					_currentVisibility[expected.Key] = !expected.Value;
 				}
@@ -153,9 +121,9 @@ namespace SezzUI.Modules.GameUI
 					Logger.Debug("OnAddonsVisibilityChanged", "Updating visibility based on expected states.");
 				}
 #endif
-				Dictionary<Element, bool>? update = null;
+				Dictionary<Addon, bool>? update = null;
 
-				foreach (KeyValuePair<Element, bool> expected in _expectedVisibility)
+				foreach (KeyValuePair<Addon, bool> expected in _expectedVisibility)
 				{
 					if (expected.Value != _currentVisibility[expected.Key])
 					{
@@ -212,13 +180,20 @@ namespace SezzUI.Modules.GameUI
 
 			foreach (InteractableArea area in _areas)
 			{
-				if (area.Enabled)
+				if (area.Config.Enabled)
 				{
-					area.Draw();
-					foreach (Element element in area.Elements)
+					area.DrawChildren((Vector2) origin!);
+					foreach (int addonId in area.Config.Elements)
 					{
+						if (!Enum.IsDefined(typeof(Addon), addonId))
+						{
+							continue;
+						}
+
+						Addon element = (Addon) addonId;
+
 						// TODO: Some addons (MainMenu) are shown while others are not, AreAddonsShown() needs to be changed.
-						_expectedVisibility[element] = area.IsHovered && EventManager.Game.AreAddonsShown(); // TOOD: AtkEvent: MouseOver, MouseOut
+						_expectedVisibility[element] = area.IsHovered && EventManager.Game.AreAddonsShown(); // TODO: AtkEvent: MouseOver, MouseOut
 #if DEBUG
 						if (_debugConfig.LogVisibilityUpdates && (!_currentVisibility.ContainsKey(element) || _currentVisibility[element] != _expectedVisibility[element]))
 						{
@@ -244,7 +219,7 @@ namespace SezzUI.Modules.GameUI
 
 		#region Addons
 
-		private unsafe void UpdateAddonVisibility(Element element, IntPtr addon, bool shouldShow, bool modifyNodeList = true, bool isRootNode = false)
+		private unsafe void UpdateAddonVisibility(Addon element, IntPtr addon, bool shouldShow, bool modifyNodeList = true, bool isRootNode = false)
 		{
 			_currentVisibility[element] = shouldShow; // Assume the update went as expected...
 			AtkResNode* rootNode = isRootNode ? (AtkResNode*) addon : ((AtkUnitBase*) addon)->RootNode;
@@ -299,7 +274,7 @@ namespace SezzUI.Modules.GameUI
 			}
 		}
 
-		private unsafe void UpdateAddons(Dictionary<Element, bool> elements, bool? forcedVisibility = null)
+		private unsafe void UpdateAddons(Dictionary<Addon, bool> elements, bool? forcedVisibility = null)
 		{
 #if DEBUG
 			if (_debugConfig.LogVisibilityStatesVerbose)
@@ -329,7 +304,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 			if (_debugConfig.LogVisibilityStatesVerbose)
 			{
-				foreach ((Element k, bool v) in _expectedVisibility)
+				foreach ((Addon k, bool v) in _expectedVisibility)
 				{
 					Logger.Debug("UpdateAddons", $"Addon: {k} ExpectedVisibility: {v} UpdatedVisibility {forcedVisibility ?? v}");
 				}
@@ -350,7 +325,7 @@ namespace SezzUI.Modules.GameUI
 					continue;
 				}
 
-				foreach ((Element element, bool expectedVisibility) in elements)
+				foreach ((Addon element, bool expectedVisibility) in elements)
 				{
 					bool shouldShow = forcedVisibility ?? expectedVisibility;
 
@@ -365,7 +340,7 @@ namespace SezzUI.Modules.GameUI
 					{
 						switch (element)
 						{
-							case Element.ActionBarLock:
+							case Addon.ActionBarLock:
 								// The lock is a CheckBox type child node of _ActionBar!
 								if (name == "_ActionBar")
 								{
@@ -392,7 +367,7 @@ namespace SezzUI.Modules.GameUI
 
 								break;
 
-							case Element.Job:
+							case Addon.Job:
 								if (name.StartsWith("JobHud"))
 								{
 									UpdateAddonVisibility(element, (IntPtr) addon, shouldShow);
@@ -400,7 +375,7 @@ namespace SezzUI.Modules.GameUI
 
 								break;
 
-							case Element.Chat:
+							case Addon.Chat:
 								if (name.StartsWith("ChatLog"))
 								{
 									UpdateAddonVisibility(element, (IntPtr) addon, shouldShow);
@@ -408,7 +383,7 @@ namespace SezzUI.Modules.GameUI
 
 								break;
 
-							case Element.TargetInfo:
+							case Addon.TargetInfo:
 								if (name.StartsWith("TargetInfo"))
 								{
 									UpdateAddonVisibility(element, (IntPtr) addon, shouldShow);
@@ -416,12 +391,10 @@ namespace SezzUI.Modules.GameUI
 
 								break;
 
-							case Element.CrossHotbar:
+							case Addon.CrossHotbar:
 								if (name.StartsWith("Action") && name.Contains("Cross"))
 								{
-									{
-										UpdateAddonVisibility(element, (IntPtr) addon, shouldShow);
-									}
+									UpdateAddonVisibility(element, (IntPtr) addon, shouldShow);
 								}
 
 								break;
@@ -444,7 +417,15 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 			_debugConfig = ConfigurationManager.Instance.GetConfigObject<ElementHiderDebugConfig>();
 #endif
-			config.ValueChangeEvent += OnConfigPropertyChanged;
+			foreach (InteractableAreaConfig areaConfig in Config.Areas)
+			{
+				_areas.Add(new(areaConfig));
+				areaConfig.ValueChangeEvent += OnConfigPropertyChanged;
+			}
+
+			DraggableElements.AddRange(_areas);
+
+			Config.ValueChangeEvent += OnConfigPropertyChanged;
 			ConfigurationManager.Instance.Reset += OnConfigReset;
 			Toggle(Config.Enabled);
 		}
@@ -458,8 +439,10 @@ namespace SezzUI.Modules.GameUI
 
 		protected override void InternalDispose()
 		{
-			_config.ValueChangeEvent -= OnConfigPropertyChanged;
+			Config.ValueChangeEvent -= OnConfigPropertyChanged;
+			Config.Areas.ForEach(x => x.ValueChangeEvent -= OnConfigPropertyChanged);
 			ConfigurationManager.Instance.Reset -= OnConfigReset;
+			_areas.Clear();
 		}
 
 		~ElementHider()
@@ -473,6 +456,25 @@ namespace SezzUI.Modules.GameUI
 
 		private void OnConfigPropertyChanged(object sender, OnChangeBaseArgs args)
 		{
+			if (sender is InteractableAreaConfig)
+			{
+				if (args.PropertyName == "Enabled" || args.PropertyName == "Elements")
+				{
+#if DEBUG
+					if (_debugConfig.LogConfigurationManager)
+					{
+						Logger.Debug("OnConfigPropertyChanged", $"{args.PropertyName}: Resetting expected visibility states...");
+					}
+#endif
+					foreach (Addon element in _expectedVisibility.Keys.Where(x => x != Addon.ActionBarLock)) // ActionBarLock is not shown on mouseover!
+					{
+						_expectedVisibility[element] = true;
+					}
+					UpdateAddons(_expectedVisibility);
+				}
+				return;
+			}
+
 			switch (args.PropertyName)
 			{
 				case "Enabled":
@@ -494,8 +496,8 @@ namespace SezzUI.Modules.GameUI
 #endif
 					if (Config.Enabled)
 					{
-						_expectedVisibility[Element.ActionBarLock] = !Config.HideActionBarLock;
-						UpdateAddons(new() {{Element.ActionBarLock, _expectedVisibility[Element.ActionBarLock]}});
+						_expectedVisibility[Addon.ActionBarLock] = !Config.HideActionBarLock;
+						UpdateAddons(new() {{Addon.ActionBarLock, _expectedVisibility[Addon.ActionBarLock]}});
 					}
 
 					break;

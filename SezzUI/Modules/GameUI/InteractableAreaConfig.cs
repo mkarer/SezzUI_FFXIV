@@ -12,7 +12,7 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(0)]
 		public string Description = "";
 		
-		[MultiSelectorAttribute("Elements")]
+		[MultiSelectorAttribute("Elements", isMonitored = true)]
 		[IntStringPair((int)Addon.ActionBar1, "Action Bar 1")]
 		[IntStringPair((int)Addon.ActionBar2, "Action Bar 2")]
 		[IntStringPair((int)Addon.ActionBar3, "Action Bar 3")]

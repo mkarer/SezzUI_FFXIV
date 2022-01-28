@@ -1,54 +1,25 @@
-﻿using System.Collections.Generic;
-using System.Numerics;
+﻿using System.Numerics;
 using ImGuiNET;
-using SezzUI.Enums;
 using SezzUI.Helpers;
 using SezzUI.Interface;
 using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Modules.GameUI
 {
-	public class InteractableArea : ParentAnchoredDraggableHudElement
+	public class InteractableArea : DraggableHudElement
 	{
-		public DrawAnchor Anchor = DrawAnchor.Center;
-		public bool DrawPlaceholder = false;
-		public List<Element> Elements = new();
-
-		public bool Enabled = true;
 		public bool IsHovered;
-		public Vector2 Position = Vector2.Zero;
-		public Vector2 Size = Vector2.Zero;
+
+		public InteractableAreaConfig Config => (InteractableAreaConfig) _config;
 
 		public InteractableArea(InteractableAreaConfig config) : base(config)
 		{
 		}
 
-		private InteractableAreaConfig Config => (InteractableAreaConfig) _config;
-
-		public void Draw()
+		public override void DrawChildren(Vector2 origin)
 		{
-			Vector2 pos = DrawHelper.GetAnchoredPosition(Size, Anchor);
-			IsHovered = ImGui.IsMouseHoveringRect(pos, pos + Size); // TODO: Check if window is active?
-
-			if (DrawPlaceholder)
-			{
-				ImDrawListPtr drawList = ImGui.GetWindowDrawList();
-
-				ImGui.SetNextWindowPos(pos);
-				ImGui.SetNextWindowSize(Size);
-
-				bool begin = ImGui.Begin(ID, ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoSavedSettings);
-
-				if (!begin)
-				{
-					ImGui.End();
-					return;
-				}
-
-				DrawHelper.DrawPlaceholder(IsHovered ? "YO" : "NAH", pos, Size, 1, drawList);
-
-				ImGui.End();
-			}
+			Vector2 anchoredPosition = DrawHelper.GetAnchoredPosition(Config.Size, Config.Anchor) + Config.Position;
+			IsHovered = ImGui.IsMouseHoveringRect(anchoredPosition, anchoredPosition + Config.Size);
 		}
 	}
 }
