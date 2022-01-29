@@ -46,7 +46,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 		private static float GetLifeOfTheDragonDuration()
 		{
 			DRGGauge gauge = Plugin.JobGauges.Get<DRGGauge>();
-			return gauge != null ? gauge.LOTDTimer / 1000f : 0;
+			return gauge.LOTDTimer / 1000f;
 		}
 	}
 }
