@@ -418,8 +418,9 @@ namespace SezzUI.Modules.JobHud
 					// Progress Bar
 					if (shouldShowStatusBar)
 					{
-						progressBarCurrent = duration == Constants.PERMANENT_STATUS_DURATION ? 1 : duration;
-						progressBarTotal = duration == Constants.PERMANENT_STATUS_DURATION ? 1 : durationMax;
+						bool isPermanent = duration == Constants.PERMANENT_STATUS_DURATION || durationMax == Constants.PERMANENT_STATUS_DURATION;
+						progressBarCurrent = isPermanent ? 1 : duration;
+						progressBarTotal = isPermanent ? 1 : durationMax;
 
 						// Duration Text
 						if (!shouldShowStatusAsCooldown && !Features.HasFlag(IconFeatures.NoStatusBarText) && duration != Constants.PERMANENT_STATUS_DURATION)
@@ -470,18 +471,38 @@ namespace SezzUI.Modules.JobHud
 			{
 				(float duration, float durationMax) = CustomDuration();
 
-				progressBarCurrent = duration == Constants.PERMANENT_STATUS_DURATION ? 1 : duration;
-				progressBarTotal = duration == Constants.PERMANENT_STATUS_DURATION ? 1 : durationMax;
-
-				// Duration Text
-				if (duration != Constants.PERMANENT_STATUS_DURATION)
+				bool shouldShowAsCooldown = !Features.HasFlag(IconFeatures.NoStatusCooldownDisplay) && CooldownActionId == null && ((StatusId == null && StatusIds == null) || (MaxStatusDuration == null && MaxStatusDurations == null));
+				if (shouldShowAsCooldown)
 				{
-					progressBarTextRemaining = duration > 3 ? (int) Math.Ceiling(duration) : duration;
+					// No action/status condition, only showing a custom duration. 
+					cooldownTextRemaining = duration;
+					cooldownSpiralRemaining = duration;
+					cooldownSpiralTotal = durationMax;
+
+					if (duration > 0)
+					{
+						newState = duration <= StatusWarningThreshold ? IconState.Soon : IconState.FadedOut;
+					}
+					else if (!failedInitialCondition)
+    				{
+    					newState = IconState.Ready;
+    				}
+				}
+				else
+				{
+					progressBarCurrent = duration == Constants.PERMANENT_STATUS_DURATION ? 1 : duration;
+					progressBarTotal = duration == Constants.PERMANENT_STATUS_DURATION ? 1 : durationMax;
+
+					// Duration Text
+					if (duration != Constants.PERMANENT_STATUS_DURATION)
+					{
+						progressBarTextRemaining = duration > 3 ? (int) Math.Ceiling(duration) : duration;
+					}
 				}
 			}
 
 			// No conditions...
-			if (!failedInitialCondition && CooldownActionId == null && StatusId == null && StatusIds == null)
+			if (!failedInitialCondition && CooldownActionId == null && StatusId == null && StatusIds == null && CustomDuration == null)
 			{
 				newState = IconState.Ready;
 			}
