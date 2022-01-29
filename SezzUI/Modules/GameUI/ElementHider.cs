@@ -196,6 +196,7 @@ namespace SezzUI.Modules.GameUI
 						Addon element = (Addon) addonId;
 
 						// TODO: Some addons (MainMenu) are shown while others are not, AreAddonsShown() needs to be changed.
+						// MainMenu might be linked to _NaviMap?
 						_expectedVisibility[element] = area.IsHovered && EventManager.Game.AreAddonsShown(); // TODO: AtkEvent: MouseOver, MouseOut
 #if DEBUG
 						if (_debugConfig.LogVisibilityUpdates && (!_currentVisibility.ContainsKey(element) || _currentVisibility[element] != _expectedVisibility[element]))
