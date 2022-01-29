@@ -11,7 +11,7 @@ using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Modules.GameUI
 {
-	public class ElementHider : PluginModule
+	public class ElementHider : DraggablePluginModule
 	{
 		private readonly List<InteractableArea> _areas = new();
 
@@ -277,8 +277,7 @@ namespace SezzUI.Modules.GameUI
 			{
 				// AtkUnitBase
 				byte visibilityFlag = *((byte*) addon + 0x1B6);
-				byte flagUserHide = 1 << 0; // 1 << 3 would be on if it is hidden by the game (Scenario Guide during duty for example)
-				byte expectedVisibilityFlag = (byte) (shouldShow ? visibilityFlag & ~flagUserHide : visibilityFlag | flagUserHide);
+				byte expectedVisibilityFlag = (byte) (shouldShow ? visibilityFlag & ~(byte) AddonVisibility.UserHidden : visibilityFlag | (byte) AddonVisibility.UserHidden);
 
 				if (visibilityFlag != expectedVisibilityFlag)
 				{
@@ -446,7 +445,7 @@ namespace SezzUI.Modules.GameUI
 
 		#region Singleton
 
-		private ElementHider(ElementHiderConfig config) : base(config)
+		private ElementHider(ElementHiderConfig config, string? displayName) : base(config, displayName)
 		{
 #if DEBUG
 			_debugConfig = ConfigurationManager.Instance.GetConfigObject<ElementHiderDebugConfig>();
@@ -466,7 +465,7 @@ namespace SezzUI.Modules.GameUI
 
 		public static void Initialize()
 		{
-			Instance = new(ConfigurationManager.Instance.GetConfigObject<ElementHiderConfig>());
+			Instance = new(ConfigurationManager.Instance.GetConfigObject<ElementHiderConfig>(), "Element Hider");
 		}
 
 		public static ElementHider Instance { get; private set; } = null!;

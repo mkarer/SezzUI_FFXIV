@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SezzUI.Enums
 {
@@ -49,6 +50,13 @@ namespace SezzUI.Enums
 		H3V4 = 3,
 		H2V6 = 4,
 		H1V12 = 5
+	}
+
+	[Flags]
+	public enum AddonVisibility : byte
+	{
+		UserHidden = 1 << 0, // Hidden in current HUD layout
+		GameHidden = 1 << 2 // Scenario Guide during duty for example
 	}
 
 	public static class Addons
