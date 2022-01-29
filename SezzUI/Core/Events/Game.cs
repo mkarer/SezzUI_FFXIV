@@ -119,11 +119,11 @@ namespace SezzUI.GameEvents
 			return false;
 		}
 
-        /// <summary>
-        ///     Player is in game and addons are loaded.
-        /// </summary>
-        /// <returns></returns>
-        public bool IsInGame() => Plugin.ClientState.IsLoggedIn && !Plugin.Condition[ConditionFlag.CreatingCharacter];
+		/// <summary>
+		///     Player is in game and addons are loaded.
+		/// </summary>
+		/// <returns></returns>
+		public bool IsInGame() => Plugin.ClientState.IsLoggedIn && !Plugin.Condition[ConditionFlag.CreatingCharacter];
 
 		private void SetAddonsLoaded(bool loaded, bool readyStateChanged = false)
 		{
@@ -257,7 +257,10 @@ namespace SezzUI.GameEvents
 			{
 				ret = _setHudLayoutHook!.Original(filePtr, hudLayout, unk0, unk1);
 #if DEBUG
-				Logger.Debug("SetHudLayoutDetour", $"Result: {ret} Layout: {hudLayout}");
+				if (EventManager.Config.LogEvents && EventManager.Config.LogEventGame && EventManager.Config.LogEventGameHudLayoutActivated)
+				{
+					Logger.Debug("SetHudLayoutDetour", $"Result: {ret} Layout: {hudLayout}");
+				}
 #endif
 			}
 			catch (Exception ex)
