@@ -1,308 +1,302 @@
-using SezzUI.Config;
-using SezzUI.Interface.GeneralElements;
-using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
+using FFXIVClientStructs.FFXIV.Component.GUI;
+using ImGuiNET;
+using SezzUI;
+using SezzUI.Config;
+using SezzUI.Interface.GeneralElements;
 
 namespace DelvUI.Helpers
 {
-    public class ClipRectsHelper
-    {
-        #region Singleton
-        private ClipRectsHelper()
-        {
-            ConfigurationManager.Instance.ResetEvent += OnConfigReset;
-            OnConfigReset(ConfigurationManager.Instance);
-        }
+	public class ClipRectsHelper
+	{
+		#region Singleton
 
-        public static void Initialize() { Instance = new ClipRectsHelper(); }
+		private ClipRectsHelper()
+		{
+			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
+			OnConfigReset(ConfigurationManager.Instance);
+		}
 
-        public static ClipRectsHelper Instance { get; private set; } = null!;
+		public static void Initialize()
+		{
+			Instance = new();
+		}
 
-        ~ClipRectsHelper()
-        {
-            Dispose(false);
-        }
+		public static ClipRectsHelper Instance { get; private set; } = null!;
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		~ClipRectsHelper()
+		{
+			Dispose(false);
+		}
 
-        protected void Dispose(bool disposing)
-        {
-            if (!disposing)
-            {
-                return;
-            }
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
-            ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
-            _config.ValueChangeEvent -= OnConfigPropertyChanged;
+		protected void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
 
-            Instance = null!;
-        }
-        #endregion
+			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
+			_config.ValueChangeEvent -= OnConfigPropertyChanged;
 
-        private HUDOptionsConfig _config = null!;
+			Instance = null!;
+		}
 
-        private void OnConfigReset(ConfigurationManager sender)
-        {
-            if (_config != null)
-            {
-                _config.ValueChangeEvent -= OnConfigPropertyChanged;
-            }
+		#endregion
 
-            _config = sender.GetConfigObject<HUDOptionsConfig>();
-            _config.ValueChangeEvent += OnConfigPropertyChanged;
-        }
+		private HUDOptionsConfig _config = null!;
 
-        private void OnConfigPropertyChanged(object sender, OnChangeBaseArgs args)
-        {
-            if (args.PropertyName == "EnableClipRects" && !_config.EnableClipRects)
-            {
-                _clipRects.Clear();
-            }
-        }
+		private void OnConfigReset(ConfigurationManager sender)
+		{
+			if (_config != null)
+			{
+				_config.ValueChangeEvent -= OnConfigPropertyChanged;
+			}
 
-        public bool Enabled => _config.EnableClipRects;
-        public bool ClippingEnabled => _config.EnableClipRects && !_config.HideInsteadOfClip;
+			_config = sender.GetConfigObject<HUDOptionsConfig>();
+			_config.ValueChangeEvent += OnConfigPropertyChanged;
+		}
 
-        // these are ordered by priority, if 2 game windows are on top of a ui element
-        // the one that comes first in this list is the one that will be clipped around
-        internal static string[] AddonNames = new string[]
-        {
-            "ContextMenu",
-            "ItemDetail", // tooltip
-            "ActionDetail", // tooltip
-            "AreaMap",
-            "JournalAccept",
-            "Talk",
-            "Teleport",
-            "ActionMenu",
-            "Character",
-            "CharacterInspect",
-            "CharacterTitle",
-            "Tryon",
-            "ArmouryBoard",
-            "RecommendList",
-            "GearSetList",
-            "MiragePrismMiragePlate",
-            "ItemSearch",
-            "RetainerList",
-            "Bank",
-            "RetainerSellList",
-            "RetainerSell",
-            "SelectString",
-            "Shop",
-            "ShopExchangeCurrency",
-            "ShopExchangeItem",
-            "CollectablesShop",
-            "MateriaAttach",
-            "Repair",
-            "Inventory",
-            "InventoryLarge",
-            "InventoryExpansion",
-            "InventoryEvent",
-            "InventoryBuddy",
-            "Buddy",
-            "BuddyEquipList",
-            "BuddyInspect",
-            "Currency",
-            "Macro",
-            "PcSearchDetail",
-            "Social",
-            "SocialDetailA",
-            "SocialDetailB",
-            "LookingForGroup",
-            "LookingForGroupSearch",
-            "LookingForGroupCondition",
-            "LookingForGroupDetail",
-            "ReadyCheck",
-            "Marker",
-            "FieldMarker",
-            "CountdownSettingDialog",
-            "CircleFinder",
-            "CircleList",
-            "CircleNameInputString",
-            "Emote",
-            "FreeCompany",
-            "FreeCompanyProfile",
-            "HousingMenu",
-            "HousingSubmenu",
-            "HousingSignBoard",
-            "CrossWorldLinkshell",
-            "ContactList",
-            "CircleBookInputString",
-            "CircleBookQuestion",
-            "CircleBookGroupSetting",
-            "MultipleHelpWindow",
-            "CircleFinderSetting",
-            "CircleBook",
-            "CircleBookWriteMessage",
-            "ColorantColoring",
-            "MonsterNote",
-            "RecipeNote",
-            "GatheringNote",
-            "ContentsNote",
-            "Orchestrion",
-            "MountNoteBook",
-            "MinionNoteBook",
-            "AetherCurrent",
-            "MountSpeed",
-            "FateProgress",
-            "SystemMenu",
-            "ConfigCharacter",
-            "ConfigSystem",
-            "ConfigKeybind",
-            "AOZNotebook",
-            "PvpProfile",
-            "GoldSaucerInfo",
-            "Achievement",
-            "RecommendList",
-            "JournalDetail",
-            "Journal",
-            "ContentsFinder",
-            "ContentsFinderSetting",
-            "ContentsFinderMenu",
-            "ContentsInfo",
-            "Dawn",
-            "BeginnersMansionProblem",
-            "BeginnersMansionProblemCompList",
-            "SupportDesk",
-            "HowToList",
-            "HudLayout",
-            "LinkShell",
-            "ChatConfig",
-            "ColorPicker",
-            "PlayGuide",
-            "SelectYesno"
-        };
+		private void OnConfigPropertyChanged(object sender, OnChangeBaseArgs args)
+		{
+			if (args.PropertyName == "EnableClipRects" && !_config.EnableClipRects)
+			{
+				_clipRects.Clear();
+			}
+		}
 
-        private List<ClipRect> _clipRects = new List<ClipRect>();
+		public bool Enabled => _config.EnableClipRects;
+		public bool ClippingEnabled => _config.EnableClipRects && !_config.HideInsteadOfClip;
 
-        public unsafe void Update()
-        {
-            if (!_config.EnableClipRects) { return; }
+		// these are ordered by priority, if 2 game windows are on top of a ui element
+		// the one that comes first in this list is the one that will be clipped around
+		internal static string[] AddonNames =
+		{
+			"ContextMenu",
+			"ItemDetail", // tooltip
+			"ActionDetail", // tooltip
+			"AreaMap",
+			"JournalAccept",
+			"Talk",
+			"Teleport",
+			"ActionMenu",
+			"Character",
+			"CharacterInspect",
+			"CharacterTitle",
+			"Tryon",
+			"ArmouryBoard",
+			"RecommendList",
+			"GearSetList",
+			"MiragePrismMiragePlate",
+			"ItemSearch",
+			"RetainerList",
+			"Bank",
+			"RetainerSellList",
+			"RetainerSell",
+			"SelectString",
+			"Shop",
+			"ShopExchangeCurrency",
+			"ShopExchangeItem",
+			"CollectablesShop",
+			"MateriaAttach",
+			"Repair",
+			"Inventory",
+			"InventoryLarge",
+			"InventoryExpansion",
+			"InventoryEvent",
+			"InventoryBuddy",
+			"Buddy",
+			"BuddyEquipList",
+			"BuddyInspect",
+			"Currency",
+			"Macro",
+			"PcSearchDetail",
+			"Social",
+			"SocialDetailA",
+			"SocialDetailB",
+			"LookingForGroup",
+			"LookingForGroupSearch",
+			"LookingForGroupCondition",
+			"LookingForGroupDetail",
+			"ReadyCheck",
+			"Marker",
+			"FieldMarker",
+			"CountdownSettingDialog",
+			"CircleFinder",
+			"CircleList",
+			"CircleNameInputString",
+			"Emote",
+			"FreeCompany",
+			"FreeCompanyProfile",
+			"HousingMenu",
+			"HousingSubmenu",
+			"HousingSignBoard",
+			"CrossWorldLinkshell",
+			"ContactList",
+			"CircleBookInputString",
+			"CircleBookQuestion",
+			"CircleBookGroupSetting",
+			"MultipleHelpWindow",
+			"CircleFinderSetting",
+			"CircleBook",
+			"CircleBookWriteMessage",
+			"ColorantColoring",
+			"MonsterNote",
+			"RecipeNote",
+			"GatheringNote",
+			"ContentsNote",
+			"Orchestrion",
+			"MountNoteBook",
+			"MinionNoteBook",
+			"AetherCurrent",
+			"MountSpeed",
+			"FateProgress",
+			"SystemMenu",
+			"ConfigCharacter",
+			"ConfigSystem",
+			"ConfigKeybind",
+			"AOZNotebook",
+			"PvpProfile",
+			"GoldSaucerInfo",
+			"Achievement",
+			"RecommendList",
+			"JournalDetail",
+			"Journal",
+			"ContentsFinder",
+			"ContentsFinderSetting",
+			"ContentsFinderMenu",
+			"ContentsInfo",
+			"Dawn",
+			"BeginnersMansionProblem",
+			"BeginnersMansionProblemCompList",
+			"SupportDesk",
+			"HowToList",
+			"HudLayout",
+			"LinkShell",
+			"ChatConfig",
+			"ColorPicker",
+			"PlayGuide",
+			"SelectYesno"
+		};
 
-            _clipRects.Clear();
+		private readonly List<ClipRect> _clipRects = new();
 
-            foreach (string addonName in AddonNames)
-            {
-                var addon = (AtkUnitBase*)SezzUI.Plugin.GameGui.GetAddonByName(addonName, 1);
-                if (addon == null || !addon->IsVisible || addon->WindowNode == null || addon->Scale == 0)
-                {
-                    continue;
-                }
+		public unsafe void Update()
+		{
+			if (!_config.EnableClipRects)
+			{
+				return;
+			}
 
-                var margin = 5 * addon->Scale;
-                var bottomMargin = 13 * addon->Scale;
+			_clipRects.Clear();
 
-                var clipRect = new ClipRect(
-                    new Vector2(addon->X + margin, addon->Y + margin),
-                    new Vector2(
-                        addon->X + addon->WindowNode->AtkResNode.Width * addon->Scale - margin,
-                        addon->Y + addon->WindowNode->AtkResNode.Height * addon->Scale - bottomMargin
-                    )
-                );
+			foreach (string addonName in AddonNames)
+			{
+				AtkUnitBase* addon = (AtkUnitBase*) Plugin.GameGui.GetAddonByName(addonName, 1);
+				if (addon == null || !addon->IsVisible || addon->WindowNode == null || addon->Scale == 0)
+				{
+					continue;
+				}
 
-                // just in case this causes weird issues / crashes (doubt it though...)
-                if (clipRect.Max.X < clipRect.Min.X || clipRect.Max.Y < clipRect.Min.Y)
-                {
-                    continue;
-                }
+				float margin = 5 * addon->Scale;
+				float bottomMargin = 13 * addon->Scale;
 
-                _clipRects.Add(clipRect);
-            }
-        }
+				ClipRect clipRect = new ClipRect(new(addon->X + margin, addon->Y + margin), new(addon->X + addon->WindowNode->AtkResNode.Width * addon->Scale - margin, addon->Y + addon->WindowNode->AtkResNode.Height * addon->Scale - bottomMargin));
 
-        public ClipRect? GetClipRectForArea(Vector2 pos, Vector2 size)
-        {
-            foreach (ClipRect clipRect in _clipRects)
-            {
-                var area = new ClipRect(pos, pos + size);
-                if (clipRect.IntersectsWith(area))
-                {
-                    return clipRect;
-                }
-            }
+				// just in case this causes weird issues / crashes (doubt it though...)
+				if (clipRect.Max.X < clipRect.Min.X || clipRect.Max.Y < clipRect.Min.Y)
+				{
+					continue;
+				}
 
-            return null;
-        }
+				_clipRects.Add(clipRect);
+			}
+		}
 
-        public static ClipRect[] GetInvertedClipRects(ClipRect clipRect)
-        {
-            var maxX = ImGui.GetMainViewport().Size.X;
-            var maxY = ImGui.GetMainViewport().Size.Y;
+		public ClipRect? GetClipRectForArea(Vector2 pos, Vector2 size)
+		{
+			foreach (ClipRect clipRect in _clipRects)
+			{
+				ClipRect area = new(pos, pos + size);
+				if (clipRect.IntersectsWith(area))
+				{
+					return clipRect;
+				}
+			}
 
-            var aboveMin = new Vector2(0, 0);
-            var aboveMax = new Vector2(maxX, clipRect.Min.Y);
-            var leftMin = new Vector2(0, clipRect.Min.Y);
-            var leftMax = new Vector2(clipRect.Min.X, maxY);
+			return null;
+		}
 
-            var rightMin = new Vector2(clipRect.Max.X, clipRect.Min.Y);
-            var rightMax = new Vector2(maxX, clipRect.Max.Y);
-            var belowMin = new Vector2(clipRect.Min.X, clipRect.Max.Y);
-            var belowMax = new Vector2(maxX, maxY);
+		public static ClipRect[] GetInvertedClipRects(ClipRect clipRect)
+		{
+			float maxX = ImGui.GetMainViewport().Size.X;
+			float maxY = ImGui.GetMainViewport().Size.Y;
 
-            ClipRect[] invertedClipRects = new ClipRect[4];
-            invertedClipRects[0] = new ClipRect(aboveMin, aboveMax);
-            invertedClipRects[1] = new ClipRect(leftMin, leftMax);
-            invertedClipRects[2] = new ClipRect(rightMin, rightMax);
-            invertedClipRects[3] = new ClipRect(belowMin, belowMax);
+			Vector2 aboveMin = new(0, 0);
+			Vector2 aboveMax = new(maxX, clipRect.Min.Y);
+			Vector2 leftMin = new(0, clipRect.Min.Y);
+			Vector2 leftMax = new(clipRect.Min.X, maxY);
 
-            return invertedClipRects;
-        }
+			Vector2 rightMin = new(clipRect.Max.X, clipRect.Min.Y);
+			Vector2 rightMax = new(maxX, clipRect.Max.Y);
+			Vector2 belowMin = new(clipRect.Min.X, clipRect.Max.Y);
+			Vector2 belowMax = new(maxX, maxY);
 
-        public bool IsPointClipped(Vector2 point)
-        {
-            foreach (ClipRect clipRect in _clipRects)
-            {
-                if (clipRect.Contains(point))
-                {
-                    return true;
-                }
-            }
+			ClipRect[] invertedClipRects = new ClipRect[4];
+			invertedClipRects[0] = new(aboveMin, aboveMax);
+			invertedClipRects[1] = new(leftMin, leftMax);
+			invertedClipRects[2] = new(rightMin, rightMax);
+			invertedClipRects[3] = new(belowMin, belowMax);
 
-            return false;
-        }
-    }
+			return invertedClipRects;
+		}
 
-    public struct ClipRect
-    {
-        public readonly Vector2 Min;
-        public readonly Vector2 Max;
+		public bool IsPointClipped(Vector2 point)
+		{
+			foreach (ClipRect clipRect in _clipRects)
+			{
+				if (clipRect.Contains(point))
+				{
+					return true;
+				}
+			}
 
-        private readonly Rectangle Rectangle;
+			return false;
+		}
+	}
 
-        public ClipRect(Vector2 min, Vector2 max)
-        {
-            var screenSize = ImGui.GetMainViewport().Size;
+	public struct ClipRect
+	{
+		public readonly Vector2 Min;
+		public readonly Vector2 Max;
 
-            Min = Clamp(min, Vector2.Zero, screenSize);
-            Max = Clamp(max, Vector2.Zero, screenSize);
+		private readonly Rectangle Rectangle;
 
-            var size = Max - Min;
+		public ClipRect(Vector2 min, Vector2 max)
+		{
+			Vector2 screenSize = ImGui.GetMainViewport().Size;
 
-            Rectangle = new Rectangle((int)Min.X, (int)Min.Y, (int)size.X, (int)size.Y);
-        }
+			Min = Clamp(min, Vector2.Zero, screenSize);
+			Max = Clamp(max, Vector2.Zero, screenSize);
 
-        public bool Contains(Vector2 point)
-        {
-            return Rectangle.Contains((int)point.X, (int)point.Y);
-        }
+			Vector2 size = Max - Min;
 
-        public bool IntersectsWith(ClipRect other)
-        {
-            return Rectangle.IntersectsWith(other.Rectangle);
-        }
+			Rectangle = new((int) Min.X, (int) Min.Y, (int) size.X, (int) size.Y);
+		}
 
-        private static Vector2 Clamp(Vector2 vector, Vector2 min, Vector2 max)
-        {
-            return new Vector2(Math.Max(min.X, Math.Min(max.X, vector.X)), Math.Max(min.Y, Math.Min(max.Y, vector.Y)));
-        }
-    }
+		public bool Contains(Vector2 point) => Rectangle.Contains((int) point.X, (int) point.Y);
+
+		public bool IntersectsWith(ClipRect other) => Rectangle.IntersectsWith(other.Rectangle);
+
+		private static Vector2 Clamp(Vector2 vector, Vector2 min, Vector2 max) => new(Math.Max(min.X, Math.Min(max.X, vector.X)), Math.Max(min.Y, Math.Min(max.Y, vector.Y)));
+	}
 }

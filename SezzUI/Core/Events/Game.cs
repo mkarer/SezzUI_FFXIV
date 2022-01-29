@@ -4,7 +4,6 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SezzUI.Enums;
-using SezzUI.Modules.GameUI;
 
 namespace SezzUI.GameEvents
 {

@@ -6,15 +6,15 @@ namespace SezzUI.Animator
 	{
 		public AnimatorTransformData? Data;
 
-		public uint Duration { get { return _duration; } }
-		public uint StartDelay { get { return _delayStart; } }
-		public uint EndDelay { get { return _delayEnd; } }
-		public bool IsPlaying { get { return _isPlaying; } }
+		public uint Duration => _duration;
+		public uint StartDelay => _delayStart;
+		public uint EndDelay => _delayEnd;
+		public bool IsPlaying => _isPlaying;
 
 		internal uint _duration = 0;
 		internal uint _delayStart = 0;
 		internal uint _delayEnd = 0;
-		internal bool _isPlaying = false;
+		internal bool _isPlaying;
 		internal int? _ticksStart;
 
 		public virtual void Update()
@@ -48,6 +48,5 @@ namespace SezzUI.Animator
 				_isPlaying = false;
 			}
 		}
-
 	}
 }

@@ -2,11 +2,11 @@
 {
 	public enum Unit
 	{
-        Player,
-        Target,
-        TargetOrPlayer,
-        TargetOfTarget,
-        FocusTarget,
-        Any
+		Player,
+		Target,
+		TargetOrPlayer,
+		TargetOfTarget,
+		FocusTarget,
+		Any
 	}
 }

@@ -16,19 +16,18 @@ namespace SezzUI.Modules
 			Logger = new($"BaseModule:{GetType().Name}");
 		}
 
-		protected bool Enabled => _isEnabled;
-		private bool _isEnabled;
+		protected bool Enabled { get; private set; }
 
 		/// <summary>
-		/// Enabled the module.
+		///     Enabled the module.
 		/// </summary>
 		/// <returns>TRUE if it wasn't already enabled.</returns>
 		protected virtual bool Enable()
 		{
-			if (!_isEnabled)
+			if (!Enabled)
 			{
 				Logger.Debug("Enable");
-				_isEnabled = true;
+				Enabled = true;
 				return true;
 			}
 
@@ -37,15 +36,15 @@ namespace SezzUI.Modules
 		}
 
 		/// <summary>
-		/// Disables the module.
+		///     Disables the module.
 		/// </summary>
 		/// <returns>TRUE if it wasn't already disabled.</returns>
 		protected virtual bool Disable()
 		{
-			if (_isEnabled)
+			if (Enabled)
 			{
 				Logger.Debug("Disable");
-				_isEnabled = false;
+				Enabled = false;
 				return true;
 			}
 
@@ -54,13 +53,13 @@ namespace SezzUI.Modules
 		}
 
 		/// <summary>
-		/// Toggles EnabledState.
+		///     Toggles EnabledState.
 		/// </summary>
 		/// <param name="enable">EnabledState</param>
 		/// <returns>TRUE if state changed.</returns>
 		protected virtual bool Toggle(bool enable)
 		{
-			if (enable != _isEnabled)
+			if (enable != Enabled)
 			{
 				return enable ? Enable() : Disable();
 			}
@@ -93,7 +92,7 @@ namespace SezzUI.Modules
 
 			Logger.Debug("Dispose");
 
-			if (_isEnabled)
+			if (Enabled)
 			{
 				Disable();
 			}

@@ -277,7 +277,7 @@ namespace SezzUI.GameEvents
 		private bool TryUpdateIfWatched(uint actionId, ActionType actionType, [UsedImplicitly] bool isAdjusted = false, bool isGroupItem = false, bool isModifyingAction = false)
 		{
 			bool success = false;
-			
+
 			if (_watchedActions.ContainsKey(actionId))
 			{
 				// Action should be on cooldown now!

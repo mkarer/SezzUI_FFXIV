@@ -223,7 +223,7 @@ namespace SezzUI
 		public delegate void DrawStateChangedDelegate(DrawState drawState);
 
 		public static event DrawStateChangedDelegate? DrawStateChanged;
-		
+
 		private void Draw()
 		{
 			UiBuilder.OverrideGameCursor = false;
@@ -235,9 +235,9 @@ namespace SezzUI
 				bool fontPushed = FontsManager.Instance.PushDefaultFont();
 
 				DrawState drawState = GetDrawState();
-				if (_lastDrawState != drawState)
+				if (DrawState != drawState)
 				{
-					_lastDrawState = drawState;
+					DrawState = drawState;
 #if DEBUG
 					if (DebugConfig.LogEvents && DebugConfig.LogEventPluginDrawStateChanged)
 					{
@@ -264,8 +264,7 @@ namespace SezzUI
 
 		#region Draw State
 
-		private static DrawState _lastDrawState = DrawState.Unknown;
-		public static DrawState DrawState => _lastDrawState;
+		public static DrawState DrawState { get; private set; } = DrawState.Unknown;
 
 		private static unsafe bool IsAddonVisible(string name)
 		{

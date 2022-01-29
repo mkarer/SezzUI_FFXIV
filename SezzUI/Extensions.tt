@@ -12,7 +12,7 @@ using static System.Globalization.CultureInfo;
 using SezzUI.Enums;
 
 <#
-    foreach (string @namespace in new [] { "SezzUI", "DelvUI" }) 
+    foreach (string @namespace in new[] {"SezzUI", "DelvUI"})
     {
 #>
 namespace <#= @namespace #>

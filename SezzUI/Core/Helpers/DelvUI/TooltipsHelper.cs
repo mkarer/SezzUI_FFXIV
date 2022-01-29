@@ -1,8 +1,8 @@
-﻿using SezzUI.Config;
-using SezzUI.Config.Attributes;
-using ImGuiNET;
-using System;
+﻿using System;
 using System.Numerics;
+using ImGuiNET;
+using SezzUI.Config;
+using SezzUI.Config.Attributes;
 
 namespace DelvUI.Helpers
 {
@@ -16,7 +16,7 @@ namespace DelvUI.Helpers
 
 		public static void Initialize()
 		{
-			Instance = new TooltipsHelper();
+			Instance = new();
 		}
 
 		public static TooltipsHelper Instance { get; private set; } = null!;
@@ -44,21 +44,21 @@ namespace DelvUI.Helpers
 
 		#endregion
 
-		private static float MaxWidth = 300;
-		private static float Margin = 5;
+		private static readonly float MaxWidth = 300;
+		private static readonly float Margin = 5;
 
 		private TooltipsConfig _config => ConfigurationManager.Instance.GetConfigObject<TooltipsConfig>();
 
-		private string? _currentTooltipText = null;
+		private string? _currentTooltipText;
 		private Vector2 _textSize;
-		private string? _currentTooltipTitle = null;
+		private string? _currentTooltipTitle;
 		private Vector2 _titleSize;
-		private string? _previousRawText = null;
+		private string? _previousRawText;
 
 		private Vector2 _position;
 		private Vector2 _size;
 
-		private bool _dataIsValid = false;
+		private bool _dataIsValid;
 
 		public void ShowTooltipOnCursor(string text, string? title = null, uint id = 0, string name = "")
 		{
@@ -114,7 +114,7 @@ namespace DelvUI.Helpers
 				ImGui.PopFont();
 			}
 
-			_size = new Vector2(Math.Max(_titleSize.X, _textSize.X) + Margin * 2, _titleSize.Y + _textSize.Y + Margin * 2);
+			_size = new(Math.Max(_titleSize.X, _textSize.X) + Margin * 2, _titleSize.Y + _textSize.Y + Margin * 2);
 
 			// position tooltip using the given coordinates as bottom center
 			position.X = position.X - _size.X / 2f;
@@ -143,15 +143,15 @@ namespace DelvUI.Helpers
 
 			// imgui clips the left and right borders inside windows for some reason
 			// we make the window bigger so the actual drawable size is the expected one
-			var windowMargin = new Vector2(4, 0);
-			var windowPos = _position - windowMargin;
+			Vector2 windowMargin = new Vector2(4, 0);
+			Vector2 windowPos = _position - windowMargin;
 
 			ImGui.SetNextWindowPos(windowPos, ImGuiCond.Always);
 			ImGui.SetNextWindowSize(_size + windowMargin * 2);
 
 			ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
 			ImGui.Begin("SezzUI_Tooltip", windowFlags);
-			var drawList = ImGui.GetWindowDrawList();
+			ImDrawListPtr drawList = ImGui.GetWindowDrawList();
 
 			drawList.AddRectFilled(_position, _position + _size, _config.BackgroundColor.Base);
 
@@ -165,7 +165,7 @@ namespace DelvUI.Helpers
 				// title
 				bool fontPushed = FontsManager.Instance.PushFont(_config.TitleFontID);
 
-				var cursorPos = new Vector2(windowMargin.X + _size.X / 2f - _titleSize.X / 2f, Margin);
+				Vector2 cursorPos = new Vector2(windowMargin.X + _size.X / 2f - _titleSize.X / 2f, Margin);
 				ImGui.SetCursorPos(cursorPos);
 				ImGui.PushTextWrapPos(cursorPos.X + _titleSize.X);
 				ImGui.TextColored(_config.TitleColor.Vector, _currentTooltipTitle);
@@ -179,7 +179,7 @@ namespace DelvUI.Helpers
 				// text
 				fontPushed = FontsManager.Instance.PushFont(_config.TextFontID);
 
-				cursorPos = new Vector2(windowMargin.X + _size.X / 2f - _textSize.X / 2f, Margin + _titleSize.Y);
+				cursorPos = new(windowMargin.X + _size.X / 2f - _textSize.X / 2f, Margin + _titleSize.Y);
 				ImGui.SetCursorPos(cursorPos);
 				ImGui.PushTextWrapPos(cursorPos.X + _textSize.X);
 				ImGui.TextColored(_config.TextColor.Vector, _currentTooltipText);
@@ -195,8 +195,8 @@ namespace DelvUI.Helpers
 				// text
 				bool fontPushed = FontsManager.Instance.PushFont(_config.TextFontID);
 
-				var cursorPos = windowMargin + new Vector2(Margin, Margin);
-				var textWidth = _size.X - Margin * 2;
+				Vector2 cursorPos = windowMargin + new Vector2(Margin, Margin);
+				float textWidth = _size.X - Margin * 2;
 
 				ImGui.SetCursorPos(cursorPos);
 				ImGui.PushTextWrapPos(cursorPos.X + textWidth);
@@ -217,7 +217,7 @@ namespace DelvUI.Helpers
 
 		private Vector2 ConstrainPosition(Vector2 position, Vector2 size)
 		{
-			var screenSize = ImGui.GetWindowViewport().Size;
+			Vector2 screenSize = ImGui.GetWindowViewport().Size;
 
 			if (position.X < 0)
 			{
@@ -241,10 +241,7 @@ namespace DelvUI.Helpers
 	[SubSection("Tooltips", 0)]
 	public class TooltipsConfig : PluginConfigObject
 	{
-		public new static TooltipsConfig DefaultConfig()
-		{
-			return new TooltipsConfig();
-		}
+		public new static TooltipsConfig DefaultConfig() => new();
 
 		[Checkbox("Show Status Effects IDs")]
 		[Order(5)]
@@ -256,7 +253,7 @@ namespace DelvUI.Helpers
 
 		[ColorEdit4("Background Color")]
 		[Order(15)]
-		public PluginConfigColor BackgroundColor = new PluginConfigColor(new(19f / 255f, 19f / 255f, 19f / 255f, 190f / 250f));
+		public PluginConfigColor BackgroundColor = new(new(19f / 255f, 19f / 255f, 19f / 255f, 190f / 250f));
 
 		[Font("Title Font and Size", spacing = true)]
 		[Order(20)]
@@ -264,7 +261,7 @@ namespace DelvUI.Helpers
 
 		[ColorEdit4("Title Color")]
 		[Order(25)]
-		public PluginConfigColor TitleColor = new PluginConfigColor(new(255f / 255f, 210f / 255f, 31f / 255f, 100f / 100f));
+		public PluginConfigColor TitleColor = new(new(255f / 255f, 210f / 255f, 31f / 255f, 100f / 100f));
 
 		[Font("Text Font and Size", spacing = true)]
 		[Order(30)]
@@ -272,7 +269,7 @@ namespace DelvUI.Helpers
 
 		[ColorEdit4("Text Color")]
 		[Order(35)]
-		public PluginConfigColor TextColor = new PluginConfigColor(new(255f / 255f, 255f / 255f, 255f / 255f, 100f / 100f));
+		public PluginConfigColor TextColor = new(new(255f / 255f, 255f / 255f, 255f / 255f, 100f / 100f));
 
 		[NestedConfig("Border", 40, separator = false, spacing = true, collapsingHeader = false)]
 		public TooltipBorderConfig BorderConfig = new();
@@ -283,7 +280,7 @@ namespace DelvUI.Helpers
 	{
 		[ColorEdit4("Color")]
 		[Order(5)]
-		public PluginConfigColor Color = new(new Vector4(10f / 255f, 10f / 255f, 10f / 255f, 160f / 255f));
+		public PluginConfigColor Color = new(new(10f / 255f, 10f / 255f, 10f / 255f, 160f / 255f));
 
 		[DragInt("Thickness", min = 1, max = 100)]
 		[Order(10)]

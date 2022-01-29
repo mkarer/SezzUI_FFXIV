@@ -10,7 +10,7 @@ namespace SezzUI.Interface.GeneralElements
 	{
 		public new static GridConfig DefaultConfig()
 		{
-			GridConfig config = new GridConfig();
+			GridConfig config = new();
 			config.Enabled = false;
 
 			return config;

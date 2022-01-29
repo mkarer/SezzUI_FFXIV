@@ -13,7 +13,7 @@ namespace SezzUI.Modules
 		public PluginConfigObject GetConfig() => _config;
 
 		public readonly List<DraggableHudElement> DraggableElements;
-		
+
 		protected PluginModule(PluginConfigObject config)
 		{
 			Logger.SetPrefix($"PluginModule:{GetType().Name}");
@@ -25,7 +25,7 @@ namespace SezzUI.Modules
 		{
 			Dispose(false);
 		}
-		
+
 		protected new void Dispose(bool disposing)
 		{
 			if (!disposing)

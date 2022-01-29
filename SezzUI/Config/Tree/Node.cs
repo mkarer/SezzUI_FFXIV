@@ -1,151 +1,157 @@
-﻿using DelvUI.Helpers;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using DelvUI.Helpers;
 
 namespace SezzUI.Config.Tree
 {
-    public abstract class Node
-    {
-        protected List<Node> _children = new List<Node>();
+	public abstract class Node
+	{
+		protected List<Node> _children = new();
 
-        public void Add(Node node)
-        {
-            _children.Add(node);
-        }
+		public void Add(Node node)
+		{
+			_children.Add(node);
+		}
 
-        #region reset
-        protected Node? _nodeToReset = null;
-        protected string? _nodeToResetName = null;
+		#region reset
 
-        protected void DrawExportResetContextMenu(Node node, string name)
-        {
-            if (_nodeToReset != null)
-            {
-                return;
-            }
+		protected Node? _nodeToReset;
+		protected string? _nodeToResetName;
 
-            bool allowExport = node.AllowExport();
-            bool allowReset = node.AllowReset();
-            if (!allowExport && !allowReset)
-            {
-                return;
-            }
+		protected void DrawExportResetContextMenu(Node node, string name)
+		{
+			if (_nodeToReset != null)
+			{
+				return;
+			}
 
-            _nodeToReset = ImGuiHelper.DrawExportResetContextMenu(node, allowExport, allowReset);
-            _nodeToResetName = name;
-        }
+			bool allowExport = node.AllowExport();
+			bool allowReset = node.AllowReset();
+			if (!allowExport && !allowReset)
+			{
+				return;
+			}
 
-        protected virtual bool AllowExport()
-        {
-            foreach (Node child in _children)
-            {
-                if (child.AllowExport())
-                {
-                    return true;
-                }
-            }
+			_nodeToReset = ImGuiHelper.DrawExportResetContextMenu(node, allowExport, allowReset);
+			_nodeToResetName = name;
+		}
 
-            return false;
-        }
+		protected virtual bool AllowExport()
+		{
+			foreach (Node child in _children)
+			{
+				if (child.AllowExport())
+				{
+					return true;
+				}
+			}
 
-        protected virtual bool AllowShare()
-        {
-            foreach (Node child in _children)
-            {
-                if (child.AllowShare())
-                {
-                    return true;
-                }
-            }
+			return false;
+		}
 
-            return false;
-        }
+		protected virtual bool AllowShare()
+		{
+			foreach (Node child in _children)
+			{
+				if (child.AllowShare())
+				{
+					return true;
+				}
+			}
 
-        protected virtual bool AllowReset()
-        {
-            foreach (Node child in _children)
-            {
-                if (child.AllowReset())
-                {
-                    return true;
-                }
-            }
+			return false;
+		}
 
-            return false;
-        }
+		protected virtual bool AllowReset()
+		{
+			foreach (Node child in _children)
+			{
+				if (child.AllowReset())
+				{
+					return true;
+				}
+			}
 
-        protected bool DrawResetModal()
-        {
-            if (_nodeToReset == null || _nodeToResetName == null)
-            {
-                return false;
-            }
+			return false;
+		}
 
-            string[] lines = new string[] { "Are you sure you want to reset \"" + _nodeToResetName + "\"?" };
-            var (didReset, didClose) = ImGuiHelper.DrawConfirmationModal("Reset?", lines);
+		protected bool DrawResetModal()
+		{
+			if (_nodeToReset == null || _nodeToResetName == null)
+			{
+				return false;
+			}
 
-            if (didReset)
-            {
-                _nodeToReset.Reset();
-                _nodeToReset = null;
-            }
-            else if (didClose)
-            {
-                _nodeToReset = null;
-            }
+			string[] lines = {"Are you sure you want to reset \"" + _nodeToResetName + "\"?"};
+			(bool didReset, bool didClose) = ImGuiHelper.DrawConfirmationModal("Reset?", lines);
 
-            return didReset;
-        }
+			if (didReset)
+			{
+				_nodeToReset.Reset();
+				_nodeToReset = null;
+			}
+			else if (didClose)
+			{
+				_nodeToReset = null;
+			}
+
+			return didReset;
+		}
 
 
-        public virtual void Reset()
-        {
-            foreach (Node child in _children)
-            {
-                child.Reset();
-            }
-        }
-        #endregion
+		public virtual void Reset()
+		{
+			foreach (Node child in _children)
+			{
+				child.Reset();
+			}
+		}
 
-        #region save and load
-        public virtual void Save(string path)
-        {
-            foreach (Node child in _children)
-            {
-                child.Save(path);
-            }
-        }
+		#endregion
 
-        public virtual void Load(string path, string currentVersion, string? previousVersion = null)
-        {
-            foreach (Node child in _children)
-            {
-                child.Load(path, currentVersion, previousVersion);
-            }
-        }
-        #endregion
+		#region save and load
 
-        #region export
-        public virtual string? GetBase64String()
-        {
-            if (_children == null)
-            {
-                return "";
-            }
+		public virtual void Save(string path)
+		{
+			foreach (Node child in _children)
+			{
+				child.Save(path);
+			}
+		}
 
-            string base64String = "";
+		public virtual void Load(string path, string currentVersion, string? previousVersion = null)
+		{
+			foreach (Node child in _children)
+			{
+				child.Load(path, currentVersion, previousVersion);
+			}
+		}
 
-            foreach (Node child in _children)
-            {
-                string? childString = child.GetBase64String();
+		#endregion
 
-                if (childString != null && childString.Length > 0)
-                {
-                    base64String += "|" + childString;
-                }
-            }
+		#region export
 
-            return base64String;
-        }
-        #endregion
-    }
+		public virtual string? GetBase64String()
+		{
+			if (_children == null)
+			{
+				return "";
+			}
+
+			string base64String = "";
+
+			foreach (Node child in _children)
+			{
+				string? childString = child.GetBase64String();
+
+				if (childString != null && childString.Length > 0)
+				{
+					base64String += "|" + childString;
+				}
+			}
+
+			return base64String;
+		}
+
+		#endregion
+	}
 }

@@ -10,7 +10,7 @@ namespace SezzUI.Animator
 
 		public TranslationAnimation(Vector2 from, Vector2 to, uint duration = 0, uint delayStart = 0, uint delayEnd = 0)
 		{
-			_duration = (uint)Math.Max(50f, duration);
+			_duration = (uint) Math.Max(50f, duration);
 			_delayStart = delayStart;
 			_delayEnd = delayEnd;
 
@@ -23,14 +23,14 @@ namespace SezzUI.Animator
 			if (_isPlaying && _ticksStart != null)
 			{
 				int ticksNow = Environment.TickCount;
-				int timeElapsed = ticksNow - (int)_ticksStart;
+				int timeElapsed = ticksNow - (int) _ticksStart;
 
 				if (timeElapsed > StartDelay && timeElapsed <= StartDelay + Duration)
 				{
-					int timeElapsedAnimating = timeElapsed - (int)StartDelay;
+					int timeElapsedAnimating = timeElapsed - (int) StartDelay;
 
 					Vector2 range = OffsetTo - OffsetFrom;
-					float progress = Math.Min(1, Math.Max(0, (float)timeElapsedAnimating / (float)Duration));
+					float progress = Math.Min(1, Math.Max(0, timeElapsedAnimating / (float) Duration));
 					if (Data != null)
 					{
 						Data.Offset = OffsetFrom + range * progress;

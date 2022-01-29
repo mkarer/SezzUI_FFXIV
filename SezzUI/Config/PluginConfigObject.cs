@@ -1,213 +1,217 @@
-﻿using SezzUI.Config.Attributes;
-using SezzUI.Enums;
-using ImGuiNET;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using System.Reflection;
+using ImGuiNET;
+using Newtonsoft.Json;
+using SezzUI.Config.Attributes;
+using SezzUI.Enums;
 
 namespace SezzUI.Config
 {
-    public abstract class PluginConfigObject : IOnChangeEventArgs
-    {
-        public string Version => Plugin.Version;
+	public abstract class PluginConfigObject : IOnChangeEventArgs
+	{
+		public string Version => Plugin.Version;
 
-        [Checkbox("Enabled", isMonitored = true)]
-        [Order(0, collapseWith = null)]
-        public bool Enabled = true;
+		[Checkbox("Enabled", isMonitored = true)]
+		[Order(0, collapseWith = null)]
+		public bool Enabled = true;
 
-        #region convenience properties
-        [JsonIgnore]
-        public bool Exportable
-        {
-            get
-            {
-                ExportableAttribute? attribute = (ExportableAttribute?)GetType().GetCustomAttribute(typeof(ExportableAttribute), false);
-                return attribute == null || attribute.exportable;
-            }
-        }
+		#region convenience properties
 
-        [JsonIgnore]
-        public bool Shareable
-        {
-            get
-            {
-                ShareableAttribute? attribute = (ShareableAttribute?)GetType().GetCustomAttribute(typeof(ShareableAttribute), false);
-                return attribute == null || attribute.shareable;
-            }
-        }
+		[JsonIgnore]
+		public bool Exportable
+		{
+			get
+			{
+				ExportableAttribute? attribute = (ExportableAttribute?) GetType().GetCustomAttribute(typeof(ExportableAttribute), false);
+				return attribute == null || attribute.exportable;
+			}
+		}
 
-        [JsonIgnore]
-        public bool Resettable
-        {
-            get
-            {
-                ResettableAttribute? attribute = (ResettableAttribute?)GetType().GetCustomAttribute(typeof(ResettableAttribute), false);
-                return attribute == null || attribute.resettable;
-            }
-        }
+		[JsonIgnore]
+		public bool Shareable
+		{
+			get
+			{
+				ShareableAttribute? attribute = (ShareableAttribute?) GetType().GetCustomAttribute(typeof(ShareableAttribute), false);
+				return attribute == null || attribute.shareable;
+			}
+		}
 
-        [JsonIgnore]
-        public bool Disableable
-        {
-            get
-            {
-                DisableableAttribute? attribute = (DisableableAttribute?)GetType().GetCustomAttribute(typeof(DisableableAttribute), false);
-                return attribute == null || attribute.disableable;
-            }
-        }
+		[JsonIgnore]
+		public bool Resettable
+		{
+			get
+			{
+				ResettableAttribute? attribute = (ResettableAttribute?) GetType().GetCustomAttribute(typeof(ResettableAttribute), false);
+				return attribute == null || attribute.resettable;
+			}
+		}
 
-        [JsonIgnore]
-        public string[]? DisableParentSettings
-        {
-            get
-            {
-                DisableParentSettingsAttribute? attribute = (DisableParentSettingsAttribute?)GetType().GetCustomAttribute(typeof(DisableParentSettingsAttribute), true);
-                return attribute?.DisabledFields;
-            }
-        }
-        #endregion
+		[JsonIgnore]
+		public bool Disableable
+		{
+			get
+			{
+				DisableableAttribute? attribute = (DisableableAttribute?) GetType().GetCustomAttribute(typeof(DisableableAttribute), false);
+				return attribute == null || attribute.disableable;
+			}
+		}
 
-        protected bool ColorEdit4(string label, ref PluginConfigColor color)
-        {
-            var vector = color.Vector;
+		[JsonIgnore]
+		public string[]? DisableParentSettings
+		{
+			get
+			{
+				DisableParentSettingsAttribute? attribute = (DisableParentSettingsAttribute?) GetType().GetCustomAttribute(typeof(DisableParentSettingsAttribute), true);
+				return attribute?.DisabledFields;
+			}
+		}
 
-            if (ImGui.ColorEdit4(label, ref vector))
-            {
-                color.Vector = vector;
+		#endregion
 
-                return true;
-            }
+		protected bool ColorEdit4(string label, ref PluginConfigColor color)
+		{
+			Vector4 vector = color.Vector;
 
-            return false;
-        }
+			if (ImGui.ColorEdit4(label, ref vector))
+			{
+				color.Vector = vector;
 
-        public static PluginConfigObject DefaultConfig()
-        {
-            return null!;
-        }
+				return true;
+			}
 
-        public T? Load<T>(FileInfo fileInfo, string currentVersion, string? previousVersion) where T : PluginConfigObject
-        {
-            PluginConfigObject? config = InternalLoad(fileInfo, currentVersion, previousVersion);
-            return (T?)config ?? LoadFromJson<T>(fileInfo.FullName);
-        }
+			return false;
+		}
 
-        protected virtual PluginConfigObject? InternalLoad(FileInfo fileInfo, string currentVersion, string? previousVersion)
-        {
-            return null; // override
-        }
+		public static PluginConfigObject DefaultConfig() => null!;
 
-        public static T? LoadFromJson<T>(string path) where T : PluginConfigObject
-        {
-            if (!File.Exists(path)) { return null; }
+		public T? Load<T>(FileInfo fileInfo, string currentVersion, string? previousVersion) where T : PluginConfigObject
+		{
+			PluginConfigObject? config = InternalLoad(fileInfo, currentVersion, previousVersion);
+			return (T?) config ?? LoadFromJson<T>(fileInfo.FullName);
+		}
 
-            return LoadFromJsonString<T>(File.ReadAllText(path));
-        }
+		protected virtual PluginConfigObject? InternalLoad(FileInfo fileInfo, string currentVersion, string? previousVersion) => null; // override
 
-        public static T? LoadFromJsonString<T>(string jsonString) where T : PluginConfigObject
-        {
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.ContractResolver = new PluginConfigObjectsContractResolver();
+		public static T? LoadFromJson<T>(string path) where T : PluginConfigObject
+		{
+			if (!File.Exists(path))
+			{
+				return null;
+			}
 
-            return JsonConvert.DeserializeObject<T>(jsonString, settings);
-        }
+			return LoadFromJsonString<T>(File.ReadAllText(path));
+		}
 
-        public virtual void ImportFromOldVersion(Dictionary<Type, PluginConfigObject> oldConfigObjects, string currentVersion, string? previousVersion)
-        {
-            return; // override
-        }
+		public static T? LoadFromJsonString<T>(string jsonString) where T : PluginConfigObject
+		{
+			JsonSerializerSettings settings = new();
+			settings.ContractResolver = new PluginConfigObjectsContractResolver();
 
-        #region IOnChangeEventArgs
+			return JsonConvert.DeserializeObject<T>(jsonString, settings);
+		}
 
-        // sending event outside of the config
-        public event ConfigValueChangeEventHandler? ValueChangeEvent;
+		public virtual void ImportFromOldVersion(Dictionary<Type, PluginConfigObject> oldConfigObjects, string currentVersion, string? previousVersion)
+		{
+		}
 
-        // received events from the node
-        public void OnValueChanged(OnChangeBaseArgs e)
-        {
-            ValueChangeEvent?.Invoke(this, e);
-        }
+		#region IOnChangeEventArgs
 
-        #endregion
-    }
+		// sending event outside of the config
+		public event ConfigValueChangeEventHandler? ValueChangeEvent;
 
-    public abstract class MovablePluginConfigObject : PluginConfigObject
-    {
-        [JsonIgnore]
-        public readonly string ID;
+		// received events from the node
+		public void OnValueChanged(OnChangeBaseArgs e)
+		{
+			ValueChangeEvent?.Invoke(this, e);
+		}
 
-        [DragInt2("Position", min = -4000, max = 4000)]
-        [Order(5)]
-        public Vector2 Position = Vector2.Zero;
+		#endregion
+	}
 
-        public MovablePluginConfigObject()
-        {
-            ID = $"SezzUI_{GetType().Name}_{Guid.NewGuid()}";
-        }
-    }
+	public abstract class MovablePluginConfigObject : PluginConfigObject
+	{
+		[JsonIgnore]
+		public readonly string ID;
 
-    public abstract class AnchorablePluginConfigObject : MovablePluginConfigObject
-    {
-        [DragInt2("Size", min = 1, max = 4000)]
-        [Order(10)]
-        public Vector2 Size;
+		[DragInt2("Position", min = -4000, max = 4000)]
+		[Order(5)]
+		public Vector2 Position = Vector2.Zero;
 
-        [Anchor("Anchor")]
-        [Order(15)]
-        public DrawAnchor Anchor = DrawAnchor.Center;
-    }
+		public MovablePluginConfigObject()
+		{
+			ID = $"SezzUI_{GetType().Name}_{Guid.NewGuid()}";
+		}
+	}
 
-    public class PluginConfigColor
-    {
-        [JsonIgnore] private float[] _colorMapRatios = { -.8f, -.3f, .1f };
+	public abstract class AnchorablePluginConfigObject : MovablePluginConfigObject
+	{
+		[DragInt2("Size", min = 1, max = 4000)]
+		[Order(10)]
+		public Vector2 Size;
 
-        [JsonIgnore] private Vector4 _vector;
+		[Anchor("Anchor")]
+		[Order(15)]
+		public DrawAnchor Anchor = DrawAnchor.Center;
+	}
 
-        public PluginConfigColor(Vector4 vector, float[]? colorMapRatios = null)
-        {
-            _vector = vector;
+	public class PluginConfigColor
+	{
+		[JsonIgnore]
+		private readonly float[] _colorMapRatios = {-.8f, -.3f, .1f};
 
-            if (colorMapRatios != null && colorMapRatios.Length >= 3)
-            {
-                _colorMapRatios = colorMapRatios;
-            }
+		[JsonIgnore]
+		private Vector4 _vector;
 
-            Update();
-        }
+		public PluginConfigColor(Vector4 vector, float[]? colorMapRatios = null)
+		{
+			_vector = vector;
 
-        public Vector4 Vector
-        {
-            get => _vector;
-            set
-            {
-                if (_vector == value)
-                {
-                    return;
-                }
+			if (colorMapRatios != null && colorMapRatios.Length >= 3)
+			{
+				_colorMapRatios = colorMapRatios;
+			}
 
-                _vector = value;
+			Update();
+		}
 
-                Update();
-            }
-        }
+		public Vector4 Vector
+		{
+			get => _vector;
+			set
+			{
+				if (_vector == value)
+				{
+					return;
+				}
 
-        [JsonIgnore] public uint Base { get; private set; }
+				_vector = value;
 
-        [JsonIgnore] public uint Background { get; private set; }
+				Update();
+			}
+		}
 
-        [JsonIgnore] public uint TopGradient { get; private set; }
+		[JsonIgnore]
+		public uint Base { get; private set; }
 
-        [JsonIgnore] public uint BottomGradient { get; private set; }
+		[JsonIgnore]
+		public uint Background { get; private set; }
 
-        private void Update()
-        {
-            Base = ImGui.ColorConvertFloat4ToU32(_vector);
-            Background = ImGui.ColorConvertFloat4ToU32(_vector.AdjustColor(_colorMapRatios[0]));
-            TopGradient = ImGui.ColorConvertFloat4ToU32(_vector.AdjustColor(_colorMapRatios[1]));
-            BottomGradient = ImGui.ColorConvertFloat4ToU32(_vector.AdjustColor(_colorMapRatios[2]));
-        }
-    }
+		[JsonIgnore]
+		public uint TopGradient { get; private set; }
+
+		[JsonIgnore]
+		public uint BottomGradient { get; private set; }
+
+		private void Update()
+		{
+			Base = ImGui.ColorConvertFloat4ToU32(_vector);
+			Background = ImGui.ColorConvertFloat4ToU32(_vector.AdjustColor(_colorMapRatios[0]));
+			TopGradient = ImGui.ColorConvertFloat4ToU32(_vector.AdjustColor(_colorMapRatios[1]));
+			BottomGradient = ImGui.ColorConvertFloat4ToU32(_vector.AdjustColor(_colorMapRatios[2]));
+		}
+	}
 }

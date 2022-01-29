@@ -149,7 +149,7 @@ namespace DelvUI.Helpers
 				return null;
 			}
 
-			ImFontGlyphRangesBuilderPtr builder = new ImFontGlyphRangesBuilderPtr(ImGuiNative.ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder());
+			ImFontGlyphRangesBuilderPtr builder = new(ImGuiNative.ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder());
 
 			if (config.SupportChineseCharacters)
 			{

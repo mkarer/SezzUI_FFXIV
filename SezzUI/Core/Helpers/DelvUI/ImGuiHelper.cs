@@ -1,225 +1,224 @@
-﻿using SezzUI.Config;
-using SezzUI.Config.Tree;
-using ImGuiNET;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+using ImGuiNET;
+using SezzUI.Config;
+using SezzUI.Config.Tree;
 
 namespace DelvUI.Helpers
 {
-    public static class ImGuiHelper
-    {
-        public static void DrawSeparator(int topSpacing, int bottomSpacing)
-        {
-            DrawSpacing(topSpacing);
-            ImGui.Separator();
-            DrawSpacing(bottomSpacing);
-        }
+	public static class ImGuiHelper
+	{
+		public static void DrawSeparator(int topSpacing, int bottomSpacing)
+		{
+			DrawSpacing(topSpacing);
+			ImGui.Separator();
+			DrawSpacing(bottomSpacing);
+		}
 
-        public static void DrawSpacing(int spacingSize)
-        {
-            for (int i = 0; i < spacingSize; i++)
-            {
-                ImGui.NewLine();
-            }
-        }
+		public static void DrawSpacing(int spacingSize)
+		{
+			for (int i = 0; i < spacingSize; i++)
+			{
+				ImGui.NewLine();
+			}
+		}
 
-        public static void NewLineAndTab()
-        {
-            ImGui.NewLine();
-            Tab();
-        }
+		public static void NewLineAndTab()
+		{
+			ImGui.NewLine();
+			Tab();
+		}
 
-        public static void Tab()
-        {
-            ImGui.Text("\u2002");
-            ImGui.SameLine();
-        }
+		public static void Tab()
+		{
+			ImGui.Text("\u2002");
+			ImGui.SameLine();
+		}
 
-        public static Node? DrawExportResetContextMenu(Node node, bool canExport, bool canReset)
-        {
-            Node? nodeToReset = null;
+		public static Node? DrawExportResetContextMenu(Node node, bool canExport, bool canReset)
+		{
+			Node? nodeToReset = null;
 
-            if (ImGui.BeginPopupContextItem())
-            {
-                if (canExport && ImGui.Selectable("Export"))
-                {
-                    var exportString = node.GetBase64String();
-                    ImGui.SetClipboardText(exportString ?? "");
-                }
+			if (ImGui.BeginPopupContextItem())
+			{
+				if (canExport && ImGui.Selectable("Export"))
+				{
+					string? exportString = node.GetBase64String();
+					ImGui.SetClipboardText(exportString ?? "");
+				}
 
-                if (canReset && ImGui.Selectable("Reset"))
-                {
-                    ImGui.CloseCurrentPopup();
-                    nodeToReset = node;
-                }
+				if (canReset && ImGui.Selectable("Reset"))
+				{
+					ImGui.CloseCurrentPopup();
+					nodeToReset = node;
+				}
 
-                ImGui.EndPopup();
-            }
+				ImGui.EndPopup();
+			}
 
-            return nodeToReset;
-        }
+			return nodeToReset;
+		}
 
-        public static (bool, bool) DrawConfirmationModal(string title, string message)
-        {
-            return DrawConfirmationModal(title, new string[] { message });
-        }
+		public static (bool, bool) DrawConfirmationModal(string title, string message)
+		{
+			return DrawConfirmationModal(title, new[] {message});
+		}
 
-        public static (bool, bool) DrawConfirmationModal(string title, IEnumerable<string> textLines)
-        {
-            ConfigurationManager.Instance.ShowingModalWindow = true;
+		public static (bool, bool) DrawConfirmationModal(string title, IEnumerable<string> textLines)
+		{
+			ConfigurationManager.Instance.ShowingModalWindow = true;
 
-            bool didConfirm = false;
-            bool didClose = false;
+			bool didConfirm = false;
+			bool didClose = false;
 
-            ImGui.OpenPopup(title + " ##SezzUI");
+			ImGui.OpenPopup(title + " ##SezzUI");
 
-            Vector2 center = ImGui.GetMainViewport().GetCenter();
-            ImGui.SetNextWindowPos(center, ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+			Vector2 center = ImGui.GetMainViewport().GetCenter();
+			ImGui.SetNextWindowPos(center, ImGuiCond.Appearing, new(0.5f, 0.5f));
 
-            bool p_open = true; // i've no idea what this is used for
+			bool p_open = true; // i've no idea what this is used for
 
-            if (ImGui.BeginPopupModal(title + " ##SezzUI", ref p_open, ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
-            {
-                float width = 300;
-                float height = Math.Min((ImGui.CalcTextSize(" ").Y + 5) * textLines.Count(), 240);
+			if (ImGui.BeginPopupModal(title + " ##SezzUI", ref p_open, ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
+			{
+				float width = 300;
+				float height = Math.Min((ImGui.CalcTextSize(" ").Y + 5) * textLines.Count(), 240);
 
-                ImGui.BeginChild("confirmation_modal_message", new Vector2(width, height), false);
-                foreach (string text in textLines)
-                {
-                    ImGui.Text(text);
-                }
-                ImGui.EndChild();
+				ImGui.BeginChild("confirmation_modal_message", new(width, height), false);
+				foreach (string text in textLines)
+				{
+					ImGui.Text(text);
+				}
 
-                ImGui.NewLine();
+				ImGui.EndChild();
 
-                if (ImGui.Button("OK", new Vector2(width / 2f - 5, 24)))
-                {
-                    ImGui.CloseCurrentPopup();
-                    didConfirm = true;
-                    didClose = true;
-                }
+				ImGui.NewLine();
 
-                ImGui.SetItemDefaultFocus();
-                ImGui.SameLine();
-                if (ImGui.Button("Cancel", new Vector2(width / 2f - 5, 24)))
-                {
-                    ImGui.CloseCurrentPopup();
-                    didClose = true;
-                }
+				if (ImGui.Button("OK", new(width / 2f - 5, 24)))
+				{
+					ImGui.CloseCurrentPopup();
+					didConfirm = true;
+					didClose = true;
+				}
 
-                ImGui.EndPopup();
-            }
-            // close button on nav
-            else
-            {
-                didClose = true;
-            }
+				ImGui.SetItemDefaultFocus();
+				ImGui.SameLine();
+				if (ImGui.Button("Cancel", new(width / 2f - 5, 24)))
+				{
+					ImGui.CloseCurrentPopup();
+					didClose = true;
+				}
 
-            if (didClose)
-            {
-                ConfigurationManager.Instance.ShowingModalWindow = false;
-            }
+				ImGui.EndPopup();
+			}
+			// close button on nav
+			else
+			{
+				didClose = true;
+			}
 
-            return (didConfirm, didClose);
-        }
+			if (didClose)
+			{
+				ConfigurationManager.Instance.ShowingModalWindow = false;
+			}
 
-        public static bool DrawErrorModal(string message)
-        {
-            ConfigurationManager.Instance.ShowingModalWindow = true;
+			return (didConfirm, didClose);
+		}
 
-            bool didClose = false;
-            ImGui.OpenPopup("Error ##SezzUI");
+		public static bool DrawErrorModal(string message)
+		{
+			ConfigurationManager.Instance.ShowingModalWindow = true;
 
-            Vector2 center = ImGui.GetMainViewport().GetCenter();
-            ImGui.SetNextWindowPos(center, ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+			bool didClose = false;
+			ImGui.OpenPopup("Error ##SezzUI");
 
-            bool p_open = true; // i've no idea what this is used for
-            if (ImGui.BeginPopupModal("Error ##SezzUI", ref p_open, ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
-            {
-                ImGui.Text(message);
-                ImGui.NewLine();
+			Vector2 center = ImGui.GetMainViewport().GetCenter();
+			ImGui.SetNextWindowPos(center, ImGuiCond.Appearing, new(0.5f, 0.5f));
 
-                var textSize = ImGui.CalcTextSize(message).X;
+			bool p_open = true; // i've no idea what this is used for
+			if (ImGui.BeginPopupModal("Error ##SezzUI", ref p_open, ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
+			{
+				ImGui.Text(message);
+				ImGui.NewLine();
 
-                if (ImGui.Button("OK", new Vector2(textSize, 24)))
-                {
-                    ImGui.CloseCurrentPopup();
-                    didClose = true;
-                }
+				float textSize = ImGui.CalcTextSize(message).X;
 
-                ImGui.EndPopup();
-            }
-            // close button on nav
-            else
-            {
-                didClose = true;
-            }
+				if (ImGui.Button("OK", new(textSize, 24)))
+				{
+					ImGui.CloseCurrentPopup();
+					didClose = true;
+				}
 
-            if (didClose)
-            {
-                ConfigurationManager.Instance.ShowingModalWindow = false;
-            }
+				ImGui.EndPopup();
+			}
+			// close button on nav
+			else
+			{
+				didClose = true;
+			}
 
-            return didClose;
-        }
+			if (didClose)
+			{
+				ConfigurationManager.Instance.ShowingModalWindow = false;
+			}
 
-        public static (bool, bool) DrawInputModal(string title, string message, ref string value)
-        {
-            ConfigurationManager.Instance.ShowingModalWindow = true;
+			return didClose;
+		}
 
-            bool didConfirm = false;
-            bool didClose = false;
+		public static (bool, bool) DrawInputModal(string title, string message, ref string value)
+		{
+			ConfigurationManager.Instance.ShowingModalWindow = true;
 
-            ImGui.OpenPopup(title + " ##SezzUI");
+			bool didConfirm = false;
+			bool didClose = false;
 
-            Vector2 center = ImGui.GetMainViewport().GetCenter();
-            ImGui.SetNextWindowPos(center, ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+			ImGui.OpenPopup(title + " ##SezzUI");
 
-            bool p_open = true; // i've no idea what this is used for
+			Vector2 center = ImGui.GetMainViewport().GetCenter();
+			ImGui.SetNextWindowPos(center, ImGuiCond.Appearing, new(0.5f, 0.5f));
 
-            if (ImGui.BeginPopupModal(title + " ##SezzUI", ref p_open, ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
-            {
-                var textSize = ImGui.CalcTextSize(message).X;
+			bool p_open = true; // i've no idea what this is used for
 
-                ImGui.Text(message);
+			if (ImGui.BeginPopupModal(title + " ##SezzUI", ref p_open, ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
+			{
+				float textSize = ImGui.CalcTextSize(message).X;
 
-                ImGui.PushItemWidth(textSize);
-                ImGui.InputText("", ref value, 64);
+				ImGui.Text(message);
 
-                ImGui.NewLine();
-                if (ImGui.Button("OK", new Vector2(textSize / 2f - 5, 24)))
-                {
-                    ImGui.CloseCurrentPopup();
-                    didConfirm = true;
-                    didClose = true;
-                }
+				ImGui.PushItemWidth(textSize);
+				ImGui.InputText("", ref value, 64);
 
-                ImGui.SetItemDefaultFocus();
-                ImGui.SameLine();
-                if (ImGui.Button("Cancel", new Vector2(textSize / 2f - 5, 24)))
-                {
-                    ImGui.CloseCurrentPopup();
-                    didClose = true;
-                }
+				ImGui.NewLine();
+				if (ImGui.Button("OK", new(textSize / 2f - 5, 24)))
+				{
+					ImGui.CloseCurrentPopup();
+					didConfirm = true;
+					didClose = true;
+				}
 
-                ImGui.EndPopup();
-            }
-            // close button on nav
-            else
-            {
-                didClose = true;
-            }
+				ImGui.SetItemDefaultFocus();
+				ImGui.SameLine();
+				if (ImGui.Button("Cancel", new(textSize / 2f - 5, 24)))
+				{
+					ImGui.CloseCurrentPopup();
+					didClose = true;
+				}
 
-            if (didClose)
-            {
-                ConfigurationManager.Instance.ShowingModalWindow = false;
-            }
+				ImGui.EndPopup();
+			}
+			// close button on nav
+			else
+			{
+				didClose = true;
+			}
 
-            return (didConfirm, didClose);
-        }
-    }
+			if (didClose)
+			{
+				ConfigurationManager.Instance.ShowingModalWindow = false;
+			}
+
+			return (didConfirm, didClose);
+		}
+	}
 }

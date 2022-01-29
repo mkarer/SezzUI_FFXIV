@@ -9,13 +9,14 @@ namespace SezzUI.Animator
 		public Timeline Loop;
 		public Timeline OnHide;
 
-		public AnimatorTimelines(Animator animator) {
-			OnShow = new Timeline(animator);
+		public AnimatorTimelines(Animator animator)
+		{
+			OnShow = new(animator);
 			OnShow.Data.DefaultOpacity = 1;
 
-			Loop = new Timeline(animator);
+			Loop = new(animator);
 
-			OnHide = new Timeline(animator);
+			OnHide = new(animator);
 			OnHide.Data.DefaultOpacity = 0;
 		}
 	}
@@ -27,8 +28,8 @@ namespace SezzUI.Animator
 		public float Opacity;
 		public float Scale;
 
-		public Vector2 DefaultOffset = new Vector2(0, 0);
-		public Vector4 DefaultColor = new Vector4(1f, 1f, 1f, 1f);
+		public Vector2 DefaultOffset = new(0, 0);
+		public Vector4 DefaultColor = new(1f, 1f, 1f, 1f);
 		public float DefaultOpacity = 1f;
 		public float DefaultScale = 1f;
 
@@ -58,7 +59,7 @@ namespace SezzUI.Animator
 
 		public static AnimatorTransformData operator +(AnimatorTransformData data1, AnimatorTransformData data2)
 		{
-			AnimatorTransformData data = new AnimatorTransformData
+			AnimatorTransformData data = new()
 			{
 				Offset = data1.Offset + data2.Offset,
 				Color = data2.Color,
@@ -72,33 +73,28 @@ namespace SezzUI.Animator
 	public class Animator : IDisposable
 	{
 		public AnimatorTimelines Timelines;
-		public AnimatorTransformData Data = new AnimatorTransformData(); // This will be a reference to the active timeline's Data!
-		public bool IsAnimating { get { return _isAnimating; } }
+		public AnimatorTransformData Data = new(); // This will be a reference to the active timeline's Data!
+		public bool IsAnimating { get; private set; }
 
-		private bool _isAnimating = false;
 		private int? _ticksStart;
 		private int? _ticksStop;
 
-		public int TimeElapsed {
-			get
-			{
-				return _ticksStart != null ? Environment.TickCount - (int)_ticksStart : 0;
-			}
-		}
+		public int TimeElapsed => _ticksStart != null ? Environment.TickCount - (int) _ticksStart : 0;
 
 		public Animator()
 		{
-			Timelines = new AnimatorTimelines(this);
+			Timelines = new(this);
 		}
 
 		public void Update()
 		{
-			if (_isAnimating && _ticksStart != null) {
+			if (IsAnimating && _ticksStart != null)
+			{
 				int ticksNow = Environment.TickCount;
 
 				if (_ticksStop == null)
 				{
-					int timeElapsed = ticksNow - (int)_ticksStart;
+					int timeElapsed = ticksNow - (int) _ticksStart;
 					if (timeElapsed <= Timelines.OnShow.Duration)
 					{
 						// OnShow
@@ -107,24 +103,25 @@ namespace SezzUI.Animator
 					else
 					{
 						// Loop
-						if ((Timelines.Loop.HasAnimations && !Timelines.Loop.IsPlaying) || Timelines.Loop.Data != Data)
+						if (Timelines.Loop.HasAnimations && !Timelines.Loop.IsPlaying || Timelines.Loop.Data != Data)
 						{
-							Timelines.Loop.Play((int)_ticksStart + (int)Timelines.OnShow.Duration, true);
+							Timelines.Loop.Play((int) _ticksStart + (int) Timelines.OnShow.Duration, true);
 						}
+
 						Timelines.Loop.Update();
 					}
 				}
 				else
 				{
 					// OnHide
-					int timeElapsed = ticksNow - (int)_ticksStop;
+					int timeElapsed = ticksNow - (int) _ticksStop;
 					if (timeElapsed <= Timelines.OnHide.Duration)
 					{
 						Timelines.OnHide.Update();
 					}
 					else
 					{
-						_isAnimating = false;
+						IsAnimating = false;
 					}
 				}
 			}
@@ -137,69 +134,71 @@ namespace SezzUI.Animator
 
 		public void Animate()
 		{
-			if (_isAnimating)
+			if (IsAnimating)
 			{
 				Stop(true);
 			}
 
-			if (!_isAnimating)
+			if (!IsAnimating)
 			{
 				_ticksStart = Environment.TickCount;
 				_ticksStop = null;
-				_isAnimating = true;
+				IsAnimating = true;
 				Timelines.OnShow.Data.Reset();
-				Timelines.OnShow.Play((int)_ticksStart);
+				Timelines.OnShow.Play((int) _ticksStart);
 				Timelines.Loop.Data.Reset();
 			}
 		}
 
 		public void Stop(bool force = false)
 		{
-			if (_isAnimating) {
+			if (IsAnimating)
+			{
 				if (Timelines.OnShow.IsPlaying)
-                {
-                    Timelines.OnShow.Stop();
-                }
+				{
+					Timelines.OnShow.Stop();
+				}
 
-                if (Timelines.Loop.IsPlaying)
-                {
-                    Timelines.Loop.Stop();
-                }
+				if (Timelines.Loop.IsPlaying)
+				{
+					Timelines.Loop.Stop();
+				}
 
-                if (!force)
+				if (!force)
 				{
 					if (!Timelines.OnHide.IsPlaying)
 					{
 						_ticksStop = Environment.TickCount;
 						Timelines.OnHide.Data.Reset();
-						Timelines.OnHide.Play((int)_ticksStop);
+						Timelines.OnHide.Play((int) _ticksStop);
 					}
-				} else
+				}
+				else
 				{
-					_isAnimating = false;
+					IsAnimating = false;
 				}
 			}
 		}
 
-        ~Animator()
-        {
-            Dispose(false);
-        }
+		~Animator()
+		{
+			Dispose(false);
+		}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
-        protected void Dispose(bool disposing)
-        {
-            if (!disposing)
-            {
-                return;
-            }
+		protected void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
 
-            Stop(true);
-        }
+			Stop(true);
+		}
 	}
 }

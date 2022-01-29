@@ -7,10 +7,10 @@ namespace SezzUI.GameEvents
 	{
 		public ActionType Type = ActionType.None;
 
-        /// <summary>
-        ///     Start time in milliseconds since the system started (Environment.TickCount64)
-        /// </summary>
-        public long StartTime
+		/// <summary>
+		///     Start time in milliseconds since the system started (Environment.TickCount64)
+		/// </summary>
+		public long StartTime
 		{
 			get => _startTime;
 			set
@@ -28,10 +28,10 @@ namespace SezzUI.GameEvents
 
 		private long _startTime;
 
-        /// <summary>
-        ///     Total duration (until next charge) in milliseconds.
-        /// </summary>
-        public uint Duration
+		/// <summary>
+		///     Total duration (until next charge) in milliseconds.
+		/// </summary>
+		public uint Duration
 		{
 			get => _duration;
 			set
@@ -46,10 +46,10 @@ namespace SezzUI.GameEvents
 
 		private uint _duration;
 
-        /// <summary>
-        ///     Maximum amount of charges at the current level.
-        /// </summary>
-        public ushort MaxCharges
+		/// <summary>
+		///     Maximum amount of charges at the current level.
+		/// </summary>
+		public ushort MaxCharges
 		{
 			get => _maxCharges;
 			set
@@ -64,10 +64,10 @@ namespace SezzUI.GameEvents
 
 		private ushort _maxCharges;
 
-        /// <summary>
-        ///     Current amount of charges.
-        /// </summary>
-        public ushort CurrentCharges
+		/// <summary>
+		///     Current amount of charges.
+		/// </summary>
+		public ushort CurrentCharges
 		{
 			get => _currentCharges;
 			set
@@ -82,25 +82,25 @@ namespace SezzUI.GameEvents
 
 		private ushort _currentCharges;
 
-        /// <summary>
-        ///     Remaining cooldown in milliseconds or 0 if inactive.
-        /// </summary>
-        public uint Remaining => IsActive ? (uint) _remaining : 0;
+		/// <summary>
+		///     Remaining cooldown in milliseconds or 0 if inactive.
+		/// </summary>
+		public uint Remaining => IsActive ? (uint) _remaining : 0;
 
 		private long _remaining => Duration - (Environment.TickCount64 - StartTime);
 
-        /// <summary>
-        ///     Elapsed time in milliseconds or 0 if inactive.
-        /// </summary>
-        public uint Elapsed => IsActive ? Duration - Remaining : 0;
+		/// <summary>
+		///     Elapsed time in milliseconds or 0 if inactive.
+		/// </summary>
+		public uint Elapsed => IsActive ? Duration - Remaining : 0;
 
 		// TODO: Force update when checking IsActive instead of checking remaining time for a negative value?
 		public bool IsActive => _duration > 0 && _currentCharges != _maxCharges && _remaining > 0;
 
-        /// <summary>
-        ///     Returns if any value has changed since the last call of PrepareUpdate().
-        /// </summary>
-        public bool HasChanged { get; private set; }
+		/// <summary>
+		///     Returns if any value has changed since the last call of PrepareUpdate().
+		/// </summary>
+		public bool HasChanged { get; private set; }
 
 		public void PrepareUpdate()
 		{

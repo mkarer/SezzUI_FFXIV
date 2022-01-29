@@ -5,19 +5,20 @@ namespace SezzUI.Animator
 {
 	public class Timeline : IDisposable
 	{
-		private Animator _animator;
+		private readonly Animator _animator;
 		public AnimatorTransformData Data;
 
-		private List<BaseAnimation> _animations = new List<BaseAnimation>();
-		public List<BaseAnimation> Animations { get { return _animations; } }
+		public List<BaseAnimation> Animations { get; } = new();
 
-		public uint Duration { get { return _duration; } }
-		private uint _duration = 0;
-		internal bool _loop = false;
+		public uint Duration { get; private set; }
 
-		public bool IsPlaying {
-			get {
-				if (_isPlaying && !_loop && _ticksStart != null && (int)_ticksStart + Duration < Environment.TickCount)
+		internal bool _loop;
+
+		public bool IsPlaying
+		{
+			get
+			{
+				if (_isPlaying && !_loop && _ticksStart != null && (int) _ticksStart + Duration < Environment.TickCount)
 				{
 					Stop();
 				}
@@ -26,31 +27,30 @@ namespace SezzUI.Animator
 			}
 		}
 
-		public bool HasStartTime { get { return _ticksStart != null; } }
-		private bool _isPlaying = false;
+		public bool HasStartTime => _ticksStart != null;
+		private bool _isPlaying;
 		private int? _ticksStart;
 
-		public bool HasAnimations { get { return _hasAnimations; } }
-		private bool _hasAnimations = false;
+		public bool HasAnimations { get; private set; }
 
 		public Timeline(Animator animator)
 		{
 			_animator = animator;
-			Data = new AnimatorTransformData();
+			Data = new();
 			Data.Reset();
 		}
 
 		public void Add(BaseAnimation animation)
 		{
 			animation.SetData(ref Data);
-			_animations.Add(animation);
-			_duration = Math.Max(_duration, animation.StartDelay + animation.Duration + animation.EndDelay);
-			_hasAnimations = true;
+			Animations.Add(animation);
+			Duration = Math.Max(Duration, animation.StartDelay + animation.Duration + animation.EndDelay);
+			HasAnimations = true;
 		}
 
 		public void Chain(BaseAnimation animation)
 		{
-			animation._delayStart = _duration;
+			animation._delayStart = Duration;
 			Add(animation);
 		}
 
@@ -60,7 +60,7 @@ namespace SezzUI.Animator
 			{
 				_isPlaying = false;
 
-				foreach (BaseAnimation animation in _animations)
+				foreach (BaseAnimation animation in Animations)
 				{
 					animation.Update();
 					_isPlaying |= animation.IsPlaying;
@@ -73,7 +73,8 @@ namespace SezzUI.Animator
 
 				return true;
 			}
-			else if (!HasAnimations && HasStartTime)
+
+			if (!HasAnimations && HasStartTime)
 			{
 				// Idle animation, just reset data to timeline's defaults...
 				Data.Reset();
@@ -94,7 +95,7 @@ namespace SezzUI.Animator
 				{
 					_isPlaying = true;
 					_loop = loop;
-					foreach (BaseAnimation animation in _animations)
+					foreach (BaseAnimation animation in Animations)
 					{
 						animation.Play(start);
 					}
@@ -107,7 +108,7 @@ namespace SezzUI.Animator
 			if (_isPlaying)
 			{
 				_isPlaying = false;
-				foreach (BaseAnimation animation in _animations)
+				foreach (BaseAnimation animation in Animations)
 				{
 					animation.Stop();
 				}

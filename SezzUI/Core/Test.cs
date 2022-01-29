@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SezzUI.Helpers;
 
 namespace SezzUI.Core
 {
@@ -13,15 +12,14 @@ namespace SezzUI.Core
 		private static string ToFixedLength(string input, int length)
 		{
 			if (input.Length > length)
+			{
 				return input.Substring(0, length);
-			else
-				return input.PadRight(length, ' ');
+			}
+
+			return input.PadRight(length, ' ');
 		}
 
-		private static string ToBinaryString(byte number)
-		{
-			return Convert.ToString(number, 2).PadLeft(8, '0');
-		}
+		private static string ToBinaryString(byte number) => Convert.ToString(number, 2).PadLeft(8, '0');
 
 		public static void RunTest()
 		{
