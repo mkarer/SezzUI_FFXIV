@@ -47,6 +47,7 @@ namespace SezzUI.Modules.GameUI
 
 			EventManager.Game.AddonsLoaded += OnAddonsLoaded;
 			EventManager.Game.AddonsVisibilityChanged += OnAddonsVisibilityChanged;
+			EventManager.Game.HudLayoutActivated += OnHudLayoutActivated;
 
 			if (Game.Instance.IsInGame() && EventManager.Game.AreAddonsShown())
 			{
@@ -66,6 +67,7 @@ namespace SezzUI.Modules.GameUI
 
 			EventManager.Game.AddonsLoaded -= OnAddonsLoaded;
 			EventManager.Game.AddonsVisibilityChanged -= OnAddonsVisibilityChanged;
+			EventManager.Game.HudLayoutActivated -= OnHudLayoutActivated;
 			UpdateAddons(_expectedVisibility, EventManager.Game.AreAddonsShown());
 			_expectedVisibility.Clear();
 			_currentVisibility.Clear();
@@ -73,10 +75,24 @@ namespace SezzUI.Modules.GameUI
 			return true;
 		}
 
+		private void OnHudLayoutActivated(uint hudLayout, bool ready)
+		{
+			if (Plugin.ClientState.IsLoggedIn && !_initialUpdate && !_isEditingHudLayouts && ready)
+			{
+				// Force update after switching layouts!
+#if DEBUG
+				if (_debugConfig.LogAddonsEventHandling)
+				{
+					Logger.Debug("OnHudLayoutActivated", "Forcing update after switching layout...");
+				}
+#endif
+				UpdateAddons(_expectedVisibility);
+			}
+		}
+
 		private void OnAddonsVisibilityChanged(bool visible)
 		{
-			// TODO: Remove _initialUpdate and update all addons everytime when this event is fired?
-			if (!Plugin.ClientState.IsLoggedIn)
+			if (!Plugin.ClientState.IsLoggedIn || !_initialUpdate)
 			{
 				return;
 			}
@@ -127,7 +143,7 @@ namespace SezzUI.Modules.GameUI
 
 				foreach (KeyValuePair<Addon, bool> expected in _expectedVisibility)
 				{
-					if (expected.Value != _currentVisibility[expected.Key] || expected.Value != visible)
+					if (expected.Value != _currentVisibility[expected.Key])
 					{
 						update ??= new();
 #if DEBUG
@@ -171,11 +187,40 @@ namespace SezzUI.Modules.GameUI
 			}
 		}
 
+		private bool _isEditingHudLayouts;
+
 		public override void Draw(DrawState drawState, Vector2? origin)
 		{
-			if (!Enabled || drawState != DrawState.Visible && drawState != DrawState.Partially)
+			if (!Enabled || (drawState != DrawState.Visible && drawState != DrawState.Partially))
 			{
-				_initialUpdate |= true; // Force update when DrawState changes back to Visible.
+				return;
+			}
+
+			// TODO
+			bool isEditingHudLayouts = Plugin.GameGui.GetAddonByName("HudLayout", 1) != IntPtr.Zero;
+			if (_isEditingHudLayouts != isEditingHudLayouts)
+			{
+				_isEditingHudLayouts = isEditingHudLayouts;
+#if DEBUG
+				if (_debugConfig.LogGeneral)
+				{
+					Logger.Debug("Draw", $"isEditingHudLayouts: {isEditingHudLayouts} -> {(isEditingHudLayouts ? "Show all addons!" : "Update!")}");
+				}
+#endif
+				if (isEditingHudLayouts)
+				{
+					// Show all
+					UpdateAddons(_expectedVisibility, true);
+				}
+				else
+				{
+					// Done, force update
+					UpdateAddons(_expectedVisibility, true);
+				}
+			}
+
+			if (_isEditingHudLayouts)
+			{
 				return;
 			}
 
@@ -194,10 +239,7 @@ namespace SezzUI.Modules.GameUI
 						}
 
 						Addon element = (Addon) addonId;
-
-						// TODO: Some addons (MainMenu) are shown while others are not, AreAddonsShown() needs to be changed.
-						// MainMenu might be linked to _NaviMap?
-						_expectedVisibility[element] = area.IsHovered && EventManager.Game.AreAddonsShown(); // TODO: AtkEvent: MouseOver, MouseOut
+						_expectedVisibility[element] = area.IsHovered && EventManager.Game.AreAddonsShown(); // TODO: AreAddonsShown should check if the elements used in that area could be shown.
 #if DEBUG
 						if (_debugConfig.LogVisibilityUpdates && (!_currentVisibility.ContainsKey(element) || _currentVisibility[element] != _expectedVisibility[element]))
 						{
@@ -223,57 +265,46 @@ namespace SezzUI.Modules.GameUI
 
 		#region Addons
 
-		private unsafe void UpdateAddonNodeList(Addon element, AtkUnitBase* addonUnitBase, bool emptyList)
-		{
-			if (!emptyList && addonUnitBase->UldManager.NodeListCount == 0)
-			{
 #if DEBUG
-				if (_debugConfig.LogVisibilityUpdates)
-				{
-					Logger.Debug("UpdateAddonVisibility", $"Addon: {element} DrawNodeList -> Update");
-				}
+		private static string ToBinaryString(byte number) => Convert.ToString(number, 2).PadLeft(8, '0');
 #endif
-				addonUnitBase->UldManager.UpdateDrawNodeList();
-			}
-			else if (emptyList && addonUnitBase->UldManager.NodeListCount != 0)
-			{
-#if DEBUG
-				if (_debugConfig.LogVisibilityUpdates)
-				{
-					Logger.Debug("UpdateAddonVisibility", $"Addon: {element} NodeListCount -> 0");
-				}
-#endif
-				addonUnitBase->UldManager.NodeListCount = 0;
-			}
-		}
 
-		private unsafe void UpdateAddonVisibility(Addon element, IntPtr addon, bool shouldShow, bool isRootNode = false)
+		private unsafe void UpdateAddonVisibility(Addon element, IntPtr addon, bool shouldShow, bool isNode = false)
 		{
 			_currentVisibility[element] = shouldShow; // Assume the update went as expected...
 
-			byte visibilityFlag = (byte) (isRootNode ? 0x10 : 0x20);
-			bool isVisible = isRootNode ? ((AtkResNode*) addon)->IsVisible : ((AtkUnitBase*) addon)->IsVisible;
-			if (isVisible != shouldShow)
+			if (!isNode)
 			{
+				// AtkUnitBase
+				byte visibilityFlag = *((byte*) addon + 0x1B6);
+				byte flagUserHide = 1 << 0; // 1 << 3 would be on if it is hidden by the game (Scenario Guide during duty for example)
+				byte expectedVisibilityFlag = (byte) (shouldShow ? visibilityFlag & ~flagUserHide : visibilityFlag | flagUserHide);
+
+				if (visibilityFlag != expectedVisibilityFlag)
+				{
 #if DEBUG
-				if (_debugConfig.LogVisibilityUpdates)
-				{
-					Logger.Debug("UpdateAddonVisibility", $"Addon: {element} ShouldShow: {shouldShow} IsVisible: {isVisible}");
-				}
+					if (_debugConfig.LogVisibilityUpdates)
+					{
+						Logger.Debug("UpdateAddonVisibility", $"Addon: {element} ShouldShow: {shouldShow} visibilityFlag: {ToBinaryString(visibilityFlag)} -> {ToBinaryString(expectedVisibilityFlag)}");
+					}
 #endif
-				if (isRootNode)
-				{
-					((AtkResNode*) addon)->Flags ^= visibilityFlag;
-				}
-				else
-				{
-					((AtkUnitBase*) addon)->Flags ^= visibilityFlag;
+					*((byte*) addon + 0x1B6) = expectedVisibilityFlag;
 				}
 			}
-
-			if (!isRootNode)
+			else
 			{
-				UpdateAddonNodeList(element, (AtkUnitBase*) addon, !EventManager.Game.AreAddonsVisible);
+				// AtkResNode
+				AtkResNode* node = (AtkResNode*) addon;
+				if (shouldShow != node->IsVisible)
+				{
+#if DEBUG
+					if (_debugConfig.LogVisibilityUpdates)
+					{
+						Logger.Debug("UpdateAddonVisibility", $"Addon: {element} ShouldShow: {shouldShow} IsVisible: {node->IsVisible}");
+					}
+#endif
+					node->Flags ^= 0x10;
+				}
 			}
 		}
 
