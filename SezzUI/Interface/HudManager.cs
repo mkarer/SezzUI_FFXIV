@@ -25,7 +25,7 @@ namespace SezzUI.Interface
 
 		private List<PluginModule> _modules = null!;
 		private List<DraggableHudElement> _draggableElements = null!;
-		
+
 		private List<IHudElementWithActor> _hudElementsUsingPlayer = null!;
 		private List<IHudElementWithActor> _hudElementsUsingTarget = null!;
 		private List<IHudElementWithActor> _hudElementsUsingTargetOfTarget = null!;
