@@ -191,7 +191,7 @@ namespace SezzUI.Modules.GameUI
 
 		public override void Draw(DrawState drawState, Vector2? origin)
 		{
-			if (!Enabled || (drawState != DrawState.Visible && drawState != DrawState.Partially))
+			if (!Enabled || drawState != DrawState.Visible && drawState != DrawState.Partially)
 			{
 				return;
 			}

@@ -8,13 +8,17 @@ namespace SezzUI.Interface.GeneralElements
 	[SubSection("General", 0)]
 	public class JobHudConfig : MovablePluginConfigObject
 	{
-		public JobHudConfig Reset()
+		public void Reset()
 		{
 			Enabled = true;
 			Position = new(0, 150);
-			return this;
 		}
 
-		public new static JobHudConfig DefaultConfig() => new JobHudConfig().Reset();
+		public JobHudConfig()
+		{
+			Reset();
+		}
+
+		public new static JobHudConfig DefaultConfig() => new();
 	}
 }

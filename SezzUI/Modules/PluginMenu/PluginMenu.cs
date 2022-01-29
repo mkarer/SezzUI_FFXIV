@@ -197,7 +197,7 @@ namespace SezzUI.Modules.PluginMenu
 
 			ConfigurationManager.Instance.Reset += OnConfigReset;
 			_items = new() {new(Config.Item1), new(Config.Item2), new(Config.Item3), new(Config.Item4), new(Config.Item5), new(Config.Item6), new(Config.Item7), new(Config.Item8), new(Config.Item9), new(Config.Item10)};
-			
+
 			DraggableElements.Add(new(config, "Plugin Menu"));
 			Toggle(Config.Enabled);
 		}
@@ -268,7 +268,7 @@ namespace SezzUI.Modules.PluginMenu
 			Config.ValueChangeEvent -= OnConfigPropertyChanged;
 			Config.Items.ForEach(x => x.ValueChangeEvent -= OnConfigPropertyChanged);
 			ConfigurationManager.Instance.Reset -= OnConfigReset;
-			
+
 			_items.ForEach(item => item.Dispose());
 			_items.Clear();
 			_xivCommon.Dispose();

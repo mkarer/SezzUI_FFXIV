@@ -52,7 +52,7 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(6, collapseWith = nameof(EnableBarPaging))]
 		public int BarPagingPageAlt = 2;
 
-		public ActionBarConfig Reset()
+		public void Reset()
 		{
 			Enabled = true;
 			Bar1.Reset();
@@ -68,13 +68,16 @@ namespace SezzUI.Interface.GeneralElements
 			EnableBarPaging = true;
 			BarPagingPageCtrl = 5;
 			BarPagingPageAlt = 2;
-			return this;
 		}
 
-		public new static ActionBarConfig DefaultConfig() => new ActionBarConfig().Reset();
+		public ActionBarConfig()
+		{
+			Reset();
+		}
+
+		public new static ActionBarConfig DefaultConfig() => new();
 	}
 
-	[Exportable(false)]
 	public class SingleActionBarConfig : PluginConfigObject
 	{
 		[JsonIgnore]
@@ -84,11 +87,10 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(5)]
 		public bool InvertRowOrdering;
 
-		public SingleActionBarConfig Reset()
+		public void Reset()
 		{
 			Enabled = false;
 			InvertRowOrdering = false;
-			return this;
 		}
 
 		public SingleActionBarConfig(Addon bar)

@@ -46,12 +46,8 @@ namespace SezzUI.Interface.GeneralElements
 		[JsonIgnore]
 		public List<PluginMenuItemConfig> Items;
 
-		private PluginMenuConfig()
-		{
-			Items = new() {Item1, Item2, Item3, Item4, Item5, Item6, Item7, Item8, Item9, Item10};
-		}
 
-		public PluginMenuConfig Reset()
+		public void Reset()
 		{
 			Enabled = true;
 			Anchor = DrawAnchor.BottomRight;
@@ -65,10 +61,15 @@ namespace SezzUI.Interface.GeneralElements
 			Item1.Command = "/sezzui";
 			Item1.Title = "Sezz|cFFFFFFFFUI";
 			Item1.Color.Vector = new(1, 182, 214, 255);
-			return this;
 		}
 
-		public new static PluginMenuConfig DefaultConfig() => new PluginMenuConfig().Reset();
+		public PluginMenuConfig()
+		{
+			Items = new() {Item1, Item2, Item3, Item4, Item5, Item6, Item7, Item8, Item9, Item10};
+			Reset();
+		}
+
+		public new static PluginMenuConfig DefaultConfig() => new();
 	}
 
 	public class PluginMenuItemConfig : PluginConfigObject
@@ -109,7 +110,7 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(6, collapseWith = nameof(Toggleable))]
 		public string PluginToggleProperty = "";
 
-		public PluginMenuItemConfig Reset()
+		public void Reset()
 		{
 			Enabled = false;
 			Type = ItemType.ChatCommand;
@@ -121,9 +122,13 @@ namespace SezzUI.Interface.GeneralElements
 			ColorToggled.Vector = Vector4.One; // White
 			PluginToggleName = "";
 			PluginToggleProperty = "";
-			return this;
 		}
 
-		public new static PluginMenuItemConfig DefaultConfig() => new PluginMenuItemConfig().Reset();
+		public PluginMenuItemConfig()
+		{
+			Reset();
+		}
+
+		public new static PluginMenuItemConfig DefaultConfig() => new();
 	}
 }

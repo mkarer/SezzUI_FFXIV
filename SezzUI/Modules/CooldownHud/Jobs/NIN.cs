@@ -9,7 +9,7 @@ namespace SezzUI.Modules.CooldownHud.Jobs
 		public override void Configure(CooldownHud hud)
 		{
 			base.Configure(hud);
-			
+
 			hud.RegisterCooldown(2248); // Mug
 			hud.RegisterCooldown(2245); // Hide
 		}

@@ -12,7 +12,7 @@ namespace SezzUI.Interface.GeneralElements
 		[Checkbox("Hide ActionBar Lock", isMonitored = true)]
 		[Order(1)]
 		public bool HideActionBarLock;
-		
+
 		[NestedConfig("Area 1", 21)]
 		public InteractableAreaConfig Area1 = new();
 
@@ -46,19 +46,19 @@ namespace SezzUI.Interface.GeneralElements
 		[JsonIgnore]
 		public List<InteractableAreaConfig> Areas;
 
-		public ElementHiderConfig()
-		{
-			Areas = new() {Area1, Area2, Area3, Area4, Area5, Area6, Area7, Area8, Area9, Area10};
-		}
-
-		public ElementHiderConfig Reset()
+		public void Reset()
 		{
 			Enabled = true;
 			HideActionBarLock = true;
 			Areas.ForEach(area => area.Reset());
-			return this;
 		}
 
-		public new static ElementHiderConfig DefaultConfig() => new ElementHiderConfig().Reset();
+		public ElementHiderConfig()
+		{
+			Areas = new() {Area1, Area2, Area3, Area4, Area5, Area6, Area7, Area8, Area9, Area10};
+			Reset();
+		}
+
+		public new static ElementHiderConfig DefaultConfig() => new();
 	}
 }

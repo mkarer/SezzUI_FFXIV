@@ -471,7 +471,7 @@ namespace SezzUI.Modules.JobHud
 			{
 				(float duration, float durationMax) = CustomDuration();
 
-				bool shouldShowAsCooldown = !Features.HasFlag(IconFeatures.NoStatusCooldownDisplay) && CooldownActionId == null && ((StatusId == null && StatusIds == null) || (MaxStatusDuration == null && MaxStatusDurations == null));
+				bool shouldShowAsCooldown = !Features.HasFlag(IconFeatures.NoStatusCooldownDisplay) && CooldownActionId == null && (StatusId == null && StatusIds == null || MaxStatusDuration == null && MaxStatusDurations == null);
 				if (shouldShowAsCooldown)
 				{
 					// No action/status condition, only showing a custom duration. 
@@ -484,9 +484,9 @@ namespace SezzUI.Modules.JobHud
 						newState = duration <= StatusWarningThreshold ? IconState.Soon : IconState.FadedOut;
 					}
 					else if (!failedInitialCondition)
-    				{
-    					newState = IconState.Ready;
-    				}
+					{
+						newState = IconState.Ready;
+					}
 				}
 				else
 				{
