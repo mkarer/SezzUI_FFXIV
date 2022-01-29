@@ -1,4 +1,9 @@
+using System.Linq;
+using Dalamud.Game.ClientState.JobGauge.Types;
 using DelvUI.Helpers;
+using SezzUI.Enums;
+using SezzUI.Helpers;
+using JobsHelper = SezzUI.Helpers.JobsHelper;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {
@@ -8,7 +13,42 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		public override void Configure(JobHud hud)
 		{
+			Bar bar1 = new(hud);
+			bar1.Add(new(bar1) {TextureActionId = 2269, CustomDuration = GetHutonDuration, StatusWarningThreshold = 20}); // Huton
+			bar1.Add(new(bar1) {TextureActionId = 2258, CooldownActionId = 2258, StatusId = 638, StatusTarget = Unit.Target, MaxStatusDuration = 15, StatusSourcePlayer = false, GlowBorderUsable = true, CustomCondition = IsHidden}); // Trick Attack
+			bar1.Add(new(bar1) {TextureActionId = 2264, CooldownActionId = 2264, StatusId = 497, MaxStatusDuration = 15}); // Kassatsu
+			bar1.Add(new(bar1) {TextureActionId = 16493, CooldownActionId = 16493, StatusId = 497, MaxStatusDuration = 30}); // Bunshin TODO: Stacks
+			bar1.Add(new(bar1) {TextureActionId = 7403, CooldownActionId = 7403, StatusId = 1186, MaxStatusDuration = 6}); // Ten Chi Jin
+			hud.AddBar(bar1);
+
+			Bar bar2 = new(hud);
+			bar2.Add(new(bar2) {TextureActionId = 2245, CooldownActionId = 2245, StatusIds = new[] {507u, 614u}, MaxStatusDurations = new[] {20f, Constants.PERMANENT_STATUS_DURATION}, CustomCondition = IsOutOfCombat}); // Hide
+			bar2.Add(new(bar2) {TextureActionId = 16489, CooldownActionId = 16489, CustomPowerCondition = IsMeisuiUsable, RequiresCombat = true}); // Meisui
+			bar2.Add(new(bar2) {TextureActionId = 7402, RequiredPowerType = JobsHelper.PowerType.Ninki, RequiredPowerAmount = 50, GlowBorderUsable = true, StacksPowerType = JobsHelper.PowerType.Ninki}); // Bhavacakra
+			bar2.Add(new(bar2) {TextureActionId = 2262, CooldownActionId = 2262}); // Shukuchi
+			hud.AddBar(bar2);
+
 			base.Configure(hud);
+
+			Bar roleBar = hud.Bars.Last();
+			roleBar.Add(new(roleBar) {TextureActionId = 2241, CooldownActionId = 2241, StatusId = 488, MaxStatusDuration = 20}, 1); // Shade Shift
 		}
+
+		private static bool IsMeisuiUsable() => Plugin.JobGauges.Get<NINGauge>().Ninki <= 50 && IsHidden();
+
+		private static bool IsHidden() => SpellHelper.GetStatus(507, Unit.Player) != null || SpellHelper.GetStatus(614, Unit.Player) != null;
+
+		private static (float, float) GetHutonDuration()
+		{
+			NINGauge gauge = Plugin.JobGauges.Get<NINGauge>();
+			if (gauge.HutonTimer != 0)
+			{
+				return (gauge.HutonTimer / 1000f, 60f);
+			}
+
+			return (0, 0);
+		}
+
+		private static bool IsOutOfCombat() => !EventManager.Combat.IsInCombat(false);
 	}
 }
