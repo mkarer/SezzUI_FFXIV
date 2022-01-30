@@ -5,9 +5,9 @@ namespace SezzUI.Interface.GeneralElements
 {
 #if DEBUG
 	[Disableable(false)]
+	[Exportable(false)]
 	[Section("Job HUD")]
 	[SubSection("DEBUG", 0)]
-	[Exportable(false)]
 	public class JobHudDebugConfig : PluginConfigObject
 	{
 		[Checkbox("Log General Messages")]

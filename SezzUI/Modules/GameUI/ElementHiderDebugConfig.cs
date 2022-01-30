@@ -5,9 +5,9 @@ namespace SezzUI.Interface.GeneralElements
 {
 #if DEBUG
 	[Disableable(false)]
+	[Exportable(false)]
 	[Section("Game UI")]
 	[SubSection("Element Hiding DEBUG", 0)]
-	[Exportable(false)]
 	public class ElementHiderDebugConfig : PluginConfigObject
 	{
 		[Checkbox("Log General Messages")]

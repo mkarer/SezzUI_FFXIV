@@ -5,9 +5,9 @@ namespace SezzUI.Interface.GeneralElements
 {
 #if DEBUG
 	[Disableable(false)]
+	[Exportable(false)]
 	[Section("Plugin Menu")]
 	[SubSection("DEBUG", 0)]
-	[Exportable(false)]
 	public class PluginMenuDebugConfig : PluginConfigObject
 	{
 		[Checkbox("Log General Messages")]

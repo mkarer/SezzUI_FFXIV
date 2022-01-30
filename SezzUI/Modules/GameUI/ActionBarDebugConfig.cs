@@ -5,9 +5,9 @@ namespace SezzUI.Interface.GeneralElements
 {
 #if DEBUG
 	[Disableable(false)]
+	[Exportable(false)]
 	[Section("Game UI")]
 	[SubSection("Action Bars DEBUG", 0)]
-	[Exportable(false)]
 	public class ActionBarDebugConfig : PluginConfigObject
 	{
 		[Checkbox("Log Bar Paging")]

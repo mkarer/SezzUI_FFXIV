@@ -5,9 +5,9 @@ namespace SezzUI.Interface.GeneralElements
 {
 #if DEBUG
 	[Disableable(false)]
+	[Exportable(false)]
 	[Section("Cooldown HUD")]
 	[SubSection("DEBUG", 0)]
-	[Exportable(false)]
 	public class CooldownHudDebugConfig : PluginConfigObject
 	{
 		[Checkbox("Log Configuration Manager")]

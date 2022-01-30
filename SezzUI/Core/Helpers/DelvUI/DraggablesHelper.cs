@@ -21,8 +21,7 @@ namespace DelvUI.Helpers
 
 			ImDrawListPtr drawList = ImGui.GetWindowDrawList();
 			Vector2 screenSize = ImGui.GetMainViewport().Size;
-			Vector2 offset = hudConfig != null && hudConfig.UseGlobalHudShift ? hudConfig.HudOffset : Vector2.Zero;
-			Vector2 center = screenSize / 2f + offset;
+			Vector2 center = screenSize / 2f;
 
 			// grid
 			if (config.ShowGrid)
