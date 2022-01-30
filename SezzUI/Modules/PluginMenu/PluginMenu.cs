@@ -60,7 +60,7 @@ namespace SezzUI.Modules.PluginMenu
 			ImGui.SetNextWindowSize(Size, ImGuiCond.Always);
 			ImGui.SetNextWindowContentSize(Size);
 			ImGui.SetNextWindowPos(menuPos);
-			ImGuiHelper.PushButtonStyle(new Vector2(BORDER_SIZE, BORDER_SIZE), opacity); // Would clip some borders otherwise...
+			ImGuiHelper.PushButtonStyle(BORDER_SIZE, opacity); // Would clip some borders otherwise...
 
 			DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_PluginMenu_Buttons", menuPos, Size, true, false, drawList =>
 			{
@@ -90,7 +90,6 @@ namespace SezzUI.Modules.PluginMenu
 								Logger.Debug($"Executing command: {item.Config.Command}");
 							}
 #endif
-
 							_xivCommon.Functions.Chat.SendMessage(item.Config.Command);
 						}
 					}

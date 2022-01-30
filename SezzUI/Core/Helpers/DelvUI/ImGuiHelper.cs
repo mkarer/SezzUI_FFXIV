@@ -10,17 +10,22 @@ namespace DelvUI.Helpers
 {
 	public static class ImGuiHelper
 	{
-		public static void PushButtonStyle(Vector2? padding = null, float opacity = 1f)
+		public static void PushButtonStyle(float opacity = 1f, Vector2? padding = null)
 		{
-			ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, padding ?? Vector2.Zero);
+			PushButtonStyle(1f, opacity, padding);
+		}
+
+		public static void PushButtonStyle(float borderSize, float opacity = 1f, Vector2? padding = null)
+		{
+			ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, padding ?? new(borderSize, borderSize));
 			ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0f);
-			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0f);
+			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, borderSize);
 			ImGui.PushStyleColor(ImGuiCol.Button, ImGui.ColorConvertFloat4ToU32(new(0f, 0f, 0f, 0.5f * opacity)));
 			ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.15f * opacity)));
 			ImGui.PushStyleColor(ImGuiCol.ButtonActive, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.25f * opacity)));
 			ImGui.PushStyleColor(ImGuiCol.Border, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 77f / 255f * opacity)));
 		}
-
+		
 		public static void PopButtonStyle()
 		{
 			ImGui.PopStyleVar(3);
