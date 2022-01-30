@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Dalamud.Interface;
 using ImGuiNET;
 using SezzUI.Config;
 using SezzUI.Config.Tree;
+using SezzUI.Enums;
 
 namespace DelvUI.Helpers
 {
@@ -25,11 +27,47 @@ namespace DelvUI.Helpers
 			ImGui.PushStyleColor(ImGuiCol.ButtonActive, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.25f * opacity)));
 			ImGui.PushStyleColor(ImGuiCol.Border, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 77f / 255f * opacity)));
 		}
-		
+
 		public static void PopButtonStyle()
 		{
 			ImGui.PopStyleVar(3);
 			ImGui.PopStyleColor(4);
+		}
+
+		public static bool FontAwesomeIconButton(string label, FontAwesomeIcon icon, Vector2 size)
+		{
+			Vector2 buttonPosition = ImGui.GetCursorScreenPos();
+			Vector2 buttonSize = new(size.X, ImGui.GetFrameHeight());
+
+			string iconString = icon.ToIconString();
+			string buttonId = label + iconString;
+
+			bool clicked = ImGui.Button("##SezzUI_IconButton" + buttonId, size); // Fake button
+
+			// Content
+			Vector2 textSize = ImGui.CalcTextSize(label);
+
+			ImGui.PushFont(UiBuilder.IconFont);
+			Vector2 iconSize = ImGui.CalcTextSize(iconString);
+			Vector2 contentSize = new(textSize.X + iconSize.X + 6, Math.Max(textSize.Y, iconSize.Y));
+
+			// ImGui.SetCursorPos(textPosition.AddY((contentSize.Y - iconSize.Y) / 2f));
+			// ImGui.Text(iconString);
+			// ImGui.PopFont();
+			// ImGui.SetCursorPos(textPosition + new Vector2(iconSize.X + 6, (contentSize.Y - textSize.Y) / 2f - 1));
+			// ImGui.Text(label);
+
+			// Looks like we have to draw the labels in new window,
+			// otherwise ImGui.SameLine() doesn't work correctly anymore?!
+			DrawHelper.DrawInWindow("##SezzUI_IconButtonContent" + buttonId, buttonPosition, buttonSize, false, false, drawList =>
+			{
+				Vector2 textPosition = SezzUI.Helpers.DrawHelper.GetAnchoredPosition(buttonPosition, buttonSize, contentSize, DrawAnchor.Center);
+				drawList.AddText(textPosition.AddY((contentSize.Y - iconSize.Y) / 2f), 0xffffffff, iconString);
+				ImGui.PopFont();
+				drawList.AddText(textPosition + new Vector2(iconSize.X + 6, (contentSize.Y - textSize.Y) / 2f - 1), 0xffffffff, label);
+			});
+
+			return clicked;
 		}
 
 		public static void DrawSeparator(int topSpacing, int bottomSpacing)
