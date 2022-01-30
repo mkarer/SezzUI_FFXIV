@@ -4,7 +4,7 @@ using SezzUI.Enums;
 
 namespace SezzUI.Interface.GeneralElements
 {
-	[DisableParentSettings("Size")]
+	[DisableParentSettings("Size", "Anchor")]
 	[Section("Job HUD")]
 	[SubSection("General", 0)]
 	public class JobHudConfig : AnchorablePluginConfigObject
