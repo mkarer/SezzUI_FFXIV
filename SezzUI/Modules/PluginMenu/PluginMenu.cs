@@ -7,8 +7,10 @@ using System.Text.RegularExpressions;
 using DelvUI.Helpers;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using JetBrains.Annotations;
 using SezzUI.Config;
 using SezzUI.Enums;
+using SezzUI.Interface;
 using SezzUI.Interface.GeneralElements;
 using XivCommon;
 using DrawHelper = SezzUI.Helpers.DrawHelper;
@@ -26,6 +28,9 @@ namespace SezzUI.Modules.PluginMenu
 		private static long _lastError;
 		private const byte BORDER_SIZE = 1;
 		private const byte BUTTON_PADDING = 4;
+
+		public Vector2 Size = Vector2.Zero;
+		public readonly Vector2 SizePreview = new(300f, 30f);
 
 		public override unsafe void Draw(DrawState drawState)
 		{
@@ -49,21 +54,17 @@ namespace SezzUI.Modules.PluginMenu
 			}
 
 			bool rightToLeft = Config.Anchor is DrawAnchor.Right or DrawAnchor.TopRight or DrawAnchor.BottomRight;
-
-			Vector2 menuSize = new(enabledItems.Sum(item => item.Size.X) + 2 * BORDER_SIZE + (enabledItems.Count() - 1) * BUTTON_PADDING, enabledItems[0].Size.Y + 2 * BORDER_SIZE);
-			Vector2 menuPos = DrawHelper.GetAnchoredPosition(menuSize, Config.Anchor);
-			menuPos.X += Config.Position.X;
-			menuPos.Y += Config.Position.Y;
+			Vector2 menuPos = DrawHelper.GetAnchoredPosition(Size, Config.Anchor) + Config.Position;
 
 			// Buttons
-			ImGui.SetNextWindowSize(menuSize, ImGuiCond.Always);
-			ImGui.SetNextWindowContentSize(menuSize);
+			ImGui.SetNextWindowSize(Size, ImGuiCond.Always);
+			ImGui.SetNextWindowContentSize(Size);
 			ImGui.SetNextWindowPos(menuPos);
 			ImGuiHelper.PushButtonStyle(new Vector2(BORDER_SIZE, BORDER_SIZE), opacity); // Would clip some borders otherwise...
 
-			DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_PluginMenu_Buttons", menuPos, menuSize, true, false, drawList =>
+			DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_PluginMenu_Buttons", menuPos, Size, true, false, drawList =>
 			{
-				float buttonOffset = rightToLeft ? menuSize.X - enabledItems[0].Size.X - BORDER_SIZE : BORDER_SIZE; // Need to add border size here for R2L or it will clip the right border. 
+				float buttonOffset = rightToLeft ? Size.X - enabledItems[0].Size.X - BORDER_SIZE : BORDER_SIZE; // Need to add border size here for R2L or it will clip the right border. 
 				uint shadowColor = ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity));
 
 				for (int i = 0; i < enabledItems.Count(); i++)
@@ -172,7 +173,18 @@ namespace SezzUI.Modules.PluginMenu
 			}
 
 			_items.ForEach(item => item.Update());
+			UpdateSize();
 			return true;
+		}
+
+		private void UpdateSize()
+		{
+			Size = Vector2.Zero;
+			List<PluginMenuItem> enabledItems = _items.Where(item => item.Config.Enabled).ToList();
+			if (enabledItems.Count() > 0)
+			{
+				Size = new(enabledItems.Sum(item => item.Size.X) + 2 * BORDER_SIZE + (enabledItems.Count() - 1) * BUTTON_PADDING, enabledItems[0].Size.Y + 2 * BORDER_SIZE);
+			}
 		}
 
 		#region Constructor
@@ -189,7 +201,7 @@ namespace SezzUI.Modules.PluginMenu
 			ConfigurationManager.Instance.Reset += OnConfigReset;
 			_items = new() {new(Config.Item1), new(Config.Item2), new(Config.Item3), new(Config.Item4), new(Config.Item5), new(Config.Item6), new(Config.Item7), new(Config.Item8), new(Config.Item9), new(Config.Item10)};
 
-			DraggableElements.Add(new(config, "Plugin Menu")); // TODO: Override Size
+			DraggableElements.Add(new PluginMenuDraggableHudElement(this, "Plugin Menu"));
 			Toggle(Config.Enabled);
 		}
 
@@ -206,6 +218,7 @@ namespace SezzUI.Modules.PluginMenu
 				if (Config.Enabled)
 				{
 					_items.Where(item => item.Config == itemConfig).FirstOrDefault()?.Update();
+					UpdateSize();
 				}
 
 				return;
@@ -284,4 +297,25 @@ namespace SezzUI.Modules.PluginMenu
 
 		#endregion
 	}
+
+	#region Draggable Element
+
+	public class PluginMenuDraggableHudElement : DraggableHudElement
+	{
+		private readonly PluginMenu _parent;
+
+		public PluginMenuDraggableHudElement([NotNull] PluginMenu parent, [CanBeNull] string? displayName = null, [CanBeNull] string? id = null) : base((AnchorablePluginConfigObject) parent.GetConfig(), displayName, id)
+		{
+			_parent = parent;
+		}
+
+		protected override Vector2 GetSize() => _parent.Size.X != 0 && _parent.Size.Y != 0 ? _parent.Size : _parent.SizePreview;
+
+		protected override void SetSize(Vector2 value)
+		{
+			// Size is calculated by child elements
+		}
+	}
+
+	#endregion
 }
