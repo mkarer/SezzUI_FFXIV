@@ -44,7 +44,7 @@ namespace SezzUI.Helpers
 
 			return anchor switch
 			{
-				DrawAnchor.Center => new(-halfViewPort.X + position.X + size.X / 2f, halfViewPort.Y - position.Y + size.Y / 2f),
+				DrawAnchor.Center => new(-halfViewPort.X + position.X + size.X / 2f, -halfViewPort.Y + position.Y + size.Y / 2f),
 				DrawAnchor.Left => new(position.X, -halfViewPort.Y + position.Y + size.Y / 2f),
 				DrawAnchor.Right => new(-viewPort.X + position.X + size.X, -halfViewPort.Y + position.Y + size.Y / 2f),
 				DrawAnchor.Top => new(-halfViewPort.X + position.X + size.X / 2f, position.Y),
