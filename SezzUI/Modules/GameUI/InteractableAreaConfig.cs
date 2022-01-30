@@ -25,6 +25,7 @@ namespace SezzUI.Interface.GeneralElements
 		[IntStringPair((int) Addon.ActionBar10, "Action Bar 10")]
 		[IntStringPair((int) Addon.MainMenu, "Main Menu")]
 		[IntStringPair((int) Addon.ScenarioGuide, "Scenario Guide")]
+		[IntStringPair((int) Addon.QuestLog, "Duty List")]
 		[Order(20)]
 		// ReSharper disable once CollectionNeverUpdated.Global
 		public List<int> Elements = new();
