@@ -34,17 +34,15 @@ namespace DelvUI.Helpers
 			ImGui.PopStyleColor(4);
 		}
 
-		public static bool FontAwesomeIconButton(string label, FontAwesomeIcon icon, Vector2 size)
+		public static bool FontAwesomeIconButton(string label, FontAwesomeIcon icon, Vector2 size, string? id = null)
 		{
 			Vector2 buttonPosition = ImGui.GetCursorScreenPos();
 			Vector2 buttonSize = new(size.X, ImGui.GetFrameHeight());
-
-			string iconString = icon.ToIconString();
-			string buttonId = label + iconString;
-
+			string buttonId = id ?? label;
 			bool clicked = ImGui.Button("##SezzUI_IconButton" + buttonId, size); // Fake button
 
 			// Content
+			string iconString = icon.ToIconString();
 			Vector2 textSize = ImGui.CalcTextSize(label);
 
 			ImGui.PushFont(UiBuilder.IconFont);
