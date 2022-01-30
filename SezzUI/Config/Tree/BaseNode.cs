@@ -244,10 +244,8 @@ namespace SezzUI.Config.Tree
 				ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1);
 
 				// Button: Show/Hide HUD
-				string hudVisibilityText = (ConfigurationManager.Instance.ShowHUD ? "Hide" : "Show") + " HUD";
-				FontAwesomeIcon hudVisibilityIcon = ConfigurationManager.Instance.ShowHUD ? FontAwesomeIcon.EyeSlash : FontAwesomeIcon.Eye;
-
-				if (ImGuiHelper.FontAwesomeIconButton(hudVisibilityText, hudVisibilityIcon, buttonSize))
+				FontAwesomeIcon hudVisibilityIcon = ConfigurationManager.Instance.ShowHUD ? FontAwesomeIcon.ToggleOn : FontAwesomeIcon.ToggleOff;
+				if (ImGuiHelper.FontAwesomeIconButton("Toggle Visibility", hudVisibilityIcon, buttonSize))
 				{
 					ConfigurationManager.Instance.ShowHUD = !ConfigurationManager.Instance.ShowHUD;
 				}
