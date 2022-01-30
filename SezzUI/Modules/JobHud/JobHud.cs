@@ -4,10 +4,12 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using JetBrains.Annotations;
 using SezzUI.Animator;
 using SezzUI.Config;
 using SezzUI.Enums;
 using SezzUI.Helpers;
+using SezzUI.Interface;
 using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Modules.JobHud
@@ -29,6 +31,8 @@ namespace SezzUI.Modules.JobHud
 		private readonly List<AuraAlert> _auraAlerts = new();
 		private readonly Dictionary<uint, BasePreset> _presets = new();
 
+		public Vector2 Size = Vector2.Zero;
+		public readonly Vector2 SizePreview = new(200f, 30f);
 		public int LastDrawTick { get; private set; }
 
 		public int LastDrawElapsed { get; private set; }
@@ -62,7 +66,7 @@ namespace SezzUI.Modules.JobHud
 				Logger.Error(ex, $"Error loading presets: {ex}");
 			}
 
-			DraggableElements.Add(new(config, "Job HUD"));
+			DraggableElements.Add(new JobHudDraggableHudElement(this, "Job HUD"));
 			Toggle(Config.Enabled);
 		}
 
@@ -150,6 +154,8 @@ namespace SezzUI.Modules.JobHud
 					preset.Configure(this);
 				}
 
+				UpdateSize();
+
 				if (EventManager.Combat.IsInCombat())
 				{
 					Show();
@@ -157,9 +163,27 @@ namespace SezzUI.Modules.JobHud
 			}
 		}
 
+		public void UpdateSize()
+		{
+			Size = Vector2.Zero;
+			for (int i = 0; i < Bars.Count; i++)
+			{
+				Bar bar = Bars[i];
+				if (bar.HasIcons)
+				{
+					Size.X = Math.Max(Size.X, bar.Size.X);
+					Size.Y += bar.Size.Y;
+					if (i < Bars.Count - 1)
+					{
+						Size.Y += bar.IconPadding;
+					}
+				}
+			}
+		}
+
 		public override void Draw(DrawState drawState)
 		{
-			if (!Config.Enabled || drawState == DrawState.HiddenNotInGame || drawState == DrawState.HiddenDisabled || Plugin.ClientState.LocalPlayer == null || SpellHelper.GetStatus(1534, Unit.Player, false) != null)
+			if (!Config.Enabled || drawState != DrawState.Visible && drawState != DrawState.Partially || Plugin.ClientState.LocalPlayer == null || SpellHelper.GetStatus(1534, Unit.Player, false) != null)
 			{
 				// 1534: Role-playing
 				// Condition.RolePlaying ?
@@ -339,4 +363,37 @@ namespace SezzUI.Modules.JobHud
 
 		#endregion
 	}
+
+	#region Draggable Element
+
+	public class JobHudDraggableHudElement : DraggableHudElement
+	{
+		private readonly JobHud _parent;
+
+		public JobHudDraggableHudElement([NotNull] JobHud parent, [CanBeNull] string? displayName = null, [CanBeNull] string? id = null) : base((AnchorablePluginConfigObject) parent.GetConfig(), displayName, id)
+		{
+			_parent = parent;
+		}
+
+		protected override Vector2 GetSize() => _parent.Size.X != 0 && _parent.Size.Y != 0 ? _parent.Size : _parent.SizePreview;
+
+		protected override void SetSize(Vector2 value)
+		{
+			// Size is calculated by child elements
+		}
+
+		protected override Vector2 GetPosition() =>
+			// Position is only a anchor, child elements are positioned below
+			new(Config.Position.X, Config.Position.Y + Size.Y / 2f);
+
+		protected override void SetPosition(Vector2 position)
+		{
+			// Anchor is always Center
+			// Child elements are positioned below
+			Vector2 anchorPosition = new(position.X, position.Y - Size.Y / 2f);
+			base.SetPosition(anchorPosition);
+		}
+	}
+
+	#endregion
 }
