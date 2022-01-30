@@ -159,7 +159,7 @@ namespace SezzUI.Modules.JobHud
 
 		public override void Draw(DrawState drawState)
 		{
-			if (!Config.Enabled || Plugin.ClientState.LocalPlayer == null || SpellHelper.GetStatus(1534, Unit.Player, false) != null)
+			if (!Config.Enabled || drawState == DrawState.HiddenNotInGame || drawState == DrawState.HiddenDisabled || Plugin.ClientState.LocalPlayer == null || SpellHelper.GetStatus(1534, Unit.Player, false) != null)
 			{
 				// 1534: Role-playing
 				// Condition.RolePlaying ?
