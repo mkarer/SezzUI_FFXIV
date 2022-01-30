@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
+using DelvUI.Helpers;
 using ImGuiNET;
 using ImGuiScene;
 using SezzUI.Config.Attributes;
@@ -231,27 +232,53 @@ namespace SezzUI.Config.Tree
 
 			ImGui.BeginGroup();
 			{
-				ImGui.SetCursorPosX(0);
+				ImGuiStylePtr style = ImGui.GetStyle();
+				Vector2 buttonSize = new(150f, 0);
+				ImGui.SetCursorPosX(2);
 
 				ImGui.PushStyleColor(ImGuiCol.Border, Vector4.Zero);
-				ImGui.BeginChild("SezzUI_Settings_Buttons", new(1200, 0), true, ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoScrollbar);
+				ImGui.BeginChild("SezzUI_Settings_Buttons", new(ImGui.GetContentRegionAvail().X + style.FramePadding.X, 0), true, ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoScrollbar);
 				ImGui.PopStyleColor();
-
-				const float buttonWidth = 150;
 
 				ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(45f / 255f, 45f / 255f, 45f / 255f, alpha));
 				ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1);
-				if (ImGui.Button((ConfigurationManager.Instance.ShowHUD ? "Hide" : "Show") + " HUD", new(buttonWidth, 0)))
+
+				// Button: Show/Hide HUD
+				string hudVisibilityText = (ConfigurationManager.Instance.ShowHUD ? "Hide" : "Show") + " HUD";
+				FontAwesomeIcon hudVisibilityIcon = ConfigurationManager.Instance.ShowHUD ? FontAwesomeIcon.EyeSlash : FontAwesomeIcon.Eye;
+
+				if (ImGuiHelper.FontAwesomeIconButton(hudVisibilityText, hudVisibilityIcon, buttonSize))
 				{
 					ConfigurationManager.Instance.ShowHUD = !ConfigurationManager.Instance.ShowHUD;
 				}
 
+				// Button: Lock/Unlock HUD
+				string hudLockText = (ConfigurationManager.Instance.LockHUD ? "Unlock" : "Lock") + " HUD";
+				FontAwesomeIcon hudLockIcon = ConfigurationManager.Instance.LockHUD ? FontAwesomeIcon.ArrowsAlt : FontAwesomeIcon.Lock;
+
 				ImGui.SameLine();
-				if (ImGui.Button((ConfigurationManager.Instance.LockHUD ? "Unlock" : "Lock") + " HUD", new(buttonWidth, 0)))
+				ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 2);
+				if (ImGuiHelper.FontAwesomeIconButton(hudLockText, hudLockIcon, buttonSize))
 				{
 					ConfigurationManager.Instance.LockHUD = !ConfigurationManager.Instance.LockHUD;
 				}
 
+				// Button: Support
+				Vector2 supportButtonPosition = new(ImGui.GetWindowWidth() - buttonSize.X - style.FramePadding.X, style.ItemSpacing.Y + style.FrameBorderSize + style.FramePadding.Y);
+				ImGui.SameLine();
+				ImGui.SetCursorPosX(supportButtonPosition.X);
+				ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(62f / 255f, 41f / 255f, 41f / 255f, alpha));
+				ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(108f / 255f, 41f / 255f, 41f / 255f, alpha));
+				ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(142f / 255f, 41f / 255f, 41f / 255f, alpha));
+
+				if (ImGuiHelper.FontAwesomeIconButton("Support Me", FontAwesomeIcon.KissWinkHeart, buttonSize))
+				{
+					Utils.OpenUrl("https://ko-fi.com/sezzat");
+				}
+
+				ImGui.PopStyleColor(3);
+
+				// Done
 				ImGui.PopStyleVar();
 				ImGui.PopStyleColor();
 				ImGui.EndChild();
