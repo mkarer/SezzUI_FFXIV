@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Dalamud.Interface;
 using ImGuiNET;
 using SezzUI.Interface;
 using SezzUI.Interface.GeneralElements;
@@ -16,7 +17,7 @@ namespace DelvUI.Helpers
 
 			ImGui.SetNextWindowBgAlpha(config.BackgroundAlpha);
 
-			ImGui.Begin("SezzUI_grid", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoFocusOnAppearing);
+			ImGui.Begin("SezzUI_Grid", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoFocusOnAppearing);
 
 			ImDrawListPtr drawList = ImGui.GetWindowDrawList();
 			Vector2 screenSize = ImGui.GetMainViewport().Size;
@@ -63,8 +64,8 @@ namespace DelvUI.Helpers
 
 			if (config.ShowAnchorPoints && selectedElement != null)
 			{
-				Vector2 parentAnchorPos = center + selectedElement.ParentPos();
-				Vector2 anchorPos = parentAnchorPos + selectedElement.GetConfig().Position;
+				Vector2 parentAnchorPos = center + Vector2.Zero; // + selectedElement.ParentPos();
+				Vector2 anchorPos = parentAnchorPos + selectedElement.Position;
 
 				drawList.AddLine(parentAnchorPos, anchorPos, 0xAA0000FF, 2);
 
@@ -75,7 +76,7 @@ namespace DelvUI.Helpers
 			ImGui.End();
 		}
 
-		public static void DrawElements(Vector2 origin, HudHelper hudHelper, List<DraggableHudElement> elements, DraggableHudElement? selectedElement)
+		public static void DrawElements(HudHelper hudHelper, List<DraggableHudElement> elements, DraggableHudElement? selectedElement)
 		{
 			bool canTakeInput = true;
 
@@ -85,7 +86,7 @@ namespace DelvUI.Helpers
 				if (!hudHelper.IsElementHidden(selectedElement))
 				{
 					selectedElement.CanTakeInputForDrag = true;
-					selectedElement.Draw(origin);
+					selectedElement.DrawDraggableArea();
 					canTakeInput = !selectedElement.NeedsInputForDrag;
 				}
 				else if (selectedElement is IHudElementWithMouseOver elementWithMouseOver)
@@ -105,7 +106,7 @@ namespace DelvUI.Helpers
 				if (!hudHelper.IsElementHidden(element))
 				{
 					element.CanTakeInputForDrag = canTakeInput;
-					element.Draw(origin);
+					element.DrawDraggableArea();
 					canTakeInput = !canTakeInput ? false : !element.NeedsInputForDrag;
 				}
 				else if (element is IHudElementWithMouseOver elementWithMouseOver)
@@ -120,13 +121,12 @@ namespace DelvUI.Helpers
 			offset = Vector2.Zero;
 
 			ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoSavedSettings;
-
-			Vector2 margin = new(4, 0);
-			Vector2 windowSize = ArrowSize + margin * 2;
+			ImGui.PushFont(UiBuilder.IconFont);
+			ImGuiHelper.PushButtonStyle();
 
 			// left, right, up, down
 			Vector2[] positions = GetArrowPositions(position, size);
-			Vector2[] offsets = new[]
+			Vector2[] offsets =
 			{
 				new(-1, 0),
 				new Vector2(1, 0),
@@ -136,35 +136,36 @@ namespace DelvUI.Helpers
 
 			for (int i = 0; i < 4; i++)
 			{
-				Vector2 pos = positions[i] - margin;
+				Vector2 pos = positions[i];
 
-				ImGui.SetNextWindowSize(windowSize, ImGuiCond.Always);
+				ImGui.SetNextWindowSize(ArrowSize, ImGuiCond.Always);
 				ImGui.SetNextWindowPos(pos);
-
-				ImGui.Begin("SezzUI_draggablesArrow " + i, windowFlags);
+				ImGui.Begin("SezzUI_DraggablesArrow" + i, windowFlags);
 
 				// fake button
-				ImGui.ArrowButton("arrow button " + i, (ImGuiDir) i);
-
-				if (ImGui.IsMouseHoveringRect(pos, pos + windowSize))
+				ImGui.Button((FontAwesomeIcon.ArrowLeft + i).ToIconString(), ArrowSize);
+				if (ImGui.IsMouseHoveringRect(pos, pos + ArrowSize))
 				{
 					// track click manually to not deal with window focus stuff
 					if (ImGui.IsMouseClicked(ImGuiMouseButton.Left))
 					{
 						offset = offsets[i];
 					}
-
-					// tooltip
-					TooltipsHelper.Instance.ShowTooltipOnCursor(tooltipText);
 				}
 
 				ImGui.End();
 			}
 
+			ImGuiHelper.PopButtonStyle();
+			ImGui.PopFont();
+
+			// tooltip
+			TooltipsHelper.Instance.ShowTooltipOnCursor(tooltipText);
+
 			return offset != Vector2.Zero;
 		}
 
-		public static Vector2 ArrowSize = new(40, 40);
+		public static Vector2 ArrowSize = new(30, 30);
 
 		public static Vector2[] GetArrowPositions(Vector2 position, Vector2 size) => GetArrowPositions(position, size, ArrowSize);
 
@@ -172,10 +173,10 @@ namespace DelvUI.Helpers
 		{
 			return new[]
 			{
-				new(position.X - arrowSize.X + 10, position.Y + size.Y / 2f - arrowSize.Y / 2f - 2),
-				new Vector2(position.X + size.X - 8, position.Y + size.Y / 2f - arrowSize.Y / 2f - 2),
-				new Vector2(position.X + size.X / 2f - arrowSize.X / 2f + 2, position.Y - arrowSize.Y + 1),
-				new Vector2(position.X + size.X / 2f - arrowSize.X / 2f + 2, position.Y + size.Y - 7)
+				new(position.X - arrowSize.X - 10, position.Y + size.Y / 2f - arrowSize.Y / 2f),
+				new Vector2(position.X + size.X + 10, position.Y + size.Y / 2f - arrowSize.Y / 2f),
+				new Vector2(position.X + size.X / 2f - arrowSize.X / 2f + 2, position.Y - arrowSize.Y - 10),
+				new Vector2(position.X + size.X / 2f - arrowSize.X / 2f + 2, position.Y + size.Y + 10)
 			};
 		}
 	}

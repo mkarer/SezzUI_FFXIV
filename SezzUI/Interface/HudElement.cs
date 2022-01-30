@@ -7,12 +7,12 @@ namespace SezzUI.Interface
 {
 	public abstract class HudElement : IDisposable
 	{
-		protected MovablePluginConfigObject _config;
-		public MovablePluginConfigObject GetConfig() => _config;
+		protected AnchorablePluginConfigObject _config;
+		public AnchorablePluginConfigObject GetConfig() => _config;
 
 		public string ID => _config.ID;
 
-		public HudElement(MovablePluginConfigObject config)
+		public HudElement(AnchorablePluginConfigObject config)
 		{
 			_config = config;
 		}

@@ -10,6 +10,23 @@ namespace DelvUI.Helpers
 {
 	public static class ImGuiHelper
 	{
+		public static void PushButtonStyle(Vector2? padding = null, float opacity = 1f)
+		{
+			ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, padding ?? Vector2.Zero);
+			ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0);
+			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0);
+			ImGui.PushStyleColor(ImGuiCol.Button, ImGui.ColorConvertFloat4ToU32(new(0f, 0f, 0f, 0.5f * opacity)));
+			ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.15f * opacity)));
+			ImGui.PushStyleColor(ImGuiCol.ButtonActive, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.25f * opacity)));
+			ImGui.PushStyleColor(ImGuiCol.Border, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 77f / 255f * opacity)));
+		}
+
+		public static void PopButtonStyle()
+		{
+			ImGui.PopStyleVar(3);
+			ImGui.PopStyleColor(4);
+		}
+
 		public static void DrawSeparator(int topSpacing, int bottomSpacing)
 		{
 			DrawSpacing(topSpacing);

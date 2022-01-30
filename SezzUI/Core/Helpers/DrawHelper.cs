@@ -35,6 +35,28 @@ namespace SezzUI.Helpers
 
 		public static Vector2 GetAnchoredPosition(Vector2 elementSize, DrawAnchor anchor) => GetAnchoredPosition(Vector2.Zero, ImGui.GetMainViewport().Size, elementSize, anchor);
 
+		public static Vector2 GetAnchoredImGuiPosition(Vector2 position, Vector2 size, DrawAnchor anchor)
+		{
+			// TODO: Universal anchor conversion
+			// ImGui positions are TopLeft anchored
+			Vector2 viewPort = ImGui.GetMainViewport().Size;
+			Vector2 halfViewPort = viewPort / 2f;
+
+			return anchor switch
+			{
+				DrawAnchor.Center => new(-halfViewPort.X + position.X + size.X / 2f, halfViewPort.Y - position.Y + size.Y / 2f),
+				DrawAnchor.Left => new(position.X, -halfViewPort.Y + position.Y + size.Y / 2f),
+				DrawAnchor.Right => new(-viewPort.X + position.X + size.X, -halfViewPort.Y + position.Y + size.Y / 2f),
+				DrawAnchor.Top => new(-halfViewPort.X + position.X + size.X / 2f, position.Y),
+				DrawAnchor.TopLeft => position,
+				DrawAnchor.TopRight => new(-viewPort.X + position.X + size.X, position.Y),
+				DrawAnchor.Bottom => new(-halfViewPort.X + position.X + size.X / 2f, -viewPort.Y + position.Y + size.Y),
+				DrawAnchor.BottomLeft => new(position.X, -viewPort.Y + position.Y + size.Y),
+				DrawAnchor.BottomRight => new(-viewPort.X + position.X + size.X, -viewPort.Y + position.Y + size.Y),
+				_ => position
+			};
+		}
+
 		public static void DrawBackdrop(Vector2 pos, Vector2 size, uint backgroundColor, uint borderColor, ImDrawListPtr drawList)
 		{
 			// Background
@@ -157,18 +179,40 @@ namespace SezzUI.Helpers
 			DrawAnchoredText(font, TextStyle.Outline, DrawAnchor.Center, text, pos, size, color, outlineColor, drawList);
 		}
 
-		public static void DrawPlaceholder(string text, Vector2 pos, Vector2 size, float opacity, ImDrawListPtr drawList)
+		public static void DrawPlaceholder(string text, Vector2 pos, Vector2 size, uint textColor, uint lineColor, uint backgroundColor, PlaceholderLineStyle style, ImDrawListPtr drawList)
 		{
 			// Backdrop
-			DrawBackdrop(pos, size, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 0.5f * opacity)), ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, 0.3f * opacity)), drawList);
+			DrawBackdrop(pos, size, backgroundColor, lineColor, drawList);
 
-			// Cross
-			uint colorLines = ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, 0.1f * opacity));
-			drawList.AddLine(new(pos.X + 1, pos.Y + 1), new(pos.X + size.X - 1, pos.Y + size.Y - 2), colorLines, 1); // Top Left -> Bottom Right
-			drawList.AddLine(new(pos.X + 1, pos.Y + size.Y - 2), new(pos.X + size.X - 1, pos.Y + 1), colorLines, 1); // Bottom Left -> Top Right
+			// Lines
+			switch (style)
+			{
+				case PlaceholderLineStyle.Diagonal:
+					drawList.AddLine(new(pos.X + 1, pos.Y + 1), new(pos.X + size.X - 1, pos.Y + size.Y - 2), lineColor, 1); // Top Left -> Bottom Right
+					drawList.AddLine(new(pos.X + 1, pos.Y + size.Y - 2), new(pos.X + size.X - 1, pos.Y + 1), lineColor, 1); // Bottom Left -> Top Right
+					break;
+
+				case PlaceholderLineStyle.Parallel:
+					drawList.AddLine(new(pos.X + 1, pos.Y + size.Y / 2f), new(pos.X + size.X - 1, pos.Y + size.Y / 2f), lineColor, 1); // Top Left -> Bottom Right
+					drawList.AddLine(new(pos.X + size.X / 2f, pos.Y + 1), new(pos.X + size.X / 2f, pos.Y + size.Y - 2), lineColor, 1); // Top Left -> Bottom Right
+					break;
+			}
 
 			// Text
-			DrawCenteredShadowText("MyriadProLightCond_16", text, pos, size, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
+			if (text.Length > 0)
+			{
+				uint shadowColor = ((textColor >> 24) & 255) << 24;
+				DrawCenteredShadowText("MyriadProLightCond_16", text, pos, size, textColor, shadowColor, drawList);
+			}
+		}
+
+		public static void DrawPlaceholder(string text, Vector2 pos, Vector2 size, float opacity, PlaceholderLineStyle style, ImDrawListPtr drawList)
+		{
+			uint textColor = ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, opacity));
+			uint lineColor = ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, 0.3f * opacity));
+			uint backgroundColor = ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 0.5f * opacity));
+
+			DrawPlaceholder(text, pos, size, textColor, lineColor, backgroundColor, style, drawList);
 		}
 
 		public static void DrawProgressBar(Vector2 pos, Vector2 size, float min, float max, float current, uint barColor, uint bgColor, ImDrawListPtr drawList)
@@ -300,6 +344,13 @@ namespace SezzUI.Helpers
 			}
 
 			return (uv0, uv1);
+		}
+
+		public enum PlaceholderLineStyle
+		{
+			None,
+			Diagonal,
+			Parallel
 		}
 	}
 }

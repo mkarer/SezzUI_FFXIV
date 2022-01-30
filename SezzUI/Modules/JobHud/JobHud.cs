@@ -4,25 +4,20 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using Dalamud.Game.ClientState.Objects.SubKinds;
-using Dalamud.Game.ClientState.Objects.Types;
 using SezzUI.Animator;
 using SezzUI.Config;
 using SezzUI.Enums;
 using SezzUI.Helpers;
-using SezzUI.Interface;
 using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Modules.JobHud
 {
-	public class JobHud : DraggableHudElement, IHudElementWithActor
+	public class JobHud : PluginModule
 	{
 		private JobHudConfig Config => (JobHudConfig) _config;
 #if DEBUG
 		private readonly JobHudDebugConfig _debugConfig;
 #endif
-		public GameObject? Actor { get; set; } = null;
-		internal PluginLogger Logger;
-
 		private readonly Animator.Animator _animator = new();
 		public bool IsShown { get; private set; }
 
@@ -41,9 +36,8 @@ namespace SezzUI.Modules.JobHud
 		private uint _currentJobId;
 		private byte _currentLevel;
 
-		public JobHud(JobHudConfig config, string displayName) : base(config, displayName)
+		public JobHud(JobHudConfig config) : base(config)
 		{
-			Logger = new(GetType().Name);
 #if DEBUG
 			_debugConfig = ConfigurationManager.Instance.GetConfigObject<JobHudDebugConfig>();
 #endif
@@ -68,61 +62,50 @@ namespace SezzUI.Modules.JobHud
 				Logger.Error(ex, $"Error loading presets: {ex}");
 			}
 
+			DraggableElements.Add(new(config, "Job HUD"));
 			Toggle(Config.Enabled);
 		}
 
-		protected override (List<Vector2>, List<Vector2>) ChildrenPositionsAndSizes() =>
-			(new() {Config.Position}, new() {new(300f, 72f)});
-
-		public void Toggle(bool enable = true)
+		protected override bool Enable()
 		{
-#if DEBUG
-			if (_debugConfig.LogGeneral)
+			if (!base.Enable())
 			{
-				Logger.Debug("Toggle", $"State: {enable}");
+				return false;
 			}
-#endif
 
-			if (enable && !_isEnabled)
+			_isEnabled = !_isEnabled;
+			Plugin.ClientState.Login += OnLogin;
+			Plugin.ClientState.Logout += OnLogout;
+
+			EventManager.Player.JobChanged += OnJobChanged;
+			EventManager.Player.LevelChanged += OnLevelChanged;
+			EventManager.Combat.EnteringCombat += OnEnteringCombat;
+			EventManager.Combat.LeavingCombat += OnLeavingCombat;
+
+			Configure();
+			return true;
+		}
+
+		protected override bool Disable()
+		{
+			if (!base.Disable())
 			{
-#if DEBUG
-				if (_debugConfig.LogGeneral)
-				{
-					Logger.Debug("Toggle", "Enable");
-				}
-#endif
-				_isEnabled = !_isEnabled;
-				Plugin.ClientState.Login += OnLogin;
-				Plugin.ClientState.Logout += OnLogout;
-
-				EventManager.Player.JobChanged += OnJobChanged;
-				EventManager.Player.LevelChanged += OnLevelChanged;
-				EventManager.Combat.EnteringCombat += OnEnteringCombat;
-				EventManager.Combat.LeavingCombat += OnLeavingCombat;
-
-				Configure();
+				return false;
 			}
-			else if (!enable && _isEnabled)
-			{
-#if DEBUG
-				if (_debugConfig.LogGeneral)
-				{
-					Logger.Debug("Toggle", "Disable");
-				}
-#endif
-				_isEnabled = !_isEnabled;
-				Reset();
 
-				Plugin.ClientState.Login -= OnLogin;
-				Plugin.ClientState.Logout -= OnLogout;
+			_isEnabled = !_isEnabled;
+			Reset();
 
-				EventManager.Player.JobChanged -= OnJobChanged;
-				EventManager.Player.LevelChanged -= OnLevelChanged;
-				EventManager.Combat.EnteringCombat -= OnEnteringCombat;
-				EventManager.Combat.LeavingCombat -= OnLeavingCombat;
+			Plugin.ClientState.Login -= OnLogin;
+			Plugin.ClientState.Logout -= OnLogout;
 
-				OnLogout(null!, null!);
-			}
+			EventManager.Player.JobChanged -= OnJobChanged;
+			EventManager.Player.LevelChanged -= OnLevelChanged;
+			EventManager.Combat.EnteringCombat -= OnEnteringCombat;
+			EventManager.Combat.LeavingCombat -= OnLeavingCombat;
+
+			OnLogout(null!, null!);
+			return true;
 		}
 
 		private void Reset()
@@ -174,9 +157,9 @@ namespace SezzUI.Modules.JobHud
 			}
 		}
 
-		public override void DrawChildren(Vector2 origin)
+		public override void Draw(DrawState drawState)
 		{
-			if (!Config.Enabled || Actor == null || Actor is not PlayerCharacter || SpellHelper.GetStatus(1534, Unit.Player, false) != null)
+			if (!Config.Enabled || Plugin.ClientState.LocalPlayer == null || SpellHelper.GetStatus(1534, Unit.Player, false) != null)
 			{
 				// 1534: Role-playing
 				// Condition.RolePlaying ?
@@ -194,7 +177,7 @@ namespace SezzUI.Modules.JobHud
 			{
 				_animator.Update();
 
-				Vector2 hudPos = DrawHelper.GetAnchoredPosition(Vector2.Zero, DrawAnchor.Center) + _config.Position + _animator.Data.Offset;
+				Vector2 hudPos = DrawHelper.GetAnchoredPosition(Vector2.Zero, DrawAnchor.Center) + Config.Position + _animator.Data.Offset;
 				Vector2 offset = Vector2.Zero;
 
 				for (int i = 0; i < Bars.Count; i++)
@@ -209,7 +192,7 @@ namespace SezzUI.Modules.JobHud
 			}
 
 			// Aura Alerts
-			_auraAlerts.ForEach(aa => aa.Draw(origin, LastDrawElapsed));
+			_auraAlerts.ForEach(aa => aa.Draw(LastDrawElapsed));
 		}
 
 		public void AddBar(Bar bar)
@@ -335,6 +318,23 @@ namespace SezzUI.Modules.JobHud
 			{
 				Configure();
 			}
+		}
+
+		#endregion
+
+		#region Singleton
+
+		public static JobHud Initialize()
+		{
+			Instance = new(ConfigurationManager.Instance.GetConfigObject<JobHudConfig>());
+			return Instance;
+		}
+
+		public static JobHud Instance { get; private set; } = null!;
+
+		~JobHud()
+		{
+			Dispose(false);
 		}
 
 		#endregion

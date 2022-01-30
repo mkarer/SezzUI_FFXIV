@@ -210,7 +210,7 @@ namespace DelvUI.Helpers
 				float margin = 5 * addon->Scale;
 				float bottomMargin = 13 * addon->Scale;
 
-				ClipRect clipRect = new ClipRect(new(addon->X + margin, addon->Y + margin), new(addon->X + addon->WindowNode->AtkResNode.Width * addon->Scale - margin, addon->Y + addon->WindowNode->AtkResNode.Height * addon->Scale - bottomMargin));
+				ClipRect clipRect = new(new(addon->X + margin, addon->Y + margin), new(addon->X + addon->WindowNode->AtkResNode.Width * addon->Scale - margin, addon->Y + addon->WindowNode->AtkResNode.Height * addon->Scale - bottomMargin));
 
 				// just in case this causes weird issues / crashes (doubt it though...)
 				if (clipRect.Max.X < clipRect.Min.X || clipRect.Max.Y < clipRect.Min.Y)

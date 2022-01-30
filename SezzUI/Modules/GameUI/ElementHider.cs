@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SezzUI.Config;
@@ -11,7 +10,7 @@ using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Modules.GameUI
 {
-	public class ElementHider : DraggablePluginModule
+	public class ElementHider : PluginModule
 	{
 		private readonly List<InteractableArea> _areas = new();
 
@@ -189,7 +188,7 @@ namespace SezzUI.Modules.GameUI
 
 		private bool _isEditingHudLayouts;
 
-		public override void Draw(DrawState drawState, Vector2? origin)
+		public override void Draw(DrawState drawState)
 		{
 			if (!Enabled || drawState != DrawState.Visible && drawState != DrawState.Partially)
 			{
@@ -230,7 +229,7 @@ namespace SezzUI.Modules.GameUI
 			{
 				if (area.Config.Enabled)
 				{
-					area.DrawChildren((Vector2) origin!);
+					area.Draw();
 					foreach (int addonId in area.Config.Elements)
 					{
 						if (!Enum.IsDefined(typeof(Addon), addonId))
@@ -445,7 +444,7 @@ namespace SezzUI.Modules.GameUI
 
 		#region Singleton
 
-		private ElementHider(ElementHiderConfig config, string? displayName) : base(config, displayName)
+		private ElementHider(ElementHiderConfig config) : base(config)
 		{
 #if DEBUG
 			_debugConfig = ConfigurationManager.Instance.GetConfigObject<ElementHiderDebugConfig>();
@@ -463,9 +462,10 @@ namespace SezzUI.Modules.GameUI
 			Toggle(Config.Enabled);
 		}
 
-		public static void Initialize()
+		public static ElementHider Initialize()
 		{
-			Instance = new(ConfigurationManager.Instance.GetConfigObject<ElementHiderConfig>(), "Element Hider");
+			Instance = new(ConfigurationManager.Instance.GetConfigObject<ElementHiderConfig>());
+			return Instance;
 		}
 
 		public static ElementHider Instance { get; private set; } = null!;

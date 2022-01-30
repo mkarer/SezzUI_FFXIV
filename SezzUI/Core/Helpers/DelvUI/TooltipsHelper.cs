@@ -143,7 +143,7 @@ namespace DelvUI.Helpers
 
 			// imgui clips the left and right borders inside windows for some reason
 			// we make the window bigger so the actual drawable size is the expected one
-			Vector2 windowMargin = new Vector2(4, 0);
+			Vector2 windowMargin = new(4, 0);
 			Vector2 windowPos = _position - windowMargin;
 
 			ImGui.SetNextWindowPos(windowPos, ImGuiCond.Always);
@@ -165,7 +165,7 @@ namespace DelvUI.Helpers
 				// title
 				bool fontPushed = FontsManager.Instance.PushFont(_config.TitleFontID);
 
-				Vector2 cursorPos = new Vector2(windowMargin.X + _size.X / 2f - _titleSize.X / 2f, Margin);
+				Vector2 cursorPos = new(windowMargin.X + _size.X / 2f - _titleSize.X / 2f, Margin);
 				ImGui.SetCursorPos(cursorPos);
 				ImGui.PushTextWrapPos(cursorPos.X + _titleSize.X);
 				ImGui.TextColored(_config.TitleColor.Vector, _currentTooltipTitle);

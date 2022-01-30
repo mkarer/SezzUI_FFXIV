@@ -153,14 +153,14 @@ namespace SezzUI.Interface
 		{
 		}
 
-		public bool IsElementHidden(HudElement element)
+		public bool IsElementHidden(DraggableHudElement element)
 		{
 			if (!ConfigurationManager.Instance.LockHUD)
 			{
 				return false;
 			}
 
-			if (!element.GetConfig().Enabled)
+			if (!element.Config.Enabled)
 			{
 				return true;
 			}

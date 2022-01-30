@@ -40,9 +40,7 @@ namespace SezzUI.Modules
 				Disable();
 			}
 
-			DraggableElements.ForEach(x => x.Dispose());
 			DraggableElements.Clear();
-
 			InternalDispose();
 		}
 	}

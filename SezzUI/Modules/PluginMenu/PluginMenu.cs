@@ -27,7 +27,7 @@ namespace SezzUI.Modules.PluginMenu
 		private const byte BORDER_SIZE = 1;
 		private const byte BUTTON_PADDING = 4;
 
-		public override unsafe void Draw(DrawState drawState, Vector2? origin)
+		public override unsafe void Draw(DrawState drawState)
 		{
 			if (!Enabled || drawState != DrawState.Visible && drawState != DrawState.Partially)
 			{
@@ -59,15 +59,7 @@ namespace SezzUI.Modules.PluginMenu
 			ImGui.SetNextWindowSize(menuSize, ImGuiCond.Always);
 			ImGui.SetNextWindowContentSize(menuSize);
 			ImGui.SetNextWindowPos(menuPos);
-
-			ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(BORDER_SIZE, BORDER_SIZE)); // Would clip some borders otherwise...
-			ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0);
-			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, BORDER_SIZE);
-
-			ImGui.PushStyleColor(ImGuiCol.Button, ImGui.ColorConvertFloat4ToU32(new(0f, 0f, 0f, 0.5f * opacity)));
-			ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.15f * opacity)));
-			ImGui.PushStyleColor(ImGuiCol.ButtonActive, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.25f * opacity)));
-			ImGui.PushStyleColor(ImGuiCol.Border, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 77f / 255f * opacity)));
+			ImGuiHelper.PushButtonStyle(new Vector2(BORDER_SIZE, BORDER_SIZE), opacity); // Would clip some borders otherwise...
 
 			DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_PluginMenu_Buttons", menuPos, menuSize, true, false, drawList =>
 			{
@@ -169,8 +161,7 @@ namespace SezzUI.Modules.PluginMenu
 				}
 			});
 
-			ImGui.PopStyleColor(4);
-			ImGui.PopStyleVar(3);
+			ImGuiHelper.PopButtonStyle();
 		}
 
 		protected override bool Enable()
@@ -198,7 +189,7 @@ namespace SezzUI.Modules.PluginMenu
 			ConfigurationManager.Instance.Reset += OnConfigReset;
 			_items = new() {new(Config.Item1), new(Config.Item2), new(Config.Item3), new(Config.Item4), new(Config.Item5), new(Config.Item6), new(Config.Item7), new(Config.Item8), new(Config.Item9), new(Config.Item10)};
 
-			DraggableElements.Add(new(config, "Plugin Menu"));
+			DraggableElements.Add(new(config, "Plugin Menu")); // TODO: Override Size
 			Toggle(Config.Enabled);
 		}
 
@@ -278,9 +269,10 @@ namespace SezzUI.Modules.PluginMenu
 
 		#region Singleton
 
-		public static void Initialize()
+		public static PluginMenu Initialize()
 		{
 			Instance = new(ConfigurationManager.Instance.GetConfigObject<PluginMenuConfig>());
+			return Instance;
 		}
 
 		public static PluginMenu Instance { get; private set; } = null!;

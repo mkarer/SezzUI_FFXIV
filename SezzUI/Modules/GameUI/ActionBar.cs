@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -393,7 +392,7 @@ namespace SezzUI.Modules.GameUI
 			}
 		}
 
-		public override void Draw(DrawState state, Vector2? origin)
+		public override void Draw(DrawState state)
 		{
 			if (_msgWindow != null && _msgWindow.Handle == IntPtr.Zero)
 			{
@@ -633,9 +632,10 @@ namespace SezzUI.Modules.GameUI
 			Enable();
 		}
 
-		public static void Initialize()
+		public static ActionBar Initialize()
 		{
 			Instance = new(ConfigurationManager.Instance.GetConfigObject<ActionBarConfig>());
+			return Instance;
 		}
 
 		public static ActionBar Instance { get; private set; } = null!;

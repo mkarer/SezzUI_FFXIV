@@ -1,5 +1,4 @@
 using System;
-using System.Numerics;
 using SezzUI.Enums;
 
 namespace SezzUI.Modules
@@ -67,7 +66,7 @@ namespace SezzUI.Modules
 			return false;
 		}
 
-		public virtual void Draw(DrawState state, Vector2? origin)
+		public virtual void Draw(DrawState state)
 		{
 			// Override
 		}

@@ -104,7 +104,7 @@ namespace SezzUI.BarManager
 
 		public BarManagerBar? Get(uint id) => Bars.Where(bar => bar.Id == id).FirstOrDefault();
 
-		public void Draw(Vector2 origin)
+		public void Draw()
 		{
 			if (!Bars.Any())
 			{

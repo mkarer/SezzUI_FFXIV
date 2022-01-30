@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Reflection;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using DelvUI.Helpers;
@@ -120,9 +119,9 @@ namespace SezzUI.Modules.CooldownHud
 			}
 		}
 
-		public override void Draw(DrawState state, Vector2? origin)
+		public override void Draw(DrawState state)
 		{
-			if (origin == null || state != DrawState.Visible && state != DrawState.Partially)
+			if (state != DrawState.Visible && state != DrawState.Partially)
 			{
 				return;
 			}
@@ -130,7 +129,7 @@ namespace SezzUI.Modules.CooldownHud
 			// Bar Managers
 			_barManagers.ForEach(barManager =>
 			{
-				barManager.Draw((Vector2) origin);
+				barManager.Draw();
 				if (Config.CooldownHudPulse.Enabled)
 				{
 					foreach (BarManagerBar bar in barManager.Bars.Where(bar => bar.IsActive && bar.Remaining <= Math.Abs(Config.CooldownHudPulse.Delay) && CanPulse(bar.Id, bar.Data != null ? (ushort) ((ushort) bar.Data + 1) : (ushort) 0)))
@@ -147,7 +146,7 @@ namespace SezzUI.Modules.CooldownHud
 				bool expired = Environment.TickCount64 - pulse.Created >= NO_PULSE_AFTER_ELAPSED_FINISHED;
 				if (!expired && pulse.Animator.IsAnimating)
 				{
-					pulse.Draw((Vector2) origin);
+					pulse.Draw();
 					continue;
 				}
 #if DEBUG

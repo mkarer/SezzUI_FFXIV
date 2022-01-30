@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 
 namespace SezzUI.Core
 {
@@ -27,7 +26,7 @@ namespace SezzUI.Core
 			}
 		}
 
-		public virtual void Draw(Vector2 origin, int elapsed = 0)
+		public virtual void Draw(int elapsed = 0)
 		{
 		}
 

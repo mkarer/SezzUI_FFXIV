@@ -157,7 +157,7 @@ namespace SezzUI.Modules.JobHud
 			return false;
 		}
 
-		public override void Draw(Vector2 origin, int elapsed = 0)
+		public override void Draw(int elapsed = 0)
 		{
 			if (StatusId == null && StatusIds == null && PowerType == null && CustomCondition == null)
 			{

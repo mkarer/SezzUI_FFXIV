@@ -175,7 +175,7 @@ namespace SezzUI.BarManager
 						break;
 
 					default:
-						Helpers.DrawHelper.DrawPlaceholder(Text ?? string.Empty, position, Config.Size, 1, drawList);
+						Helpers.DrawHelper.DrawPlaceholder(Text ?? string.Empty, position, Config.Size, 1, Helpers.DrawHelper.PlaceholderLineStyle.Diagonal, drawList);
 						break;
 				}
 			});

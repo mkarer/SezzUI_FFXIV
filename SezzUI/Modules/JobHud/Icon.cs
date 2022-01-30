@@ -646,7 +646,7 @@ namespace SezzUI.Modules.JobHud
 			}
 			else
 			{
-				DrawHelper.DrawPlaceholder("?", pos, size, animator.Data.Opacity, drawList);
+				DrawHelper.DrawPlaceholder("?", pos, size, animator.Data.Opacity, DrawHelper.PlaceholderLineStyle.Diagonal, drawList);
 			}
 
 			// Cooldown + Charges

@@ -79,7 +79,7 @@ namespace SezzUI.Modules.CooldownHud
 			}
 		}
 
-		public override void Draw(Vector2 origin, int elapsed = 0)
+		public override void Draw(int elapsed = 0)
 		{
 			if (!IsShown && !Animator.IsAnimating)
 			{
