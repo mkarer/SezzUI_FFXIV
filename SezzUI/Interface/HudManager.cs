@@ -33,8 +33,6 @@ namespace SezzUI.Interface
 		private static ActionBar? _actionBar;
 		private static PluginMenu? _pluginMenu;
 
-		private readonly HudHelper _hudHelper = new();
-
 		#region Singleton
 
 		public static void Initialize()
@@ -71,7 +69,6 @@ namespace SezzUI.Interface
 				return;
 			}
 
-			_hudHelper.Dispose();
 			_modules.ForEach(module => module.Dispose());
 			_modules.Clear();
 			_draggableHudElements.Clear();
@@ -198,8 +195,6 @@ namespace SezzUI.Interface
 				return;
 			}
 
-			_hudHelper.Update();
-
 			// don't draw grid during cutscenes or quest events
 			if (drawState == DrawState.HiddenCutscene || drawState == DrawState.Partially)
 			{
@@ -218,9 +213,12 @@ namespace SezzUI.Interface
 			_modules.ForEach(module => module.Draw(drawState));
 
 			// draw draggable elements
-			lock (_draggableHudElements)
+			if (!ConfigurationManager.Instance.LockHUD)
 			{
-				DraggablesHelper.DrawElements(_hudHelper, _draggableHudElements, _selectedHudElement);
+				lock (_draggableHudElements)
+				{
+					DraggablesHelper.DrawDraggableElements(_draggableHudElements, _selectedHudElement);
+				}
 			}
 
 			// draw tooltip

@@ -76,14 +76,14 @@ namespace DelvUI.Helpers
 			ImGui.End();
 		}
 
-		public static void DrawElements(HudHelper hudHelper, List<DraggableHudElement> elements, DraggableHudElement? selectedElement)
+		public static void DrawDraggableElements(List<DraggableHudElement> elements, DraggableHudElement? selectedElement)
 		{
 			bool canTakeInput = true;
 
 			// selected
 			if (selectedElement != null)
 			{
-				if (!hudHelper.IsElementHidden(selectedElement))
+				if (selectedElement.Config.Enabled)
 				{
 					selectedElement.CanTakeInputForDrag = true;
 					selectedElement.DrawDraggableArea();
@@ -103,7 +103,7 @@ namespace DelvUI.Helpers
 					continue;
 				}
 
-				if (!hudHelper.IsElementHidden(element))
+				if (element.Config.Enabled)
 				{
 					element.CanTakeInputForDrag = canTakeInput;
 					element.DrawDraggableArea();
