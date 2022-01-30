@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using SezzUI.Enums;
 
 namespace SezzUI.Core
 {
@@ -60,7 +61,7 @@ namespace SezzUI.Core
 					}
 
 					byte visibilityFlag = *((byte*) addon + 0x1B6);
-					Logger.Debug("RunTest", $"Addon: {ToFixedLength(name, 24)} | Visibility: {visibilityFlag} {ToBinaryString(visibilityFlag)}");
+					Logger.Debug("RunTest", $"Addon: {ToFixedLength(name, 24)} | Visibility: {visibilityFlag} {ToBinaryString(visibilityFlag)} ({(AddonVisibility)visibilityFlag})");
 				}
 			}
 			catch (Exception ex)
