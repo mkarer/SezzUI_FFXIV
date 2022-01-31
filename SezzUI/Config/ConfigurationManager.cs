@@ -84,7 +84,26 @@ namespace SezzUI.Config
 			}
 		}
 
-		public bool ShowHUD = true;
+		public delegate void HUDVisibilityChangedDelegate(bool visible);
+
+		public event HUDVisibilityChangedDelegate? HUDVisibilityChanged;
+
+		private bool _showHUD = true;
+
+		public bool ShowHUD
+		{
+			get => _showHUD;
+			set
+			{
+				if (_showHUD == value)
+				{
+					return;
+				}
+
+				_showHUD = value;
+				HUDVisibilityChanged?.Invoke(value);
+			}
+		}
 
 		/// <summary>
 		///     Triggers when a specific PluginConfigObject is reset.
