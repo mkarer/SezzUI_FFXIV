@@ -211,7 +211,7 @@ namespace SezzUI.Modules.JobHud
 					// Power Condition
 					if (!conditionsFailed && PowerType != null)
 					{
-						(int current, int max) = JobsHelper.GetPower((JobsHelper.PowerType) PowerType);
+						(int current, int _) = JobsHelper.GetPower((JobsHelper.PowerType) PowerType);
 						conditionsFailed = ExactPowerAmount != null && current != ExactPowerAmount || MinimumPowerAmount != null && current < MinimumPowerAmount;
 						if (conditionsFailed)
 						{
@@ -230,11 +230,11 @@ namespace SezzUI.Modules.JobHud
 						}
 					}
 				}
+			}
 
-				if (!conditionsFailed)
-				{
-					Show();
-				}
+			if (!conditionsFailed)
+			{
+				Show();
 			}
 
 			if (IsShown || Animator.IsAnimating)
