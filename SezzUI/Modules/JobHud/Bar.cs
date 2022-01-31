@@ -20,12 +20,12 @@ namespace SezzUI.Modules.JobHud
 			set
 			{
 				_iconSize = value;
-				(IconUv0, IconUv1) = DrawHelper.GetTexCoordinates(IconSize);
+				(IconUV0, IconUV1) = DrawHelper.GetTexCoordinates(IconSize);
 			}
 		}
 
-		public Vector2 IconUv0 = new(0, 0);
-		public Vector2 IconUv1 = new(1, 1);
+		public Vector2 IconUV0 = new(0, 0);
+		public Vector2 IconUV1 = new(1, 1);
 		public uint IconPadding = 8;
 		private Vector2 _iconSize; // 36px Icon + 1px Borders
 

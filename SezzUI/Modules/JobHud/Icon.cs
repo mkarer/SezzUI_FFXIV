@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Numerics;
-using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Statuses;
 using DelvUI.Helpers;
 using ImGuiNET;
@@ -313,8 +312,6 @@ namespace SezzUI.Modules.JobHud
 
 		public void Draw(Vector2 pos, Vector2 size, Animator.Animator animator, ImDrawListPtr drawList)
 		{
-			PlayerCharacter player = Plugin.ClientState.LocalPlayer!;
-
 			IconState newState = _state;
 			float cooldownTextRemaining = 0;
 			float cooldownSpiralTotal = 0;
@@ -393,7 +390,7 @@ namespace SezzUI.Modules.JobHud
 				{
 					// Permanent is either really permanent or a status that hasn't ticked yet.
 					float duration = (MaxStatusDuration ?? 0) == Constants.PERMANENT_STATUS_DURATION ? Constants.PERMANENT_STATUS_DURATION : Math.Max(Constants.PERMANENT_STATUS_DURATION, status.RemainingTime);
-					byte stacks = (duration > 0 || duration == Constants.PERMANENT_STATUS_DURATION) && status!.GameData.MaxStacks > 1 ? status.StackCount : (byte) 0;
+					byte stacks = (duration > 0 || duration == Constants.PERMANENT_STATUS_DURATION) && status.GameData.MaxStacks > 1 ? status.StackCount : (byte) 0;
 
 					float durationMax = 0f;
 					if (MaxStatusDuration != null)
@@ -402,7 +399,7 @@ namespace SezzUI.Modules.JobHud
 					}
 					else if (StatusIds != null && MaxStatusDurations != null)
 					{
-						int index = Array.IndexOf(StatusIds, status!.StatusId);
+						int index = Array.IndexOf(StatusIds, status.StatusId);
 						if (index >= 0 && index < MaxStatusDurations.Length)
 						{
 							durationMax = MaxStatusDurations[index];
@@ -458,8 +455,8 @@ namespace SezzUI.Modules.JobHud
 				Status? status = SpellHelper.GetStatus((uint) StacksStatusId, Unit.Player);
 				if (status != null)
 				{
-					float duration = Math.Abs(status?.RemainingTime ?? 0f);
-					byte stacks = duration > 0 && status!.GameData.MaxStacks > 1 ? status.StackCount : (byte) 0;
+					float duration = Math.Abs(status.RemainingTime);
+					byte stacks = duration > 0 && status.GameData.MaxStacks > 1 ? status.StackCount : (byte) 0;
 					if (stacks > 0)
 					{
 						chargesTextAmount = stacks;
@@ -510,7 +507,7 @@ namespace SezzUI.Modules.JobHud
 			// Resources
 			if (RequiredPowerType != null)
 			{
-				(int current, int max) = JobsHelper.GetPower((JobsHelper.PowerType) RequiredPowerType);
+				(int current, int _) = JobsHelper.GetPower((JobsHelper.PowerType) RequiredPowerType);
 				if (RequiredPowerAmountMax != null)
 				{
 					hasEnoughResources = RequiredPowerAmount != null ? current >= RequiredPowerAmount && current <= RequiredPowerAmountMax : current <= RequiredPowerAmountMax;
@@ -537,7 +534,7 @@ namespace SezzUI.Modules.JobHud
 
 			if (RequiredPowerType == null && StacksPowerType != null)
 			{
-				(int current, int max) = JobsHelper.GetPower((JobsHelper.PowerType) StacksPowerType);
+				(int current, int _) = JobsHelper.GetPower((JobsHelper.PowerType) StacksPowerType);
 				if (current > 0)
 				{
 					chargesTextAmount = (short) Math.Floor((float) current);
@@ -546,7 +543,7 @@ namespace SezzUI.Modules.JobHud
 
 			if (CustomStacks != null && chargesTextAmount == -1)
 			{
-				(byte current, byte max) = CustomStacks();
+				(byte current, byte _) = CustomStacks();
 				if (current > 0)
 				{
 					chargesTextAmount = current;
@@ -572,8 +569,6 @@ namespace SezzUI.Modules.JobHud
 					{
 						displayGlow = !displayGlow;
 					}
-
-					;
 				}
 				else if (GlowBorderStatusIds != null)
 				{
@@ -584,10 +579,9 @@ namespace SezzUI.Modules.JobHud
 					{
 						displayGlow = !displayGlow;
 					}
-
-					;
 				}
 			}
+			// ReSharper disable once ConditionIsAlwaysTrueOrFalse
 			else if (GlowBorderUsable && GlowBorderInvertCheck && newState != IconState.Ready)
 			{
 				if (GlowBorderStatusId != null)
@@ -642,7 +636,7 @@ namespace SezzUI.Modules.JobHud
 				_animatorTexture.Update();
 
 				DrawHelper.DrawBackdrop(pos, size, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 0.5f * animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(_animatorBorder.Data.Color.AddTransparency(animator.Data.Opacity)), drawList);
-				drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, _iconUV0 != null ? (Vector2) _iconUV0 : Parent.IconUv0, _iconUV1 != null ? (Vector2) _iconUV1 : Parent.IconUv1, ImGui.ColorConvertFloat4ToU32(_animatorTexture.Data.Color.AddTransparency(animator.Data.Opacity)));
+				drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, _iconUV0 != null ? (Vector2) _iconUV0 : Parent.IconUV0, _iconUV1 != null ? (Vector2) _iconUV1 : Parent.IconUV1, ImGui.ColorConvertFloat4ToU32(_animatorTexture.Data.Color.AddTransparency(animator.Data.Opacity)));
 			}
 			else
 			{
@@ -669,9 +663,9 @@ namespace SezzUI.Modules.JobHud
 				// https://kovart.github.io/dashed-border-generator/
 
 				uint n = 8; // number of textures to cycle through
-				uint dur = 250; // duration of one full cycle
-				float frametime = dur / n; // display duration of 1 single frame
-				uint step = Math.Min(n, Math.Max(1, (uint) Math.Ceiling((uint) (animator.TimeElapsed % dur) / frametime)));
+				float dur = 250; // duration of one full cycle
+				float frameTime = dur / n; // display duration of 1 single frame
+				uint step = Math.Min(n, Math.Max(1, (uint) Math.Ceiling((uint) (animator.TimeElapsed % dur) / frameTime)));
 				string image = Plugin.AssemblyLocation + "Media\\Images\\Animations\\DashedRect38_" + step + ".png";
 
 				TextureWrap? tex = ImageCache.Instance.GetImageFromPath(image);
