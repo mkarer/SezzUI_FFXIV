@@ -74,7 +74,14 @@ namespace SezzUI.Animator
 	{
 		public AnimatorTimelines Timelines;
 		public AnimatorTransformData Data = new(); // This will be a reference to the active timeline's Data!
+
+		/// <summary>
+		/// Is playing OnShow, Loop or OnHide. This is TRUE even if Loop doesn't contain animations.
+		/// You can use IsLooping to check if the animation is running a empty Loop timeline.  
+		/// </summary>
 		public bool IsAnimating { get; private set; }
+
+		public bool IsLooping { get; private set; } = false;
 
 		private int? _ticksStart;
 		private int? _ticksStop;
@@ -86,7 +93,11 @@ namespace SezzUI.Animator
 			Timelines = new(this);
 		}
 
-		public void Update()
+		/// <summary>
+		///  Updates animation values (positions/opacity/etc).
+		/// </summary>
+		/// <returns>IsAnimating</returns>
+		public bool Update()
 		{
 			if (IsAnimating && _ticksStart != null)
 			{
@@ -105,6 +116,7 @@ namespace SezzUI.Animator
 						// Loop
 						if (Timelines.Loop.HasAnimations && !Timelines.Loop.IsPlaying || Timelines.Loop.Data != Data)
 						{
+							IsLooping = !Timelines.Loop.HasAnimations;
 							Timelines.Loop.Play((int) _ticksStart + (int) Timelines.OnShow.Duration, true);
 						}
 
@@ -114,6 +126,7 @@ namespace SezzUI.Animator
 				else
 				{
 					// OnHide
+					IsLooping = false;
 					int timeElapsed = ticksNow - (int) _ticksStop;
 					if (timeElapsed <= Timelines.OnHide.Duration)
 					{
@@ -125,6 +138,8 @@ namespace SezzUI.Animator
 					}
 				}
 			}
+
+			return IsAnimating;
 		}
 
 		public void SetData(ref AnimatorTransformData data)
@@ -162,6 +177,7 @@ namespace SezzUI.Animator
 				if (Timelines.Loop.IsPlaying)
 				{
 					Timelines.Loop.Stop();
+					IsLooping = false;
 				}
 
 				if (!force)
