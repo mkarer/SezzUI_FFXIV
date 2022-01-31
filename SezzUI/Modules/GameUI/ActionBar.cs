@@ -652,7 +652,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 			else if (_debugConfig.LogBarPaging)
 			{
-				Logger.Debug("SetActionBarPage", $"IsPetHotbar: {actionBarBase->HasPetHotbar} HotbarID {actionBarBase->HotbarID}");
+				Logger.Debug("SetActionBarPage", $"HasPetHotbar: {actionBarBase->HasPetHotbar} HotbarID {actionBarBase->HotbarID}");
 			}
 #endif
 		}
