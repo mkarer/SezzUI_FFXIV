@@ -17,20 +17,26 @@ namespace DelvUI.Helpers
 			PushButtonStyle(1f, opacity, padding);
 		}
 
+		private static uint _buttonColor = ImGui.ColorConvertFloat4ToU32(new(0f, 0f, 0f, 0.5f));
+		private static uint _buttonColorHovered = ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.15f));
+		private static uint _buttonColorActive = ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.25f));
+		private static uint _buttonColorBorder = ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 77f / 255f));
+
 		public static void PushButtonStyle(float borderSize, float opacity = 1f, Vector2? padding = null)
 		{
+			ImGui.PushStyleVar(ImGuiStyleVar.Alpha, opacity);
 			ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, padding ?? new(borderSize, borderSize));
 			ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0f);
 			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, borderSize);
-			ImGui.PushStyleColor(ImGuiCol.Button, ImGui.ColorConvertFloat4ToU32(new(0f, 0f, 0f, 0.5f * opacity)));
-			ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.15f * opacity)));
-			ImGui.PushStyleColor(ImGuiCol.ButtonActive, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.25f * opacity)));
-			ImGui.PushStyleColor(ImGuiCol.Border, ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 77f / 255f * opacity)));
+			ImGui.PushStyleColor(ImGuiCol.Button, _buttonColor);
+			ImGui.PushStyleColor(ImGuiCol.ButtonHovered, _buttonColorHovered);
+			ImGui.PushStyleColor(ImGuiCol.ButtonActive, _buttonColorActive);
+			ImGui.PushStyleColor(ImGuiCol.Border, _buttonColorBorder);
 		}
 
 		public static void PopButtonStyle()
 		{
-			ImGui.PopStyleVar(3);
+			ImGui.PopStyleVar(4);
 			ImGui.PopStyleColor(4);
 		}
 
@@ -40,14 +46,6 @@ namespace DelvUI.Helpers
 			Vector2 buttonSize = new(size.X, ImGui.GetFrameHeight());
 			string buttonId = id ?? label;
 			bool clicked = ImGui.Button("##SezzUI_IconButton" + buttonId, size); // Fake button
-
-			// Content
-			string iconString = icon.ToIconString();
-			Vector2 textSize = ImGui.CalcTextSize(label);
-
-			ImGui.PushFont(UiBuilder.IconFont);
-			Vector2 iconSize = ImGui.CalcTextSize(iconString);
-			Vector2 contentSize = new(textSize.X + iconSize.X + 6, Math.Max(textSize.Y, iconSize.Y));
 
 			// ImGui.SetCursorPos(textPosition.AddY((contentSize.Y - iconSize.Y) / 2f));
 			// ImGui.Text(iconString);
@@ -59,6 +57,14 @@ namespace DelvUI.Helpers
 			// otherwise ImGui.SameLine() doesn't work correctly anymore?!
 			DrawHelper.DrawInWindow("##SezzUI_IconButtonContent" + buttonId, buttonPosition, buttonSize, false, false, drawList =>
 			{
+				// Content
+				string iconString = icon.ToIconString();
+				Vector2 textSize = ImGui.CalcTextSize(label);
+
+				ImGui.PushFont(UiBuilder.IconFont);
+				Vector2 iconSize = ImGui.CalcTextSize(iconString);
+				Vector2 contentSize = new(textSize.X + iconSize.X + 6, Math.Max(textSize.Y, iconSize.Y));
+
 				Vector2 textPosition = SezzUI.Helpers.DrawHelper.GetAnchoredPosition(buttonPosition, buttonSize, contentSize, DrawAnchor.Center);
 				drawList.AddText(textPosition.AddY((contentSize.Y - iconSize.Y) / 2f), 0xffffffff, iconString);
 				ImGui.PopFont();
