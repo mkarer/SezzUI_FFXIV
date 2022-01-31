@@ -78,7 +78,6 @@ namespace SezzUI.Modules.JobHud
 			}
 
 			_isEnabled = !_isEnabled;
-			Plugin.ClientState.Login += OnLogin;
 			Plugin.ClientState.Logout += OnLogout;
 
 			EventManager.Player.JobChanged += OnJobChanged;
@@ -100,7 +99,6 @@ namespace SezzUI.Modules.JobHud
 			_isEnabled = !_isEnabled;
 			Reset();
 
-			Plugin.ClientState.Login -= OnLogin;
 			Plugin.ClientState.Logout -= OnLogout;
 
 			EventManager.Player.JobChanged -= OnJobChanged;
@@ -202,10 +200,8 @@ namespace SezzUI.Modules.JobHud
 			LastDrawTick = ticksNow;
 
 			// Bars
-			if (IsShown || _animator.IsAnimating)
+			if (_animator.Update() && !_animator.IsLooping || IsShown)
 			{
-				_animator.Update();
-
 				Vector2 hudPos = DrawHelper.GetAnchoredPosition(Vector2.Zero, DrawAnchor.Center) + Config.Position + _animator.Data.Offset;
 				Vector2 offset = Vector2.Zero;
 
@@ -256,7 +252,6 @@ namespace SezzUI.Modules.JobHud
 		{
 			if (IsShown)
 			{
-				//Logger.Debug($"Hide {force}");
 				IsShown = !IsShown;
 				_animator.Stop(force || LastDrawElapsed > 2000);
 			}
@@ -278,7 +273,12 @@ namespace SezzUI.Modules.JobHud
 			switch (args.PropertyName)
 			{
 				case "Enabled":
-					Logger.Debug("OnConfigPropertyChanged", $"Config.Enabled: {Config.Enabled}");
+#if DEBUG
+					if (_debugConfig.LogConfigurationManager)
+					{
+						Logger.Debug("OnConfigPropertyChanged", $"Config.Enabled: {Config.Enabled}");
+					}
+#endif
 					Toggle(Config.Enabled);
 					break;
 			}
@@ -308,11 +308,7 @@ namespace SezzUI.Modules.JobHud
 
 		#endregion
 
-		#region Game Events
-
-		private void OnLogin(object? sender, EventArgs e)
-		{
-		}
+		#region Events
 
 		private void OnLogout(object? sender, EventArgs e)
 		{
