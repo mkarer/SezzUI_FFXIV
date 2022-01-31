@@ -523,11 +523,17 @@ namespace SezzUI.Modules.GameUI
 			else
 			{
 				_msgWindow = new(Process.GetCurrentProcess().MainWindowHandle) {IgnoreRepeat = true};
+
+				Plugin.DrawStateChanged += OnDrawStateChanged;
+				EventManager.Game.AddonsVisibilityChanged += OnAddonsVisibilityChanged;
 			}
 		}
 
 		private void DisableBarPaging()
 		{
+			Plugin.DrawStateChanged -= OnDrawStateChanged;
+			EventManager.Game.AddonsVisibilityChanged -= OnAddonsVisibilityChanged;
+
 			if (_msgWindow == null)
 			{
 				return;
@@ -536,6 +542,50 @@ namespace SezzUI.Modules.GameUI
 			_msgWindow.OnKeyStateChanged -= OnKeyStateChanged;
 			_msgWindow.Dispose();
 			_msgWindow = null;
+		}
+
+		/// <summary>
+		///     Checks bar page after the UI returns to being visible.
+		///     This is needed when a modifier was pressed before a cutscene started and got released while it was playing.
+		/// </summary>
+		private unsafe void CheckStuckModifiers()
+		{
+			AtkUnitBase* actionBar = (AtkUnitBase*) Plugin.GameGui.GetAddonByName("_ActionBar", 1);
+			if ((IntPtr) actionBar == IntPtr.Zero || !actionBar->IsVisible)
+			{
+				return;
+			}
+
+			AddonActionBarBase* actionBarBase = (AddonActionBarBase*) actionBar;
+			if (!ImGui.GetIO().KeyCtrl && actionBarBase->HotbarID == Config.BarPagingPageCtrl || !ImGui.GetIO().KeyAlt && actionBarBase->HotbarID == Config.BarPagingPageAlt)
+			{
+#if DEBUG
+				if (_debugConfig.LogBarPaging)
+				{
+					Logger.Debug("CheckStuckModifiers", "Swapping back to default page.");
+				}
+#endif
+
+				SetActionBarPage(_pageDefault);
+			}
+		}
+
+		private void OnAddonsVisibilityChanged(bool visible)
+		{
+			if (visible)
+			{
+				CheckStuckModifiers();
+			}
+		}
+
+		private void OnDrawStateChanged(DrawState drawState)
+		{
+			if (drawState != DrawState.Visible && drawState != DrawState.Partially)
+			{
+				return;
+			}
+
+			CheckStuckModifiers();
 		}
 
 		private void ToggleBarPaging(bool enable)
