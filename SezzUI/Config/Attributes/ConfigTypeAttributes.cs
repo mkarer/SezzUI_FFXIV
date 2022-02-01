@@ -4,9 +4,9 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using Dalamud.Interface;
+using Dalamud.Interface.ImGuiFileDialog;
 using DelvUI.Helpers;
 using ImGuiNET;
-using JetBrains.Annotations;
 using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Config.Attributes
@@ -519,11 +519,8 @@ namespace SezzUI.Config.Attributes
 	[AttributeUsage(AttributeTargets.Field)]
 	public class MultiSelectorAttribute : ConfigAttribute
 	{
-		public string[] options;
-
-		public MultiSelectorAttribute([NotNull] string friendlyName, params string[] options) : base(friendlyName)
+		public MultiSelectorAttribute(string friendlyName) : base(friendlyName)
 		{
-			this.options = options;
 		}
 
 		public override bool DrawField(FieldInfo field, PluginConfigObject config, string? id, bool collapsingHeader = false)
@@ -585,6 +582,64 @@ namespace SezzUI.Config.Attributes
 			}
 
 			return changed;
+		}
+	}
+
+	#endregion
+
+	#region Folder Dialog
+
+	[AttributeUsage(AttributeTargets.Field)]
+	public class SelectFolderAttribute : ConfigAttribute
+	{
+		private const uint MAX_PATH = 256; // I know. I also don't care.
+		private readonly FileDialogManager _fileDialogManager;
+
+		public SelectFolderAttribute(string friendlyName) : base(friendlyName)
+		{
+			_fileDialogManager = new();
+		}
+
+		public override bool DrawField(FieldInfo field, PluginConfigObject config, string? ID, bool collapsingHeader)
+		{
+			string? fieldVal = (string?) field.GetValue(config);
+			string stringVal = fieldVal ?? "";
+			string? finalValue = null;
+
+			if (ImGui.InputText(friendlyName + IDText(ID), ref stringVal, MAX_PATH, ImGuiInputTextFlags.EnterReturnsTrue))
+			{
+				finalValue = stringVal;
+			}
+
+			ImGui.SameLine();
+			ImGui.PushFont(UiBuilder.IconFont);
+			if (ImGui.Button(FontAwesomeIcon.Folder.ToIconString(), new(0, 0)))
+			{
+				Action<bool, string> callback = (finished, path) =>
+				{
+					if (finished && path.Length > 0 && path != (string?) field.GetValue(config))
+					{
+						field.SetValue(config, path);
+						TriggerChangeEvent<string>(config, field.Name, path);
+					}
+				};
+
+				ImGuiHelper.SelectFolder(_fileDialogManager, "Select Custom Media Folder", callback, stringVal);
+			}
+
+			ImGui.PopFont();
+
+			_fileDialogManager.Draw();
+
+			if (finalValue != null)
+			{
+				field.SetValue(config, finalValue);
+				TriggerChangeEvent<string>(config, field.Name, finalValue);
+
+				return true;
+			}
+
+			return false;
 		}
 	}
 
