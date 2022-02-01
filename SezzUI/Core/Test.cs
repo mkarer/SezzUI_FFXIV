@@ -61,7 +61,7 @@ namespace SezzUI.Core
 					}
 
 					byte visibilityFlag = *((byte*) addon + 0x1B6);
-					Logger.Debug("RunTest", $"Addon: {ToFixedLength(name, 24)} | Visibility: {visibilityFlag} {ToBinaryString(visibilityFlag)} ({(AddonVisibility)visibilityFlag})");
+					Logger.Debug("RunTest", $"Addon: {ToFixedLength(name, 24)} | Visibility: {visibilityFlag} {ToBinaryString(visibilityFlag)} ({(AddonVisibility) visibilityFlag})");
 				}
 			}
 			catch (Exception ex)
