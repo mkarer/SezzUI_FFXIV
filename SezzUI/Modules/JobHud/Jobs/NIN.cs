@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Numerics;
 using Dalamud.Game.ClientState.JobGauge.Types;
 using DelvUI.Helpers;
 using SezzUI.Enums;
@@ -27,6 +28,22 @@ namespace SezzUI.Modules.JobHud.Jobs
 			bar2.Add(new(bar2) {TextureActionId = 7402, RequiredPowerType = JobsHelper.PowerType.Ninki, RequiredPowerAmount = 50, GlowBorderUsable = true, StacksPowerType = JobsHelper.PowerType.Ninki}); // Bhavacakra
 			bar2.Add(new(bar2) {TextureActionId = 2262, CooldownActionId = 2262}); // Shukuchi
 			hud.AddBar(bar2);
+
+			// Ten Chi Jin
+			using (AuraAlert aa = new())
+			{
+				aa.StatusId = 1186u;
+				aa.Size = new(48, 48);
+				aa.Position = Vector2.Zero;
+				aa.Level = 70;
+				aa.BorderSize = 1;
+				aa.UseActionIcon(7403);
+				aa.GlowBackdrop = true;
+				aa.GlowColor = new(188f / 255f, 35f / 255f, 35f / 255f, 0.5f);
+				aa.GlowBackdropSize = 4;
+				aa.MaxDuration = 6;
+				hud.AddAlert(aa);
+			}
 
 			base.Configure(hud);
 
