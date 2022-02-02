@@ -10,8 +10,13 @@ namespace SezzUI.Helpers
 		private readonly ConcurrentDictionary<string, TextureWrap> _pathCache = new();
 		internal PluginLogger Logger;
 
-		public TextureWrap? GetImageFromPath(string path)
+		public TextureWrap? GetImageFromPath(string? path)
 		{
+			if (path == null)
+			{
+				return null;
+			}
+
 			if (_pathCache.ContainsKey(path))
 			{
 				return _pathCache[path];
