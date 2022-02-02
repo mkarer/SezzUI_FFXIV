@@ -56,10 +56,10 @@
 
     <!-- Included Content -->
     <ItemGroup>
-        <Content Include="SezzUI.json" CopyToOutputDirectory="Always"/>
-        <Content Include="Media\Images\Icon.png" Link="Images/Icon.png" CopyToOutputDirectory="PreserveNewest" Visible="false"/>
-        <Content Include="Media\**\*.ttf" CopyToOutputDirectory="PreserveNewest" Visible="false"/>
-        <Content Include="Media\**\*.png" CopyToOutputDirectory="PreserveNewest" Visible="false"/>
+        <Content Include="SezzUI.json" CopyToOutputDirectory="Always" />
+        <Content Include="Media\Images\Icon.png" Link="Images/Icon.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+        <Content Include="Media\**\*.ttf" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+        <Content Include="Media\**\*.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />
     </ItemGroup>
 
     <!-- Library References -->
@@ -104,48 +104,48 @@
 
     <!-- NuGet Packages -->
     <ItemGroup>
-        <PackageReference Include="DalamudPackager" Version="2.1.5"/>
-        <PackageReference Include="Colourful" Version="3.1.0"/>
-        <PackageReference Include="ILRepack" Version="2.1.0-beta1"/>
-        <PackageReference Include="JetBrains.Annotations" Version="2022.1.0-eap2"/>
+        <PackageReference Include="DalamudPackager" Version="2.1.5" />
+        <PackageReference Include="Colourful" Version="3.1.0" />
+        <PackageReference Include="ILRepack" Version="2.1.0-beta1" />
+        <PackageReference Include="JetBrains.Annotations" Version="2022.1.0-eap2" />
         <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.1.635-beta">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="XivCommon" Version="5.0.0"/>
+        <PackageReference Include="XivCommon" Version="5.0.0" />
     </ItemGroup>
     <ItemGroup>
-        <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}"/>
+        <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
     </ItemGroup>
     <ItemGroup>
-        <File Include="NativeMethods.txt"/>
+        <File Include="NativeMethods.txt" />
     </ItemGroup>
 
     <!-- ILRepack Task-->
     <Target Name="ILRepack" AfterTargets="PostBuildEvent">
         <ItemGroup>
-            <InputAssemblies Include="$(TargetPath)"/>
-            <InputAssemblies Include="$(TargetDir)*.dll" Exclude="$(TargetPath)"/>
+            <InputAssemblies Include="$(TargetPath)" />
+            <InputAssemblies Include="$(TargetDir)*.dll" Exclude="$(TargetPath)" />
         </ItemGroup>
-        <Exec Command="$(Pkgilrepack)\tools\ilrepack.exe /lib:$(AppData)\XIVLauncher\addon\Hooks\dev /out:&quot;$(TargetDir)..\$(Configuration).ILMerge\$(TargetFileName)&quot; &quot;@(InputAssemblies, '&quot; &quot;')&quot;"/>
+        <Exec Command="$(Pkgilrepack)\tools\ilrepack.exe /lib:$(AppData)\XIVLauncher\addon\Hooks\dev /out:&quot;$(TargetDir)..\$(Configuration).ILMerge\$(TargetFileName)&quot; &quot;@(InputAssemblies, '&quot; &quot;')&quot;" />
     </Target>
 
     <Target Name="ILRepackCleanup" AfterTargets="ILRepack">
-        <Exec Command="DEL /Q &quot;$(TargetDir)*.dll&quot;" ContinueOnError="true"/>
-        <Exec Command="MOVE /Y &quot;$(TargetDir)..\$(Configuration).ILMerge\*.*&quot; &quot;$(TargetDir)&quot;" ContinueOnError="false"/>
-        <Exec Command="RD &quot;$(TargetDir)..\$(Configuration).ILMerge&quot;" ContinueOnError="true"/>
+        <Exec Command="DEL /Q &quot;$(TargetDir)*.dll&quot;" ContinueOnError="true" />
+        <Exec Command="MOVE /Y &quot;$(TargetDir)..\$(Configuration).ILMerge\*.*&quot; &quot;$(TargetDir)&quot;" ContinueOnError="false" />
+        <Exec Command="RD &quot;$(TargetDir)..\$(Configuration).ILMerge&quot;" ContinueOnError="true" />
     </Target>
 
     <!-- Development Plugin Updater Task-->
     <Target Name="UpdateDevPlugin" AfterTargets="ILRepackCleanup" Condition=" '$(Configuration)' == 'Debug' ">
         <ItemGroup>
-            <DevBuildFiles Include="$(TargetDir)**\*.*"/>
+            <DevBuildFiles Include="$(TargetDir)**\*.*" />
         </ItemGroup>
-        <Copy SourceFiles="@(DevBuildFiles)" DestinationFolder="$(AppData)\XIVLauncher\devPlugins\$(MSBuildProjectName)\%(RecursiveDir)" ContinueOnError="false" SkipUnchangedFiles="true"/>
+        <Copy SourceFiles="@(DevBuildFiles)" DestinationFolder="$(AppData)\XIVLauncher\devPlugins\$(MSBuildProjectName)\%(RecursiveDir)" ContinueOnError="false" SkipUnchangedFiles="true" />
     </Target>
 
     <!-- Dalamud Packager Task-->
     <Target Name="DalamudPackage" AfterTargets="ILRepackCleanup">
-        <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(TargetDir)..\$(Configuration)" AssemblyName="$(AssemblyName)" MakeZip="true" Exclude="SezzUI.pdb;SezzUI.deps.json" VersionComponents="4"/>
+        <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(TargetDir)..\$(Configuration)" AssemblyName="$(AssemblyName)" MakeZip="true" Exclude="SezzUI.pdb;SezzUI.deps.json" VersionComponents="4" />
     </Target>
 </Project>
