@@ -141,7 +141,7 @@ namespace SezzUI.Helpers
 
 		#region Text
 
-		public static void DrawAnchoredText(string font, TextStyle style, DrawAnchor anchor, string text, Vector2 pos, Vector2 size, uint color, uint effectColor, ImDrawListPtr drawList, float xOffset = 0, float yOffset = 0, string textPosCalc = "")
+		public static void DrawAnchoredText(string? font, TextStyle style, DrawAnchor anchor, string text, Vector2 pos, Vector2 size, uint color, uint effectColor, ImDrawListPtr drawList, float xOffset = 0, float yOffset = 0, string textPosCalc = "")
 		{
 			bool fontPushed = FontsManager.Instance.PushFont(font);
 
@@ -174,12 +174,12 @@ namespace SezzUI.Helpers
 			}
 		}
 
-		public static void DrawCenteredShadowText(string font, string text, Vector2 pos, Vector2 size, uint color, uint shadowColor, ImDrawListPtr drawList)
+		public static void DrawCenteredShadowText(string? font, string text, Vector2 pos, Vector2 size, uint color, uint shadowColor, ImDrawListPtr drawList)
 		{
 			DrawAnchoredText(font, TextStyle.Shadowed, DrawAnchor.Center, text, pos, size, color, shadowColor, drawList);
 		}
 
-		public static void DrawCenteredOutlineText(string font, string text, Vector2 pos, Vector2 size, uint color, uint outlineColor, ImDrawListPtr drawList)
+		public static void DrawCenteredOutlineText(string? font, string text, Vector2 pos, Vector2 size, uint color, uint outlineColor, ImDrawListPtr drawList)
 		{
 			DrawAnchoredText(font, TextStyle.Outline, DrawAnchor.Center, text, pos, size, color, outlineColor, drawList);
 		}

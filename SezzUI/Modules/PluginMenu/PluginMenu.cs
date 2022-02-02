@@ -144,7 +144,7 @@ namespace SezzUI.Modules.PluginMenu
 					}
 					else
 					{
-						DrawHelper.DrawCenteredShadowText("MyriadProLightCond_16", item.Config.Title, new(buttonPos.X, buttonPos.Y + 1), item.Size, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)), shadowColor, drawList);
+						DrawHelper.DrawCenteredShadowText(null, item.Config.Title, new(buttonPos.X, buttonPos.Y + 1), item.Size, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)), shadowColor, drawList);
 					}
 
 					// Tooltip
