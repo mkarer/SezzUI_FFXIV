@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
-using DelvUI.Helpers;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using JetBrains.Annotations;

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
-using DelvUI.Helpers;
 using ImGuiNET;
 using ImGuiScene;
 using SezzUI.Config.Attributes;
+using SezzUI.Helpers;
 
 namespace SezzUI.Config.Tree
 {

@@ -1,4 +1,4 @@
-using DelvUI.Helpers;
+using SezzUI.Helpers;
 
 namespace SezzUI.Modules.CooldownHud.Jobs
 {

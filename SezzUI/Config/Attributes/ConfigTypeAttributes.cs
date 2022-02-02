@@ -5,8 +5,8 @@ using System.Numerics;
 using System.Reflection;
 using Dalamud.Interface;
 using Dalamud.Interface.ImGuiFileDialog;
-using DelvUI.Helpers;
 using ImGuiNET;
+using SezzUI.Helpers;
 using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Config.Attributes
@@ -608,7 +608,7 @@ namespace SezzUI.Config.Attributes
 
 			if (ImGui.InputText(friendlyName + IDText(ID), ref stringVal, MAX_PATH, ImGuiInputTextFlags.EnterReturnsTrue))
 			{
-				finalValue = Helpers.FileSystemHelper.ValidatePath(stringVal);
+				finalValue = FileSystemHelper.ValidatePath(stringVal);
 			}
 
 			ImGui.SameLine();

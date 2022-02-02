@@ -4,7 +4,7 @@ using ImGuiNET;
 using SezzUI.Config;
 using SezzUI.Config.Attributes;
 
-namespace DelvUI.Helpers
+namespace SezzUI.Helpers
 {
 	public class TooltipsHelper : IDisposable
 	{

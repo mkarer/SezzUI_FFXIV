@@ -2,14 +2,12 @@
 using System.Numerics;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Statuses;
-using DelvUI.Helpers;
 using ImGuiNET;
 using ImGuiScene;
 using SezzUI.Animator;
 using SezzUI.Core;
 using SezzUI.Enums;
 using SezzUI.Helpers;
-using JobsHelper = SezzUI.Helpers.JobsHelper;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 

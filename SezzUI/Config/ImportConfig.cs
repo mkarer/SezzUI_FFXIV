@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Reflection;
-using DelvUI.Helpers;
 using ImGuiNET;
 using Newtonsoft.Json.Linq;
 using SezzUI.Config;
 using SezzUI.Config.Attributes;
 using SezzUI.Config.Profiles;
+using SezzUI.Helpers;
 
 namespace SezzUI.Interface
 {

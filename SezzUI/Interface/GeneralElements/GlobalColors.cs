@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using DelvUI.Helpers;
 using SezzUI.Config;
 using SezzUI.Config.Attributes;
 using SezzUI.Enums;
+using SezzUI.Helpers;
 
 namespace SezzUI.Interface.GeneralElements
 {

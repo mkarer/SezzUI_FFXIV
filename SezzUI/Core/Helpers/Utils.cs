@@ -12,12 +12,11 @@ using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Statuses;
-using SezzUI;
 using SezzUI.Config;
 using SezzUI.Enums;
 using SezzUI.Interface.GeneralElements;
 
-namespace DelvUI.Helpers
+namespace SezzUI.Helpers
 {
 	public sealed class NaturalStringComparer : IComparer<string>
 	{

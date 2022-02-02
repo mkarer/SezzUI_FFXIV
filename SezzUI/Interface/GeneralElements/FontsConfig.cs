@@ -4,11 +4,11 @@ using System.IO;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.ImGuiFileDialog;
-using DelvUI.Helpers;
 using ImGuiNET;
 using Newtonsoft.Json;
 using SezzUI.Config;
 using SezzUI.Config.Attributes;
+using SezzUI.Helpers;
 
 namespace SezzUI.Interface.GeneralElements
 {

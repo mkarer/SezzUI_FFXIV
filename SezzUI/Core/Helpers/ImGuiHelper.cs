@@ -6,13 +6,11 @@ using System.Reflection;
 using Dalamud.Interface;
 using Dalamud.Interface.ImGuiFileDialog;
 using ImGuiNET;
-using SezzUI;
 using SezzUI.Config;
 using SezzUI.Config.Tree;
 using SezzUI.Enums;
-using SezzUI.Helpers;
 
-namespace DelvUI.Helpers
+namespace SezzUI.Helpers
 {
 	public static class ImGuiHelper
 	{

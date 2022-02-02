@@ -5,14 +5,12 @@ using System;
 using System.IO;
 using System.Numerics;
 using Dalamud.Game.ClientState.Statuses;
-using DelvUI.Helpers;
 using ImGuiNET;
 using ImGuiScene;
 using SezzUI.Animator;
 using SezzUI.Enums;
 using SezzUI.GameEvents;
 using SezzUI.Helpers;
-using JobsHelper = SezzUI.Helpers.JobsHelper;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
 

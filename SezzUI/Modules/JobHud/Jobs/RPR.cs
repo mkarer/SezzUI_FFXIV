@@ -2,10 +2,8 @@
 using System.Numerics;
 using Dalamud.Game.ClientState.JobGauge.Types;
 using Dalamud.Game.ClientState.Statuses;
-using DelvUI.Helpers;
 using SezzUI.Enums;
 using SezzUI.Helpers;
-using JobsHelper = SezzUI.Helpers.JobsHelper;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {

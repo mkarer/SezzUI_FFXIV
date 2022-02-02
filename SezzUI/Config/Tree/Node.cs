@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using DelvUI.Helpers;
+using SezzUI.Helpers;
 
 namespace SezzUI.Config.Tree
 {

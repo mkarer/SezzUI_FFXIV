@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using ImGuiNET;
-using SezzUI;
 using SezzUI.Config;
 using SezzUI.Interface.GeneralElements;
 
-namespace DelvUI.Helpers
+namespace SezzUI
 {
 	public class FontsManager : IDisposable
 	{

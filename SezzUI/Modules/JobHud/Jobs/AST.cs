@@ -1,5 +1,5 @@
-using DelvUI.Helpers;
 using SezzUI.Enums;
+using SezzUI.Helpers;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {

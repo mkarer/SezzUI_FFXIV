@@ -1,9 +1,9 @@
 ﻿using System.Numerics;
-using DelvUI.Helpers;
 using ImGuiNET;
 using Newtonsoft.Json;
 using SezzUI.Config;
 using SezzUI.Config.Attributes;
+using SezzUI.Helpers;
 
 namespace SezzUI.Interface.GeneralElements
 {

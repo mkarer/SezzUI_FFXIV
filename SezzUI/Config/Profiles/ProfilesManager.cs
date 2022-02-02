@@ -6,11 +6,12 @@ using System.Numerics;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface;
 using Dalamud.Interface.ImGuiFileDialog;
-using DelvUI.Helpers;
 using ImGuiNET;
 using Newtonsoft.Json;
 using SezzUI.Config.Attributes;
 using SezzUI.Config.Tree;
+using SezzUI.Enums;
+using SezzUI.Helpers;
 
 namespace SezzUI.Config.Profiles
 {

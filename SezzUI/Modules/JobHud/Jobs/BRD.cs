@@ -2,8 +2,8 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Game.ClientState.JobGauge.Enums;
 using Dalamud.Game.ClientState.JobGauge.Types;
-using DelvUI.Helpers;
 using SezzUI.Enums;
+using SezzUI.Helpers;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {

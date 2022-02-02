@@ -1,6 +1,6 @@
 using System.Linq;
 using Dalamud.Game.ClientState.JobGauge.Types;
-using DelvUI.Helpers;
+using SezzUI.Helpers;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {

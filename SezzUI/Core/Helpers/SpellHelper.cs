@@ -5,7 +5,6 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Statuses;
 using Dalamud.Utility;
-using DelvUI.Helpers;
 using Lumina.Excel;
 using SezzUI.Enums;
 using SezzUI.Hooking;

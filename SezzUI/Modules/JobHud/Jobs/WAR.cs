@@ -1,5 +1,5 @@
 using System.Linq;
-using DelvUI.Helpers;
+using SezzUI.Helpers;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {

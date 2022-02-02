@@ -6,7 +6,7 @@ using ImGuiNET;
 using SezzUI.Interface;
 using SezzUI.Interface.GeneralElements;
 
-namespace DelvUI.Helpers
+namespace SezzUI.Helpers
 {
 	public static class DraggablesHelper
 	{

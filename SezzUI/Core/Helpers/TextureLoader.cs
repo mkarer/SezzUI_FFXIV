@@ -6,10 +6,9 @@ using Dalamud.Utility;
 using ImGuiScene;
 using Lumina.Data.Files;
 using Lumina.Data.Parsing.Tex;
-using SezzUI;
 using static Lumina.Data.Files.TexFile;
 
-namespace DelvUI.Helpers
+namespace SezzUI.Helpers
 {
 	public static class TextureLoader
 	{

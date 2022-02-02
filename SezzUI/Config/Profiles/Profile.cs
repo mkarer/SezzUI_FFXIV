@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using DelvUI.Helpers;
+using SezzUI.Enums;
+using SezzUI.Helpers;
 
 namespace SezzUI.Config.Profiles
 {

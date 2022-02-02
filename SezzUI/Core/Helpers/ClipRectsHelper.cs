@@ -9,7 +9,7 @@ using ImGuiNET;
 using SezzUI.Config;
 using SezzUI.Interface.GeneralElements;
 
-namespace DelvUI.Helpers
+namespace SezzUI.Helpers
 {
 	public class ClipRectsHelper
 	{

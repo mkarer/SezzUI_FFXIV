@@ -3,9 +3,8 @@ using System.Collections.Concurrent;
 using Dalamud.Plugin.Ipc;
 using ImGuiScene;
 using Lumina.Excel;
-using SezzUI;
 
-namespace DelvUI.Helpers
+namespace SezzUI.Helpers
 {
 	public class TexturesCache : IDisposable
 	{

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using DelvUI.Helpers;
 using ImGuiNET;
 using Newtonsoft.Json;
 using SezzUI.Config.Attributes;
 using SezzUI.Config.Profiles;
+using SezzUI.Helpers;
 
 namespace SezzUI.Config.Tree
 {
