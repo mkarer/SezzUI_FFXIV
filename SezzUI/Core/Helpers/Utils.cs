@@ -277,6 +277,31 @@ namespace SezzUI.Helpers
 			return regex.Replace(s, " ");
 		}
 
+		public static void OpenFolder(string path)
+		{
+			path = $"\"{path}\"";
+
+			try
+			{
+				if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+				{
+					Process.Start("explorer", path);
+				}
+				else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+				{
+					Process.Start("mimeopen", path);
+				}
+				else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+				{
+					Process.Start("open", $"-R {path}");
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Error("OpenFolder", $"Error trying to open folder: {ex}");
+			}
+		}
+
 		public static void OpenUrl(string url)
 		{
 			try
@@ -300,7 +325,7 @@ namespace SezzUI.Helpers
 				}
 				catch (Exception ex)
 				{
-					Logger.Error("OpenUrl", "Error trying to open url: " + ex.Message);
+					Logger.Error("OpenUrl", $"Error trying to open URL: {ex}");
 				}
 			}
 		}
