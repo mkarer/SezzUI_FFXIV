@@ -2,25 +2,36 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using Dalamud.Interface;
+using Dalamud.Interface.ImGuiFileDialog;
 using ImGuiNET;
+using SezzUI;
 using SezzUI.Config;
 using SezzUI.Config.Tree;
 using SezzUI.Enums;
+using SezzUI.Helpers;
 
 namespace DelvUI.Helpers
 {
 	public static class ImGuiHelper
 	{
+		internal static PluginLogger Logger;
+
+		static ImGuiHelper()
+		{
+			Logger = new("ImGuiHelper");
+		}
+
 		public static void PushButtonStyle(float opacity = 1f, Vector2? padding = null)
 		{
 			PushButtonStyle(1f, opacity, padding);
 		}
 
-		private static uint _buttonColor = ImGui.ColorConvertFloat4ToU32(new(0f, 0f, 0f, 0.5f));
-		private static uint _buttonColorHovered = ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.15f));
-		private static uint _buttonColorActive = ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.25f));
-		private static uint _buttonColorBorder = ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 77f / 255f));
+		private static readonly uint _buttonColor = ImGui.ColorConvertFloat4ToU32(new(0f, 0f, 0f, 0.5f));
+		private static readonly uint _buttonColorHovered = ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.15f));
+		private static readonly uint _buttonColorActive = ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 0.25f));
+		private static readonly uint _buttonColorBorder = ImGui.ColorConvertFloat4ToU32(new(1f, 1f, 1f, 77f / 255f));
 
 		public static void PushButtonStyle(float borderSize, float opacity = 1f, Vector2? padding = null)
 		{
@@ -65,7 +76,7 @@ namespace DelvUI.Helpers
 				Vector2 iconSize = ImGui.CalcTextSize(iconString);
 				Vector2 contentSize = new(textSize.X + iconSize.X + 6, Math.Max(textSize.Y, iconSize.Y));
 
-				Vector2 textPosition = SezzUI.Helpers.DrawHelper.GetAnchoredPosition(buttonPosition, buttonSize, contentSize, DrawAnchor.Center);
+				Vector2 textPosition = DrawHelper.GetAnchoredPosition(buttonPosition, buttonSize, contentSize, DrawAnchor.Center);
 				drawList.AddText(textPosition.AddY((contentSize.Y - iconSize.Y) / 2f), 0xffffffff, iconString);
 				ImGui.PopFont();
 				drawList.AddText(textPosition + new Vector2(iconSize.X + 6, (contentSize.Y - textSize.Y) / 2f - 1), 0xffffffff, label);
@@ -73,6 +84,39 @@ namespace DelvUI.Helpers
 
 			return clicked;
 		}
+
+		#region File/Folder Dialogs
+
+		public static void SelectFolder(FileDialogManager fileDialogManager, string title, Action<bool, string> callback, string? selected = null)
+		{
+			Action<bool, string> validatedCallback = (finished, path) =>
+			{
+				if (finished && path.Length > 0)
+				{
+					path = FileSystemHelper.ValidatePath(path);
+				}
+
+				callback(finished, path);
+			};
+
+			fileDialogManager.OpenFolderDialog(title, validatedCallback);
+
+			string selectedPath = FileSystemHelper.ValidatePath(selected ?? "");
+			if (selectedPath != "")
+			{
+				try
+				{
+					FileDialog fileDialog = fileDialogManager.GetFieldValue<FileDialog>("dialog");
+					fileDialog.GetType().GetTypeInfo().GetDeclaredMethod("SetPath")?.Invoke(fileDialog, new object[] {selectedPath});
+				}
+				catch (Exception ex)
+				{
+					Logger.Error(ex, "SelectFolder", $"Error setting FileDialogManager path: {ex}");
+				}
+			}
+		}
+
+		#endregion
 
 		public static void DrawSeparator(int topSpacing, int bottomSpacing)
 		{
