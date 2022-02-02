@@ -608,7 +608,7 @@ namespace SezzUI.Config.Attributes
 
 			if (ImGui.InputText(friendlyName + IDText(ID), ref stringVal, MAX_PATH, ImGuiInputTextFlags.EnterReturnsTrue))
 			{
-				finalValue = stringVal;
+				finalValue = Helpers.FileSystemHelper.ValidatePath(stringVal);
 			}
 
 			ImGui.SameLine();
