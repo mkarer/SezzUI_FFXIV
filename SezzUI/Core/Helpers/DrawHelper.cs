@@ -16,6 +16,8 @@ namespace SezzUI.Helpers
 			Logger = new("DrawHelper");
 		}
 
+		#region Anchors
+
 		public static Vector2 GetAnchoredPosition(Vector2 parentPosition, Vector2 parentSize, Vector2 elementSize, DrawAnchor anchor)
 		{
 			return anchor switch
@@ -35,7 +37,7 @@ namespace SezzUI.Helpers
 
 		public static Vector2 GetAnchoredPosition(Vector2 elementSize, DrawAnchor anchor) => GetAnchoredPosition(Vector2.Zero, ImGui.GetMainViewport().Size, elementSize, anchor);
 
-		public static Vector2 GetAnchoredImGuiPosition(Vector2 position, Vector2 size, DrawAnchor anchor)
+		public static Vector2 GetAnchoredViewportPosition(Vector2 position, Vector2 size, DrawAnchor anchor)
 		{
 			// TODO: Universal anchor conversion
 			// ImGui positions are TopLeft anchored
@@ -56,6 +58,8 @@ namespace SezzUI.Helpers
 				_ => position
 			};
 		}
+
+		#endregion
 
 		public static void DrawBackdrop(Vector2 pos, Vector2 size, uint backgroundColor, uint borderColor, ImDrawListPtr drawList)
 		{
@@ -136,6 +140,8 @@ namespace SezzUI.Helpers
 			DrawBackdropEdge(Plugin.AssemblyLocation + "Media\\Images\\GlowTex.png", backdropPos, backdropSize, glowColor, drawList, size, inset);
 		}
 
+		#region Text
+
 		public static void DrawAnchoredText(string font, TextStyle style, DrawAnchor anchor, string text, Vector2 pos, Vector2 size, uint color, uint effectColor, ImDrawListPtr drawList, float xOffset = 0, float yOffset = 0, string textPosCalc = "")
 		{
 			bool fontPushed = FontsManager.Instance.PushFont(font);
@@ -152,11 +158,11 @@ namespace SezzUI.Helpers
 					break;
 
 				case TextStyle.Shadowed:
-					DelvUI.Helpers.DrawHelper.DrawShadowText(text, textPosition, color, effectColor, drawList);
+					DrawShadowText(text, textPosition, color, effectColor, drawList);
 					break;
 
 				case TextStyle.Outline:
-					DelvUI.Helpers.DrawHelper.DrawOutlinedText(text, textPosition, color, effectColor, drawList);
+					DrawOutlinedText(text, textPosition, color, effectColor, drawList);
 					break;
 
 				default:
@@ -179,7 +185,42 @@ namespace SezzUI.Helpers
 			DrawAnchoredText(font, TextStyle.Outline, DrawAnchor.Center, text, pos, size, color, outlineColor, drawList);
 		}
 
-		public static void DrawPlaceholder(string text, Vector2 pos, Vector2 size, uint textColor, uint lineColor, uint backgroundColor, PlaceholderLineStyle style, ImDrawListPtr drawList)
+		public static void DrawOutlinedText(string text, Vector2 pos, ImDrawListPtr drawList, int thickness = 1)
+		{
+			DrawOutlinedText(text, pos, 0xFFFFFFFF, 0xFF000000, drawList, thickness);
+		}
+
+		public static void DrawOutlinedText(string text, Vector2 pos, uint color, uint outlineColor, ImDrawListPtr drawList, int thickness = 1)
+		{
+			// Outline
+			for (int i = 1; i < thickness + 1; i++)
+			{
+				drawList.AddText(new(pos.X - i, pos.Y + i), outlineColor, text);
+				drawList.AddText(new(pos.X, pos.Y + i), outlineColor, text);
+				drawList.AddText(new(pos.X + i, pos.Y + i), outlineColor, text);
+				drawList.AddText(new(pos.X - i, pos.Y), outlineColor, text);
+				drawList.AddText(new(pos.X + i, pos.Y), outlineColor, text);
+				drawList.AddText(new(pos.X - i, pos.Y - i), outlineColor, text);
+				drawList.AddText(new(pos.X, pos.Y - i), outlineColor, text);
+				drawList.AddText(new(pos.X + i, pos.Y - i), outlineColor, text);
+			}
+
+			// Text
+			drawList.AddText(new(pos.X, pos.Y), color, text);
+		}
+
+		public static void DrawShadowText(string text, Vector2 pos, uint color, uint shadowColor, ImDrawListPtr drawList, int offset = 1)
+		{
+			// Shadow
+			drawList.AddText(new(pos.X + offset, pos.Y + offset), shadowColor, text);
+
+			// Text
+			drawList.AddText(new(pos.X, pos.Y), color, text);
+		}
+
+		#endregion
+
+		public static void DrawPlaceholder(string text, Vector2 pos, Vector2 size, uint textColor, uint lineColor, uint backgroundColor, PlaceholderStyle style, ImDrawListPtr drawList)
 		{
 			// Backdrop
 			DrawBackdrop(pos, size, backgroundColor, lineColor, drawList);
@@ -187,12 +228,12 @@ namespace SezzUI.Helpers
 			// Lines
 			switch (style)
 			{
-				case PlaceholderLineStyle.Diagonal:
+				case PlaceholderStyle.Diagonal:
 					drawList.AddLine(new(pos.X + 1, pos.Y + 1), new(pos.X + size.X - 1, pos.Y + size.Y - 2), lineColor, 1); // Top Left -> Bottom Right
 					drawList.AddLine(new(pos.X + 1, pos.Y + size.Y - 2), new(pos.X + size.X - 1, pos.Y + 1), lineColor, 1); // Bottom Left -> Top Right
 					break;
 
-				case PlaceholderLineStyle.Parallel:
+				case PlaceholderStyle.Parallel:
 					drawList.AddLine(new(pos.X + 1, pos.Y + size.Y / 2f), new(pos.X + size.X - 1, pos.Y + size.Y / 2f), lineColor, 1); // Top Left -> Bottom Right
 					drawList.AddLine(new(pos.X + size.X / 2f, pos.Y + 1), new(pos.X + size.X / 2f, pos.Y + size.Y - 2), lineColor, 1); // Top Left -> Bottom Right
 					break;
@@ -206,7 +247,7 @@ namespace SezzUI.Helpers
 			}
 		}
 
-		public static void DrawPlaceholder(string text, Vector2 pos, Vector2 size, float opacity, PlaceholderLineStyle style, ImDrawListPtr drawList)
+		public static void DrawPlaceholder(string text, Vector2 pos, Vector2 size, float opacity, PlaceholderStyle style, ImDrawListPtr drawList)
 		{
 			uint textColor = ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, opacity));
 			uint lineColor = ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, 0.3f * opacity));
@@ -222,6 +263,8 @@ namespace SezzUI.Helpers
 			float fillPercent = max == 0 ? 1f : Math.Clamp((current - min) / (max - min), 0f, 1f);
 			drawList.AddRectFilled(pos, pos + new Vector2(size.X * fillPercent, size.Y), barColor, 0);
 		}
+
+		#region Cooldowns
 
 		public static void DrawProgressSwipe(Vector2 pos, Vector2 size, float remaining, float total, float opacity, ImDrawListPtr drawList)
 		{
@@ -313,6 +356,8 @@ namespace SezzUI.Helpers
 			}
 		}
 
+		#endregion
+
 		public static (Vector2, Vector2) GetTexCoordinates(Vector2 size, float clipOffset = 0f, bool isStatus = false)
 		{
 			float uv0X = isStatus ? 4f : 1f;
@@ -346,11 +391,94 @@ namespace SezzUI.Helpers
 			return (uv0, uv1);
 		}
 
-		public enum PlaceholderLineStyle
+		#region Windows
+
+		public static void DrawInWindow(string name, Vector2 pos, Vector2 size, bool needsInput, bool needsFocus, Action<ImDrawListPtr> drawAction)
 		{
-			None,
-			Diagonal,
-			Parallel
+			const ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize;
+
+			DrawInWindow(name, pos, size, needsInput, needsFocus, false, windowFlags, drawAction);
 		}
+
+		public static void DrawInWindow(string name, Vector2 pos, Vector2 size, bool needsInput, bool needsFocus, bool needsWindow, ImGuiWindowFlags windowFlags, Action<ImDrawListPtr> drawAction)
+		{
+			windowFlags |= ImGuiWindowFlags.NoSavedSettings;
+
+			if (!needsInput)
+			{
+				windowFlags |= ImGuiWindowFlags.NoInputs;
+			}
+
+			if (!needsFocus)
+			{
+				windowFlags |= ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoBringToFrontOnFocus;
+			}
+
+			ClipRect? clipRect = ClipRectsHelper.Instance.GetClipRectForArea(pos, size);
+
+			// no clipping needed
+			if (!ClipRectsHelper.Instance.Enabled || !clipRect.HasValue)
+			{
+				ImDrawListPtr drawList = ImGui.GetWindowDrawList();
+
+				if (!needsInput && !needsWindow)
+				{
+					drawAction(drawList);
+					return;
+				}
+
+				ImGui.SetNextWindowPos(pos);
+				ImGui.SetNextWindowSize(size);
+
+				bool begin = ImGui.Begin(name, windowFlags);
+				if (!begin)
+				{
+					ImGui.End();
+					return;
+				}
+
+				drawAction(drawList);
+
+				ImGui.End();
+			}
+
+			// clip around game's window
+			else
+			{
+				// hide instead of clip?
+				if (!ClipRectsHelper.Instance.ClippingEnabled)
+				{
+					return;
+				}
+
+				ImGuiWindowFlags flags = windowFlags;
+				if (needsInput && clipRect.Value.Contains(ImGui.GetMousePos()))
+				{
+					flags |= ImGuiWindowFlags.NoInputs;
+				}
+
+				ClipRect[] invertedClipRects = ClipRectsHelper.GetInvertedClipRects(clipRect.Value);
+				for (int i = 0; i < invertedClipRects.Length; i++)
+				{
+					ImGui.SetNextWindowPos(pos);
+					ImGui.SetNextWindowSize(size);
+
+					bool begin = ImGui.Begin(name + "_" + i, flags);
+					if (!begin)
+					{
+						ImGui.End();
+						continue;
+					}
+
+					ImGui.PushClipRect(invertedClipRects[i].Min, invertedClipRects[i].Max, false);
+					drawAction(ImGui.GetWindowDrawList());
+					ImGui.PopClipRect();
+
+					ImGui.End();
+				}
+			}
+		}
+
+		#endregion
 	}
 }

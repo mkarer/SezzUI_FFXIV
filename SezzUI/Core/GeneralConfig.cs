@@ -10,12 +10,8 @@ namespace SezzUI.Interface.GeneralElements
 	{
 		public new static GeneralConfig DefaultConfig() => new();
 
-		[Checkbox("Enable Game UI Clipping", isMonitored = true, help = "Tries to hide parts of the overlay that would otherwise cover in-game elements.\nPlease note that this only works for the foremost element and also only handles the most common ones.\nDisabling this might help with performance issues and/or random crashes.")]
-		[Order(300)]
-		public bool EnableClipRects = true;
-
-		[Checkbox("Hide overlay instead of clipping.", isMonitored = true, help = "This will hide overlay elements completely when any in-game element is on top of them.\nIt will prevent them from covering in-game elements, but it won't look as good as clipping.\nMight help with performance issues and/or random crashes.")]
-		[Order(301, collapseWith = nameof(EnableClipRects))]
-		public bool HideInsteadOfClip = false;
+		[SelectFolder("Custom Media Path", isMonitored = true, help = "Subfolder Structure:\nFonts\\*.ttf => Custom Fonts\nIcons\\IconPath => Status/Action Icon Override\n    Example: \"/i/013000/013403.png\" would go in MediaPath\\Icons\\013000\\013403.png\nIcons\\*.png => PluginMenu Icons\nImages\\Overlays\\*.png => Custom Aura Alert Overlays")]
+		[Order(10)]
+		public string CustomMediaPath = "";
 	}
 }

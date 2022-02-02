@@ -70,7 +70,7 @@ namespace SezzUI.Modules.JobHud
 			// Extreme Caution
 			hud.AddAlert(new()
 			{
-				StatusIds = new[] {(uint) 1132, (uint) 1269},
+				StatusIds = new[] {1132u, 1269u},
 				StatusTarget = Unit.Any,
 				Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\stop.png",
 				Size = new Vector2(128, 128) * 0.7f,

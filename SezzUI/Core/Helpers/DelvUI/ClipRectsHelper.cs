@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
+using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using SezzUI;
 using SezzUI.Config;
 using SezzUI.Interface.GeneralElements;
 
@@ -79,7 +80,7 @@ namespace DelvUI.Helpers
 
 		// these are ordered by priority, if 2 game windows are on top of a ui element
 		// the one that comes first in this list is the one that will be clipped around
-		internal static string[] AddonNames =
+		internal static List<string> AddonNames = new()
 		{
 			"ContextMenu",
 			"ItemDetail", // tooltip
@@ -123,10 +124,10 @@ namespace DelvUI.Helpers
 			"Social",
 			"SocialDetailA",
 			"SocialDetailB",
-			"LookingForGroup",
 			"LookingForGroupSearch",
 			"LookingForGroupCondition",
 			"LookingForGroupDetail",
+			"LookingForGroup",
 			"ReadyCheck",
 			"Marker",
 			"FieldMarker",
@@ -137,9 +138,9 @@ namespace DelvUI.Helpers
 			"Emote",
 			"FreeCompany",
 			"FreeCompanyProfile",
-			"HousingMenu",
 			"HousingSubmenu",
 			"HousingSignBoard",
+			"HousingMenu",
 			"CrossWorldLinkshell",
 			"ContactList",
 			"CircleBookInputString",
@@ -154,6 +155,7 @@ namespace DelvUI.Helpers
 			"RecipeNote",
 			"GatheringNote",
 			"ContentsNote",
+			"SpearFishing",
 			"Orchestrion",
 			"MountNoteBook",
 			"MinionNoteBook",
@@ -199,26 +201,63 @@ namespace DelvUI.Helpers
 
 			_clipRects.Clear();
 
-			foreach (string addonName in AddonNames)
+			AtkStage* stage = AtkStage.GetSingleton();
+			if (stage == null)
 			{
-				AtkUnitBase* addon = (AtkUnitBase*) Plugin.GameGui.GetAddonByName(addonName, 1);
-				if (addon == null || !addon->IsVisible || addon->WindowNode == null || addon->Scale == 0)
+				return;
+			}
+
+			RaptureAtkUnitManager* manager = stage->RaptureAtkUnitManager;
+			if (manager == null)
+			{
+				return;
+			}
+
+			AtkUnitList* loadedUnitsList = &manager->AtkUnitManager.AllLoadedUnitsList;
+			if (loadedUnitsList == null)
+			{
+				return;
+			}
+
+			AtkUnitBase** addonList = &loadedUnitsList->AtkUnitEntries;
+			if (addonList == null)
+			{
+				return;
+			}
+
+			for (int i = 0; i < loadedUnitsList->Count; i++)
+			{
+				try
 				{
-					continue;
+					AtkUnitBase* addon = addonList[i];
+					if (addon == null || !addon->IsVisible || addon->WindowNode == null || addon->Scale == 0)
+					{
+						continue;
+					}
+
+					string? name = Marshal.PtrToStringAnsi(new(addon->Name));
+					if (name == null || !AddonNames.Contains(name))
+					{
+						continue;
+					}
+
+					float margin = 5 * addon->Scale;
+					float bottomMargin = 13 * addon->Scale;
+
+					ClipRect clipRect = new(new(addon->X + margin, addon->Y + margin), new(addon->X + addon->WindowNode->AtkResNode.Width * addon->Scale - margin, addon->Y + addon->WindowNode->AtkResNode.Height * addon->Scale - bottomMargin));
+
+					// just in case this causes weird issues / crashes (doubt it though...)
+					if (clipRect.Max.X < clipRect.Min.X || clipRect.Max.Y < clipRect.Min.Y)
+					{
+						continue;
+					}
+
+					_clipRects.Add(clipRect);
 				}
-
-				float margin = 5 * addon->Scale;
-				float bottomMargin = 13 * addon->Scale;
-
-				ClipRect clipRect = new(new(addon->X + margin, addon->Y + margin), new(addon->X + addon->WindowNode->AtkResNode.Width * addon->Scale - margin, addon->Y + addon->WindowNode->AtkResNode.Height * addon->Scale - bottomMargin));
-
-				// just in case this causes weird issues / crashes (doubt it though...)
-				if (clipRect.Max.X < clipRect.Min.X || clipRect.Max.Y < clipRect.Min.Y)
+				catch
 				{
-					continue;
+					//
 				}
-
-				_clipRects.Add(clipRect);
 			}
 		}
 
@@ -262,6 +301,11 @@ namespace DelvUI.Helpers
 
 		public bool IsPointClipped(Vector2 point)
 		{
+			if (!_config.EnableClipRects)
+			{
+				return false;
+			}
+
 			foreach (ClipRect clipRect in _clipRects)
 			{
 				if (clipRect.Contains(point))

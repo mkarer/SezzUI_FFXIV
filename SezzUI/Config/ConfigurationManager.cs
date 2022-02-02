@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Dalamud.Interface.Windowing;
-using DelvUI.Helpers;
 using ImGuiScene;
 using SezzUI.Config.Profiles;
 using SezzUI.Config.Tree;
@@ -43,15 +42,6 @@ namespace SezzUI.Config
 
 		public bool IsConfigWindowOpened => _mainConfigWindow.IsOpen;
 		public bool ShowingModalWindow = false;
-
-		public GradientDirection GradientDirection
-		{
-			get
-			{
-				MiscColorConfig? config = Instance.GetConfigObject<MiscColorConfig>();
-				return config != null ? config.GradientDirection : GradientDirection.None;
-			}
-		}
 
 		public string ConfigDirectory;
 

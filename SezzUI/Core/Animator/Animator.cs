@@ -76,12 +76,12 @@ namespace SezzUI.Animator
 		public AnimatorTransformData Data = new(); // This will be a reference to the active timeline's Data!
 
 		/// <summary>
-		/// Is playing OnShow, Loop or OnHide. This is TRUE even if Loop doesn't contain animations.
-		/// You can use IsLooping to check if the animation is running a empty Loop timeline.  
+		///     Is playing OnShow, Loop or OnHide. This is TRUE even if Loop doesn't contain animations.
+		///     You can use IsLooping to check if the animation is running a empty Loop timeline.
 		/// </summary>
 		public bool IsAnimating { get; private set; }
 
-		public bool IsLooping { get; private set; } = false;
+		public bool IsLooping { get; private set; }
 
 		private int? _ticksStart;
 		private int? _ticksStop;
@@ -94,7 +94,7 @@ namespace SezzUI.Animator
 		}
 
 		/// <summary>
-		///  Updates animation values (positions/opacity/etc).
+		///     Updates animation values (positions/opacity/etc).
 		/// </summary>
 		/// <returns>IsAnimating</returns>
 		public bool Update()

@@ -128,9 +128,9 @@ namespace DelvUI.Helpers
 			Vector2[] offsets =
 			{
 				new(-1, 0),
-				new Vector2(1, 0),
-				new Vector2(0, -1),
-				new Vector2(0, 1)
+				new(1, 0),
+				new(0, -1),
+				new(0, 1)
 			};
 
 			for (int i = 0; i < 4; i++)

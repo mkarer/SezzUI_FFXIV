@@ -12,7 +12,6 @@ using SezzUI.Animator;
 using SezzUI.Enums;
 using SezzUI.GameEvents;
 using SezzUI.Helpers;
-using DrawHelper = SezzUI.Helpers.DrawHelper;
 using JobsHelper = SezzUI.Helpers.JobsHelper;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
@@ -640,7 +639,7 @@ namespace SezzUI.Modules.JobHud
 			}
 			else
 			{
-				DrawHelper.DrawPlaceholder("?", pos, size, animator.Data.Opacity, DrawHelper.PlaceholderLineStyle.Diagonal, drawList);
+				DrawHelper.DrawPlaceholder("?", pos, size, animator.Data.Opacity, PlaceholderStyle.Diagonal, drawList);
 			}
 
 			// Cooldown + Charges

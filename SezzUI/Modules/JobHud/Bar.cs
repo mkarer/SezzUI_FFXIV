@@ -73,7 +73,7 @@ namespace SezzUI.Modules.JobHud
 
 			Vector2 pos = DrawHelper.GetAnchoredPosition(anchor, Vector2.Zero, Size, DrawAnchor.Top);
 
-			DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_JobHudBar", pos, Size, false, false, drawList =>
+			DrawHelper.DrawInWindow("SezzUI_JobHudBar", pos, Size, false, false, drawList =>
 			{
 				Vector2 iconPos = Vector2.Zero;
 				iconPos.Y = pos.Y;

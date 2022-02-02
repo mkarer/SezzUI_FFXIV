@@ -10,10 +10,10 @@ using ImGuiNET;
 using JetBrains.Annotations;
 using SezzUI.Config;
 using SezzUI.Enums;
+using SezzUI.Helpers;
 using SezzUI.Interface;
 using SezzUI.Interface.GeneralElements;
 using XivCommon;
-using DrawHelper = SezzUI.Helpers.DrawHelper;
 
 namespace SezzUI.Modules.PluginMenu
 {
@@ -62,7 +62,7 @@ namespace SezzUI.Modules.PluginMenu
 			ImGui.SetNextWindowPos(menuPos);
 			ImGuiHelper.PushButtonStyle(BORDER_SIZE, opacity); // Would clip some borders otherwise...
 
-			DelvUI.Helpers.DrawHelper.DrawInWindow("SezzUI_PluginMenu_Buttons", menuPos, Size, true, false, drawList =>
+			DrawHelper.DrawInWindow("SezzUI_PluginMenu_Buttons", menuPos, Size, true, false, drawList =>
 			{
 				float buttonOffset = rightToLeft ? Size.X - enabledItems[0].Size.X - BORDER_SIZE : BORDER_SIZE; // Need to add border size here for R2L or it will clip the right border. 
 				uint shadowColor = ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity));
@@ -128,7 +128,7 @@ namespace SezzUI.Modules.PluginMenu
 								else if (match.Groups[2].Success)
 								{
 									// Text
-									DelvUI.Helpers.DrawHelper.DrawShadowText(match.Groups[2].Value, textPosition, ImGui.ColorConvertFloat4ToU32(color), shadowColor, drawList);
+									DrawHelper.DrawShadowText(match.Groups[2].Value, textPosition, ImGui.ColorConvertFloat4ToU32(color), shadowColor, drawList);
 									textPosition.X += ImGui.CalcTextSize(match.Groups[2].Value).X;
 								}
 							}

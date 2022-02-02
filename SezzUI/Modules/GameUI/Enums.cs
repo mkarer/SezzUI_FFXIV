@@ -55,8 +55,8 @@ namespace SezzUI.Enums
 	[Flags]
 	public enum AddonVisibility : byte
 	{
-		UserHidden = 1 << 0, // Hidden in current HUD layout
-		GameHidden = 1 << 2 // Scenario Guide during duty for example
+		UserHidden = 1 << 0, // Hidden by the user in current HUD layout
+		GameHidden = 1 << 2 // Hidden by the game, Scenario Guide during duty for example
 	}
 
 	public static class Addons

@@ -43,7 +43,7 @@ namespace SezzUI.Modules.JobHud
 			{JobIDs.DRK, new(209f / 255f, 38f / 255f, 204f / 255f, 100f / 100f)},
 			{JobIDs.WAR, new(207f / 255f, 38f / 255f, 33f / 255f, 100f / 100f)},
 			{JobIDs.GNB, new(193f / 255f, 106f / 255f, 0f / 255f, 100f / 100f)},
-			{JobIDs.GLD, new(168f / 255f, 210f / 255f, 230f / 255f, 100f / 100f)},
+			{JobIDs.GLA, new(168f / 255f, 210f / 255f, 230f / 255f, 100f / 100f)},
 			{JobIDs.MRD, new(207f / 255f, 38f / 255f, 33f / 255f, 100f / 100f)},
 			// Healers
 			{JobIDs.SCH, new(134f / 255f, 87f / 255f, 255f / 255f, 100f / 100f)},

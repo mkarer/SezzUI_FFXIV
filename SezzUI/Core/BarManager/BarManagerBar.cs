@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Numerics;
-using DelvUI.Helpers;
 using ImGuiNET;
 using ImGuiScene;
 using SezzUI.Enums;
+using SezzUI.Helpers;
 
 namespace SezzUI.BarManager
 {
@@ -51,7 +51,7 @@ namespace SezzUI.BarManager
 						{
 							Vector2 posIcon = new(position.X + Config.BorderSize, position.Y + Config.BorderSize);
 							Vector2 sizeIcon = new(Config.Size.Y - 2 * Config.BorderSize, Config.Size.Y - 2 * Config.BorderSize);
-							(Vector2 uv0, Vector2 uv1) = Helpers.DrawHelper.GetTexCoordinates(sizeIcon);
+							(Vector2 uv0, Vector2 uv1) = DrawHelper.GetTexCoordinates(sizeIcon);
 
 							drawList.AddRectFilled(posIcon, posIcon + sizeIcon, ImGui.ColorConvertFloat4ToU32(Config.BackgroundColor), 0);
 							drawList.AddImage(Icon.ImGuiHandle, posIcon, posIcon + sizeIcon, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Vector4.One));
@@ -89,20 +89,20 @@ namespace SezzUI.BarManager
 						// Text: Name
 						if (Text != null)
 						{
-							Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Left, Text, new(posBar.X, position.Y), new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
+							DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Left, Text, new(posBar.X, position.Y), new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
 						}
 
 						// Text: Count
 						if (CountText != null)
 						{
 							Vector2 posText2 = Text == null ? new(posBar.X, position.Y) : new(posBar.X + 5 + (Text == null ? Vector2.Zero : ImGui.CalcTextSize(Text)).X, position.Y);
-							Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.CountTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
+							DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.CountTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
 						}
 
 						// Text: Duration
 						if (Config.ShowDuration)
 						{
-							Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Right, Helpers.DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), position, Config.Size, ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, -5);
+							DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Right, DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), position, Config.Size, ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, -5);
 						}
 					}
 						break;
@@ -127,7 +127,7 @@ namespace SezzUI.BarManager
 						{
 							Vector2 posIcon = new(position.X + Config.BorderSize, position.Y + Config.BorderSize);
 							Vector2 sizeIcon = new(Config.Size.Y - 2 * Config.BorderSize, Config.Size.Y - 2 * Config.BorderSize);
-							(Vector2 uv0, Vector2 uv1) = Helpers.DrawHelper.GetTexCoordinates(sizeIcon);
+							(Vector2 uv0, Vector2 uv1) = DrawHelper.GetTexCoordinates(sizeIcon);
 
 							drawList.AddRectFilled(posIcon, posIcon + sizeIcon, ImGui.ColorConvertFloat4ToU32(Config.BackgroundColor), 0);
 							drawList.AddImage(Icon.ImGuiHandle, posIcon, posIcon + sizeIcon, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Vector4.One));
@@ -156,26 +156,26 @@ namespace SezzUI.BarManager
 						// Text: Name
 						if (Text != null)
 						{
-							Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Left, Text, posBar, new(0, sizeBar.Y), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 4);
+							DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Left, Text, posBar, new(0, sizeBar.Y), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 4);
 						}
 
 						// Text: Count
 						if (CountText != null)
 						{
 							Vector2 posText2 = Text == null ? new(posBar.X, posBar.Y) : new(posBar.X + 5 + (Text == null ? Vector2.Zero : ImGui.CalcTextSize(Text)).X, posBar.Y);
-							Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.CountTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
+							DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.CountTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
 						}
 
 						// Text: Duration
 						if (Config.ShowDuration)
 						{
-							Helpers.DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Right, Helpers.DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), posBar, sizeBar, ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, -4);
+							DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Right, DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), posBar, sizeBar, ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, -4);
 						}
 					}
 						break;
 
 					default:
-						Helpers.DrawHelper.DrawPlaceholder(Text ?? string.Empty, position, Config.Size, 1, Helpers.DrawHelper.PlaceholderLineStyle.Diagonal, drawList);
+						DrawHelper.DrawPlaceholder(Text ?? string.Empty, position, Config.Size, 1, PlaceholderStyle.Diagonal, drawList);
 						break;
 				}
 			});

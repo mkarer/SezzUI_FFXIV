@@ -4,7 +4,7 @@ using DelvUI.Helpers;
 using ImGuiNET;
 using SezzUI.Config;
 using SezzUI.Enums;
-using DrawHelper = SezzUI.Helpers.DrawHelper;
+using SezzUI.Helpers;
 
 namespace SezzUI.Interface
 {
@@ -178,7 +178,7 @@ namespace SezzUI.Interface
 			}
 
 			_lastWindowPos = ImGui.GetWindowPos();
-			Position = DrawHelper.GetAnchoredImGuiPosition(_lastWindowPos + _windowPadding, Size, Anchor);
+			Position = DrawHelper.GetAnchoredViewportPosition(_lastWindowPos + _windowPadding, Size, Anchor);
 
 			// Check selection
 			string tooltipText = "X: " + _config.Position.X + "    Y: " + _config.Position.Y;
@@ -199,7 +199,7 @@ namespace SezzUI.Interface
 
 			uint lineColor = Selected ? 0xffeeffff : 0x4dffffff;
 			ImDrawListPtr drawList = ImGui.GetWindowDrawList();
-			DrawHelper.DrawPlaceholder("", dragPosition, Size, 0xffffffff, lineColor, 0x7f000000, DrawHelper.PlaceholderLineStyle.Parallel, drawList);
+			DrawHelper.DrawPlaceholder("", dragPosition, Size, 0xffffffff, lineColor, 0x7f000000, PlaceholderStyle.Parallel, drawList);
 
 			// Arrows
 			if (Selected && DraggablesHelper.DrawArrows(_lastWindowPos, windowSize, tooltipText, out Vector2 movement))

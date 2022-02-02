@@ -35,22 +35,22 @@ namespace SezzUI.Interface.GeneralElements
 
 			ColorMap = new()
 			{
-				// tanks
-				[JobIDs.GLD] = tanksColorConfig.GLDColor,
+				// Tanks
+				[JobIDs.GLA] = tanksColorConfig.GLAColor,
 				[JobIDs.MRD] = tanksColorConfig.MRDColor,
 				[JobIDs.PLD] = tanksColorConfig.PLDColor,
 				[JobIDs.WAR] = tanksColorConfig.WARColor,
 				[JobIDs.DRK] = tanksColorConfig.DRKColor,
 				[JobIDs.GNB] = tanksColorConfig.GNBColor,
 
-				// healers
+				// Healers
 				[JobIDs.CNJ] = healersColorConfig.CNJColor,
 				[JobIDs.WHM] = healersColorConfig.WHMColor,
 				[JobIDs.SCH] = healersColorConfig.SCHColor,
 				[JobIDs.AST] = healersColorConfig.ASTColor,
 				[JobIDs.SGE] = healersColorConfig.SGEColor,
 
-				// melee
+				// Melee
 				[JobIDs.PGL] = meleeColorConfig.PGLColor,
 				[JobIDs.LNC] = meleeColorConfig.LNCColor,
 				[JobIDs.ROG] = meleeColorConfig.ROGColor,
@@ -60,13 +60,13 @@ namespace SezzUI.Interface.GeneralElements
 				[JobIDs.SAM] = meleeColorConfig.SAMColor,
 				[JobIDs.RPR] = meleeColorConfig.RPRColor,
 
-				// ranged 
+				// Ranged 
 				[JobIDs.ARC] = rangedColorConfig.ARCColor,
 				[JobIDs.BRD] = rangedColorConfig.BRDColor,
 				[JobIDs.MCH] = rangedColorConfig.MCHColor,
 				[JobIDs.DNC] = rangedColorConfig.DNCColor,
 
-				// casters
+				// Casters
 				[JobIDs.THM] = castersColorConfig.THMColor,
 				[JobIDs.ACN] = castersColorConfig.ACNColor,
 				[JobIDs.BLM] = castersColorConfig.BLMColor,
@@ -74,7 +74,7 @@ namespace SezzUI.Interface.GeneralElements
 				[JobIDs.RDM] = castersColorConfig.RDMColor,
 				[JobIDs.BLU] = castersColorConfig.BLUColor,
 
-				// crafters
+				// Crafters
 				[JobIDs.CRP] = _rolesColorConfig.HANDColor,
 				[JobIDs.BSM] = _rolesColorConfig.HANDColor,
 				[JobIDs.ARM] = _rolesColorConfig.HANDColor,
@@ -84,7 +84,7 @@ namespace SezzUI.Interface.GeneralElements
 				[JobIDs.ALC] = _rolesColorConfig.HANDColor,
 				[JobIDs.CUL] = _rolesColorConfig.HANDColor,
 
-				// gatherers
+				// Gatherers
 				[JobIDs.MIN] = _rolesColorConfig.LANDColor,
 				[JobIDs.BOT] = _rolesColorConfig.LANDColor,
 				[JobIDs.FSH] = _rolesColorConfig.LANDColor
@@ -145,7 +145,6 @@ namespace SezzUI.Interface.GeneralElements
 
 		public PluginConfigColor SafeRoleColorForJobId(uint jobId) => RoleColorForJobId(jobId) ?? _miscColorConfig.NPCNeutralColor;
 
-		public PluginConfigColor EmptyUnitFrameColor => _miscColorConfig.EmptyUnitFrameColor;
 		public PluginConfigColor EmptyColor => _miscColorConfig.EmptyColor;
 		public PluginConfigColor PartialFillColor => _miscColorConfig.PartialFillColor;
 		public PluginConfigColor NPCFriendlyColor => _miscColorConfig.NPCFriendlyColor;
@@ -178,7 +177,7 @@ namespace SezzUI.Interface.GeneralElements
 
 		[ColorEdit4("Gladiator", spacing = true)]
 		[Order(25)]
-		public PluginConfigColor GLDColor = new(new(168f / 255f, 210f / 255f, 230f / 255f, 100f / 100f));
+		public PluginConfigColor GLAColor = new(new(168f / 255f, 210f / 255f, 230f / 255f, 100f / 100f));
 
 		[ColorEdit4("Marauder")]
 		[Order(30)]
@@ -359,14 +358,6 @@ namespace SezzUI.Interface.GeneralElements
 	public class MiscColorConfig : PluginConfigObject
 	{
 		public new static MiscColorConfig DefaultConfig() => new();
-
-		[Combo("Gradient Type For Bars", "Flat Color", "Right", "Left", "Up", "Down", "Centered Horizontal", spacing = true)]
-		[Order(4)]
-		public GradientDirection GradientDirection = GradientDirection.Down;
-
-		[ColorEdit4("Empty Unit Frame", separator = true)]
-		[Order(5)]
-		public PluginConfigColor EmptyUnitFrameColor = new(new(0f / 255f, 0f / 255f, 0f / 255f, 95f / 100f));
 
 		[ColorEdit4("Empty Bar")]
 		[Order(10)]

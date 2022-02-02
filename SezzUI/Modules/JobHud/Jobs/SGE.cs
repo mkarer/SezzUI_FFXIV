@@ -13,9 +13,9 @@ namespace SezzUI.Modules.JobHud.Jobs
 		public override void Configure(JobHud hud)
 		{
 			Bar bar1 = new(hud);
-			bar1.Add(new(bar1) {TextureActionId = 24293, StatusIds = new[] {(uint) 2614, (uint) 2615, (uint) 2616}, MaxStatusDuration = 30, StatusTarget = Unit.Target, RequiredPowerAmount = 400, RequiredPowerType = JobsHelper.PowerType.MP}); // Eukrasian Dosis
-			bar1.Add(new(bar1) {TextureActionId = 24298, CooldownActionId = 24298, StatusIds = new[] {(uint) 2618, (uint) 2938, (uint) 3003}, MaxStatusDurations = new[] {15f, 15f, 20f}, RequiredPowerType = JobsHelper.PowerType.Addersgall, RequiredPowerAmount = 1}); // Kerachole/Holos
-			bar1.Add(new(bar1) {TextureActionId = 24310, CooldownActionId = 24310, StatusIds = new[] {(uint) 2618, (uint) 2938, (uint) 3003}, MaxStatusDurations = new[] {15f, 15f, 20f}}); // Holos
+			bar1.Add(new(bar1) {TextureActionId = 24293, StatusIds = new[] {2614u, 2615u, 2616u}, MaxStatusDuration = 30, StatusTarget = Unit.Target, RequiredPowerAmount = 400, RequiredPowerType = JobsHelper.PowerType.MP}); // Eukrasian Dosis
+			bar1.Add(new(bar1) {TextureActionId = 24298, CooldownActionId = 24298, StatusIds = new[] {2618u, 2938u, 3003u}, MaxStatusDurations = new[] {15f, 15f, 20f}, RequiredPowerType = JobsHelper.PowerType.Addersgall, RequiredPowerAmount = 1}); // Kerachole/Holos
+			bar1.Add(new(bar1) {TextureActionId = 24310, CooldownActionId = 24310, StatusIds = new[] {2618u, 2938u, 3003u}, MaxStatusDurations = new[] {15f, 15f, 20f}}); // Holos
 			//bar1.Add(new Icon(bar1) { TextureActionId = 24288, CooldownActionId = 24288, StatusActionId = 24288, MaxStatusDuration = 15}); // Physis
 			bar1.Add(new(bar1) {TextureActionId = 24305, CooldownActionId = 24305, StatusId = 2612, MaxStatusDuration = 15, StatusTarget = Unit.TargetOrPlayer}); // Haima
 			bar1.Add(new(bar1) {TextureActionId = 24311, CooldownActionId = 24311, StatusId = 2613, MaxStatusDuration = 15}); // Panhaima
@@ -45,8 +45,6 @@ namespace SezzUI.Modules.JobHud.Jobs
 				aa.GlowBackdropSize = 4;
 				hud.AddAlert(aa);
 			}
-
-			;
 
 			// Eukrasia
 			hud.AddAlert(new()

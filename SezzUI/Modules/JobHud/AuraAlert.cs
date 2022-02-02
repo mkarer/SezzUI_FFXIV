@@ -9,7 +9,6 @@ using SezzUI.Animator;
 using SezzUI.Core;
 using SezzUI.Enums;
 using SezzUI.Helpers;
-using DrawHelper = SezzUI.Helpers.DrawHelper;
 using JobsHelper = SezzUI.Helpers.JobsHelper;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
@@ -246,7 +245,7 @@ namespace SezzUI.Modules.JobHud
 				Vector2 elementPosition = DrawHelper.GetAnchoredPosition(elementSize, DrawAnchor.Center) + Position + Animator.Data.Offset;
 
 				string windowId = "SezzUI_AuraAlert";
-				DelvUI.Helpers.DrawHelper.DrawInWindow(windowId, elementPosition, elementSize, false, false, drawList =>
+				DrawHelper.DrawInWindow(windowId, elementPosition, elementSize, false, false, drawList =>
 				{
 					if (GlowBackdrop)
 					{
@@ -274,7 +273,7 @@ namespace SezzUI.Modules.JobHud
 						bool fontPushed = FontsManager.Instance.PushFont("MyriadProLightCond_16");
 						Vector2 textSize = ImGui.CalcTextSize(windowId);
 						Vector2 textPosition = DrawHelper.GetAnchoredPosition(elementPosition, elementSize, textSize, DrawAnchor.Center);
-						DelvUI.Helpers.DrawHelper.DrawShadowText(windowId, textPosition, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, Animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, Animator.Data.Opacity)), drawList);
+						DrawHelper.DrawShadowText(windowId, textPosition, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, Animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, Animator.Data.Opacity)), drawList);
 						if (fontPushed)
 						{
 							ImGui.PopFont();
@@ -298,7 +297,7 @@ namespace SezzUI.Modules.JobHud
 							bool fontPushed = FontsManager.Instance.PushFont("MyriadProLightCond_20");
 							Vector2 textSize = ImGui.CalcTextSize(textDuration);
 							Vector2 textPosition = DrawHelper.GetAnchoredPosition(elementPosition, elementSize, textSize, TextAnchor) + TextOffset;
-							DelvUI.Helpers.DrawHelper.DrawOutlinedText(textDuration, textPosition, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, 1)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList);
+							DrawHelper.DrawOutlinedText(textDuration, textPosition, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, 1)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList);
 							if (fontPushed)
 							{
 								ImGui.PopFont();

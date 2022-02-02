@@ -6,7 +6,7 @@ using ImGuiScene;
 using SezzUI.Animator;
 using SezzUI.Core;
 using SezzUI.Enums;
-using DrawHelper = SezzUI.Helpers.DrawHelper;
+using SezzUI.Helpers;
 
 namespace SezzUI.Modules.CooldownHud
 {
@@ -92,7 +92,7 @@ namespace SezzUI.Modules.CooldownHud
 			Vector2 elementPosition = DrawHelper.GetAnchoredPosition(elementSize, DrawAnchor.Center) + Position + Animator.Data.Offset;
 
 			string windowId = $"SezzUI_CooldownPulse{IconId}";
-			DelvUI.Helpers.DrawHelper.DrawInWindow(windowId, elementPosition, elementSize, false, false, drawList =>
+			DrawHelper.DrawInWindow(windowId, elementPosition, elementSize, false, false, drawList =>
 			{
 				if (_texture != null)
 				{
@@ -114,7 +114,7 @@ namespace SezzUI.Modules.CooldownHud
 					bool fontPushed = FontsManager.Instance.PushFont("MyriadProLightCond_16");
 					Vector2 textSize = ImGui.CalcTextSize(windowId);
 					Vector2 textPosition = DrawHelper.GetAnchoredPosition(elementPosition, elementSize, textSize, DrawAnchor.Center);
-					DelvUI.Helpers.DrawHelper.DrawShadowText(windowId, textPosition, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, Animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, Animator.Data.Opacity)), drawList);
+					DrawHelper.DrawShadowText(windowId, textPosition, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, Animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, Animator.Data.Opacity)), drawList);
 					if (fontPushed)
 					{
 						ImGui.PopFont();
