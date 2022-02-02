@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Numerics;
 using System.Reflection;
 using SezzUI.Enums;
@@ -9,48 +8,6 @@ namespace SezzUI
 {
 	public static class Extensions
 	{
-		public static string Abbreviate(this string str)
-		{
-			string[] splits = str.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
-			for (int i = 0; i < splits.Length - 1; i++)
-			{
-				splits[i] = splits[i][0].ToString();
-			}
-
-			return string.Join(". ", splits).ToUpper();
-		}
-
-		public static string FirstName(this string str)
-		{
-			string[] splits = str.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
-			return splits.Length > 0 ? splits[0] : "";
-		}
-
-		public static string LastName(this string str)
-		{
-			string[] splits = str.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
-			return splits.Length > 1 ? splits[^1] : "";
-		}
-
-		public static string Initials(this string str)
-		{
-			string initials = "";
-			string firstName = FirstName(str);
-			string lastName = LastName(str);
-
-			if (firstName.Length > 0)
-			{
-				initials = firstName[0] + ".";
-			}
-
-			if (lastName.Length > 0)
-			{
-				initials += " " + lastName[0] + ".";
-			}
-
-			return initials;
-		}
-
 		public static string Truncate(this string str, int maxLength)
 		{
 			if (string.IsNullOrEmpty(str))
@@ -109,17 +66,6 @@ namespace SezzUI
 		public static bool IsHorizontal(this BarDirection direction) => direction == BarDirection.Right || direction == BarDirection.Left;
 
 		public static bool IsInverted(this BarDirection direction) => direction == BarDirection.Left || direction == BarDirection.Up;
-
-		public static string CheckForUpperCase(this string str)
-		{
-			TextInfo culture = CurrentCulture.TextInfo;
-			if (!string.IsNullOrEmpty(str) && char.IsLetter(str[0]) && !char.IsUpper(str[0]))
-			{
-				str = culture.ToTitleCase(str);
-			}
-
-			return str;
-		}
 	}
 
 	public static class ReflectionExtensions
@@ -169,7 +115,7 @@ namespace SezzUI
 				throw new ArgumentOutOfRangeException(nameof(propName), string.Format("Property {0} was not found in Type {1}", propName, obj.GetType().FullName));
 			}
 
-			pi.SetValue(obj!, value);
+			pi.SetValue(obj, value);
 		}
 
 		/// <summary>
@@ -231,7 +177,7 @@ namespace SezzUI
 				throw new ArgumentOutOfRangeException(nameof(propName), string.Format("Field {0} was not found in Type {1}", propName, obj.GetType().FullName));
 			}
 
-			fi.SetValue(obj!, value);
+			fi.SetValue(obj, value);
 		}
 	}
 }
