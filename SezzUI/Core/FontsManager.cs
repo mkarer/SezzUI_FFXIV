@@ -17,9 +17,10 @@ namespace SezzUI
 			DefaultFontsPath = Path.GetDirectoryName(basePath) + "\\Media\\Fonts\\";
 		}
 
-		public static void Initialize(string basePath)
+		public static FontsManager Initialize(string basePath)
 		{
 			Instance = new(basePath);
+			return Instance;
 		}
 
 		public static FontsManager Instance { get; private set; } = null!;
