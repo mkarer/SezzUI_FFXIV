@@ -42,15 +42,19 @@ namespace SezzUI.Modules.JobHud
 
 		public string? Image
 		{
-			get => _imagePath;
+			get => _imageFile;
 			set
 			{
-				_imagePath = value;
-				_texture = value != null ? ImageCache.Instance.GetImageFromPath(value) : null;
+				_imageFile = value;
+				_texture = value != null ? ImageCache.Instance.GetImageFromPath(MediaManager.Instance.GetOverlayFile(value)) : null;
+				if (_texture != null)
+				{
+					(_imageUV0, _imageUV1) = DrawHelper.GetTexCoordinates(new(_texture.Width, _texture.Height), Size);
+				}
 			}
 		}
 
-		private string? _imagePath;
+		private string? _imageFile;
 		private TextureWrap? _texture;
 		public byte BorderSize = 0;
 
@@ -59,8 +63,8 @@ namespace SezzUI.Modules.JobHud
 		public Vector4 GlowColor = Vector4.One;
 
 		public Vector4 Color = Vector4.One;
-		public Vector2 ImageUV0 = Vector2.Zero;
-		public Vector2 ImageUV1 = Vector2.One;
+		private Vector2 _imageUV0 = Vector2.Zero;
+		private Vector2 _imageUV1 = Vector2.One;
 
 		public bool FlipImageHorizontally
 		{
@@ -69,13 +73,13 @@ namespace SezzUI.Modules.JobHud
 			{
 				if (value && !_flipHorizontally)
 				{
-					ImageUV0.X += 1;
-					ImageUV1.X -= 1;
+					_imageUV0.X += 1;
+					_imageUV1.X -= 1;
 				}
 				else if (!value && _flipHorizontally)
 				{
-					ImageUV0.X -= 1;
-					ImageUV1.X += 1;
+					_imageUV0.X -= 1;
+					_imageUV1.X += 1;
 				}
 			}
 		}
@@ -89,13 +93,13 @@ namespace SezzUI.Modules.JobHud
 			{
 				if (value && !_flipVertically)
 				{
-					ImageUV0.Y += 1;
-					ImageUV1.Y -= 1;
+					_imageUV0.Y += 1;
+					_imageUV1.Y -= 1;
 				}
 				else if (!value && _flipVertically)
 				{
-					ImageUV0.Y -= 1;
-					ImageUV1.Y += 1;
+					_imageUV0.Y -= 1;
+					_imageUV1.Y += 1;
 				}
 			}
 		}
@@ -123,35 +127,30 @@ namespace SezzUI.Modules.JobHud
 			Animator.Timelines.OnHide.Add(new ScaleAnimation(1, 1.5f, 250));
 		}
 
-		public bool UseStatusIcon(uint statusId)
+		public void UseStatusIcon(uint statusId)
 		{
-			LuminaStatus? status = SpellHelper.GetStatus(statusId);
-			if (status != null)
+			_texture = SpellHelper.GetStatusIconTexture(statusId, out bool isOverriden);
+			if (_texture != null)
 			{
-				_texture = TexturesCache.Instance.GetTextureFromIconId(status.Icon);
-				if (_texture != null)
+				if (isOverriden)
 				{
-					(ImageUV0, ImageUV1) = DrawHelper.GetTexCoordinates(Size, 0f, true); // TODO
+					(_imageUV0, _imageUV1) = DrawHelper.GetTexCoordinates(new(_texture.Width, _texture.Height), Size);
+				}
+				else
+				{
+					(_imageUV0, _imageUV1) = DrawHelper.GetTexCoordinates(new(_texture.Width, _texture.Height), true);
 				}
 			}
-
-			return false;
 		}
 
-		public bool UseActionIcon(uint actionId)
+		public void UseActionIcon(uint actionId)
 		{
 			uint actionIdAdjusted = SpellHelper.GetAdjustedActionId(actionId);
-			LuminaAction? action = SpellHelper.GetAction(actionIdAdjusted);
-			if (action != null)
+			_texture = SpellHelper.GetActionIconTexture(actionIdAdjusted, out bool _);
+			if (_texture != null)
 			{
-				_texture = TexturesCache.Instance.GetTextureFromIconId(action.Icon);
-				if (_texture != null)
-				{
-					(ImageUV0, ImageUV1) = DrawHelper.GetTexCoordinates(Size);
-				}
+				(_imageUV0, _imageUV1) = DrawHelper.GetTexCoordinates(new(_texture.Width, _texture.Height), Size);
 			}
-
-			return false;
 		}
 
 		public override void Draw(int elapsed = 0)
@@ -254,7 +253,7 @@ namespace SezzUI.Modules.JobHud
 					if (_texture != null)
 					{
 						// Texture
-						drawList.AddImage(_texture.ImGuiHandle, elementPosition, elementPosition + elementSize, ImageUV0, ImageUV1, ImGui.ColorConvertFloat4ToU32(Color.AddTransparency(Animator.Data.Opacity)));
+						drawList.AddImage(_texture.ImGuiHandle, elementPosition, elementPosition + elementSize, _imageUV0, _imageUV1, ImGui.ColorConvertFloat4ToU32(Color.AddTransparency(Animator.Data.Opacity)));
 
 						// Border
 						if (BorderSize > 0)

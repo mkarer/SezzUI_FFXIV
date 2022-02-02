@@ -29,7 +29,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			hud.AddAlert(new()
 			{
 				StatusId = 1820,
-				Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\backlash_green.png",
+				Image = "backlash_green.png",
 				Size = new Vector2(256, 128) * 0.8f,
 				Position = new(0, -180),
 				MaxDuration = 30,

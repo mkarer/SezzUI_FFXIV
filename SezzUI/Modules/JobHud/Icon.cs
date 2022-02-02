@@ -2,7 +2,6 @@
 // https://raw.githubusercontent.com/xivapi/ffxiv-datamining/master/csv/Status.csv
 
 using System;
-using System.IO;
 using System.Numerics;
 using Dalamud.Game.ClientState.Statuses;
 using ImGuiNET;
@@ -61,39 +60,16 @@ namespace SezzUI.Modules.JobHud
 			get => _textureActionId;
 			set
 			{
+				_textureActionId = value;
 				if (value != null)
 				{
 					uint actionIdAdjusted = SpellHelper.GetAdjustedActionId((uint) value);
-					LuminaAction? action = SpellHelper.GetAction(actionIdAdjusted);
-					if (action != null)
+					_texture = SpellHelper.GetActionIconTexture(actionIdAdjusted, out bool _);
+					if (_texture != null)
 					{
-						bool useLocalTexture = false;
-						string path = Plugin.AssemblyLocation + $"Media\\Icons\\{action.Icon / 1000 * 1000:000000}\\{action.Icon:000000}.png";
-						try
-						{
-							if (File.Exists(path))
-							{
-								_texture = ImageCache.Instance.GetImageFromPath(path);
-								if (_texture != null)
-								{
-									useLocalTexture = true;
-									(_iconUV0, _iconUV1) = DrawHelper.GetTexCoordinates(new(_texture.Width, _texture.Height), _clipOffset != null ? (float) _clipOffset : 0);
-								}
-							}
-						}
-						catch (Exception ex)
-						{
-							Logger.Error(ex, "SetTextureActionId", $"Error reading image ({path}): {ex}");
-						}
-
-						if (!useLocalTexture)
-						{
-							_texture = TexturesCache.Instance.GetTextureFromIconId(action.Icon);
-						}
+						UpdateTextureUVs();
 					}
 				}
-
-				_textureActionId = value;
 			}
 		}
 
@@ -105,36 +81,12 @@ namespace SezzUI.Modules.JobHud
 			set
 			{
 				_textureStatusId = value;
-
 				if (value != null)
 				{
-					LuminaStatus? status = SpellHelper.GetStatus((uint) value);
-					if (status != null)
+					_texture = SpellHelper.GetStatusIconTexture((uint) value, out bool isOverriden);
+					if (_texture != null)
 					{
-						bool useLocalTexture = false;
-						try
-						{
-							string path = Plugin.AssemblyLocation + $"Media\\Icons\\{status.Icon / 1000 * 1000:000000}\\{status.Icon:000000}.png";
-							if (File.Exists(path))
-							{
-								_texture = ImageCache.Instance.GetImageFromPath(path);
-								if (_texture != null)
-								{
-									useLocalTexture = true;
-									(_iconUV0, _iconUV1) = DrawHelper.GetTexCoordinates(new(_texture.Width, _texture.Height));
-								}
-							}
-						}
-						catch
-						{
-							//
-						}
-
-						if (!useLocalTexture)
-						{
-							_texture = TexturesCache.Instance.GetTextureFromIconId(status.Icon);
-							IconClipOffset = _clipOffset != null ? (float) _clipOffset : 0;
-						}
+						UpdateTextureUVs();
 					}
 				}
 			}
@@ -245,29 +197,33 @@ namespace SezzUI.Modules.JobHud
 		public Func<bool>? CustomCondition;
 
 		/// <summary>
-		///     If the icon size is not 1:1 the visible area will be cropped.
-		///     You can specify a negative value to moves the visible area up or left, or a positive value to move it down or
-		///     right.
+		///     If the icon size ratio doesn't match the texture ratio the visible area will be cropped.
+		///     By default the visible area will be the center part of your image, but you can specify clip modifiers (which are
+		///     based on the image size) to move it.
 		/// </summary>
-		public float IconClipOffset
+		public Vector2? IconClipMultiplier
 		{
 			set
 			{
-				_clipOffset = value;
-				if (Parent.IconSize.X == Parent.IconSize.Y && _textureStatusId == null)
+				_clipMultiplier = value;
+				if (_texture != null)
 				{
-					return;
+					Vector2 iconSize = new(_texture.Width, _texture.Height);
+					(_iconUV0, _iconUV1) = DrawHelper.GetTexCoordinates(iconSize, Parent.IconSize, _clipMultiplier ?? Vector2.Zero);
 				}
-
-				(_iconUV0, _iconUV1) = DrawHelper.GetTexCoordinates(Parent.IconSize, value, _textureStatusId != null);
 			}
 		}
 
 		private Vector2? _iconUV0;
 		private Vector2? _iconUV1;
-		private float? _clipOffset;
+		private Vector2? _clipMultiplier;
 
 		private IconState _state = IconState.Ready;
+
+		private void UpdateTextureUVs()
+		{
+			IconClipMultiplier = _clipMultiplier;
+		}
 
 		public Icon(Bar parent)
 		{
@@ -662,8 +618,8 @@ namespace SezzUI.Modules.JobHud
 				uint n = 8; // number of textures to cycle through
 				float dur = 250; // duration of one full cycle
 				float frameTime = dur / n; // display duration of 1 single frame
-				uint step = Math.Min(n, Math.Max(1, (uint) Math.Ceiling((uint) (animator.TimeElapsed % dur) / frameTime)));
-				string image = Plugin.AssemblyLocation + "Media\\Images\\Animations\\DashedRect38_" + step + ".png";
+				uint step = Math.Min(n, Math.Max(1, (uint) Math.Ceiling((uint) (animator.TimeElapsed % dur) / frameTime))) - 1;
+				string image = MediaManager.Instance.BorderGlowTexture[step];
 
 				TextureWrap? tex = ImageCache.Instance.GetImageFromPath(image);
 				if (tex != null)

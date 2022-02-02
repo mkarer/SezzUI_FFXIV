@@ -16,7 +16,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			bar1.Add(new(bar1) {TextureActionId = 2269, CustomDuration = GetHutonDuration, StatusWarningThreshold = 20}); // Huton
 			bar1.Add(new(bar1) {TextureActionId = 2258, CooldownActionId = 2258, StatusId = 638, StatusTarget = Unit.Target, MaxStatusDuration = 15, StatusSourcePlayer = false, GlowBorderUsable = true, CustomCondition = IsHidden}); // Trick Attack
 			bar1.Add(new(bar1) {TextureActionId = 2264, CooldownActionId = 2264, StatusId = 497, MaxStatusDuration = 15}); // Kassatsu
-			bar1.Add(new(bar1) {TextureActionId = 16493, CooldownActionId = 16493, StatusId = 497, MaxStatusDuration = 30}); // Bunshin TODO: Stacks
+			bar1.Add(new(bar1) {TextureActionId = 16493, CooldownActionId = 16493, StatusId = 1954, MaxStatusDuration = 30, RequiredPowerType = JobsHelper.PowerType.Ninki, RequiredPowerAmount = 50}); // Bunshin
 			bar1.Add(new(bar1) {TextureActionId = 7403, CooldownActionId = 7403, StatusId = 1186, MaxStatusDuration = 6}); // Ten Chi Jin
 			hud.AddBar(bar1);
 

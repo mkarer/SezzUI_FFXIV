@@ -16,7 +16,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			bar1.Add(new(bar1) {TextureActionId = 3538, StatusId = 725, MaxStatusDuration = 21, StatusTarget = Unit.Target}); // Goring Blade
 			bar1.Add(new(bar1) {TextureActionId = 16461, CooldownActionId = 16461}); // Intervene
 			bar1.Add(new(bar1) {TextureActionId = 3542, CooldownActionId = 3542, StatusId = 1856, MaxStatusDuration = jobLevel >= 74 ? 6 : 4, RequiredPowerType = JobsHelper.PowerType.Oath, RequiredPowerAmount = 50, GlowBorderUsable = true}); // Sheltron
-			bar1.Add(new(bar1) {TextureActionId = 7382, CooldownActionId = 7382, StatusId = 1174, MaxStatusDuration = 6, StatusTarget = Unit.Target, GlowBorderStatusIds = new[] {(uint) 1191, (uint) 74}, RequiredPowerType = JobsHelper.PowerType.Oath, RequiredPowerAmount = 50}); // Intervention
+			bar1.Add(new(bar1) {TextureActionId = 7382, CooldownActionId = 7382, StatusId = 1174, MaxStatusDuration = 6, StatusTarget = Unit.Target, GlowBorderStatusIds = new[] {1191u, 74u}, RequiredPowerType = JobsHelper.PowerType.Oath, RequiredPowerAmount = 50}); // Intervention
 			bar1.Add(new(bar1) {TextureActionId = 7383, CooldownActionId = 7383, StatusId = 1368, MaxStatusDuration = 30}); // Requiescat
 			hud.AddBar(bar1);
 
@@ -33,7 +33,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			{
 				StatusId = 1368,
 				ExactStacks = 1,
-				Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\hand_of_light.png",
+				Image = "hand_of_light.png",
 				Size = new(256, 128),
 				Position = new(0, -120),
 				Level = 80

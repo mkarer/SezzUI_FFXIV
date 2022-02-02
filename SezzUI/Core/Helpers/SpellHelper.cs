@@ -5,6 +5,7 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Statuses;
 using Dalamud.Utility;
+using ImGuiScene;
 using Lumina.Excel;
 using SezzUI.Enums;
 using SezzUI.Hooking;
@@ -70,6 +71,39 @@ namespace SezzUI.Helpers
 			}
 
 			return actionIdAdjusted > 0 ? actionIdAdjusted : OriginalFunctionManager.GetAdjustedActionId(actionId);
+		}
+
+		private static TextureWrap? GetIconTexture(ushort? iconId, out bool isOverriden)
+		{
+			isOverriden = false;
+			if (iconId == null)
+			{
+				return null;
+			}
+
+			TextureWrap? texture = ImageCache.Instance.GetImageFromPath(MediaManager.Instance.GetIconFile($"{iconId / 1000 * 1000:000000}\\{iconId:000000}.png"));
+			if (texture != null)
+			{
+				isOverriden = true;
+			}
+			else
+			{
+				texture = TexturesCache.Instance.GetTextureFromIconId((ushort) iconId);
+			}
+
+			return texture;
+		}
+
+		public static TextureWrap? GetActionIconTexture(uint actionId, out bool isOverriden)
+		{
+			isOverriden = false;
+			return GetIconTexture(GetAction(actionId)?.Icon, out isOverriden);
+		}
+
+		public static TextureWrap? GetStatusIconTexture(uint statusId, out bool isOverriden)
+		{
+			isOverriden = false;
+			return GetIconTexture(GetStatus(statusId)?.Icon, out isOverriden);
 		}
 
 		public static LuminaAction? GetAction(uint actionId) => _sheetAction?.GetRow(actionId);

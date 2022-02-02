@@ -21,7 +21,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			{
 				StatusId = 2701,
 				MaxDuration = 60,
-				Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\demonic_core_vertical.png",
+				Image = "demonic_core_vertical.png",
 				Size = new(128, 256),
 				Position = new(200, 50),
 				Level = 62,
@@ -50,11 +50,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 		{
 			if (IsDemiBahamutSummoned())
 			{
-				SMNGauge gauge = Plugin.JobGauges.Get<SMNGauge>();
-				if (gauge != null)
-				{
-					return (gauge.SummonTimerRemaining / 1000f, 15);
-				}
+				return (Plugin.JobGauges.Get<SMNGauge>().SummonTimerRemaining / 1000f, 15);
 			}
 
 			return (0, 0);

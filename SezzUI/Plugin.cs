@@ -78,12 +78,14 @@ namespace SezzUI
 
 			if (pluginInterface.AssemblyLocation.DirectoryName != null)
 			{
-				AssemblyLocation = pluginInterface.AssemblyLocation.DirectoryName + "\\";
+				AssemblyLocation = pluginInterface.AssemblyLocation.DirectoryName;
 			}
 			else
 			{
 				AssemblyLocation = Assembly.GetExecutingAssembly().Location;
 			}
+
+			AssemblyLocation = AssemblyLocation.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
 
 			Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.7";
 
@@ -100,6 +102,7 @@ namespace SezzUI
 #endif
 
 			FontsManager.Instance.LoadConfig();
+			MediaManager.Initialize(AssemblyLocation);
 
 			ClipRectsHelper.Initialize();
 			GlobalColors.Initialize();
@@ -357,6 +360,7 @@ namespace SezzUI
 			ProfilesManager.Instance.Dispose();
 			TexturesCache.Instance.Dispose();
 			ImageCache.Instance.Dispose();
+			MediaManager.Instance.Dispose();
 			TooltipsHelper.Instance.Dispose();
 			OriginalFunctionManager.Instance.Dispose();
 

@@ -136,7 +136,7 @@ namespace SezzUI.Helpers
 
 		public static void DrawBackdropEdgeGlow(Vector2 backdropPos, Vector2 backdropSize, uint glowColor, ImDrawListPtr drawList, uint size = 8, short inset = -8)
 		{
-			DrawBackdropEdge(Plugin.AssemblyLocation + "Media\\Images\\GlowTex.png", backdropPos, backdropSize, glowColor, drawList, size, inset);
+			DrawBackdropEdge(MediaManager.Instance.BackdropGlowTexture, backdropPos, backdropSize, glowColor, drawList, size, inset);
 		}
 
 		#region Text
@@ -357,7 +357,7 @@ namespace SezzUI.Helpers
 
 		#endregion
 
-		public static (Vector2, Vector2) GetTexCoordinates(Vector2 size, float clipOffset = 0f, bool isStatus = false)
+		public static (Vector2, Vector2) GetTexCoordinates(Vector2 size, bool isStatus = false)
 		{
 			float uv0X = isStatus ? 4f : 1f;
 			float uv0Y = isStatus ? 14f : 1f;
@@ -368,23 +368,41 @@ namespace SezzUI.Helpers
 			Vector2 uv0 = new(uv0X / size.X, uv0Y / size.Y);
 			Vector2 uv1 = new(1f - uv1X / size.X, 1f - uv1Y / size.Y);
 
-			if (!size.X.Equals(size.Y))
-			{
-				float ratio = Math.Max(size.X, size.Y) / Math.Min(size.X, size.Y);
-				float crop = (1 - 1 / ratio) / 2;
+			return (uv0, uv1);
+		}
 
-				if (size.X < size.Y)
-				{
-					// Crop left/right parts
-					uv0.X += crop * (1 + clipOffset);
-					uv1.X -= crop * (1 - clipOffset);
-				}
-				else
-				{
-					// Crop top/bottom parts
-					uv0.Y += crop * (1 + clipOffset);
-					uv1.Y -= crop * (1 - clipOffset);
-				}
+		public static (Vector2, Vector2) GetTexCoordinates(Vector2 tex, Vector2 space) => GetTexCoordinates(tex, space, Vector2.Zero);
+
+		public static (Vector2, Vector2) GetTexCoordinates(Vector2 tex, Vector2 space, Vector2 clipMultiplier)
+		{
+			// I'm too stupid for this.
+			Vector2 uv0 = new(0f, 0f);
+			Vector2 uv1 = new(1f, 1f);
+
+			float texRatio = Math.Max(tex.X, tex.Y) / Math.Min(tex.X, tex.Y);
+			float spaceRatio = Math.Max(space.X, space.Y) / Math.Min(space.X, space.Y);
+
+			if (texRatio != spaceRatio)
+			{
+				float widthRatio = tex.X / space.X;
+				float heightRatio = tex.Y / space.Y;
+				float ratio = Math.Min(widthRatio, heightRatio);
+
+				float widthScale = space.X * ratio;
+				float heightScale = space.Y * ratio;
+
+				float clipOffsetX = clipMultiplier.X * (tex.X - widthScale);
+				float clipOffsetY = clipMultiplier.Y * (tex.Y - heightScale);
+
+				float startX = (tex.X - widthScale) / 2 + clipOffsetX;
+				float endX = startX + widthScale;
+				float startY = (tex.Y - heightScale) / 2 + clipOffsetY;
+				float endY = startY + heightScale;
+
+				uv0.X = startX / tex.X;
+				uv0.Y = startY / tex.Y;
+				uv1.X = endX / tex.X;
+				uv1.Y = endY / tex.Y;
 			}
 
 			return (uv0, uv1);

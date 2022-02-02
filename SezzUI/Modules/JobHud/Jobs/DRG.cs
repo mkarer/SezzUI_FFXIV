@@ -30,7 +30,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			// Life of the Dragon
 			hud.AddAlert(new()
 			{
-				Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\berserk.png",
+				Image = "berserk.png",
 				CustomCondition = HasLifeOfTheDragon,
 				CustomDuration = GetLifeOfTheDragonDuration,
 				Size = new Vector2(256, 128) * 0.8f,
@@ -44,8 +44,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		private static float GetLifeOfTheDragonDuration()
 		{
-			DRGGauge gauge = Plugin.JobGauges.Get<DRGGauge>();
-			return gauge.LOTDTimer / 1000f;
+			return Plugin.JobGauges.Get<DRGGauge>().LOTDTimer / 1000f;
 		}
 	}
 }

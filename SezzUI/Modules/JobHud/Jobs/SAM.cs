@@ -13,7 +13,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			Bar bar1 = new(hud);
 			bar1.Add(new(bar1) {TextureStatusId = 1299, StatusId = 1299, MaxStatusDuration = 40}); // Fuka
 			bar1.Add(new(bar1) {TextureStatusId = 1298, StatusId = 1298, MaxStatusDuration = 40}); // Fugetsu
-			bar1.Add(new(bar1) {TextureActionId = 7489, StatusIds = new[] {(uint) 1228, (uint) 1319}, MaxStatusDuration = 60, StatusTarget = Unit.Target, CustomPowerCondition = CanUseHiganbana}); // Higanbana
+			bar1.Add(new(bar1) {TextureActionId = 7489, StatusIds = new[] {1228u, 1319u}, MaxStatusDuration = 60, StatusTarget = Unit.Target, CustomPowerCondition = CanUseHiganbana}); // Higanbana
 			hud.AddBar(bar1);
 
 			Bar bar2 = new(hud);

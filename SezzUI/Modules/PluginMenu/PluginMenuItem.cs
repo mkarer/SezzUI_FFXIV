@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 using ImGuiNET;
@@ -34,21 +33,10 @@ namespace SezzUI.Modules.PluginMenu
 
 			if (Config.Title.StartsWith("::") && Config.Title.Length > 2)
 			{
-				string image = Plugin.AssemblyLocation + "Media\\" + Config.Title.Substring(2);
-				try
+				Texture = ImageCache.Instance.GetImageFromPath(MediaManager.Instance.GetIconFile(Config.Title.Substring(2)));
+				if (Texture != null)
 				{
-					if (File.Exists(image))
-					{
-						Texture = ImageCache.Instance.GetImageFromPath(image);
-						if (Texture != null)
-						{
-							contentSize.X = contentSize.Y;
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					Logger.Error(ex, $"[PluginMenuItem::Update] Error reading image ({image}): {ex}");
+					contentSize.X = contentSize.Y;
 				}
 			}
 			else

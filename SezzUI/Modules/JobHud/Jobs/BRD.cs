@@ -31,7 +31,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			hud.AddAlert(new()
 			{
 				StatusId = 122,
-				Image = Plugin.AssemblyLocation + "Media\\Images\\Overlays\\focus_fire.png",
+				Image = "focus_fire.png",
 				Size = new Vector2(256, 128) * 0.8f,
 				Position = new(0, -180),
 				MaxDuration = 30,
@@ -49,14 +49,13 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		private static bool IsPlaying()
 		{
-			BRDGauge gauge = Plugin.JobGauges.Get<BRDGauge>();
-			return gauge != null && gauge.Song != Song.NONE;
+			return Plugin.JobGauges.Get<BRDGauge>().Song != Song.NONE;
 		}
 
 		private static (float, float) GetSongDuration(Song song)
 		{
 			BRDGauge gauge = Plugin.JobGauges.Get<BRDGauge>();
-			if (gauge != null && gauge.Song == song)
+			if (gauge.Song == song)
 			{
 				return (gauge.SongTimer / 1000f, 45f);
 			}
@@ -74,7 +73,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			};
 
 			BRDGauge gauge = Plugin.JobGauges.Get<BRDGauge>();
-			return (gauge != null && gauge.Song == song ? gauge.Repertoire : (byte) 0, maxStacks);
+			return (gauge.Song == song ? gauge.Repertoire : (byte) 0, maxStacks);
 		}
 
 		private static (float, float) GetWanderersMinuetDuration() => GetSongDuration(Song.WANDERER);
