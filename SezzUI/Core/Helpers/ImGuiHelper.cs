@@ -89,9 +89,9 @@ namespace SezzUI.Helpers
 		{
 			Action<bool, string> validatedCallback = (finished, path) =>
 			{
-				if (finished && path.Length > 0)
+				if (finished && path.Length > 0 && FileSystemHelper.ValidatePath(path, out string validatedPath))
 				{
-					path = FileSystemHelper.ValidatePath(path);
+					path = validatedPath;
 				}
 
 				callback(finished, path);
@@ -99,13 +99,12 @@ namespace SezzUI.Helpers
 
 			fileDialogManager.OpenFolderDialog(title, validatedCallback);
 
-			string selectedPath = FileSystemHelper.ValidatePath(selected ?? "");
-			if (selectedPath != "")
+			if (FileSystemHelper.ValidatePath(selected, out string validatedSelectedPath))
 			{
 				try
 				{
 					FileDialog fileDialog = fileDialogManager.GetFieldValue<FileDialog>("dialog");
-					fileDialog.GetType().GetTypeInfo().GetDeclaredMethod("SetPath")?.Invoke(fileDialog, new object[] {selectedPath});
+					fileDialog.GetType().GetTypeInfo().GetDeclaredMethod("SetPath")?.Invoke(fileDialog, new object[] {validatedSelectedPath});
 				}
 				catch (Exception ex)
 				{
