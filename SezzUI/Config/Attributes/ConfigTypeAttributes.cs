@@ -587,6 +587,33 @@ namespace SezzUI.Config.Attributes
 
 	#endregion
 
+	#region Plain Text
+
+	[AttributeUsage(AttributeTargets.Field)]
+	public class TextAttribute : ConfigAttribute
+	{
+		private readonly string _text;
+
+		public TextAttribute(string friendlyName, string text) : base(friendlyName)
+		{
+			_text = text;
+		}
+
+		public override bool DrawField(FieldInfo field, PluginConfigObject config, string? ID, bool collapsingHeader)
+		{
+			Vector2 textSize = ImGui.CalcTextSize(_text);
+			if (ImGui.BeginChild(friendlyName + IDText(ID), textSize))
+			{
+				ImGui.Text(_text);
+				ImGui.EndChild();
+			}
+
+			return false;
+		}
+	}
+
+	#endregion
+
 	#region Folder Dialog
 
 	[AttributeUsage(AttributeTargets.Field)]
@@ -608,9 +635,17 @@ namespace SezzUI.Config.Attributes
 
 			if (ImGui.InputText(friendlyName + IDText(ID), ref stringVal, MAX_PATH, ImGuiInputTextFlags.EnterReturnsTrue))
 			{
-				finalValue = FileSystemHelper.ValidatePath(stringVal);
+				if (stringVal == "")
+				{
+					finalValue = stringVal;
+				}
+				else if (FileSystemHelper.ValidatePath(stringVal, out string validatedStringVal))
+				{
+					finalValue = validatedStringVal;
+				}
 			}
 
+			// Select Folder
 			ImGui.SameLine();
 			ImGui.PushFont(UiBuilder.IconFont);
 			if (ImGui.Button(FontAwesomeIcon.Folder.ToIconString(), new(0, 0)))
@@ -628,6 +663,24 @@ namespace SezzUI.Config.Attributes
 			}
 
 			ImGui.PopFont();
+			if (ImGui.IsItemHovered())
+			{
+				ImGui.SetTooltip("Select Folder");
+			}
+
+			// Explore Folder
+			ImGui.SameLine();
+			ImGui.PushFont(UiBuilder.IconFont);
+			if (ImGui.Button(FontAwesomeIcon.ExternalLinkAlt.ToIconString(), new(0, 0)) && FileSystemHelper.ValidatePath(stringVal, out string validatedPath))
+			{
+				Utils.OpenFolder(validatedPath);
+			}
+
+			ImGui.PopFont();
+			if (ImGui.IsItemHovered())
+			{
+				ImGui.SetTooltip("Explore Folder");
+			}
 
 			_fileDialogManager.Draw();
 
