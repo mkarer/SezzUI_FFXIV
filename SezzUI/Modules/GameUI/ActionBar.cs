@@ -433,7 +433,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 			// if (_debugConfig.LogRawInputEventHandling)
 			// {
-			// 	Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} State: {state}");
+			// 	Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} 0x{vkCode:X} State: {state}");
 			// }
 #endif
 
@@ -444,7 +444,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogRawInputEventHandling)
 					{
-						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} State: {state} (HoldingCtrl)");
+						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} 0x{vkCode:X} State: {state} (HoldingCtrl)");
 					}
 #endif
 					SetActionBarPage((byte) Config.BarPagingPageCtrl);
@@ -454,7 +454,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogRawInputEventHandling)
 					{
-						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} State: {state} (HoldingAlt)");
+						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} 0x{vkCode:X} State: {state} (HoldingAlt)");
 					}
 #endif
 					SetActionBarPage((byte) Config.BarPagingPageAlt);
@@ -478,10 +478,9 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogRawInputEventHandling)
 					{
-						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (NoModifiers)");
+						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} 0x{vkCode:X} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (NoModifiers)");
 					}
 #endif
-					Logger.Debug("OnKeyUp", $"{vkCode} NoModifiers");
 					SetActionBarPage(0);
 				}
 				else if (vkCode == VK_MENU)
@@ -490,7 +489,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogRawInputEventHandling)
 					{
-						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (ReleasedAlt)");
+						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} 0x{vkCode:X} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (ReleasedAlt)");
 					}
 #endif
 					SetActionBarPage(pressedCtrl ? (byte) Config.BarPagingPageCtrl : _pageDefault);
@@ -501,7 +500,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogRawInputEventHandling)
 					{
-						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (ReleasedCtrl)");
+						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} 0x{vkCode:X} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (ReleasedCtrl)");
 					}
 #endif
 					SetActionBarPage(pressedAlt ? (byte) Config.BarPagingPageAlt : _pageDefault);
