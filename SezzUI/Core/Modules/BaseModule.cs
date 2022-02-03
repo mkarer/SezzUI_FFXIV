@@ -66,6 +66,12 @@ namespace SezzUI.Modules
 			return false;
 		}
 
+		/// <summary>
+		///     Disables and re-enables the module (if it is enabled).
+		/// </summary>
+		/// <returns>TRUE if module was enabled and was successfully disabled and enabled again.</returns>
+		protected virtual bool Reload() => Enabled && Disable() && Enable();
+
 		public virtual void Draw(DrawState state)
 		{
 			// Override
