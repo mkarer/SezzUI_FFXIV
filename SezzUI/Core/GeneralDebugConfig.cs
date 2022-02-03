@@ -29,6 +29,14 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(210, collapseWith = nameof(LogComponents))]
 		public bool LogComponentsRawInputNativeWindow = false;
 
+		[Checkbox("MediaManager")]
+		[Order(210, collapseWith = nameof(LogComponents))]
+		public bool LogComponentsMediaManager = false;
+
+		[Checkbox("ImageCache")]
+		[Order(210, collapseWith = nameof(LogComponents))]
+		public bool LogComponentsImageCache = false;
+
 		// Event Logging
 		[Checkbox("Enable Event Logging [LogLevel: Debug]", spacing = true)]
 		[Order(100)]

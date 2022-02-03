@@ -13,6 +13,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			Bar bar1 = new(hud);
 			bar1.Add(new(bar1) {TextureActionId = 25800, CooldownActionId = 25800, CustomDuration = GetDemiBahamutDuration, RequiresCombat = true, RequiresPet = true}); // Aethercharge/Dreadwyrm Trance
 			bar1.Add(new(bar1) {TextureActionId = 7429, CooldownActionId = 7429, CustomCondition = IsDemiBahamutSummoned}); // Enkindle Bahamut
+			bar1.Add(new(bar1) {TextureActionId = 181, RequiredPowerAmount = 1, RequiredPowerType = JobsHelper.PowerType.Aetherflow, StacksPowerType = JobsHelper.PowerType.Aetherflow, GlowBorderUsable = true}); // Fester
 			bar1.Add(new(bar1) {TextureActionId = 25801, CooldownActionId = 25801, StatusId = 2703, MaxStatusDuration = 30, RequiresCombat = true, CustomCondition = IsCarbuncleSummoned, StatusSourcePlayer = false}); // Searing Light
 			hud.AddBar(bar1);
 
@@ -21,12 +22,28 @@ namespace SezzUI.Modules.JobHud.Jobs
 			{
 				StatusId = 2701,
 				MaxDuration = 60,
-				Image = "demonic_core_vertical.png",
 				Size = new(128, 256),
+				Image = "demonic_core_vertical.png",
 				Position = new(200, 50),
 				Level = 62,
 				FlipImageHorizontally = true
 			});
+
+			// Summon Carbuncle
+			using (AuraAlert aa = new())
+			{
+				aa.CustomCondition = IsMissingPet;
+				aa.EnableInCombat = false;
+				aa.Size = new(64, 64);
+				aa.Position = new(0, -140);
+				aa.Level = 2;
+				aa.BorderSize = 1;
+				aa.UseActionIcon(25798);
+				aa.GlowBackdrop = true;
+				aa.GlowColor = new(74f / 255f, 137f / 255f, 214f / 255f, 0.5f);
+				aa.GlowBackdropSize = 4;
+				hud.AddAlert(aa);
+			}
 
 			base.Configure(hud);
 
@@ -41,6 +58,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 		// Ifrit-Egi: 27
 		// Titan-Egi: 28
 		// Garuda-Egi: 29
+
+		public static bool IsMissingPet() => !Plugin.BuddyList.PetBuddyPresent;
 
 		private static bool IsCarbuncleSummoned() => Plugin.BuddyList.PetBuddy != null && Plugin.BuddyList.PetBuddy.PetData.Id == 23;
 

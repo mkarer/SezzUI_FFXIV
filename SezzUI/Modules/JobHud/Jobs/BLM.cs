@@ -56,8 +56,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 			hud.AddAlert(new()
 			{
 				CustomCondition = IsParadoxActive,
-				Image = "echo_of_the_elements.png",
 				Size = new(128, 256),
+				Image = "echo_of_the_elements.png",
 				Position = new(200, 50),
 				FlipImageHorizontally = true,
 				Level = 90
@@ -76,9 +76,6 @@ namespace SezzUI.Modules.JobHud.Jobs
 			return gauge.InAstralFire || gauge.InUmbralIce;
 		}
 
-		private static bool IsParadoxActive()
-		{
-			return Plugin.JobGauges.Get<BLMGauge>().IsParadoxActive;
-		}
+		private static bool IsParadoxActive() => Plugin.JobGauges.Get<BLMGauge>().IsParadoxActive;
 	}
 }

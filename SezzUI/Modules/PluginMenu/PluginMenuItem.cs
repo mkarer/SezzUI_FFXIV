@@ -33,7 +33,7 @@ namespace SezzUI.Modules.PluginMenu
 
 			if (Config.Title.StartsWith("::") && Config.Title.Length > 2)
 			{
-				Texture = ImageCache.Instance.GetImageFromPath(MediaManager.Instance.GetIconFile(Config.Title.Substring(2)));
+				Texture = ImageCache.Instance.GetImage(MediaManager.Instance.GetIconFile(Config.Title.Substring(2)));
 				if (Texture != null)
 				{
 					contentSize.X = contentSize.Y;

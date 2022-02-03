@@ -35,20 +35,44 @@ namespace SezzUI.Modules.JobHud
 		public bool TreatWeaponOutAsCombat = true;
 
 		public Vector2 Position = Vector2.Zero;
-		public Vector2 Size = Vector2.Zero;
+
+		public Vector2 Size
+		{
+			get => _size;
+			set
+			{
+				bool updateImageUVs = _imageFile != null && _size != value;
+				_size = value;
+				if (updateImageUVs)
+				{
+					Image = _imageFile;
+				}
+			}
+		}
+
+		private Vector2 _size = Vector2.Zero;
 
 		public DrawAnchor TextAnchor = DrawAnchor.Center;
 		public Vector2 TextOffset = Vector2.Zero;
 
+		/// <summary>
+		///     Image to be shown.
+		///     Don't forget to set aura size first!
+		/// </summary>
 		public string? Image
 		{
 			get => _imageFile;
 			set
 			{
 				_imageFile = value;
-				_texture = value != null ? ImageCache.Instance.GetImageFromPath(MediaManager.Instance.GetOverlayFile(value)) : null;
+				_texture = value != null ? ImageCache.Instance.GetImage(MediaManager.Instance.GetOverlayFile(value)) : null;
 				if (_texture != null)
 				{
+					if (_size == Vector2.Zero)
+					{
+						_size = new(_texture.Width, _texture.Height);
+					}
+
 					(_imageUV0, _imageUV1) = DrawHelper.GetTexCoordinates(new(_texture.Width, _texture.Height), Size);
 				}
 			}
@@ -66,45 +90,11 @@ namespace SezzUI.Modules.JobHud
 		private Vector2 _imageUV0 = Vector2.Zero;
 		private Vector2 _imageUV1 = Vector2.One;
 
-		public bool FlipImageHorizontally
-		{
-			get => _flipHorizontally;
-			set
-			{
-				if (value && !_flipHorizontally)
-				{
-					_imageUV0.X += 1;
-					_imageUV1.X -= 1;
-				}
-				else if (!value && _flipHorizontally)
-				{
-					_imageUV0.X -= 1;
-					_imageUV1.X += 1;
-				}
-			}
-		}
+		public Vector2 ImageUV0 => _imageUV0.AddXY(FlipImageHorizontally ? 1f : 0f, FlipImageVertically ? 1f : 0f);
+		public Vector2 ImageUV1 => _imageUV1.AddXY(FlipImageHorizontally ? -1f : 0f, FlipImageVertically ? -1f : 0f);
 
-		private readonly bool _flipHorizontally = false;
-
-		public bool FlipImageVertically
-		{
-			get => _flipVertically;
-			set
-			{
-				if (value && !_flipVertically)
-				{
-					_imageUV0.Y += 1;
-					_imageUV1.Y -= 1;
-				}
-				else if (!value && _flipVertically)
-				{
-					_imageUV0.Y -= 1;
-					_imageUV1.Y += 1;
-				}
-			}
-		}
-
-		private readonly bool _flipVertically = false;
+		public bool FlipImageHorizontally = false;
+		public bool FlipImageVertically = false;
 
 		/// <summary>
 		///     Required job level to enable alert.
@@ -127,6 +117,11 @@ namespace SezzUI.Modules.JobHud
 			Animator.Timelines.OnHide.Add(new ScaleAnimation(1, 1.5f, 250));
 		}
 
+		/// <summary>
+		///     Uses game icon from status as texture. Can be overriden with custom images.
+		///     Don't forget to set aura size first!
+		/// </summary>
+		/// <param name="statusId"></param>
 		public void UseStatusIcon(uint statusId)
 		{
 			_texture = SpellHelper.GetStatusIconTexture(statusId, out bool isOverriden);
@@ -143,13 +138,25 @@ namespace SezzUI.Modules.JobHud
 			}
 		}
 
+		/// <summary>
+		///     Uses game icon from action as texture. Can be overriden with custom images.
+		///     Don't forget to set aura size first!
+		/// </summary>
+		/// <param name="actionId"></param>
 		public void UseActionIcon(uint actionId)
 		{
 			uint actionIdAdjusted = SpellHelper.GetAdjustedActionId(actionId);
-			_texture = SpellHelper.GetActionIconTexture(actionIdAdjusted, out bool _);
+			_texture = SpellHelper.GetActionIconTexture(actionIdAdjusted, out bool isOverriden);
 			if (_texture != null)
 			{
-				(_imageUV0, _imageUV1) = DrawHelper.GetTexCoordinates(new(_texture.Width, _texture.Height), Size);
+				if (isOverriden)
+				{
+					(_imageUV0, _imageUV1) = DrawHelper.GetTexCoordinates(new(_texture.Width, _texture.Height), Size);
+				}
+				else
+				{
+					(_imageUV0, _imageUV1) = DrawHelper.GetTexCoordinates(new(_texture.Width, _texture.Height));
+				}
 			}
 		}
 
@@ -253,7 +260,7 @@ namespace SezzUI.Modules.JobHud
 					if (_texture != null)
 					{
 						// Texture
-						drawList.AddImage(_texture.ImGuiHandle, elementPosition, elementPosition + elementSize, _imageUV0, _imageUV1, ImGui.ColorConvertFloat4ToU32(Color.AddTransparency(Animator.Data.Opacity)));
+						drawList.AddImage(_texture.ImGuiHandle, elementPosition, elementPosition + elementSize, ImageUV0, ImageUV1, ImGui.ColorConvertFloat4ToU32(Color.AddTransparency(Animator.Data.Opacity)));
 
 						// Border
 						if (BorderSize > 0)

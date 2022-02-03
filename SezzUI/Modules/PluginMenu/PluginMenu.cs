@@ -170,10 +170,25 @@ namespace SezzUI.Modules.PluginMenu
 				return false;
 			}
 
+			MediaManager.Instance.PathChanged += OnMediaPathChanged;
+
 			_items.ForEach(item => item.Update());
 			UpdateSize();
 			return true;
 		}
+
+		protected override bool Disable()
+		{
+			if (!base.Disable())
+			{
+				return false;
+			}
+
+			MediaManager.Instance.PathChanged -= OnMediaPathChanged;
+			return true;
+		}
+
+		private void OnMediaPathChanged(string path) => Reload();
 
 		private void UpdateSize()
 		{

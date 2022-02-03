@@ -25,8 +25,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 			hud.AddAlert(new()
 			{
 				StatusId = 1249,
-				Image = "genericarc_05_90.png",
 				Size = new Vector2(256, 128) * 0.9f,
+				Image = "genericarc_05_90.png",
 				Position = new(0, -180),
 				Color = new(249f / 255f, 51f / 255f, 243f / 255f, 1f),
 				MaxDuration = 15,
@@ -37,8 +37,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 			hud.AddAlert(new()
 			{
 				StatusId = 1235,
-				Image = "genericarc_01.png",
 				Size = new Vector2(128, 256) * 0.8f,
+				Image = "genericarc_01.png",
 				Position = new(-160, 0),
 				Color = new(255f / 255f, 250f / 255f, 174f / 255f, 1f),
 				MaxDuration = 30,
@@ -50,8 +50,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 			hud.AddAlert(new()
 			{
 				StatusId = 1234,
-				Image = "genericarc_01.png",
 				Size = new Vector2(128, 256) * 0.8f,
+				Image = "genericarc_01.png",
 				Position = new(160, 0),
 				Color = new(246f / 255f, 176f / 255f, 64f / 255f, 1f),
 				MaxDuration = 30,

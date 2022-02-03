@@ -79,7 +79,7 @@ namespace SezzUI.Hooking
 		private void Initialize()
 		{
 #if DEBUG
-			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
+			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsOriginalFunctionManager)
 			{
 				Logger.Debug("Initialize", $"Original address: {_originalPointer.ToInt64():X}");
 			}
@@ -87,7 +87,7 @@ namespace SezzUI.Hooking
 			// Read current memory
 			CurrentProcess.SafeReadRaw(_originalPointer, out byte[] currentBytes, MAX_HOOK_LENGTH);
 #if DEBUG
-			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
+			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsOriginalFunctionManager)
 			{
 				Logger.Debug("Initialize", "Byte code: " + Convert.ToHexString(currentBytes));
 			}
@@ -136,7 +136,7 @@ namespace SezzUI.Hooking
 			if (isHooked)
 			{
 #if DEBUG
-				if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
+				if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsOriginalFunctionManager)
 				{
 					Logger.Debug("Initialize", "Original function is already hooked.");
 				}
@@ -166,7 +166,7 @@ namespace SezzUI.Hooking
 			};
 
 #if DEBUG
-			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
+			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsOriginalFunctionManager)
 			{
 				Logger.Debug("Initialize", $"Length of instructions we're going to skip: 0x{hookLength:X}");
 
@@ -212,7 +212,7 @@ namespace SezzUI.Hooking
 
 			// Dump
 #if DEBUG
-			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsOriginalFunctionManager)
+			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsOriginalFunctionManager)
 			{
 				Logger.Debug("Initialize", "New instructions:");
 				AsmHelper.DumpInstructions(opCodes.ToArray(), _newPointer);

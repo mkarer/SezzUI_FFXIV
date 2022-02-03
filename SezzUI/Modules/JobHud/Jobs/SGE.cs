@@ -49,8 +49,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 			hud.AddAlert(new()
 			{
 				StatusId = 2606,
-				Image = "genericarc_05_90.png",
 				Size = new Vector2(256, 128) * 0.9f,
+				Image = "genericarc_05_90.png",
 				Position = new(0, -60),
 				Color = new(0 / 255f, 221f / 255f, 210f / 255f, 1f),
 				Level = 30

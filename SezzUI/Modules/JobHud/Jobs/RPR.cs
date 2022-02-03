@@ -29,8 +29,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 				EnableInCombat = false,
 				EnableOutOfCombat = true,
 				TreatWeaponOutAsCombat = false,
-				Image = "surge_of_darkness.png",
 				Size = new(128, 256),
+				Image = "surge_of_darkness.png",
 				Position = new(-140, 50),
 				Level = 82
 			});
@@ -41,8 +41,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 				StatusId = 2592,
 				MaxDuration = 30,
 				CustomCondition = HasNoBloodsownCircle,
-				Image = "predatory_swiftness.png",
 				Size = new Vector2(256, 128) * 1.1f,
+				Image = "predatory_swiftness.png",
 				Position = new(0, -180),
 				Level = 88
 			});
@@ -51,8 +51,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 			hud.AddAlert(new()
 			{
 				CustomCondition = ShouldUseGallows,
-				Image = "genericarc_05_90.png",
 				Size = new Vector2(256, 128) * 0.5f,
+				Image = "genericarc_05_90.png",
 				Position = new(0, -80),
 				Color = new(0 / 255f, 221f / 255f, 210f / 255f, 1f),
 				Level = 70
@@ -62,8 +62,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 			hud.AddAlert(new()
 			{
 				CustomCondition = ShouldUseGibbet,
-				Image = "genericarc_05.png",
 				Size = new Vector2(128, 256) * 0.5f,
+				Image = "genericarc_05.png",
 				Position = new(-120, 20),
 				Color = new(0 / 255f, 221f / 255f, 210f / 255f, 1f),
 				Level = 70
@@ -73,8 +73,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 			hud.AddAlert(new()
 			{
 				CustomCondition = ShouldUseGibbet,
-				Image = "genericarc_05.png",
 				Size = new Vector2(128, 256) * 0.5f,
+				Image = "genericarc_05.png",
 				Position = new(120, 20),
 				Color = new(0 / 255f, 221f / 255f, 210f / 255f, 1f),
 				Level = 70,
@@ -115,10 +115,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			return statusEnhancedGallows != null || statusEnhancedGibbet == null;
 		}
 
-		private static bool IsEnshrouded()
-		{
-			return Plugin.JobGauges.Get<RPRGauge>().EnshroudedTimeRemaining > 0;
-		}
+		private static bool IsEnshrouded() => Plugin.JobGauges.Get<RPRGauge>().EnshroudedTimeRemaining > 0;
 
 		private static bool HasOneLemureLeft()
 		{

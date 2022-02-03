@@ -79,11 +79,11 @@ namespace SezzUI.Modules.JobHud
 
 			_isEnabled = !_isEnabled;
 			Plugin.ClientState.Logout += OnLogout;
-
 			EventManager.Player.JobChanged += OnJobChanged;
 			EventManager.Player.LevelChanged += OnLevelChanged;
 			EventManager.Combat.EnteringCombat += OnEnteringCombat;
 			EventManager.Combat.LeavingCombat += OnLeavingCombat;
+			MediaManager.Instance.PathChanged += OnMediaPathChanged;
 
 			Configure();
 			return true;
@@ -100,11 +100,11 @@ namespace SezzUI.Modules.JobHud
 			Reset();
 
 			Plugin.ClientState.Logout -= OnLogout;
-
 			EventManager.Player.JobChanged -= OnJobChanged;
 			EventManager.Player.LevelChanged -= OnLevelChanged;
 			EventManager.Combat.EnteringCombat -= OnEnteringCombat;
 			EventManager.Combat.LeavingCombat -= OnLeavingCombat;
+			MediaManager.Instance.PathChanged -= OnMediaPathChanged;
 
 			OnLogout(null!, null!);
 			return true;
@@ -123,6 +123,8 @@ namespace SezzUI.Modules.JobHud
 				_currentLevel = 0;
 			}
 		}
+
+		private void OnMediaPathChanged(string path) => Reload();
 
 		private void Configure()
 		{

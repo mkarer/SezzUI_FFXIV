@@ -9,16 +9,20 @@ namespace SezzUI
 {
 	public class MediaManager : IDisposable
 	{
-		private readonly GeneralConfig _config;
+		public GeneralMediaConfig Config { get; }
+
 		internal static PluginLogger Logger = null!;
 
 		private readonly string _defaultPath;
+		private string _customPath;
+
+		public delegate void PathChangedDelegate(string path);
+
+		public event PathChangedDelegate? PathChanged;
 
 		public string BackdropGlowTexture { get; }
 
 		public string[] BorderGlowTexture { get; }
-
-		// TODO: PathChanged Event
 
 		public string? GetOverlayFile(string fileName)
 		{
@@ -61,13 +65,31 @@ namespace SezzUI
 		/// <returns>NULL if lookup failed, otherwise full path of the found file.</returns>
 		private string? GetCustomFile(string? fileName)
 		{
-			if (FileSystemHelper.ValidateFile(_config.Media.Path, fileName, out string validatedCustomFilePath))
+#if DEBUG
+			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsMediaManager)
 			{
+				Logger.Debug("GetCustomFile", $"File: {fileName}");
+			}
+#endif
+			if (FileSystemHelper.ValidateFile(Config.Media.Path, fileName, out string validatedCustomFilePath))
+			{
+#if DEBUG
+				if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsMediaManager)
+				{
+					Logger.Debug("GetCustomFile", $"File: {fileName} -> {validatedCustomFilePath}");
+				}
+#endif
 				return validatedCustomFilePath;
 			}
 
 			if (FileSystemHelper.ValidateFile(_defaultPath, fileName, out string validatedDefaultFilePath))
 			{
+#if DEBUG
+				if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsMediaManager)
+				{
+					Logger.Debug("GetCustomFile", $"File: {fileName} -> {validatedDefaultFilePath}");
+				}
+#endif
 				return validatedDefaultFilePath;
 			}
 
@@ -86,11 +108,12 @@ namespace SezzUI
 		{
 			Logger = new("MediaManager");
 
-			_config = ConfigurationManager.Instance.GetConfigObject<GeneralConfig>();
+			Config = ConfigurationManager.Instance.GetConfigObject<GeneralMediaConfig>();
 			ConfigurationManager.Instance.Reset += OnConfigReset;
-			_config.Media.ValueChangeEvent += OnConfigPropertyChanged;
+			Config.Media.ValueChangeEvent += OnConfigPropertyChanged;
 
 			_defaultPath = defaultPath;
+			_customPath = Config.Media.Path;
 			BackdropGlowTexture = $"{_defaultPath}Images{Path.DirectorySeparatorChar}GlowTex.png";
 
 			BorderGlowTexture = new string[8];
@@ -121,7 +144,7 @@ namespace SezzUI
 			}
 
 			ConfigurationManager.Instance.Reset -= OnConfigReset;
-			_config.Media.ValueChangeEvent -= OnConfigPropertyChanged;
+			Config.Media.ValueChangeEvent -= OnConfigPropertyChanged;
 			Instance = null!;
 		}
 
@@ -129,9 +152,30 @@ namespace SezzUI
 
 		#region Configuration Events
 
+		private void HandlePathChange()
+		{
+			if (_customPath == Config.Media.Path)
+			{
+				return;
+			}
+
+#if DEBUG
+			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsMediaManager)
+			{
+				Logger.Debug("HandlePathChange", $"Path: {Config.Media.Path}");
+			}
+#endif
+			PathChanged?.Invoke(Config.Media.Path); // Let modules update their images before removing them from cache
+
+			ImageCache.Instance.RemovePath(GetRelativePath("Icons", _customPath));
+			ImageCache.Instance.RemovePath(GetRelativePath($"Images{Path.DirectorySeparatorChar}Overlays", _customPath));
+
+			_customPath = Config.Media.Path;
+		}
+
 		private void OnConfigPropertyChanged(object sender, OnChangeBaseArgs args)
 		{
-			if (sender is not GeneralMediaConfig)
+			if (sender is not CustomMediaPathConfig)
 			{
 				return;
 			}
@@ -139,16 +183,18 @@ namespace SezzUI
 			switch (args.PropertyName)
 			{
 				case "Path":
-					// TODO: Remove all cached files.
+					HandlePathChange();
 					break;
 			}
 		}
 
 		private void OnConfigReset(ConfigurationManager sender, PluginConfigObject config)
 		{
-			if (config is not GeneralConfig)
+			if (config is not GeneralMediaConfig)
 			{
 			}
+
+			HandlePathChange();
 		}
 
 		#endregion

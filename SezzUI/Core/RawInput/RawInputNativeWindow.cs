@@ -97,7 +97,7 @@ namespace SezzUI.NativeMethods.RawInput
 		protected override void OnHandleChange()
 		{
 #if DEBUG
-			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsRawInputNativeWindow)
 			{
 				Logger.Debug("OnHandleChange", $"Handle: {Handle.ToInt64():X}");
 			}
@@ -131,7 +131,7 @@ namespace SezzUI.NativeMethods.RawInput
 			}
 
 #if DEBUG
-			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsRawInputNativeWindow)
 			{
 				Logger.Debug("CreateWindow", $"Handle: {Handle.ToInt64():X}");
 			}
@@ -159,7 +159,7 @@ namespace SezzUI.NativeMethods.RawInput
 			bool invokeRequired = hwndThread != currentThread;
 
 #if DEBUG
-			if (invokeRequired && Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+			if (invokeRequired && Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsRawInputNativeWindow)
 			{
 				Logger.Debug("GetInvokeRequired", $"Current Thread: {currentThread} Window Thread: {hwndThread}");
 			}
@@ -180,7 +180,7 @@ namespace SezzUI.NativeMethods.RawInput
 			try
 			{
 #if DEBUG
-				if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+				if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsRawInputNativeWindow)
 				{
 					Logger.Debug("SetWinEventHook", "Enabling hook");
 				}
@@ -200,7 +200,7 @@ namespace SezzUI.NativeMethods.RawInput
 				_winEventHookHandle = null;
 			}
 #if DEBUG
-			else if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+			else if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsRawInputNativeWindow)
 			{
 				Logger.Debug("SetWinEventHook", $"Handle: {_winEventHookHandle.DangerousGetHandle().ToInt64():X}");
 			}
@@ -216,7 +216,7 @@ namespace SezzUI.NativeMethods.RawInput
 					_winEventHookHandle.Dispose();
 					_winEventHookHandle = null;
 #if DEBUG
-					if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+					if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsRawInputNativeWindow)
 					{
 						Logger.Debug("UnhookWinEvent", "Success!");
 					}
@@ -232,7 +232,7 @@ namespace SezzUI.NativeMethods.RawInput
 		private void WinEventProc(HWINEVENTHOOK hWinEventHook, uint @event, HWND hwnd, int idObject, int idChild, uint idEventThread, uint dwmsEventTime)
 		{
 #if DEBUG
-			if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsRawInputNativeWindow)
 			{
 				Logger.Debug("WinEventProc", $"Event Type: {@event}");
 			}
@@ -253,7 +253,7 @@ namespace SezzUI.NativeMethods.RawInput
 			if (InvokeRequired)
 			{
 #if DEBUG
-				if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+				if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsRawInputNativeWindow)
 				{
 					Logger.Debug("DestroyWindow", $"PostMessage: {Handle.ToInt64():X} WM_CLOSE");
 				}
@@ -315,7 +315,7 @@ namespace SezzUI.NativeMethods.RawInput
 			if (m.Msg == WM_INPUT)
 			{
 #if DEBUG
-				if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+				if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsRawInputNativeWindow)
 				{
 					Logger.Debug("WndProc", "WM_INPUT");
 				}
@@ -327,7 +327,7 @@ namespace SezzUI.NativeMethods.RawInput
 			if (m.Msg == WM_CLOSE)
 			{
 #if DEBUG
-				if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+				if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsRawInputNativeWindow)
 				{
 					Logger.Debug("WndProc", "WM_CLOSE");
 				}
@@ -387,7 +387,7 @@ namespace SezzUI.NativeMethods.RawInput
 			fixed (RAWINPUTDEVICE* devPtr = rawDevices)
 			{
 #if DEBUG
-				if (Plugin.DebugConfig.LogComponents && EventManager.Config.LogComponentsRawInputNativeWindow)
+				if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsRawInputNativeWindow)
 				{
 					Logger.Debug("RegisterDevices", $"Usage Page: {devPtr->usUsagePage} Usage ID: {devPtr->usUsage}");
 				}

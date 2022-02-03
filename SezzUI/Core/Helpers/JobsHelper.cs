@@ -36,7 +36,8 @@ namespace SezzUI.Helpers
 			BloodLily,
 			PolyglotStacks,
 			FirstmindsFocus,
-			EyeOfTheDragon
+			EyeOfTheDragon,
+			Aetherflow
 		}
 
 		public static unsafe byte GetUnsyncedLevel()
@@ -153,37 +154,37 @@ namespace SezzUI.Helpers
 					return (Plugin.JobGauges.Get<WHMGauge>().BloodLily, 3);
 
 				case PowerType.PolyglotStacks:
-				{
 					if (jobLevel < 70)
 					{
 						return (0, 0);
 					}
 
-					BLMGauge gauge = Plugin.JobGauges.Get<BLMGauge>();
-					return (gauge.PolyglotStacks, jobLevel >= 80 ? 2 : 1);
-				}
+					return (Plugin.JobGauges.Get<BLMGauge>().PolyglotStacks, jobLevel >= 80 ? 2 : 1);
 
 				case PowerType.FirstmindsFocus:
-				{
 					if (jobLevel < 90)
 					{
 						return (0, 0);
 					}
 
-					DRGGauge gauge = Plugin.JobGauges.Get<DRGGauge>();
-					return (gauge.FirstmindsFocusCount, 2);
-				}
+					return (Plugin.JobGauges.Get<DRGGauge>().FirstmindsFocusCount, 2);
 
 				case PowerType.EyeOfTheDragon:
-				{
 					if (jobLevel < 60)
 					{
 						return (0, 0);
 					}
 
-					DRGGauge gauge = Plugin.JobGauges.Get<DRGGauge>();
-					return (gauge.EyeCount, 2);
-				}
+					return (Plugin.JobGauges.Get<DRGGauge>().EyeCount, 2);
+
+				case PowerType.Aetherflow:
+					if (jobLevel < 10)
+					{
+						return (0, 0);
+					}
+
+					return (SpellHelper.GetStatus(304u, Unit.Player)?.StackCount ?? 0, 2);
+
 				default:
 					return (0, 0);
 			}

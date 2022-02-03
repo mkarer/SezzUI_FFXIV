@@ -1,7 +1,5 @@
 ﻿using System;
-using SezzUI.Config;
 using SezzUI.GameEvents;
-using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI
 {
@@ -12,24 +10,11 @@ namespace SezzUI
 		internal static Combat Combat => Combat.Instance;
 		internal static Cooldown Cooldown => Cooldown.Instance;
 
-#if DEBUG
-		protected static PluginConfigObject _config = null!;
-		public static GeneralDebugConfig Config => (GeneralDebugConfig) _config;
-#endif
-
 		#region Singleton
 
 		public static void Initialize()
 		{
 			Instance = new();
-		}
-
-		public EventManager()
-		{
-#if DEBUG
-			_config = ConfigurationManager.Instance.GetConfigObject<GeneralDebugConfig>();
-			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
-#endif
 		}
 
 		public static EventManager Instance { get; private set; } = null!;
@@ -72,20 +57,9 @@ namespace SezzUI
 				Cooldown.Dispose();
 			}
 
-#if DEBUG
-			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
-#endif
-
 			Instance = null!;
 		}
 
 		#endregion
-
-#if DEBUG
-		private void OnConfigReset(ConfigurationManager sender)
-		{
-			_config = sender.GetConfigObject<GeneralDebugConfig>();
-		}
-#endif
 	}
 }

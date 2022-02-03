@@ -96,9 +96,9 @@ namespace SezzUI.GameEvents
 
 		private static readonly List<uint> _frequentUpdateCooldowns = new() // Workaround until I figure out how to do this correctly. Yes, this is absolute bullshit :(
 		{
-			// BRD
+			// BRD: Bloodletter [110], Rain of Death [117] => Mage's Ballad
 			110,
-			117 // Bloodletter [110], Rain of Death [117] => Mage's Ballad
+			117
 		};
 
 		#region Public Methods
@@ -106,7 +106,7 @@ namespace SezzUI.GameEvents
 		public void Watch(uint actionId)
 		{
 #if DEBUG
-			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownUsage)
+			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownUsage)
 			{
 				Logger.Debug("Watch", $"Action ID: {actionId}");
 			}
@@ -131,7 +131,7 @@ namespace SezzUI.GameEvents
 			}
 
 #if DEBUG
-			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownUsage)
+			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownUsage)
 			{
 				Logger.Debug("Unwatch", $"Action ID: {actionId} All: {all}");
 			}
@@ -388,7 +388,7 @@ namespace SezzUI.GameEvents
 			}
 
 #if DEBUG
-			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownHooks)
 			{
 				Logger.Debug("OnActionEffect", $"Action ID: {actionId}");
 			}
@@ -427,7 +427,7 @@ namespace SezzUI.GameEvents
 		private void InvokeCooldownStarted(uint actionId, CooldownData data)
 		{
 #if DEBUG
-			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownStarted)
+			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownStarted)
 			{
 				Logger.Debug("CooldownStarted", $"ActionID {actionId} StartTime {data.StartTime} Duration {data.Duration / 1000}s Charges {data.CurrentCharges}/{data.MaxCharges} Elapsed {Environment.TickCount64 - data.StartTime}ms Remaining {data.Remaining}ms");
 			}
@@ -445,7 +445,7 @@ namespace SezzUI.GameEvents
 		private void InvokeCooldownChanged(uint actionId, CooldownData data, bool chargesChanged, ushort previousCharges)
 		{
 #if DEBUG
-			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownChanged)
+			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownChanged)
 			{
 				Logger.Debug("CooldownChanged", $"ActionID {actionId} StartTime {data.StartTime} Duration {data.Duration / 1000}s Charges {data.CurrentCharges}/{data.MaxCharges} (Charges Changed: {chargesChanged}{(chargesChanged ? $" Previously: {previousCharges}" : "")}) Elapsed {Environment.TickCount64 - data.StartTime}ms Remaining {data.Remaining}ms");
 			}
@@ -463,7 +463,7 @@ namespace SezzUI.GameEvents
 		private void InvokeCooldownFinished(uint actionId, CooldownData data, uint elapsedFinish)
 		{
 #if DEBUG
-			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownFinished)
+			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownFinished)
 			{
 				Logger.Debug("CooldownFinished", $"ActionID {actionId} StartTime {data.StartTime} Duration {data.Duration / 1000}s Charges {data.CurrentCharges}/{data.MaxCharges} Elapsed {Environment.TickCount64 - data.StartTime}ms Remaining {data.Remaining}ms ElapsedFinished {elapsedFinish}ms");
 			}
@@ -492,7 +492,7 @@ namespace SezzUI.GameEvents
 				{
 					_useActionHook = new(useActionPtr, UseActionDetour);
 #if DEBUG
-					if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+					if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownHooks)
 					{
 						Logger.Debug($"Hooked: UseAction (ptr = {useActionPtr.ToInt64():X})");
 					}
@@ -508,7 +508,7 @@ namespace SezzUI.GameEvents
 				{
 					_sendActionHook = new(sendActionPtr, SendActionDetour);
 #if DEBUG
-					if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+					if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownHooks)
 					{
 						Logger.Debug($"Hooked: SendAction (ptr = {sendActionPtr.ToInt64():X})");
 					}
@@ -523,7 +523,7 @@ namespace SezzUI.GameEvents
 				{
 					_useActionLocationHook = new(useActionLocationPtr, UseActionLocationDetour);
 #if DEBUG
-					if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+					if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownHooks)
 					{
 						Logger.Debug($"Hooked: UseActionLocation (ptr = {useActionLocationPtr.ToInt64():X})");
 					}
@@ -547,7 +547,7 @@ namespace SezzUI.GameEvents
 // 		{
 // 			var ret = _useActionLocationHook!.Original(actionManager, actionType, actionId, targetObjectId, location, param);
 // #if DEBUG
-// 			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+// 			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownHooks)
 // 			{
 // 				Logger.Debug("UseActionLocationDetour", $"Result: {ret} Action ID: {actionId} Action Type: {actionType} Target: 0x{targetObjectId:X} ({Plugin.ObjectTable.SearchById((uint)targetObjectId)?.Name.TextValue ?? "??"})");
 // 			}
@@ -559,7 +559,7 @@ namespace SezzUI.GameEvents
 		{
 			_sendActionHook!.Original(targetObjectId, actionType, actionId, sequence, a5, a6, a7, a8, a9);
 #if DEBUG
-			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownHooks)
 			{
 				Logger.Debug("SendActionDetour", $"Action ID: {actionId} Type: {actionType} Name: {((ActionType) actionType == ActionType.Spell ? SpellHelper.GetActionName(actionId) ?? "?" : "?")} Target: 0x{targetObjectId:X} ({Plugin.ObjectTable.SearchById((uint) targetObjectId)?.Name.TextValue ?? "??"})");
 			}
@@ -579,7 +579,7 @@ namespace SezzUI.GameEvents
 			var ret = _useActionHook!.Original(actionManager, actionType, actionId, targetedActorId, param, useType, pvp, a7);
 
 #if DEBUG
-			if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownHooks)
 			{
 				Logger.Debug("UseActionDetour", $"Result: {ret} Action ID: {actionId} Action Type: {actionType}");
 			}
@@ -609,7 +609,7 @@ namespace SezzUI.GameEvents
 				{
 					_receiveActionEffectHook = new(receiveActionEffectPtr, ReceiveActionEffectDetour);
 #if DEBUG
-					if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+					if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownHooks)
 					{
 						Logger.Debug($"Hooked: ReceiveActionEffect (ptr = {receiveActionEffectPtr.ToInt64():X})");
 					}
@@ -640,7 +640,7 @@ namespace SezzUI.GameEvents
 			{
 				ActionEffectHeader header = Marshal.PtrToStructure<ActionEffectHeader>(effectHeader);
 #if DEBUG
-				if (EventManager.Config.LogEvents && EventManager.Config.LogEventCooldownHooks)
+				if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownHooks)
 				{
 					Logger.Debug("ReceiveActionEffectDetour", $"Action ID: {header.ActionId} Type: {header.Type} Name: {((ActionType) header.Type == ActionType.Spell ? SpellHelper.GetActionName(header.ActionId) ?? "?" : "?")} Source: 0x{sourceActorId:X} ({Plugin.ObjectTable.SearchById((uint) sourceActorId)?.Name.TextValue ?? "??"}) Target: 0x{header.TargetObjectId:X} ({Plugin.ObjectTable.SearchById((uint) header.TargetObjectId)?.Name.TextValue ?? "??"})");
 				}

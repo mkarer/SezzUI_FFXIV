@@ -165,9 +165,9 @@ namespace SezzUI.Modules.CooldownHud
 			{
 				case 3:
 					// Sprint Spell Icon != Sprint General Action Icon
-					if (!_iconOverride.ContainsKey(3))
+					if (!_iconOverride.ContainsKey(actionId))
 					{
-						_iconOverride[actionId] = SpellHelper.GetGeneralActionIcon(4);
+						_iconOverride[actionId] = SpellHelper.GetGeneralActionIconId(4);
 					}
 
 					break;
@@ -245,10 +245,10 @@ namespace SezzUI.Modules.CooldownHud
 			name = actionType == ActionType.General ? SpellHelper.GetGeneralActionName(actionId) : SpellHelper.GetActionName(actionId);
 			if (!_iconOverride.TryGetValue(actionId, out int? iconId))
 			{
-				iconId = actionType == ActionType.General ? SpellHelper.GetGeneralActionIcon(actionId) : SpellHelper.GetActionIcon(actionId);
+				iconId = actionType == ActionType.General ? SpellHelper.GetGeneralActionIconId(actionId) : SpellHelper.GetActionIconId(actionId);
 			}
 
-			texture = iconId != null ? TexturesCache.Instance.GetTextureFromIconId((uint) iconId) : null;
+			texture = SpellHelper.GetIconTexture((ushort?) iconId, out bool _);
 		}
 
 		protected override bool Enable()
@@ -260,10 +260,10 @@ namespace SezzUI.Modules.CooldownHud
 
 			EventManager.Player.JobChanged += OnJobChanged;
 			EventManager.Player.LevelChanged += OnLevelChanged;
-
 			EventManager.Cooldown.CooldownStarted += OnCooldownStarted;
 			EventManager.Cooldown.CooldownChanged += OnCooldownChanged;
 			EventManager.Cooldown.CooldownFinished += OnCooldownFinished;
+			MediaManager.Instance.PathChanged += OnMediaPathChanged;
 
 			Configure();
 
@@ -285,6 +285,8 @@ namespace SezzUI.Modules.CooldownHud
 			EventManager.Cooldown.CooldownStarted -= OnCooldownStarted;
 			EventManager.Cooldown.CooldownChanged -= OnCooldownChanged;
 			EventManager.Cooldown.CooldownFinished -= OnCooldownFinished;
+
+			MediaManager.Instance.PathChanged -= OnMediaPathChanged;
 
 			return true;
 		}
@@ -449,6 +451,8 @@ namespace SezzUI.Modules.CooldownHud
 		}
 
 		#endregion
+
+		private void OnMediaPathChanged(string path) => Reload();
 
 		#region Game Events
 

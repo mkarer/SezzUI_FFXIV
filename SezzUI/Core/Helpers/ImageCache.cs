@@ -1,48 +1,51 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using ImGuiScene;
 
 namespace SezzUI.Helpers
 {
 	public class ImageCache : IDisposable
 	{
-		private readonly ConcurrentDictionary<string, TextureWrap> _pathCache = new();
+		private readonly ConcurrentDictionary<string, TextureWrap> _cache = new();
 		internal PluginLogger Logger;
 
-		public TextureWrap? GetImageFromPath(string? path)
+		public TextureWrap? GetImage(string? file)
 		{
-			if (path == null)
+			if (file == null)
 			{
 				return null;
 			}
 
-			if (_pathCache.ContainsKey(path))
+			if (_cache.ContainsKey(file))
 			{
-				return _pathCache[path];
+				return _cache[file];
 			}
 
-			TextureWrap? newTexture = LoadImage(path);
+			TextureWrap? newTexture = LoadImage(file);
 			if (newTexture == null)
 			{
 				return null;
 			}
 
-			if (!_pathCache.TryAdd(path, newTexture))
+			if (!_cache.TryAdd(file, newTexture))
 			{
-				Logger.Error("GetImageFromPath", $"Failed to cache texture path {path}.");
+				Logger.Error("GetImageFromPath", $"Failed to cache texture: {file}.");
 			}
 
 			return newTexture;
 		}
 
-		private TextureWrap? LoadImage(string path)
+		private TextureWrap? LoadImage(string file)
 		{
 			try
 			{
-				if (File.Exists(path))
+				if (File.Exists(file))
 				{
-					return Plugin.PluginInterface.UiBuilder.LoadImage(path);
+					return Plugin.PluginInterface.UiBuilder.LoadImage(file);
 				}
 			}
 			catch
@@ -51,6 +54,44 @@ namespace SezzUI.Helpers
 			}
 
 			return null;
+		}
+
+		public bool RemovePath(string path)
+		{
+			string dirSeparator = Regex.Escape(Path.DirectorySeparatorChar.ToString());
+			string filePattern = $"^{Regex.Escape(path.TrimEnd(Path.DirectorySeparatorChar))}(?:{dirSeparator}[^{dirSeparator}]*)$";
+			string iconOverridePattern = $"^{Regex.Escape(path.TrimEnd(Path.DirectorySeparatorChar))}(?:{dirSeparator}[0-9]+{dirSeparator}[^{dirSeparator}]*)$";
+			return Remove(_cache.Keys.Where(file => Regex.IsMatch(file, filePattern) || Regex.IsMatch(file, iconOverridePattern)));
+		}
+
+		public bool Remove(string file)
+		{
+#if DEBUG
+			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsImageCache)
+			{
+				Logger.Debug("Remove", $"Removing texture from cache: {file}.");
+			}
+#endif
+			_cache[file]?.Dispose();
+			if (!_cache.TryRemove(file, out _))
+			{
+				Logger.Debug("Remove", $"Failed to remove cached texture: {file}.");
+				return false;
+			}
+
+			return true;
+		}
+
+		public bool Remove(IEnumerable files)
+		{
+			bool success = true;
+
+			foreach (string file in files)
+			{
+				success &= Remove(file);
+			}
+
+			return success;
 		}
 
 		#region Singleton
@@ -85,13 +126,8 @@ namespace SezzUI.Helpers
 				return;
 			}
 
-			foreach (string path in _pathCache.Keys)
-			{
-				TextureWrap? tex = _pathCache[path];
-				tex?.Dispose();
-			}
-
-			_pathCache.Clear();
+			Remove(_cache.Keys);
+			_cache.Clear();
 
 			Instance = null!;
 		}

@@ -73,7 +73,7 @@ namespace SezzUI.Helpers
 			return actionIdAdjusted > 0 ? actionIdAdjusted : OriginalFunctionManager.GetAdjustedActionId(actionId);
 		}
 
-		private static TextureWrap? GetIconTexture(ushort? iconId, out bool isOverriden)
+		public static TextureWrap? GetIconTexture(ushort? iconId, out bool isOverriden)
 		{
 			isOverriden = false;
 			if (iconId == null)
@@ -81,7 +81,7 @@ namespace SezzUI.Helpers
 				return null;
 			}
 
-			TextureWrap? texture = ImageCache.Instance.GetImageFromPath(MediaManager.Instance.GetIconFile($"{iconId / 1000 * 1000:000000}\\{iconId:000000}.png"));
+			TextureWrap? texture = ImageCache.Instance.GetImage(MediaManager.Instance.GetIconFile($"{iconId / 1000 * 1000:000000}\\{iconId:000000}.png"));
 			if (texture != null)
 			{
 				isOverriden = true;
@@ -108,10 +108,10 @@ namespace SezzUI.Helpers
 
 		public static LuminaAction? GetAction(uint actionId) => _sheetAction?.GetRow(actionId);
 		public static string? GetActionName(uint actionId) => GetAction(actionId)?.Name.ToDalamudString().ToString();
-		public static ushort? GetActionIcon(uint actionId) => GetAction(actionId)?.Icon;
+		public static ushort? GetActionIconId(uint actionId) => GetAction(actionId)?.Icon;
 		public static LuminaGeneralAction? GetGeneralAction(uint actionId) => _sheetGeneralAction?.GetRow(actionId);
 		public static string? GetGeneralActionName(uint actionId) => GetGeneralAction(actionId)?.Name.ToDalamudString().ToString();
-		public static int? GetGeneralActionIcon(uint actionId) => GetGeneralAction(actionId)?.Icon;
+		public static int? GetGeneralActionIconId(uint actionId) => GetGeneralAction(actionId)?.Icon;
 
 		public static LuminaStatus? GetStatus(uint statusId) => _sheetStatus?.FirstOrDefault(status => status.RowId.Equals(statusId));
 

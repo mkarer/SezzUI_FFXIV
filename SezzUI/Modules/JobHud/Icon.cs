@@ -86,7 +86,15 @@ namespace SezzUI.Modules.JobHud
 					_texture = SpellHelper.GetStatusIconTexture((uint) value, out bool isOverriden);
 					if (_texture != null)
 					{
-						UpdateTextureUVs();
+						if (!isOverriden && Parent.Size.X.Equals(Parent.Size.Y))
+						{
+							// Status icons are ugly, they should always be replaced with custom ones...
+							(_iconUV0, _iconUV1) = DrawHelper.GetTexCoordinates(new(_texture.Width, _texture.Height), true);
+						}
+						else
+						{
+							UpdateTextureUVs();
+						}
 					}
 				}
 			}
@@ -621,7 +629,7 @@ namespace SezzUI.Modules.JobHud
 				uint step = Math.Min(n, Math.Max(1, (uint) Math.Ceiling((uint) (animator.TimeElapsed % dur) / frameTime))) - 1;
 				string image = MediaManager.Instance.BorderGlowTexture[step];
 
-				TextureWrap? tex = ImageCache.Instance.GetImageFromPath(image);
+				TextureWrap? tex = ImageCache.Instance.GetImage(image);
 				if (tex != null)
 				{
 					uint glowColor = ImGui.ColorConvertFloat4ToU32(new(0.95f, 0.95f, 0.32f, animator.Data.Opacity));

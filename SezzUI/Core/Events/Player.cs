@@ -71,7 +71,7 @@ namespace SezzUI.GameEvents
 				{
 					_lastJobId = jobId;
 #if DEBUG
-					if (EventManager.Config.LogEvents && EventManager.Config.LogEventPlayerJobChanged)
+					if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventPlayerJobChanged)
 					{
 						Logger.Debug("JobChanged", $"Job ID: {jobId}");
 					}
@@ -92,7 +92,7 @@ namespace SezzUI.GameEvents
 				{
 					_lastLevel = level;
 #if DEBUG
-					if (EventManager.Config.LogEvents && EventManager.Config.LogEventPlayerLevelChanged)
+					if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventPlayerLevelChanged)
 					{
 						Logger.Debug("LevelChanged", $"Level: {level}");
 					}

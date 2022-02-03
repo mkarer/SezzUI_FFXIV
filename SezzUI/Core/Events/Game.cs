@@ -48,7 +48,7 @@ namespace SezzUI.GameEvents
 				{
 					_setHudLayoutHook = new(setHudLayoutPtr, SetHudLayoutDetour);
 #if DEBUG
-					if (EventManager.Config.LogEvents && EventManager.Config.LogEventGame)
+					if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventGame)
 					{
 						Logger.Debug($"Hooked: SetHudLayout (ptr = {setHudLayoutPtr.ToInt64():X})");
 					}
@@ -138,7 +138,7 @@ namespace SezzUI.GameEvents
 				{
 					_addonsReady = loaded && (_addonsReady || AreActionBarsLoaded());
 #if DEBUG
-					if (EventManager.Config.LogEvents && EventManager.Config.LogEventGame && EventManager.Config.LogEventGameAddonsLoaded)
+					if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventGame && Plugin.DebugConfig.LogEventGameAddonsLoaded)
 					{
 						Logger.Debug("AddonsLoaded", $"Loaded: {loaded} Ready: {_addonsReady}");
 					}
@@ -215,7 +215,7 @@ namespace SezzUI.GameEvents
 				try
 				{
 #if DEBUG
-					if (EventManager.Config.LogEvents && EventManager.Config.LogEventGame && EventManager.Config.LogEventGameAddonsVisibilityChanged)
+					if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventGame && Plugin.DebugConfig.LogEventGameAddonsVisibilityChanged)
 					{
 						Logger.Debug("AddonsVisibilityChanged", $"State: {addonVisibility}");
 					}
@@ -235,7 +235,7 @@ namespace SezzUI.GameEvents
 			{
 				_hudLayoutReady = _addonsReady && AreActionBarsLoaded();
 #if DEBUG
-				if (EventManager.Config.LogEvents && EventManager.Config.LogEventGame && EventManager.Config.LogEventGameHudLayoutActivated)
+				if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventGame && Plugin.DebugConfig.LogEventGameHudLayoutActivated)
 				{
 					Logger.Debug("HudLayoutActivated", $"Layout: {hudLayout} LayoutReady: {_hudLayoutReady}");
 				}
@@ -256,7 +256,7 @@ namespace SezzUI.GameEvents
 			{
 				ret = _setHudLayoutHook!.Original(filePtr, hudLayout, unk0, unk1);
 #if DEBUG
-				if (EventManager.Config.LogEvents && EventManager.Config.LogEventGame && EventManager.Config.LogEventGameHudLayoutActivated)
+				if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventGame && Plugin.DebugConfig.LogEventGameHudLayoutActivated)
 				{
 					Logger.Debug("SetHudLayoutDetour", $"Result: {ret} Layout: {hudLayout}");
 				}

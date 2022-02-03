@@ -47,10 +47,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 			roleBar.Add(new(roleBar) {TextureActionId = 7408, CooldownActionId = 7408, StatusId = 1202, MaxStatusDuration = 15, StatusSourcePlayer = false}, 1); // Nature's Minne
 		}
 
-		private static bool IsPlaying()
-		{
-			return Plugin.JobGauges.Get<BRDGauge>().Song != Song.NONE;
-		}
+		private static bool IsPlaying() => Plugin.JobGauges.Get<BRDGauge>().Song != Song.NONE;
 
 		private static (float, float) GetSongDuration(Song song)
 		{

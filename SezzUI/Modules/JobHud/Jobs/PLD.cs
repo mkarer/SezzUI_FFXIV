@@ -33,8 +33,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 			{
 				StatusId = 1368,
 				ExactStacks = 1,
-				Image = "hand_of_light.png",
 				Size = new(256, 128),
+				Image = "hand_of_light.png",
 				Position = new(0, -120),
 				Level = 80
 			});

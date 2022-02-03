@@ -81,7 +81,7 @@ namespace SezzUI.GameEvents
 					if (state)
 					{
 #if DEBUG
-						if (EventManager.Config.LogEvents && EventManager.Config.LogEventCombatEnteringCombat)
+						if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCombatEnteringCombat)
 						{
 							Logger.Debug("EnteringCombat");
 						}
@@ -98,7 +98,7 @@ namespace SezzUI.GameEvents
 					else
 					{
 #if DEBUG
-						if (EventManager.Config.LogEvents && EventManager.Config.LogEventCombatLeavingCombat)
+						if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCombatLeavingCombat)
 						{
 							Logger.Debug("LeavingCombat");
 						}

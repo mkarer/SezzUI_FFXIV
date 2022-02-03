@@ -72,8 +72,8 @@ namespace SezzUI.Modules.JobHud
 			{
 				StatusIds = new[] {1132u, 1269u},
 				StatusTarget = Unit.Any,
-				Image = "stop.png",
 				Size = new Vector2(128, 128) * 0.7f,
+				Image = "stop.png",
 				Position = new(0, 0)
 			});
 		}

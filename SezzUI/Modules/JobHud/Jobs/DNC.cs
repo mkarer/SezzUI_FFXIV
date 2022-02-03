@@ -29,8 +29,8 @@ namespace SezzUI.Modules.JobHud.Jobs
 			hud.AddAlert(new()
 			{
 				StatusId = 1820,
-				Image = "backlash_green.png",
 				Size = new Vector2(256, 128) * 0.8f,
+				Image = "backlash_green.png",
 				Position = new(0, -180),
 				MaxDuration = 30,
 				Level = 66

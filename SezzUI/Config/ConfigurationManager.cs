@@ -454,6 +454,7 @@ namespace SezzUI.Config
 		{
 			// Core
 			typeof(GeneralConfig),
+			typeof(GeneralMediaConfig),
 #if DEBUG
 			typeof(GeneralDebugConfig),
 #endif

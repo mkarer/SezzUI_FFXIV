@@ -47,6 +47,8 @@ namespace SezzUI
 
 		public static Vector2 AddXY(this Vector2 v, float offset) => new(v.X + offset, v.Y + offset);
 
+		public static Vector2 AddXY(this Vector2 v, float xOffset, float yOffset) => new(v.X + xOffset, v.Y + yOffset);
+
 		public static Vector4 AddTransparency(this Vector4 vec, float opacity) => new(vec.X, vec.Y, vec.Z, vec.W * opacity);
 
 		public static Vector4 WithNewAlpha(this Vector4 vec, float alpha) => new(vec.X, vec.Y, vec.Z, alpha);
