@@ -219,7 +219,10 @@ namespace SezzUI.Modules.JobHud
 			}
 
 			// Aura Alerts
-			_auraAlerts.ForEach(aa => aa.Draw(LastDrawElapsed));
+			if (Config.EnableAuraAlerts)
+			{
+				_auraAlerts.ForEach(aa => aa.Draw(LastDrawElapsed));
+			}
 		}
 
 		public void AddBar(Bar bar)
