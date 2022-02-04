@@ -242,14 +242,11 @@ namespace SezzUI.Interface.GeneralElements
 				changed = true;
 			}
 
-			if (ImGui.Combo($"{pluginFontSize}##SezzUICustomFontsConfig_FontAssignment{pluginFontSize}", ref selectedIndex, _fontOptions, _fontOptions.Length))
-			{
-				CustomFontAssignments[pluginFontSize] = _fontKeys[selectedIndex];
-				changed = true;
-			}
+			changed |= ImGui.Combo($"{pluginFontSize}##SezzUICustomFontsConfig_FontAssignment{pluginFontSize}", ref selectedIndex, _fontOptions, _fontOptions.Length);
 
 			if (changed)
 			{
+				CustomFontAssignments[pluginFontSize] = _fontKeys[selectedIndex];
 				OnValueChanged(new OnChangeEventArgs<PluginFontSize>("FontAssignments", pluginFontSize));
 			}
 
