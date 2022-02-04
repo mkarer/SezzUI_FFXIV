@@ -86,7 +86,7 @@ namespace SezzUI
 
 			AssemblyLocation = AssemblyLocation.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
 
-			Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.7";
+			Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.8";
 
 			LoadBanner();
 
