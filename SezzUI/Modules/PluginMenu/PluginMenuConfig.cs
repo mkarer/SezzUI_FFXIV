@@ -60,7 +60,7 @@ namespace SezzUI.Interface.GeneralElements
 			Item1.Type = ItemType.SezzUI;
 			Item1.Command = "/sezzui";
 			Item1.Title = "Sezz|cFFFFFFFFUI";
-			Item1.Color.Vector = new(1, 182, 214, 255);
+			Item1.Color.Vector = new(1f / 255f, 182f / 255f, 214f / 255f, 255f / 255f);
 		}
 
 		public PluginMenuConfig()
