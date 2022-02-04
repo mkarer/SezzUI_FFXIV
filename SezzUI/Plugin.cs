@@ -213,46 +213,35 @@ namespace SezzUI
 			}
 		}
 
-		public delegate void DrawStateChangedDelegate(DrawState drawState);
-
-		public static event DrawStateChangedDelegate? DrawStateChanged;
-
 		private void Draw()
 		{
 			UiBuilder.OverrideGameCursor = false;
+
+			DrawState drawState = GetDrawState();
+			if (DrawState != drawState)
+			{
+				DrawState = drawState;
+#if DEBUG
+				if (DebugConfig.LogEvents && DebugConfig.LogEventPluginDrawStateChanged)
+				{
+					Logger.Debug("Draw", $"DrawStateChanged: {drawState}");
+					DrawStateChanged?.Invoke(drawState);
+				}
+#endif
+			}
+
 			ConfigurationManager.Instance.Draw();
-
-			// ReSharper disable once ConditionIsAlwaysTrueOrFalse
-			if (HudManager.Instance != null)
+			using (MediaManager.PushFont())
 			{
-				DrawState drawState = GetDrawState();
-				if (DrawState != drawState)
-				{
-					DrawState = drawState;
-#if DEBUG
-					if (DebugConfig.LogEvents && DebugConfig.LogEventPluginDrawStateChanged)
-					{
-						Logger.Debug("Draw", $"DrawStateChanged: {drawState}");
-						DrawStateChanged?.Invoke(drawState);
-					}
-#endif
-				}
-
-				using (MediaManager.PushFont())
-				{
-					HudManager.Instance.Draw(drawState);
-				}
+				HudManager.Instance.Draw(drawState);
 			}
-#if DEBUG
-			else if (DebugConfig.LogEvents && DebugConfig.LogEventPluginDrawStateChanged)
-			{
-				Logger.Debug("Draw", "HudManager is NULL!");
-			}
-#endif
 		}
 
 		#region Draw State
 
+		public delegate void DrawStateChangedDelegate(DrawState drawState);
+
+		public static event DrawStateChangedDelegate? DrawStateChanged;
 		public static DrawState DrawState { get; private set; } = DrawState.Unknown;
 
 		private static unsafe bool IsAddonVisible(string name)
@@ -323,6 +312,14 @@ namespace SezzUI
 				return;
 			}
 
+			UiBuilder.Draw -= Draw;
+			UiBuilder.OpenConfigUi -= OpenConfigUi;
+			UiBuilder.RebuildFonts();
+
+			CommandManager.RemoveHandler("/sezzui");
+			CommandManager.RemoveHandler("/sezz");
+			CommandManager.RemoveHandler("/sui");
+
 			HudManager.Instance.Dispose();
 			EventManager.Instance.Dispose();
 
@@ -331,14 +328,6 @@ namespace SezzUI
 #endif
 			ConfigurationManager.Instance.SaveConfigurations(true);
 			ConfigurationManager.Instance.CloseConfigWindow();
-
-			CommandManager.RemoveHandler("/sezzui");
-			CommandManager.RemoveHandler("/sezz");
-			CommandManager.RemoveHandler("/sui");
-
-			UiBuilder.Draw -= Draw;
-			UiBuilder.OpenConfigUi -= OpenConfigUi;
-			UiBuilder.RebuildFonts();
 
 			ClipRectsHelper.Instance.Dispose();
 			GlobalColors.Instance.Dispose();
