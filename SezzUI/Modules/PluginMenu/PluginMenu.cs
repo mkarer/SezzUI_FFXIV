@@ -31,11 +31,18 @@ namespace SezzUI.Modules.PluginMenu
 		public Vector2 Size = Vector2.Zero;
 		public readonly Vector2 SizePreview = new(300f, 30f);
 
+		private bool _forceUpdate = true;
+
 		public override unsafe void Draw(DrawState drawState)
 		{
 			if (!Enabled || drawState != DrawState.Visible && drawState != DrawState.Partially)
 			{
 				return;
+			}
+
+			if (_forceUpdate)
+			{
+				UpdateItems();
 			}
 
 			List<PluginMenuItem> enabledItems = _items.Where(item => item.Config.Enabled).ToList();
@@ -144,7 +151,7 @@ namespace SezzUI.Modules.PluginMenu
 					}
 					else
 					{
-						DrawHelper.DrawCenteredShadowText(null, item.Config.Title, new(buttonPos.X, buttonPos.Y + 1), item.Size, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)), shadowColor, drawList);
+						DrawHelper.DrawCenteredShadowText(item.Config.Title, new(buttonPos.X, buttonPos.Y + 1), item.Size, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)), shadowColor, drawList);
 					}
 
 					// Tooltip
@@ -171,9 +178,11 @@ namespace SezzUI.Modules.PluginMenu
 			}
 
 			MediaManager.Instance.PathChanged += OnMediaPathChanged;
+			MediaManager.Instance.FontAssignmentsChanged += OnFontAssignmentsChanged;
+			Plugin.UiBuilder.BuildFonts += OnBuildFonts;
 
-			_items.ForEach(item => item.Update());
-			UpdateSize();
+			_forceUpdate = true;
+			UpdateItems();
 			return true;
 		}
 
@@ -185,10 +194,30 @@ namespace SezzUI.Modules.PluginMenu
 			}
 
 			MediaManager.Instance.PathChanged -= OnMediaPathChanged;
+			MediaManager.Instance.FontAssignmentsChanged -= OnFontAssignmentsChanged;
+			Plugin.UiBuilder.BuildFonts -= OnBuildFonts;
 			return true;
 		}
 
-		private void OnMediaPathChanged(string path) => Reload();
+		private void UpdateItems()
+		{
+			if (Enabled && Plugin.DrawState != DrawState.Unknown)
+			{
+				// ImGui isn't ready while DrawState is Unknown and will crash if we try to calculate item text sizes!
+				_items.ForEach(item => item.Update());
+				UpdateSize();
+				_forceUpdate = false;
+			}
+		}
+
+		private void UpdateItemsDelayed()
+		{
+			_forceUpdate = true;
+		}
+
+		private void OnMediaPathChanged(string path) => UpdateItemsDelayed();
+		private void OnFontAssignmentsChanged() => UpdateItemsDelayed();
+		private void OnBuildFonts() => UpdateItemsDelayed();
 
 		private void UpdateSize()
 		{
@@ -228,12 +257,7 @@ namespace SezzUI.Modules.PluginMenu
 
 			if (sender is PluginMenuItemConfig itemConfig)
 			{
-				if (Config.Enabled)
-				{
-					_items.Where(item => item.Config == itemConfig).FirstOrDefault()?.Update();
-					UpdateSize();
-				}
-
+				UpdateItems();
 				return;
 			}
 

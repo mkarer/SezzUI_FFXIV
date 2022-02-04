@@ -58,8 +58,8 @@
     <ItemGroup>
         <Content Include="SezzUI.json" CopyToOutputDirectory="Always" />
         <Content Include="Media\Images\Icon.png" Link="Images/Icon.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />
-        <Content Include="Media\**\*.ttf" CopyToOutputDirectory="PreserveNewest" Visible="false" />
-        <Content Include="Media\**\*.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+        <Content Include="Media\**\*.?tf" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+		<Content Include="Media\**\*.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />
     </ItemGroup>
 
     <!-- Library References -->
@@ -107,7 +107,7 @@
         <PackageReference Include="DalamudPackager" Version="2.1.5" />
         <PackageReference Include="Colourful" Version="3.1.0" />
         <PackageReference Include="ILRepack" Version="2.1.0-beta1" />
-        <PackageReference Include="JetBrains.Annotations" Version="2022.1.0-eap2" />
+        <PackageReference Include="JetBrains.Annotations" Version="2022.1.0-eap3" />
         <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.1.635-beta">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -127,7 +127,7 @@
             <InputAssemblies Include="$(TargetPath)" />
             <InputAssemblies Include="$(TargetDir)*.dll" Exclude="$(TargetPath)" />
         </ItemGroup>
-        <Exec Command="$(Pkgilrepack)\tools\ilrepack.exe /lib:$(AppData)\XIVLauncher\addon\Hooks\dev /out:&quot;$(TargetDir)..\$(Configuration).ILMerge\$(TargetFileName)&quot; &quot;@(InputAssemblies, '&quot; &quot;')&quot;" />
+        <Exec Command="$(Pkgilrepack)\tools\ilrepack.exe /lib:&quot;$(AppData)\XIVLauncher\addon\Hooks\dev&quot; /out:&quot;$(TargetDir)..\$(Configuration).ILMerge\$(TargetFileName)&quot; &quot;@(InputAssemblies, '&quot; &quot;')&quot;" />
     </Target>
 
     <Target Name="ILRepackCleanup" AfterTargets="ILRepack">

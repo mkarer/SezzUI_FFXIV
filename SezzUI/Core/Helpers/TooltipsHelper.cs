@@ -60,12 +60,12 @@ namespace SezzUI.Helpers
 
 		private bool _dataIsValid;
 
-		public void ShowTooltipOnCursor(string text, string? title = null, uint id = 0, string name = "")
+		public void ShowTooltipOnCursor(string text, string? title = null)
 		{
-			ShowTooltip(text, ImGui.GetMousePos(), title, id, name);
+			ShowTooltip(text, ImGui.GetMousePos(), title);
 		}
 
-		public void ShowTooltip(string text, Vector2 position, string? title = null, uint id = 0, string name = "")
+		public void ShowTooltip(string text, Vector2 position, string? title = null)
 		{
 			if (text == null)
 			{
@@ -79,39 +79,23 @@ namespace SezzUI.Helpers
 				_previousRawText = text;
 			}
 
-			// calcualte title size
+			// calculate title size
 			_titleSize = Vector2.Zero;
 			if (title != null)
 			{
 				_currentTooltipTitle = title;
 
-				if (_config.ShowSourceName)
+				using (MediaManager.PushFont(PluginFontSize.Large))
 				{
-					_currentTooltipTitle += $" ({name})";
-				}
-
-				if (_config.ShowStatusIDs)
-				{
-					_currentTooltipTitle += " (ID: " + id + ")";
-				}
-
-				bool titleFontPushed = FontsManager.Instance.PushFont(_config.TitleFontID);
-
-				_titleSize = ImGui.CalcTextSize(_currentTooltipTitle, MaxWidth);
-				_titleSize.Y += Margin;
-
-				if (titleFontPushed)
-				{
-					ImGui.PopFont();
+					_titleSize = ImGui.CalcTextSize(_currentTooltipTitle, MaxWidth);
+					_titleSize.Y += Margin;
 				}
 			}
 
 			// calculate text size
-			bool fontPushed = FontsManager.Instance.PushFont(_config.TextFontID);
-			_textSize = ImGui.CalcTextSize(_currentTooltipText, MaxWidth);
-			if (fontPushed)
+			using (MediaManager.PushFont())
 			{
-				ImGui.PopFont();
+				_textSize = ImGui.CalcTextSize(_currentTooltipText, MaxWidth);
 			}
 
 			_size = new(Math.Max(_titleSize.X, _textSize.X) + Margin * 2, _titleSize.Y + _textSize.Y + Margin * 2);
@@ -163,49 +147,37 @@ namespace SezzUI.Helpers
 			if (_currentTooltipTitle != null)
 			{
 				// title
-				bool fontPushed = FontsManager.Instance.PushFont(_config.TitleFontID);
-
-				Vector2 cursorPos = new(windowMargin.X + _size.X / 2f - _titleSize.X / 2f, Margin);
-				ImGui.SetCursorPos(cursorPos);
-				ImGui.PushTextWrapPos(cursorPos.X + _titleSize.X);
-				ImGui.TextColored(_config.TitleColor.Vector, _currentTooltipTitle);
-				ImGui.PopTextWrapPos();
-
-				if (fontPushed)
+				using (MediaManager.PushFont(PluginFontSize.Large))
 				{
-					ImGui.PopFont();
+					Vector2 cursorPos = new(windowMargin.X + _size.X / 2f - _titleSize.X / 2f, Margin);
+					ImGui.SetCursorPos(cursorPos);
+					ImGui.PushTextWrapPos(cursorPos.X + _titleSize.X);
+					ImGui.TextColored(_config.TitleColor.Vector, _currentTooltipTitle);
+					ImGui.PopTextWrapPos();
 				}
 
 				// text
-				fontPushed = FontsManager.Instance.PushFont(_config.TextFontID);
-
-				cursorPos = new(windowMargin.X + _size.X / 2f - _textSize.X / 2f, Margin + _titleSize.Y);
-				ImGui.SetCursorPos(cursorPos);
-				ImGui.PushTextWrapPos(cursorPos.X + _textSize.X);
-				ImGui.TextColored(_config.TextColor.Vector, _currentTooltipText);
-				ImGui.PopTextWrapPos();
-
-				if (fontPushed)
+				using (MediaManager.PushFont())
 				{
-					ImGui.PopFont();
+					Vector2 cursorPos = new(windowMargin.X + _size.X / 2f - _textSize.X / 2f, Margin + _titleSize.Y);
+					ImGui.SetCursorPos(cursorPos);
+					ImGui.PushTextWrapPos(cursorPos.X + _textSize.X);
+					ImGui.TextColored(_config.TextColor.Vector, _currentTooltipText);
+					ImGui.PopTextWrapPos();
 				}
 			}
 			else
 			{
 				// text
-				bool fontPushed = FontsManager.Instance.PushFont(_config.TextFontID);
-
-				Vector2 cursorPos = windowMargin + new Vector2(Margin, Margin);
-				float textWidth = _size.X - Margin * 2;
-
-				ImGui.SetCursorPos(cursorPos);
-				ImGui.PushTextWrapPos(cursorPos.X + textWidth);
-				ImGui.TextColored(_config.TextColor.Vector, _currentTooltipText);
-				ImGui.PopTextWrapPos();
-
-				if (fontPushed)
+				using (MediaManager.PushFont())
 				{
-					ImGui.PopFont();
+					Vector2 cursorPos = windowMargin + new Vector2(Margin, Margin);
+					float textWidth = _size.X - Margin * 2;
+
+					ImGui.SetCursorPos(cursorPos);
+					ImGui.PushTextWrapPos(cursorPos.X + textWidth);
+					ImGui.TextColored(_config.TextColor.Vector, _currentTooltipText);
+					ImGui.PopTextWrapPos();
 				}
 			}
 
@@ -243,29 +215,13 @@ namespace SezzUI.Helpers
 	{
 		public new static TooltipsConfig DefaultConfig() => new();
 
-		[Checkbox("Show Status Effects IDs")]
-		[Order(5)]
-		public bool ShowStatusIDs = false;
-
-		[Checkbox("Show Source Name")]
-		[Order(10)]
-		public bool ShowSourceName = false;
-
 		[ColorEdit4("Background Color")]
 		[Order(15)]
 		public PluginConfigColor BackgroundColor = new(new(19f / 255f, 19f / 255f, 19f / 255f, 190f / 250f));
 
-		[Font("Title Font and Size", spacing = true)]
-		[Order(20)]
-		public string? TitleFontID = null;
-
 		[ColorEdit4("Title Color")]
 		[Order(25)]
 		public PluginConfigColor TitleColor = new(new(255f / 255f, 210f / 255f, 31f / 255f, 100f / 100f));
-
-		[Font("Text Font and Size", spacing = true)]
-		[Order(30)]
-		public string? TextFontID = null;
 
 		[ColorEdit4("Text Color")]
 		[Order(35)]

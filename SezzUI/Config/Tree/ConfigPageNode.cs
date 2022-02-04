@@ -196,7 +196,7 @@ namespace SezzUI.Config.Tree
 
 			ImGui.SetCursorPos(new(ImGui.GetWindowContentRegionWidth() / 2f - buttonWidth - 5, ImGui.GetCursorPosY()));
 
-			if (ImGui.Button("Export", new(120, 24)))
+			if (ImGui.Button("Export", new(buttonWidth, 24)))
 			{
 				string exportString = ImportExportHelper.GenerateExportString(ConfigObject);
 				ImGui.SetClipboardText(exportString);
@@ -204,7 +204,7 @@ namespace SezzUI.Config.Tree
 
 			ImGui.SameLine();
 
-			if (ImGui.Button("Reset", new(120, 24)))
+			if (ImGui.Button("Reset", new(buttonWidth, 24)))
 			{
 				_nodeToReset = this;
 				_nodeToResetName = Utils.UserFriendlyConfigName(ConfigObject.GetType().Name);

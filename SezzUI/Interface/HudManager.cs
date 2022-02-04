@@ -167,11 +167,6 @@ namespace SezzUI.Interface
 
 		public void Draw(DrawState drawState)
 		{
-			if (!FontsManager.Instance.DefaultFontBuilt)
-			{
-				Plugin.UiBuilder.RebuildFonts();
-			}
-
 			TooltipsHelper.Instance.RemoveTooltip(); // remove tooltip from previous frame
 
 			// don't draw hud when it's not supposed to be visible

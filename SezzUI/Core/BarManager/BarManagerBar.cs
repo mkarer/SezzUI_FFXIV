@@ -89,20 +89,20 @@ namespace SezzUI.BarManager
 						// Text: Name
 						if (Text != null)
 						{
-							DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Left, Text, new(posBar.X, position.Y), new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
+							DrawHelper.DrawAnchoredText(Config.NameTextStyle, DrawAnchor.Left, Text, new(posBar.X, position.Y), new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
 						}
 
 						// Text: Count
 						if (CountText != null)
 						{
 							Vector2 posText2 = Text == null ? new(posBar.X, position.Y) : new(posBar.X + 5 + (Text == null ? Vector2.Zero : ImGui.CalcTextSize(Text)).X, position.Y);
-							DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.CountTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
+							DrawHelper.DrawAnchoredText(Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.CountTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
 						}
 
 						// Text: Duration
 						if (Config.ShowDuration)
 						{
-							DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Right, DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), position, Config.Size, ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, -5);
+							DrawHelper.DrawAnchoredText(Config.NameTextStyle, DrawAnchor.Right, DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), position, Config.Size, ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, -5);
 						}
 					}
 						break;
@@ -156,20 +156,20 @@ namespace SezzUI.BarManager
 						// Text: Name
 						if (Text != null)
 						{
-							DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Left, Text, posBar, new(0, sizeBar.Y), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 4);
+							DrawHelper.DrawAnchoredText(Config.NameTextStyle, DrawAnchor.Left, Text, posBar, new(0, sizeBar.Y), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 4);
 						}
 
 						// Text: Count
 						if (CountText != null)
 						{
 							Vector2 posText2 = Text == null ? new(posBar.X, posBar.Y) : new(posBar.X + 5 + (Text == null ? Vector2.Zero : ImGui.CalcTextSize(Text)).X, posBar.Y);
-							DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.CountTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
+							DrawHelper.DrawAnchoredText(Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.CountTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
 						}
 
 						// Text: Duration
 						if (Config.ShowDuration)
 						{
-							DrawHelper.DrawAnchoredText("MyriadProLightCond_18", Config.NameTextStyle, DrawAnchor.Right, DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), posBar, sizeBar, ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, -4);
+							DrawHelper.DrawAnchoredText(Config.NameTextStyle, DrawAnchor.Right, DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), posBar, sizeBar, ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, -4);
 						}
 					}
 						break;

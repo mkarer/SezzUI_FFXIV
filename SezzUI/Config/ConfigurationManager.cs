@@ -489,7 +489,6 @@ namespace SezzUI.Config
 			typeof(RolesColorConfig),
 			typeof(MiscColorConfig),
 
-			typeof(FontsConfig),
 			typeof(HUDOptionsConfig),
 			typeof(GridConfig),
 

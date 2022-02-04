@@ -214,7 +214,10 @@ namespace SezzUI.Interface
 			// Name
 			uint textColor = Selected ? 0xffffffff : 0xeeffffff;
 			uint textShadowColor = Selected ? 0xff000000 : 0xee000000;
-			DrawHelper.DrawCenteredShadowText("MyriadProLightCond_16", DisplayName?.Length > 0 ? DisplayName : Identifier, dragPosition, Size, textColor, textShadowColor, drawList);
+			using (MediaManager.PushFont(PluginFontSize.Small))
+			{
+				DrawHelper.DrawCenteredShadowText(DisplayName?.Length > 0 ? DisplayName : Identifier, dragPosition, Size, textColor, textShadowColor, drawList);
+			}
 		}
 
 		private bool CalculateNeedsInput(Vector2 pos, Vector2 size)

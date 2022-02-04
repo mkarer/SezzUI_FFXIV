@@ -110,13 +110,11 @@ namespace SezzUI.Modules.CooldownHud
 					drawList.AddRectFilled(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 0.5f * Animator.Data.Opacity)), 0);
 					drawList.AddRect(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, 0.3f * Animator.Data.Opacity)), 0, ImDrawFlags.None, 1);
 
-					bool fontPushed = FontsManager.Instance.PushFont("MyriadProLightCond_16");
-					Vector2 textSize = ImGui.CalcTextSize(windowId);
-					Vector2 textPosition = DrawHelper.GetAnchoredPosition(elementPosition, elementSize, textSize, DrawAnchor.Center);
-					DrawHelper.DrawShadowText(windowId, textPosition, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, Animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, Animator.Data.Opacity)), drawList);
-					if (fontPushed)
+					using (MediaManager.PushFont(PluginFontSize.Small))
 					{
-						ImGui.PopFont();
+						Vector2 textSize = ImGui.CalcTextSize(windowId);
+						Vector2 textPosition = DrawHelper.GetAnchoredPosition(elementPosition, elementSize, textSize, DrawAnchor.Center);
+						DrawHelper.DrawShadowText(windowId, textPosition, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, Animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, Animator.Data.Opacity)), drawList);
 					}
 				}
 			});

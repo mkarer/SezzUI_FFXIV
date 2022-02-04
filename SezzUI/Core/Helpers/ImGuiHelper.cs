@@ -325,5 +325,42 @@ namespace SezzUI.Helpers
 
 			return (didConfirm, didClose);
 		}
+
+		public static bool Button(string label, FontAwesomeIcon icon, string? help = null, Vector2? size = null)
+		{
+			if (!string.IsNullOrEmpty(label))
+			{
+				ImGui.Text(label);
+				ImGui.SameLine();
+			}
+
+			ImGui.PushFont(UiBuilder.IconFont);
+			bool clicked = ImGui.Button(icon.ToIconString(), size ?? Vector2.Zero);
+
+			ImGui.PopFont();
+			if (!string.IsNullOrEmpty(help) && ImGui.IsItemHovered())
+			{
+				ImGui.SetTooltip(help);
+			}
+
+			return clicked;
+		}
+
+		#region Configuration
+
+		public static void DrawNestIndicator(int depth)
+		{
+			// This draws the L shaped symbols and padding to the left of config items collapsible under a checkbox.
+			// Shift cursor to the right to pad for children with depth more than 1.
+			// 26 is an arbitrary value I found to be around half the width of a checkbox
+			Vector2 oldCursor = ImGui.GetCursorPos();
+			Vector2 offset = new(26 * Math.Max(depth - 1, 0), 2);
+			ImGui.SetCursorPos(oldCursor + offset);
+			ImGui.TextColored(new(0f / 255f, 174f / 255f, 255f / 255f, 1f), "\u2002\u2514");
+			ImGui.SameLine();
+			ImGui.SetCursorPosY(oldCursor.Y);
+		}
+
+		#endregion
 	}
 }

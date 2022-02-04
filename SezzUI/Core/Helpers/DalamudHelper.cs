@@ -4,8 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Dalamud.Plugin;
+using Dalamud.Utility;
+using ImGuiNET;
 
 namespace SezzUI.Helpers
 {
@@ -22,6 +26,40 @@ namespace SezzUI.Helpers
 
 		public static IReadOnlyList<PluginEntry> Plugins { get; private set; }
 		internal static PluginLogger Logger;
+
+		public static string AssetDirectory => GetService("Dalamud.DalamudStartInfo").GetPropertyValue<string>("AssetDirectory");
+
+		public static (string?, uint?, ImFontPtr? imFontPtr) GetDefaultFont()
+		{
+			// At the time of implementing this the default font is: NotoSansCJKjp-Medium.otf (17px)
+			string assetDirectory = null!;
+			try
+			{
+				assetDirectory = AssetDirectory;
+			}
+			catch (Exception ex)
+			{
+				Logger.Error(ex, "GetDefaultFont", $"Error getting asset directory: {ex}");
+			}
+
+			ImGuiIOPtr io = ImGui.GetIO();
+			if (!assetDirectory.IsNullOrEmpty() && io.Fonts.Fonts.Size > 0)
+			{
+				ImFontPtr defaultFont = io.Fonts.Fonts[0];
+				string defaultFontName = defaultFont.GetDebugName();
+				//Logger.Debug("GetDefaultFont", $"ImGui Default Font[0]: {defaultFontName}");
+
+				Match dalamudFontMatch = Regex.Match(defaultFontName, @"^(.*), ([1-9]\d*(\.)\d*|0?(\.)\d*[1-9]\d*|[1-9]\d*)px$");
+				if (dalamudFontMatch.Success && uint.TryParse(dalamudFontMatch.Groups[2].Value, out uint dalamudFontSize)) // 17
+				{
+					string dalamudFontFile = dalamudFontMatch.Groups[1].Value; // NotoSansCJKjp-Medium.otf
+					//Logger.Debug("GetDefaultFont", $"Dalamud Font: {dalamudFontFile} Size: {dalamudFontSize}px");
+					return (Path.Combine(assetDirectory, "UIRes", dalamudFontFile), dalamudFontSize, defaultFont);
+				}
+			}
+
+			return (null, null, null);
+		}
 
 		public static void RefreshPlugins()
 		{

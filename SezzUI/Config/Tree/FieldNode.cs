@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Reflection;
 using ImGuiNET;
 using SezzUI.Config.Attributes;
@@ -55,16 +54,6 @@ namespace SezzUI.Config.Tree
 			}
 		}
 
-		protected static void DrawNestIndicator(int depth)
-		{
-			// This draws the L shaped symbols and padding to the left of config items collapsible under a checkbox.
-			// Shift cursor to the right to pad for children with depth more than 1.
-			// 26 is an arbitrary value I found to be around half the width of a checkbox
-			ImGui.SetCursorPos(ImGui.GetCursorPos() + new Vector2(26, 0) * Math.Max(depth - 1, 0));
-			ImGui.TextColored(new(0f / 255f, 174f / 255f, 255f / 255f, 1f), "\u2002\u2514");
-			ImGui.SameLine();
-		}
-
 		protected static ConfigAttribute? GetConfigAttribute(FieldInfo field)
 		{
 			return field.GetCustomAttributes(true).Where(a => a is ConfigAttribute).FirstOrDefault() as ConfigAttribute;
@@ -114,7 +103,7 @@ namespace SezzUI.Config.Tree
 
 			if (depth > 0)
 			{
-				DrawNestIndicator(depth);
+				ImGuiHelper.DrawNestIndicator(depth);
 			}
 
 			bool collapsing = CollapsingHeader && ConfigObject.Disableable;
@@ -134,7 +123,7 @@ namespace SezzUI.Config.Tree
 				{
 					if (ImGui.CollapsingHeader(ID + "##CollapsingHeader"))
 					{
-						DrawNestIndicator(depth);
+						ImGuiHelper.DrawNestIndicator(depth);
 						DrawConfigAttribute(ref changed, _mainField);
 
 						if (enabled)

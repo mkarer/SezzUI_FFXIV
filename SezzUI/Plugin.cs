@@ -14,7 +14,6 @@ using Dalamud.Game.Gui;
 using Dalamud.Interface;
 using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
 using ImGuiScene;
 using SezzUI.Config;
 using SezzUI.Config.Profiles;
@@ -89,7 +88,6 @@ namespace SezzUI
 
 			Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.7";
 
-			FontsManager.Initialize(AssemblyLocation);
 			LoadBanner();
 
 			// initialize a not-necessarily-defaults configuration
@@ -101,7 +99,6 @@ namespace SezzUI
 			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
 #endif
 
-			FontsManager.Instance.LoadConfig();
 			MediaManager.Initialize(AssemblyLocation);
 
 			ClipRectsHelper.Initialize();
@@ -119,7 +116,6 @@ namespace SezzUI
 			UiBuilder.DisableUserUiHide = true;
 
 			UiBuilder.Draw += Draw;
-			UiBuilder.BuildFonts += BuildFont;
 			UiBuilder.OpenConfigUi += OpenConfigUi;
 
 			CommandManager.AddHandler("/sezzui", new(PluginCommand)
@@ -150,11 +146,6 @@ namespace SezzUI
 		{
 			Dispose(true);
 			GC.SuppressFinalize(this);
-		}
-
-		private static void BuildFont()
-		{
-			FontsManager.Instance.BuildFonts();
 		}
 
 		private static void LoadBanner()
@@ -234,8 +225,6 @@ namespace SezzUI
 			// ReSharper disable once ConditionIsAlwaysTrueOrFalse
 			if (HudManager.Instance != null)
 			{
-				bool fontPushed = FontsManager.Instance.PushDefaultFont();
-
 				DrawState drawState = GetDrawState();
 				if (DrawState != drawState)
 				{
@@ -249,11 +238,9 @@ namespace SezzUI
 #endif
 				}
 
-				HudManager.Instance.Draw(drawState);
-
-				if (fontPushed)
+				using (MediaManager.PushFont())
 				{
-					ImGui.PopFont();
+					HudManager.Instance.Draw(drawState);
 				}
 			}
 #if DEBUG
@@ -350,18 +337,16 @@ namespace SezzUI
 			CommandManager.RemoveHandler("/sui");
 
 			UiBuilder.Draw -= Draw;
-			UiBuilder.BuildFonts -= BuildFont;
 			UiBuilder.OpenConfigUi -= OpenConfigUi;
 			UiBuilder.RebuildFonts();
 
 			ClipRectsHelper.Instance.Dispose();
-			FontsManager.Instance.Dispose();
 			GlobalColors.Instance.Dispose();
 			ProfilesManager.Instance.Dispose();
 			TexturesCache.Instance.Dispose();
 			ImageCache.Instance.Dispose();
-			MediaManager.Instance.Dispose();
 			TooltipsHelper.Instance.Dispose();
+			MediaManager.Instance.Dispose();
 			OriginalFunctionManager.Instance.Dispose();
 
 			// This needs to remain last to avoid race conditions

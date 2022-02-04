@@ -7,7 +7,6 @@ using Dalamud.Interface;
 using Dalamud.Interface.ImGuiFileDialog;
 using ImGuiNET;
 using SezzUI.Helpers;
-using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Config.Attributes
 {
@@ -807,21 +806,16 @@ namespace SezzUI.Config.Attributes
 
 		public override bool DrawField(FieldInfo field, PluginConfigObject config, string? ID, bool collapsingHeader)
 		{
-			FontsConfig? fontsConfig = ConfigurationManager.Instance.GetConfigObject<FontsConfig>();
-			if (fontsConfig == null)
-			{
-				return false;
-			}
-
 			string? stringVal = (string?) field.GetValue(config);
+			string[] fontKeys = MediaManager.ImGuiFontData.Keys.ToArray();
 
-			int index = stringVal == null || stringVal.Length == 0 || !fontsConfig.Fonts.ContainsKey(stringVal) ? -1 : fontsConfig.Fonts.IndexOfKey(stringVal);
+			int index = stringVal == null || stringVal.Length == 0 || !MediaManager.ImGuiFontData.ContainsKey(stringVal) ? -1 : Array.IndexOf(fontKeys, stringVal);
 
 			if (index == -1)
 			{
-				if (fontsConfig.Fonts.ContainsKey(FontsConfig.DefaultBigFontKey))
+				if (MediaManager.ImGuiFontData.ContainsKey(MediaManager.DefaultFonts[PluginFontSize.Medium]))
 				{
-					index = fontsConfig.Fonts.IndexOfKey(FontsConfig.DefaultBigFontKey);
+					index = Array.IndexOf(fontKeys, MediaManager.DefaultFonts[PluginFontSize.Medium]);
 				}
 				else
 				{
@@ -829,11 +823,11 @@ namespace SezzUI.Config.Attributes
 				}
 			}
 
-			string[] options = fontsConfig.Fonts.Values.Select(fontData => fontData.Name + "\u2002\u2002" + fontData.Size).ToArray();
+			string[] options = MediaManager.ImGuiFontData.Values.Select(fontData => fontData.Name + "\u2002\u2002" + fontData.Size).ToArray();
 
 			if (ImGui.Combo(friendlyName + IDText(ID), ref index, options, options.Length, 4))
 			{
-				stringVal = fontsConfig.Fonts.Keys[index];
+				stringVal = fontKeys[index];
 				field.SetValue(config, stringVal);
 
 				TriggerChangeEvent<string>(config, field.Name, stringVal);

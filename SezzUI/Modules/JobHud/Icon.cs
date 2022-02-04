@@ -608,12 +608,18 @@ namespace SezzUI.Modules.JobHud
 			if (cooldownSpiralTotal > 0)
 			{
 				DrawHelper.DrawProgressSwipe(posInside, sizeInside, cooldownSpiralRemaining, cooldownSpiralTotal, animator.Data.Opacity, drawList);
-				DrawHelper.DrawCooldownText(posInside, sizeInside, cooldownTextRemaining, drawList, "MyriadProLightCond_20", animator.Data.Opacity);
+				using (MediaManager.PushFont(PluginFontSize.Large))
+				{
+					DrawHelper.DrawCooldownText(posInside, sizeInside, cooldownTextRemaining, drawList, animator.Data.Opacity);
+				}
 			}
 
 			if (chargesTextAmount >= 0)
 			{
-				DrawHelper.DrawAnchoredText("MyriadProLightCond_14", TextStyle.Outline, DrawAnchor.BottomRight, chargesTextAmount.ToString(), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, animator.Data.Opacity)), drawList, -2, -1);
+				using (MediaManager.PushFont(PluginFontSize.ExtraSmall))
+				{
+					DrawHelper.DrawAnchoredText(TextStyle.Outline, DrawAnchor.BottomRight, chargesTextAmount.ToString(), posInside, sizeInside, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, animator.Data.Opacity)), drawList, -2, -1);
+				}
 			}
 
 			// Glow
@@ -658,7 +664,10 @@ namespace SezzUI.Modules.JobHud
 				// Duration Text
 				if (progressBarTextRemaining > 0)
 				{
-					DrawHelper.DrawCooldownText(linePos, lineSize, progressBarTextRemaining, drawList, "MyriadProLightCond_12", animator.Data.Opacity);
+					using (MediaManager.PushFont(PluginFontSize.ExtraExtraSmall))
+					{
+						DrawHelper.DrawCooldownText(linePos, lineSize, progressBarTextRemaining, drawList, animator.Data.Opacity);
+					}
 				}
 			}
 

@@ -141,10 +141,8 @@ namespace SezzUI.Helpers
 
 		#region Text
 
-		public static void DrawAnchoredText(string? font, TextStyle style, DrawAnchor anchor, string text, Vector2 pos, Vector2 size, uint color, uint effectColor, ImDrawListPtr drawList, float xOffset = 0, float yOffset = 0, string textPosCalc = "")
+		public static void DrawAnchoredText(TextStyle style, DrawAnchor anchor, string text, Vector2 pos, Vector2 size, uint color, uint effectColor, ImDrawListPtr drawList, float xOffset = 0, float yOffset = 0, string textPosCalc = "")
 		{
-			bool fontPushed = FontsManager.Instance.PushFont(font);
-
 			Vector2 textSize = ImGui.CalcTextSize(textPosCalc != "" ? textPosCalc : text);
 			Vector2 textPosition = GetAnchoredPosition(pos, size, textSize, anchor);
 			textPosition.X += xOffset;
@@ -167,21 +165,16 @@ namespace SezzUI.Helpers
 				default:
 					throw new ArgumentOutOfRangeException(nameof(style), style, null);
 			}
-
-			if (fontPushed)
-			{
-				ImGui.PopFont();
-			}
 		}
 
-		public static void DrawCenteredShadowText(string? font, string text, Vector2 pos, Vector2 size, uint color, uint shadowColor, ImDrawListPtr drawList)
+		public static void DrawCenteredShadowText(string text, Vector2 pos, Vector2 size, uint color, uint shadowColor, ImDrawListPtr drawList)
 		{
-			DrawAnchoredText(font, TextStyle.Shadowed, DrawAnchor.Center, text, pos, size, color, shadowColor, drawList);
+			DrawAnchoredText(TextStyle.Shadowed, DrawAnchor.Center, text, pos, size, color, shadowColor, drawList);
 		}
 
-		public static void DrawCenteredOutlineText(string? font, string text, Vector2 pos, Vector2 size, uint color, uint outlineColor, ImDrawListPtr drawList)
+		public static void DrawCenteredOutlineText(string text, Vector2 pos, Vector2 size, uint color, uint outlineColor, ImDrawListPtr drawList)
 		{
-			DrawAnchoredText(font, TextStyle.Outline, DrawAnchor.Center, text, pos, size, color, outlineColor, drawList);
+			DrawAnchoredText(TextStyle.Outline, DrawAnchor.Center, text, pos, size, color, outlineColor, drawList);
 		}
 
 		public static void DrawOutlinedText(string text, Vector2 pos, ImDrawListPtr drawList, int thickness = 1)
@@ -242,7 +235,10 @@ namespace SezzUI.Helpers
 			if (text.Length > 0)
 			{
 				uint shadowColor = ((textColor >> 24) & 255) << 24;
-				DrawCenteredShadowText("MyriadProLightCond_16", text, pos, size, textColor, shadowColor, drawList);
+				using (MediaManager.PushFont(PluginFontSize.Small))
+				{
+					DrawCenteredShadowText(text, pos, size, textColor, shadowColor, drawList);
+				}
 			}
 		}
 
@@ -337,21 +333,21 @@ namespace SezzUI.Helpers
 			return (Math.Truncate(duration * 10) / 10).ToString(zeroSeconds ? "0.0" : ".0", Plugin.NumberFormatInfo);
 		}
 
-		public static void DrawCooldownText(Vector2 pos, Vector2 size, float cooldown, ImDrawListPtr drawList, string font = "MyriadProLightCond_20", float opacity = 1)
+		public static void DrawCooldownText(Vector2 pos, Vector2 size, float cooldown, ImDrawListPtr drawList, float opacity = 1)
 		{
 			ushort msThreshold = 3;
 
 			if (cooldown >= 60)
 			{
-				DrawCenteredOutlineText(font, FormatDuration(cooldown), pos, size, ImGui.ColorConvertFloat4ToU32(new(0.6f, 0.6f, 0.6f, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
+				DrawCenteredOutlineText(FormatDuration(cooldown), pos, size, ImGui.ColorConvertFloat4ToU32(new(0.6f, 0.6f, 0.6f, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
 			}
 			else if (cooldown > msThreshold)
 			{
-				DrawCenteredOutlineText(font, FormatDuration(cooldown, msThreshold), pos, size, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
+				DrawCenteredOutlineText(FormatDuration(cooldown, msThreshold), pos, size, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
 			}
 			else
 			{
-				DrawCenteredOutlineText(font, FormatDuration(cooldown, msThreshold), pos, size, ImGui.ColorConvertFloat4ToU32(new(1, 0, 0, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
+				DrawCenteredOutlineText(FormatDuration(cooldown, msThreshold), pos, size, ImGui.ColorConvertFloat4ToU32(new(1, 0, 0, opacity)), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, opacity)), drawList);
 			}
 		}
 
