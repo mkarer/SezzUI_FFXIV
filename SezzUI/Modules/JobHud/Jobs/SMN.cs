@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Dalamud.Game.ClientState.JobGauge.Types;
 using SezzUI.Helpers;
@@ -33,7 +34,6 @@ namespace SezzUI.Modules.JobHud.Jobs
 			using (AuraAlert aa = new())
 			{
 				aa.CustomCondition = IsMissingPet;
-				aa.EnableInCombat = false;
 				aa.Size = new(64, 64);
 				aa.Position = new(0, -140);
 				aa.Level = 2;
@@ -59,7 +59,24 @@ namespace SezzUI.Modules.JobHud.Jobs
 		// Titan-Egi: 28
 		// Garuda-Egi: 29
 
-		public static bool IsMissingPet() => !Plugin.BuddyList.PetBuddyPresent;
+		private static long _petSeen;
+
+		public static bool IsMissingPet()
+		{
+			if ((Plugin.ClientState.LocalPlayer?.CurrentHp ?? 0) == 0)
+			{
+				return false;
+			}
+
+			long now = Environment.TickCount64;
+			if (Plugin.BuddyList.PetBuddyPresent)
+			{
+				_petSeen = now;
+				return false;
+			}
+
+			return now - _petSeen > 2500;
+		}
 
 		private static bool IsCarbuncleSummoned() => Plugin.BuddyList.PetBuddy != null && Plugin.BuddyList.PetBuddy.PetData.Id == 23;
 
