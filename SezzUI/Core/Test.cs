@@ -1,7 +1,16 @@
-﻿using System;
+﻿#if DEBUG
+using System;
+using System.Buffers;
+using System.Buffers.Binary;
+using System.Linq;
 using System.Runtime.InteropServices;
+using Dalamud.Memory;
+using FFXIVClientStructs.Attributes;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using SezzUI.Config;
 using SezzUI.Enums;
+using SezzUI.GameStructs;
 
 namespace SezzUI.Core
 {
@@ -24,45 +33,10 @@ namespace SezzUI.Core
 
 		public static void RunTest()
 		{
+			Plugin.ChatGui.Print("Okay.");
+
 			try
 			{
-				Plugin.ChatGui.Print("Okay.");
-
-				AtkStage* stage = AtkStage.GetSingleton();
-				if (stage == null)
-				{
-					return;
-				}
-
-				AtkUnitList* loadedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.AllLoadedUnitsList;
-				if (loadedUnitsList == null)
-				{
-					return;
-				}
-
-				AtkUnitBase** addonList = &loadedUnitsList->AtkUnitEntries;
-				if (addonList == null)
-				{
-					return;
-				}
-
-				for (int i = 0; i < loadedUnitsList->Count; i++)
-				{
-					AtkUnitBase* addon = addonList[i];
-					if (addon == null || addon->RootNode == null || addon->UldManager.LoadedState != 3)
-					{
-						continue;
-					}
-
-					string? name = Marshal.PtrToStringAnsi(new(addon->Name));
-					if (name == null)
-					{
-						continue;
-					}
-
-					byte visibilityFlag = *((byte*) addon + 0x1B6);
-					Logger.Debug("RunTest", $"Addon: {ToFixedLength(name, 24)} | Visibility: {visibilityFlag} {ToBinaryString(visibilityFlag)} ({(AddonVisibility) visibilityFlag})");
-				}
 			}
 			catch (Exception ex)
 			{
@@ -71,3 +45,4 @@ namespace SezzUI.Core
 		}
 	}
 }
+#endif
