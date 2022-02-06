@@ -91,7 +91,10 @@ namespace SezzUI.GameEvents
 			// BRD
 			new() {110, 117}, // Bloodletter [110] + Rain of Death [117]
 			// RDM
-			new() {16527, 7515} // Engagement [16527] + Displacement [7515]
+			new() {16527, 7515}, // Engagement [16527] + Displacement [7515]
+			// SMN
+			new() {7427, 25831}, // Summon Bahamut [7427] + Summon Phoenix [25831]
+			new() {7429, 16516}, // Enkindle Bahamut [7429] + Enkindle Phoenix [16516]
 		};
 
 		private static readonly List<uint> _frequentUpdateCooldowns = new() // Workaround until I figure out how to do this correctly. Yes, this is absolute bullshit :(
