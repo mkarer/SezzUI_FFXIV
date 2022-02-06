@@ -9,7 +9,8 @@ namespace SezzUI
 		internal static Player Player => Player.Instance;
 		internal static Combat Combat => Combat.Instance;
 		internal static Cooldown Cooldown => Cooldown.Instance;
-
+		internal static DutyFinderQueue DutyFinderQueue => DutyFinderQueue.Instance;
+		
 		#region Singleton
 
 		public static void Initialize()
@@ -57,6 +58,11 @@ namespace SezzUI
 				Cooldown.Dispose();
 			}
 
+			if (DutyFinderQueue.Initialized)
+			{
+				DutyFinderQueue.Dispose();
+			}
+			
 			Instance = null!;
 		}
 

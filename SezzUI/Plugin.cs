@@ -11,6 +11,8 @@ using Dalamud.Game.ClientState.JobGauge;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
+using Dalamud.Game.Gui.Dtr;
+using Dalamud.Game.Network;
 using Dalamud.Interface;
 using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -44,6 +46,8 @@ namespace SezzUI
 		public static TargetManager TargetManager { get; private set; } = null!;
 		public static UiBuilder UiBuilder { get; private set; } = null!;
 		public static ChatGui ChatGui { get; private set; } = null!;
+		public static GameNetwork GameNetwork { get; private set; } = null!;
+		public static DtrBar DtrBar { get; private set; } = null!;
 
 		#endregion
 
@@ -58,7 +62,7 @@ namespace SezzUI
 
 		public static readonly NumberFormatInfo NumberFormatInfo = CultureInfo.GetCultureInfo("en-GB").NumberFormat;
 
-		public Plugin(BuddyList buddyList, ClientState clientState, CommandManager commandManager, Condition condition, DalamudPluginInterface pluginInterface, DataManager dataManager, Framework framework, GameGui gameGui, JobGauges jobGauges, ObjectTable objectTable, SigScanner sigScanner, TargetManager targetManager, ChatGui chatGui)
+		public Plugin(BuddyList buddyList, ClientState clientState, CommandManager commandManager, Condition condition, DalamudPluginInterface pluginInterface, DataManager dataManager, Framework framework, GameGui gameGui, JobGauges jobGauges, ObjectTable objectTable, SigScanner sigScanner, TargetManager targetManager, ChatGui chatGui, GameNetwork gameNetwork, DtrBar dtrBar)
 		{
 			BuddyList = buddyList;
 			ClientState = clientState;
@@ -74,6 +78,8 @@ namespace SezzUI
 			TargetManager = targetManager;
 			ChatGui = chatGui;
 			UiBuilder = PluginInterface.UiBuilder;
+			GameNetwork = gameNetwork;
+			DtrBar = dtrBar;
 
 			if (pluginInterface.AssemblyLocation.DirectoryName != null)
 			{
@@ -241,7 +247,9 @@ namespace SezzUI
 
 		public delegate void DrawStateChangedDelegate(DrawState drawState);
 
+#pragma warning disable CS0067
 		public static event DrawStateChangedDelegate? DrawStateChanged;
+#pragma warning restore CS0067
 		public static DrawState DrawState { get; private set; } = DrawState.Unknown;
 
 		private static unsafe bool IsAddonVisible(string name)

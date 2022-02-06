@@ -13,6 +13,7 @@ using SezzUI.Modules.CooldownHud;
 using SezzUI.Modules.GameUI;
 using SezzUI.Modules.JobHud;
 using SezzUI.Modules.PluginMenu;
+using SezzUI.Modules.ServerInfoBar;
 
 namespace SezzUI.Interface
 {
@@ -32,6 +33,7 @@ namespace SezzUI.Interface
 		private static ElementHider? _elementHider;
 		private static ActionBar? _actionBar;
 		private static PluginMenu? _pluginMenu;
+		private static ServerInfoBar? _serverInfoBar;
 
 		#region Singleton
 
@@ -163,6 +165,10 @@ namespace SezzUI.Interface
 			// Plugin Menu
 			_pluginMenu ??= PluginMenu.Initialize();
 			_modules.Add(_pluginMenu);
+
+			// Server Info Bar
+			_serverInfoBar ??= ServerInfoBar.Initialize();
+			_modules.Add(_serverInfoBar);
 		}
 
 		public void Draw(DrawState drawState)

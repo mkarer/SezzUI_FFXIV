@@ -97,6 +97,11 @@ namespace SezzUI.Interface.GeneralElements
 		[Checkbox("Cooldown: CooldownFinished")]
 		[Order(147, collapseWith = nameof(LogEvents))]
 		public bool LogEventCooldownFinished = false;
+		
+		[Checkbox("DutyFinderQueue")]
+		[Order(150, collapseWith = nameof(LogEvents))]
+		public bool LogEventDutyFinderQueue = false;
+		
 	}
 #endif
 }
