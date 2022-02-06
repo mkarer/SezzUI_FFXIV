@@ -91,7 +91,7 @@ namespace SezzUI.Modules.ServerInfoBar.Entries
 			StringBuilder sb = new(ICON);
 
 			byte position = EventManager.DutyFinderQueue.Position;
-			if (position == 1)
+			if (position == 1 || EventManager.DutyFinderQueue.IsReady)
 			{
 				sb.Append(" Ready!");
 			}
@@ -143,7 +143,7 @@ namespace SezzUI.Interface.GeneralElements
 		[InputText("Role Waiting List Number Prefix", formattable = false, isMonitored = true)]
 		[Order(11)]
 		public string PositionPrefix = "#";
-		
+
 		[Checkbox("Display Average Wait Time", isMonitored = true)]
 		[Order(20)]
 		public bool DisplayAverageWaitTime = true;
@@ -151,15 +151,15 @@ namespace SezzUI.Interface.GeneralElements
 		[InputText("Average Wait Time Prefix", formattable = false, isMonitored = true)]
 		[Order(21)]
 		public string AverageWaitTimePrefix = "";
-		
+
 		[Checkbox("Display Estimated Wait Time", isMonitored = true)]
 		[Order(30)]
 		public bool DisplayEstimatedWaitTime = true;
-		
+
 		[InputText("Estimated Wait Time Prefix", formattable = false, isMonitored = true)]
 		[Order(31)]
 		public string EstimatedWaitTimePrefix = "~";
-		
+
 		public void Reset()
 		{
 			Enabled = true;
