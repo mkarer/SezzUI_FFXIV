@@ -99,7 +99,7 @@ namespace SezzUI.Modules.ServerInfoBar.Entries
 			{
 				if (Config.DisplayPosition && position > 0)
 				{
-					sb.Append($" #{EventManager.DutyFinderQueue.Position}");
+					sb.Append($" {Config.PositionPrefix}{EventManager.DutyFinderQueue.Position}");
 				}
 
 				if (Config.DisplayAverageWaitTime)
@@ -108,7 +108,7 @@ namespace SezzUI.Modules.ServerInfoBar.Entries
 					if (averageWaitTime > 0)
 					{
 						sb.Append(sb.Length == 1 ? " " : Config.Separator);
-						sb.Append($"{(averageWaitTime > 30 ? "30+" : averageWaitTime)}m");
+						sb.Append($"{Config.AverageWaitTimePrefix}{(averageWaitTime > 30 ? "30+" : averageWaitTime)}m");
 					}
 				}
 
@@ -118,7 +118,7 @@ namespace SezzUI.Modules.ServerInfoBar.Entries
 					if (estimatedWaitTime > 0)
 					{
 						sb.Append(sb.Length == 1 ? " " : Config.Separator);
-						sb.Append($"~{estimatedWaitTime}m");
+						sb.Append($"{Config.EstimatedWaitTimePrefix}{estimatedWaitTime}m");
 					}
 				}
 			}
@@ -132,22 +132,34 @@ namespace SezzUI.Interface.GeneralElements
 {
 	public class DutyFinderQueueEntryConfig : PluginConfigObject
 	{
-		[Checkbox("Display Role Waiting List Number", isMonitored = true)]
+		[InputText("Text Segment Separator", formattable = false, isMonitored = true)]
 		[Order(0)]
-		public bool DisplayPosition = true;
-
-		[Checkbox("Display Average Wait Time", isMonitored = true)]
-		[Order(1)]
-		public bool DisplayAverageWaitTime = true;
-
-		[Checkbox("Display Estimated Wait Time", isMonitored = true)]
-		[Order(2)]
-		public bool DisplayEstimatedWaitTime = true;
-
-		[InputText("Separator", formattable = false, isMonitored = true)]
-		[Order(10)]
 		public string Separator = "/";
 
+		[Checkbox("Display Role Waiting List Number", isMonitored = true)]
+		[Order(10)]
+		public bool DisplayPosition = true;
+
+		[InputText("Role Waiting List Number Prefix", formattable = false, isMonitored = true)]
+		[Order(11)]
+		public string PositionPrefix = "#";
+		
+		[Checkbox("Display Average Wait Time", isMonitored = true)]
+		[Order(20)]
+		public bool DisplayAverageWaitTime = true;
+
+		[InputText("Average Wait Time Prefix", formattable = false, isMonitored = true)]
+		[Order(21)]
+		public string AverageWaitTimePrefix = "";
+		
+		[Checkbox("Display Estimated Wait Time", isMonitored = true)]
+		[Order(30)]
+		public bool DisplayEstimatedWaitTime = true;
+		
+		[InputText("Estimated Wait Time Prefix", formattable = false, isMonitored = true)]
+		[Order(31)]
+		public string EstimatedWaitTimePrefix = "~";
+		
 		public void Reset()
 		{
 			Enabled = true;
@@ -155,6 +167,9 @@ namespace SezzUI.Interface.GeneralElements
 			DisplayAverageWaitTime = false;
 			DisplayEstimatedWaitTime = true;
 			Separator = "/";
+			PositionPrefix = "#";
+			AverageWaitTimePrefix = "";
+			EstimatedWaitTimePrefix = "~";
 		}
 
 		public DutyFinderQueueEntryConfig()
