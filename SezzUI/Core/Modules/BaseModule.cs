@@ -21,7 +21,7 @@ namespace SezzUI.Modules
 		///     Enabled the module.
 		/// </summary>
 		/// <returns>TRUE if it wasn't already enabled.</returns>
-		protected virtual bool Enable()
+		internal virtual bool Enable()
 		{
 			if (!Enabled)
 			{
@@ -38,7 +38,7 @@ namespace SezzUI.Modules
 		///     Disables the module.
 		/// </summary>
 		/// <returns>TRUE if it wasn't already disabled.</returns>
-		protected virtual bool Disable()
+		internal virtual bool Disable()
 		{
 			if (Enabled)
 			{
@@ -56,7 +56,7 @@ namespace SezzUI.Modules
 		/// </summary>
 		/// <param name="enable">EnabledState</param>
 		/// <returns>TRUE if state changed.</returns>
-		protected virtual bool Toggle(bool enable)
+		internal virtual bool Toggle(bool enable)
 		{
 			if (enable != Enabled)
 			{

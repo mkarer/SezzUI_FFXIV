@@ -30,7 +30,7 @@ namespace SezzUI.Modules.GameUI
 		private readonly ElementHiderDebugConfig _debugConfig;
 #endif
 
-		protected override bool Enable()
+		internal override bool Enable()
 		{
 			if (!base.Enable())
 			{
@@ -57,7 +57,7 @@ namespace SezzUI.Modules.GameUI
 			return true;
 		}
 
-		protected override bool Disable()
+		internal override bool Disable()
 		{
 			if (!base.Disable())
 			{

@@ -70,7 +70,7 @@ namespace SezzUI.Modules.JobHud
 			Toggle(Config.Enabled);
 		}
 
-		protected override bool Enable()
+		internal override bool Enable()
 		{
 			if (!base.Enable())
 			{
@@ -89,7 +89,7 @@ namespace SezzUI.Modules.JobHud
 			return true;
 		}
 
-		protected override bool Disable()
+		internal override bool Disable()
 		{
 			if (!base.Disable())
 			{

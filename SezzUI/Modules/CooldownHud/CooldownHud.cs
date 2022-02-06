@@ -251,7 +251,7 @@ namespace SezzUI.Modules.CooldownHud
 			texture = SpellHelper.GetIconTexture((ushort?) iconId, out bool _);
 		}
 
-		protected override bool Enable()
+		internal override bool Enable()
 		{
 			if (!base.Enable())
 			{
@@ -270,7 +270,7 @@ namespace SezzUI.Modules.CooldownHud
 			return true;
 		}
 
-		protected override bool Disable()
+		internal override bool Disable()
 		{
 			if (!base.Disable())
 			{

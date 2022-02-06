@@ -170,7 +170,7 @@ namespace SezzUI.Modules.PluginMenu
 			ImGuiHelper.PopButtonStyle();
 		}
 
-		protected override bool Enable()
+		internal override bool Enable()
 		{
 			if (!base.Enable())
 			{
@@ -186,7 +186,7 @@ namespace SezzUI.Modules.PluginMenu
 			return true;
 		}
 
-		protected override bool Disable()
+		internal override bool Disable()
 		{
 			if (!base.Disable())
 			{

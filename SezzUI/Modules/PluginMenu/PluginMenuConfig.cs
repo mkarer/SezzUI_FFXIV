@@ -46,7 +46,6 @@ namespace SezzUI.Interface.GeneralElements
 		[JsonIgnore]
 		public List<PluginMenuItemConfig> Items;
 
-
 		public void Reset()
 		{
 			Enabled = true;

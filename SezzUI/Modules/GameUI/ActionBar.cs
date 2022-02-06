@@ -37,7 +37,7 @@ namespace SezzUI.Modules.GameUI
 		private IntPtr? _setPagePtr;
 		private ActionBarConfig Config => (ActionBarConfig) _config;
 
-		protected override bool Enable()
+		internal override bool Enable()
 		{
 			if (!base.Enable())
 			{
@@ -59,7 +59,7 @@ namespace SezzUI.Modules.GameUI
 			return true;
 		}
 
-		protected override bool Disable()
+		internal override bool Disable()
 		{
 			if (!base.Disable())
 			{
