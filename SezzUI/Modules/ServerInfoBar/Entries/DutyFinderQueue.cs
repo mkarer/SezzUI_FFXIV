@@ -54,10 +54,10 @@ namespace SezzUI.Modules.ServerInfoBar.Entries
 				return false;
 			}
 
-			EventManager.DutyFinderQueue.Update += OnQueueUpdate;
-			EventManager.DutyFinderQueue.Joined += OnQueueJoined;
-			EventManager.DutyFinderQueue.Left += OnQueueLeft;
-			EventManager.DutyFinderQueue.Ready += OnQueueReady;
+			EventManager.DutyFinderQueue.Update += Update;
+			EventManager.DutyFinderQueue.Joined += Update;
+			EventManager.DutyFinderQueue.Left += ClearText;
+			EventManager.DutyFinderQueue.Ready += Update;
 
 			Update();
 
@@ -71,10 +71,10 @@ namespace SezzUI.Modules.ServerInfoBar.Entries
 				return false;
 			}
 
-			EventManager.DutyFinderQueue.Update -= OnQueueUpdate;
-			EventManager.DutyFinderQueue.Joined -= OnQueueJoined;
-			EventManager.DutyFinderQueue.Left -= OnQueueLeft;
-			EventManager.DutyFinderQueue.Ready -= OnQueueReady;
+			EventManager.DutyFinderQueue.Update -= Update;
+			EventManager.DutyFinderQueue.Joined -= Update;
+			EventManager.DutyFinderQueue.Left -= ClearText;
+			EventManager.DutyFinderQueue.Ready -= Update;
 
 			ClearText();
 
@@ -90,35 +90,41 @@ namespace SezzUI.Modules.ServerInfoBar.Entries
 
 			StringBuilder sb = new(ICON);
 
-			if (EventManager.DutyFinderQueue.Position != 0)
+			byte position = EventManager.DutyFinderQueue.Position;
+			if (position == 1)
 			{
-				sb.Append($" #{(EventManager.DutyFinderQueue.Position != 0 ? EventManager.DutyFinderQueue.Position : "?")}");
+				sb.Append(" Ready!");
+			}
+			else
+			{
+				if (Config.DisplayPosition && position > 0)
+				{
+					sb.Append($" #{EventManager.DutyFinderQueue.Position}");
+				}
+
+				if (Config.DisplayAverageWaitTime)
+				{
+					byte averageWaitTime = EventManager.DutyFinderQueue.AverageWaitTime;
+					if (averageWaitTime > 0)
+					{
+						sb.Append(sb.Length == 1 ? " " : Config.Separator);
+						sb.Append($"{(averageWaitTime > 30 ? "30+" : averageWaitTime)}m");
+					}
+				}
+
 				if (Config.DisplayEstimatedWaitTime)
 				{
-					sb.Append("/");
+					byte estimatedWaitTime = EventManager.DutyFinderQueue.EstimatedWaitTime;
+					if (estimatedWaitTime > 0)
+					{
+						sb.Append(sb.Length == 1 ? " " : Config.Separator);
+						sb.Append($"~{estimatedWaitTime}m");
+					}
 				}
-			}
-
-			if (Config.DisplayEstimatedWaitTime)
-			{
-				if (EventManager.DutyFinderQueue.Position == 0)
-				{
-					sb.Append(" ");
-				}
-
-				sb.Append($"{EventManager.DutyFinderQueue.EstimatedWaitTime}m");
 			}
 
 			SetText(sb.ToString());
 		}
-
-		private void OnQueueUpdate(byte queuePosition, byte waitTime, uint contentFinderConditionId) => Update();
-
-		private void OnQueueJoined() => SetText($"{ICON}");
-
-		private void OnQueueLeft() => ClearText();
-
-		private void OnQueueReady() => SetText($"{ICON} Ready!");
 	}
 }
 
@@ -126,14 +132,29 @@ namespace SezzUI.Interface.GeneralElements
 {
 	public class DutyFinderQueueEntryConfig : PluginConfigObject
 	{
-		[Checkbox("Display Estimated Wait Time", isMonitored = true)]
+		[Checkbox("Display Role Waiting List Number", isMonitored = true)]
 		[Order(0)]
+		public bool DisplayPosition = true;
+
+		[Checkbox("Display Average Wait Time", isMonitored = true)]
+		[Order(1)]
+		public bool DisplayAverageWaitTime = true;
+
+		[Checkbox("Display Estimated Wait Time", isMonitored = true)]
+		[Order(2)]
 		public bool DisplayEstimatedWaitTime = true;
+
+		[InputText("Separator", formattable = false, isMonitored = true)]
+		[Order(10)]
+		public string Separator = "/";
 
 		public void Reset()
 		{
 			Enabled = true;
+			DisplayPosition = true;
+			DisplayAverageWaitTime = false;
 			DisplayEstimatedWaitTime = true;
+			Separator = "/";
 		}
 
 		public DutyFinderQueueEntryConfig()
