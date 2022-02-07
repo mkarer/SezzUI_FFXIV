@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Dalamud.Hooking;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SezzUI.Config;
 using SezzUI.Enums;
@@ -30,6 +33,43 @@ namespace SezzUI.Modules.GameUI
 		private readonly ElementHiderDebugConfig _debugConfig;
 #endif
 
+		private bool _isHudLayoutAgentVisible;
+		private bool _wasHudLayoutAgentVisible;
+
+		private static Hook<ShowAgentInterfaceDelegate>? _showHudLayoutHook;
+		private static Hook<HideAgentInterfaceDelegate>? _hideHudLayoutHook;
+
+		public unsafe delegate void ShowAgentInterfaceDelegate(AgentInterface* agentInterface);
+
+		public unsafe delegate void HideAgentInterfaceDelegate(AgentInterface* agentInterface);
+
+		public unsafe void ShowAgentInterfaceDetour(AgentInterface* agentInterface)
+		{
+			_showHudLayoutHook!.Original(agentInterface);
+			_isHudLayoutAgentVisible = true;
+		}
+
+		public unsafe void HideAgentInterfaceDetour(AgentInterface* agentInterface)
+		{
+			// Hide gets called more than once!
+			_hideHudLayoutHook!.Original(agentInterface);
+			_isHudLayoutAgentVisible = false;
+		}
+
+		private unsafe void SetupHooks()
+		{
+			try
+			{
+				AgentInterface* agentHudLayout = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalID((uint) AgentId.HudLayout);
+				_showHudLayoutHook = new(new(agentHudLayout->VTable->Show), ShowAgentInterfaceDetour);
+				_hideHudLayoutHook = new(new(agentHudLayout->VTable->Hide), HideAgentInterfaceDetour);
+			}
+			catch (Exception ex)
+			{
+				Logger.Error(ex, "SetupHooks", $"Failed to setup hooks: {ex}");
+			}
+		}
+
 		internal override bool Enable()
 		{
 			if (!base.Enable())
@@ -48,6 +88,12 @@ namespace SezzUI.Modules.GameUI
 			EventManager.Game.AddonsVisibilityChanged += OnAddonsVisibilityChanged;
 			EventManager.Game.HudLayoutActivated += OnHudLayoutActivated;
 
+			_wasHudLayoutAgentVisible = false;
+			_isHudLayoutAgentVisible = Plugin.GameGui.GetAddonByName("HudLayout", 1) != IntPtr.Zero;
+
+			_showHudLayoutHook?.Enable();
+			_hideHudLayoutHook?.Enable();
+
 			if (Game.Instance.IsInGame() && EventManager.Game.AreAddonsShown())
 			{
 				// Enabled module after logging in.
@@ -64,6 +110,9 @@ namespace SezzUI.Modules.GameUI
 				return false;
 			}
 
+			_showHudLayoutHook?.Disable();
+			_hideHudLayoutHook?.Disable();
+
 			EventManager.Game.AddonsLoaded -= OnAddonsLoaded;
 			EventManager.Game.AddonsVisibilityChanged -= OnAddonsVisibilityChanged;
 			EventManager.Game.HudLayoutActivated -= OnHudLayoutActivated;
@@ -76,7 +125,7 @@ namespace SezzUI.Modules.GameUI
 
 		private void OnHudLayoutActivated(uint hudLayout, bool ready)
 		{
-			if (Plugin.ClientState.IsLoggedIn && !_initialUpdate && !_isEditingHudLayouts && ready)
+			if (Plugin.ClientState.IsLoggedIn && !_initialUpdate && !_isHudLayoutAgentVisible && ready)
 			{
 				// Force update after switching layouts!
 #if DEBUG
@@ -186,8 +235,6 @@ namespace SezzUI.Modules.GameUI
 			}
 		}
 
-		private bool _isEditingHudLayouts;
-
 		public override void Draw(DrawState drawState)
 		{
 			if (!Enabled || drawState != DrawState.Visible && drawState != DrawState.Partially)
@@ -195,18 +242,17 @@ namespace SezzUI.Modules.GameUI
 				return;
 			}
 
-			// TODO
-			bool isEditingHudLayouts = Plugin.GameGui.GetAddonByName("HudLayout", 1) != IntPtr.Zero;
-			if (_isEditingHudLayouts != isEditingHudLayouts)
+			// Hide gets called more than once...
+			if (_wasHudLayoutAgentVisible != _isHudLayoutAgentVisible)
 			{
-				_isEditingHudLayouts = isEditingHudLayouts;
+				_wasHudLayoutAgentVisible = _isHudLayoutAgentVisible;
 #if DEBUG
 				if (_debugConfig.LogGeneral)
 				{
-					Logger.Debug("Draw", $"isEditingHudLayouts: {isEditingHudLayouts} -> {(isEditingHudLayouts ? "Show all addons!" : "Update!")}");
+					Logger.Debug("Draw", $"isEditingHudLayouts: {_isHudLayoutAgentVisible} -> {(_isHudLayoutAgentVisible ? "Show all addons!" : "Update!")}");
 				}
 #endif
-				if (isEditingHudLayouts)
+				if (_isHudLayoutAgentVisible)
 				{
 					// Show all
 					UpdateAddons(_expectedVisibility, true);
@@ -218,7 +264,7 @@ namespace SezzUI.Modules.GameUI
 				}
 			}
 
-			if (_isEditingHudLayouts)
+			if (_isHudLayoutAgentVisible)
 			{
 				return;
 			}
@@ -449,6 +495,8 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 			_debugConfig = ConfigurationManager.Instance.GetConfigObject<ElementHiderDebugConfig>();
 #endif
+			SetupHooks();
+
 			foreach (InteractableAreaConfig areaConfig in Config.Areas)
 			{
 				_areas.Add(new(areaConfig));
@@ -472,6 +520,8 @@ namespace SezzUI.Modules.GameUI
 
 		protected override void InternalDispose()
 		{
+			_showHudLayoutHook?.Dispose();
+			_hideHudLayoutHook?.Dispose();
 			Config.ValueChangeEvent -= OnConfigPropertyChanged;
 			Config.Areas.ForEach(x => x.ValueChangeEvent -= OnConfigPropertyChanged);
 			ConfigurationManager.Instance.Reset -= OnConfigReset;
