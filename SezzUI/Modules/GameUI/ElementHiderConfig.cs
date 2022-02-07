@@ -13,6 +13,10 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(1)]
 		public bool HideActionBarLock;
 
+		[Checkbox("Restore Visibility On Logout/Disable", help = "Sets visibility state of all selected elements to \"visible\" when you disable the module or logout.")]
+		[Order(5)]
+		public bool RestoreVisibility;
+
 		[NestedConfig("Area 1", 21)]
 		public InteractableAreaConfig Area1 = new();
 
@@ -50,6 +54,7 @@ namespace SezzUI.Interface.GeneralElements
 		{
 			Enabled = true;
 			HideActionBarLock = true;
+			RestoreVisibility = false;
 			Areas.ForEach(area => area.Reset());
 		}
 

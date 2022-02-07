@@ -116,7 +116,18 @@ namespace SezzUI.Modules.GameUI
 			EventManager.Game.AddonsLoaded -= OnAddonsLoaded;
 			EventManager.Game.AddonsVisibilityChanged -= OnAddonsVisibilityChanged;
 			EventManager.Game.HudLayoutActivated -= OnHudLayoutActivated;
-			UpdateAddons(_expectedVisibility, EventManager.Game.AreAddonsShown());
+
+			if (Config.RestoreVisibility)
+			{
+				// Show all addons
+				UpdateAddons(_expectedVisibility, EventManager.Game.AreAddonsShown());
+			}
+			else
+			{
+				// Show action bar lock
+				UpdateAddons(new() {{Addon.ActionBarLock, true}});
+			}
+
 			_expectedVisibility.Clear();
 			_currentVisibility.Clear();
 
