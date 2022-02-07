@@ -109,10 +109,11 @@ namespace SezzUI.GameEvents
 #if DEBUG
 			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventDutyFinderQueue)
 			{
-				Logger.Debug("OnTerritoryChanged", $"territoryType: {territoryType} QueueState2: {(Queue != null ? Queue->QueueState2 : 0)} QueueState3: {(Queue != null ? Queue->QueueState3 : 0)} Position: {Position} AverageWaitTime: {AverageWaitTime} EstimatedWaitTime: {EstimatedWaitTime} ContentFinderConditionId: {Queue->ContentFinderConditionId} ContentRouletteId: {Queue->ContentRouletteId} WaitingForDuty {Plugin.Condition[ConditionFlag.WaitingForDuty]} BoundByDuty {Plugin.Condition[ConditionFlag.BoundByDuty]} BoundByDuty56 {Plugin.Condition[ConditionFlag.BoundByDuty56]} BoundByDuty95 {Plugin.Condition[ConditionFlag.BoundByDuty95]}");
+				Logger.Debug("OnTerritoryChanged", $"territoryType: {territoryType} ContentFinderCondition.TerritoryType {ContentFinderCondition?.TerritoryType} QueueState2: {(Queue != null ? Queue->QueueState2 : 0)} QueueState3: {(Queue != null ? Queue->QueueState3 : 0)} Position: {Position} AverageWaitTime: {AverageWaitTime} EstimatedWaitTime: {EstimatedWaitTime} ContentFinderConditionId: {Queue->ContentFinderConditionId} ContentRouletteId: {Queue->ContentRouletteId} WaitingForDuty {Plugin.Condition[ConditionFlag.WaitingForDuty]} BoundByDuty {Plugin.Condition[ConditionFlag.BoundByDuty]} BoundByDuty56 {Plugin.Condition[ConditionFlag.BoundByDuty56]} BoundByDuty95 {Plugin.Condition[ConditionFlag.BoundByDuty95]}");
 			}
 #endif
-			if (_queueStarted != null && Queue != null && (Queue->IsInDuty() || Plugin.Condition[ConditionFlag.BoundByDuty] || Plugin.Condition[ConditionFlag.BoundByDuty56] || Plugin.Condition[ConditionFlag.BoundByDuty95] || Plugin.Condition[ConditionFlag.WaitingForDuty]))
+
+			if (_queueStarted != null && Queue != null && ((ContentFinderCondition?.TerritoryType.Row ?? ushort.MaxValue) == territoryType || Queue->IsInDuty() || Plugin.Condition[ConditionFlag.BoundByDuty] || Plugin.Condition[ConditionFlag.BoundByDuty56] || Plugin.Condition[ConditionFlag.BoundByDuty95] || Plugin.Condition[ConditionFlag.WaitingForDuty]))
 			{
 				InvokeLeft(); // In a duty, not in the queue.
 			}
@@ -186,8 +187,8 @@ namespace SezzUI.GameEvents
 			}
 		}
 
-		public ContentFinderCondition? ContentFinderCondition => Plugin.DataManager.GetExcelSheet<ContentFinderCondition>()?.GetRow(ContentFinderConditionId);
-		public ContentRoulette? ContentRoulette => Plugin.DataManager.GetExcelSheet<ContentRoulette>()?.GetRow(ContentRouletteId);
+		public ContentFinderCondition? ContentFinderCondition => ContentFinderConditionId != 0 ? Plugin.DataManager.GetExcelSheet<ContentFinderCondition>()?.GetRow(ContentFinderConditionId) : null;
+		public ContentRoulette? ContentRoulette => ContentRouletteId != 0 ? Plugin.DataManager.GetExcelSheet<ContentRoulette>()?.GetRow(ContentRouletteId) : null;
 
 		private unsafe void InvokeUpdate()
 		{
