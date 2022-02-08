@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Interface;
+using Dalamud.Interface.Components;
 using ImGuiNET;
 using Newtonsoft.Json;
 using SezzUI.Config;
@@ -215,18 +216,23 @@ namespace SezzUI.Interface.GeneralElements
 
 			ImGuiHelper.DrawNestIndicator(1);
 			changed |= DrawFontAssignmentCombo(PluginFontSize.ExtraExtraSmall);
+			ImGuiComponents.HelpMarker("JobHud Icon StatusBar Duration");
 
 			ImGuiHelper.DrawNestIndicator(1);
 			changed |= DrawFontAssignmentCombo(PluginFontSize.ExtraSmall);
+			ImGuiComponents.HelpMarker("JobHud Icon Charges");
 
 			ImGuiHelper.DrawNestIndicator(1);
 			changed |= DrawFontAssignmentCombo(PluginFontSize.Small);
+			ImGuiComponents.HelpMarker("Placeholders, PluginMenu Buttons");
 
 			ImGuiHelper.DrawNestIndicator(1);
 			changed |= DrawFontAssignmentCombo(PluginFontSize.Medium);
+			ImGuiComponents.HelpMarker("Default");
 
 			ImGuiHelper.DrawNestIndicator(1);
 			changed |= DrawFontAssignmentCombo(PluginFontSize.Large);
+			ImGuiComponents.HelpMarker("JubHud Aura Duration, JobHud Icon Cooldown/Duration");
 
 			return false;
 		}
