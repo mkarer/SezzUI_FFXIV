@@ -404,8 +404,28 @@ namespace SezzUI
 
 		private void OnDraw()
 		{
-			Plugin.UiBuilder.Draw -= OnDraw;
 			UpdateDalamudFont();
+
+			// Check if default fonts are built. It did fail once for me, so it might happen again...
+			if (!DefaultFonts.Values.All(fontKey => ImGuiFonts.ContainsKey(fontKey)))
+			{
+#if DEBUG
+				foreach (string fontKey in DefaultFonts.Values)
+				{
+					Logger.Debug("OnDraw", $"Font {fontKey} built: {ImGuiFonts.ContainsKey(fontKey)}");
+				}
+
+				if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsMediaManager)
+				{
+					Logger.Debug("OnDraw", "Default font aren't available, retrying...");
+				}
+#endif
+				Plugin.UiBuilder.RebuildFonts();
+			}
+			else
+			{
+				Plugin.UiBuilder.Draw -= OnDraw;
+			}
 		}
 
 		#endregion
