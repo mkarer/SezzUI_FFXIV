@@ -257,6 +257,12 @@ namespace SezzUI.GameEvents
 		{
 			SignatureHelper.Initialise(this);
 			_queue = (IntPtr) UIState.Instance() + 0x11978;
+#if DEBUG
+			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventDutyFinderQueue)
+			{
+				Logger.Debug("Initialize", $"Queue: 0x{_queue.ToInt64():X}");
+			}
+#endif
 			base.Initialize();
 		}
 
