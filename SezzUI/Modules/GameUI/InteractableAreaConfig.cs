@@ -23,6 +23,7 @@ namespace SezzUI.Interface.GeneralElements
 		[IntStringPair((int) Addon.ActionBar8, "Action Bar 8")]
 		[IntStringPair((int) Addon.ActionBar9, "Action Bar 9")]
 		[IntStringPair((int) Addon.ActionBar10, "Action Bar 10")]
+		[IntStringPair((int) Addon.PetActionBar, "Pet Action Bar")]
 		[IntStringPair((int) Addon.MainMenu, "Main Menu")]
 		[IntStringPair((int) Addon.ScenarioGuide, "Scenario Guide")]
 		[IntStringPair((int) Addon.QuestLog, "Duty List")]

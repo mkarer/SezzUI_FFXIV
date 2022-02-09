@@ -19,6 +19,7 @@ namespace SezzUI.Enums
 		ActionBar10,
 		ActionBarLock,
 		CrossHotbar,
+		PetActionBar,
 
 		Job = 200,
 		CastBar,
@@ -73,6 +74,7 @@ namespace SezzUI.Enums
 			{Addon.ActionBar8, "_ActionBar07"},
 			{Addon.ActionBar9, "_ActionBar08"},
 			{Addon.ActionBar10, "_ActionBar09"},
+			{Addon.PetActionBar, "_ActionBarEx"},
 			{Addon.CastBar, "_CastBar"},
 			{Addon.ExperienceBar, "_Exp"},
 			{Addon.InventoryGrid, "_BagWidget"},
