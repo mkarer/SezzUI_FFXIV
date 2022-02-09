@@ -27,10 +27,23 @@ namespace SezzUI.Modules.JobHud.Jobs
 				StatusId = 1249,
 				Size = new Vector2(256, 128) * 0.9f,
 				Image = "genericarc_05_90.png",
-				Position = new(0, -180),
+				Position = new(0, -160),
 				Color = new(249f / 255f, 51f / 255f, 243f / 255f, 1f),
 				MaxDuration = 15,
 				TextOffset = new(0, -28)
+			});
+
+			// Acceleration
+			hud.AddAlert(new()
+			{
+				StatusId = 1238,
+				Size = new Vector2(256, 128) * 1.1f,
+				Image = "genericarc_05_90.png",
+				Position = new(0, -190),
+				Color = new(249f / 255f, 51f / 255f, 91f / 255f, 1f),
+				MaxDuration = 15,
+				TextOffset = new(0, -34),
+				Level = 50
 			});
 
 			// Verstone
