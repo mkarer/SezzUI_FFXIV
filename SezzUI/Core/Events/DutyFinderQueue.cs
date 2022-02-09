@@ -1,9 +1,9 @@
 using System;
-using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Hooking;
 using Dalamud.Utility.Signatures;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.GeneratedSheets;
 using SezzUI.GameStructs;
 
@@ -11,16 +11,9 @@ namespace SezzUI.GameEvents
 {
 	internal sealed class DutyFinderQueue : BaseGameEvent
 	{
-		public static unsafe ContentsFinderQueue* Queue => (ContentsFinderQueue*) _queuePointer;
-		private static IntPtr _queuePointer = IntPtr.Zero;
+		public static unsafe ContentsFinderQueue* Queue => (ContentsFinderQueue*) _queue;
+		private static IntPtr _queue;
 		private static DateTime? _queueStarted;
-
-		[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-		private delegate void ProcessZonePacketDownDelegate(IntPtr a, uint targetId, IntPtr dataPtr);
-
-		[Signature("48 89 5C 24 ?? 56 48 83 EC 50 8B F2", DetourName = nameof(ProcessZonePacketDownDetour))] // ReSharper disable once UnusedAutoPropertyAccessor.Local
-		private Hook<ProcessZonePacketDownDelegate>? ProcessZonePacketDownHook { get; init; }
-
 		public unsafe byte Position => Queue != null && Queue->QueuePosition != byte.MaxValue ? Queue->QueuePosition : (byte) 0;
 		public unsafe byte AverageWaitTime => Queue != null ? Queue->AverageWaitTime : (byte) 0;
 		public byte EstimatedWaitTime => _queueStarted != null && AverageWaitTime > 0 ? (byte) Math.Clamp(Math.Ceiling((((DateTime) _queueStarted).AddMinutes(AverageWaitTime) - DateTime.Now).TotalMinutes), 0, byte.MaxValue) : (byte) 0;
@@ -29,32 +22,23 @@ namespace SezzUI.GameEvents
 		public unsafe bool IsReady => Queue != null ? Queue->IsReady() : false;
 		public unsafe byte ContentRouletteId => Queue != null ? Queue->ContentRouletteId : (byte) 0;
 		public unsafe uint ContentFinderConditionId => Queue != null ? Queue->ContentFinderConditionId : 0u;
+		public ContentFinderCondition? ContentFinderCondition => ContentFinderConditionId != 0 ? Plugin.DataManager.GetExcelSheet<ContentFinderCondition>()?.GetRow(ContentFinderConditionId) : null;
+		public ContentRoulette? ContentRoulette => ContentRouletteId != 0 ? Plugin.DataManager.GetExcelSheet<ContentRoulette>()?.GetRow(ContentRouletteId) : null;
 
-		private unsafe void FindQueueAddress()
-		{
-			// .text:000000000081E9AC	_sub_81E980_AgentContentsFinderRelated	lea     rcx, _unk_1EBE178_AgentContentsFinderStuff
-			//                                                                  lea     rcx, [7FF7DD1AE178h]
-			if (Plugin.SigScanner.TryScanText("48 8D 0D ?? ?? ?? ?? 4D 8B E0 4C 8B EA", out IntPtr result))
-			{
-				uint offset = BinaryPrimitives.ReadUInt32LittleEndian(new((byte*) result + 3, 4));
-				IntPtr data = new(result.ToInt64() + offset + 7);
+		private delegate IntPtr JoinQueueDelegate(IntPtr queue, int unused, byte unk1);
 
-#if DEBUG
-				if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventDutyFinderQueue)
-				{
-					Logger.Debug("FindQueueAddress", $"Struct Instruction Signature: 0x{result:X}");
-					Logger.Debug("FindQueueAddress", $"Struct Memory Offset: 0x{offset:X}");
-					Logger.Debug("FindQueueAddress", $"Struct Data Pointer: 0x{data:X}");
-				}
-#endif
-				_queuePointer = data;
-			}
-			else
-			{
-				Plugin.ChatGui.PrintError("SezzUI failed to find the duty finder queue address, queue data won't be available.");
-				Logger.Error("FindQueueAddress", "Signature not found!");
-			}
-		}
+		[Signature("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 8B FA 48 8B D9 45 84 C0", DetourName = nameof(JoinQueueDetour))] // ReSharper disable once UnusedAutoPropertyAccessor.Local, 6.0.8: 0x1407AC4A0
+		private Hook<JoinQueueDelegate>? JoinQueueHook { get; init; }
+
+		private delegate void UpdateQueueStateDelegate(IntPtr queue, byte state);
+
+		[Signature("40 53 48 83 EC 20 0F B6 59 55", DetourName = nameof(UpdateQueueStateDetour))] // ReSharper disable once UnusedAutoPropertyAccessor.Local, 6.0.8: 1407AD4E0
+		private Hook<UpdateQueueStateDelegate>? UpdateQueueStateHook { get; init; }
+
+		private delegate IntPtr OnQueueLeftDelegate(IntPtr queue, uint unk0, IntPtr objectId);
+
+		[Signature("4C 8B DC 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? C6 01 00", DetourName = nameof(OnQueueLeftDetour))] // ReSharper disable once UnusedAutoPropertyAccessor.Local, 6.0.8: 0x1407AC580
+		private Hook<OnQueueLeftDelegate>? OnQueueLeftHook { get; init; }
 
 		public delegate void DutyFinderEventDelegate();
 
@@ -73,7 +57,9 @@ namespace SezzUI.GameEvents
 				return false;
 			}
 
-			ProcessZonePacketDownHook?.Enable();
+			JoinQueueHook?.Enable();
+			OnQueueLeftHook?.Enable();
+			UpdateQueueStateHook?.Enable();
 			Plugin.ClientState.Logout += OnLogout; // Shouldn't be needed, better be safe though.
 
 			if (IsQueued)
@@ -91,7 +77,9 @@ namespace SezzUI.GameEvents
 				return false;
 			}
 
-			ProcessZonePacketDownHook?.Disable();
+			JoinQueueHook?.Disable();
+			OnQueueLeftHook?.Disable();
+			UpdateQueueStateHook?.Disable();
 			Plugin.ClientState.Logout -= OnLogout;
 			Plugin.ClientState.TerritoryChanged -= OnTerritoryChanged;
 			_queueStarted = null;
@@ -121,6 +109,11 @@ namespace SezzUI.GameEvents
 
 		private void InvokeJoined()
 		{
+			if (_queueStarted != null)
+			{
+				return;
+			}
+
 #if DEBUG
 			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventDutyFinderQueue)
 			{
@@ -187,8 +180,6 @@ namespace SezzUI.GameEvents
 			}
 		}
 
-		public ContentFinderCondition? ContentFinderCondition => ContentFinderConditionId != 0 ? Plugin.DataManager.GetExcelSheet<ContentFinderCondition>()?.GetRow(ContentFinderConditionId) : null;
-		public ContentRoulette? ContentRoulette => ContentRouletteId != 0 ? Plugin.DataManager.GetExcelSheet<ContentRoulette>()?.GetRow(ContentRouletteId) : null;
 
 		private unsafe void InvokeUpdate()
 		{
@@ -210,38 +201,58 @@ namespace SezzUI.GameEvents
 			}
 		}
 
-		private void ProcessZonePacketDownDetour(IntPtr a, uint targetId, IntPtr dataPtr)
+		private IntPtr JoinQueueDetour(IntPtr queue, int unused, byte unk1)
 		{
-			// TODO: Hook the function that updates the queue position, I couldn't find a signature.
-			try
+			IntPtr output = JoinQueueHook!.Original(queue, unused, unk1);
+
+#if DEBUG
+			LogQueueDetails("JoinQueueDetour");
+#endif
+			InvokeJoined();
+
+			return output;
+		}
+
+		private IntPtr OnQueueLeftDetour(IntPtr queue, uint unk0, IntPtr objectId)
+		{
+			IntPtr output = OnQueueLeftHook!.Original(queue, unk0, objectId);
+
+#if DEBUG
+			LogQueueDetails("OnQueueLeftDetour");
+#endif
+			InvokeLeft();
+
+			return output;
+		}
+
+		private void UpdateQueueStateDetour(IntPtr queue, byte state)
+		{
+			UpdateQueueStateHook!.Original(queue, state);
+
+#if DEBUG
+			LogQueueDetails("UpdateQueueStateDetour");
+#endif
+
+			if (IsReady)
 			{
-				ProcessZonePacketDownHook!.Original(a, targetId, dataPtr);
-
-				ushort opCode = (ushort) Marshal.ReadInt16(dataPtr, 0x2);
-				switch (opCode)
-				{
-					case 0x188: // Status Update
-						InvokeUpdate();
-						break;
-
-					case 0xa9: // Queue joined
-						InvokeJoined();
-						break;
-
-					case 0xeb: // Registration withdrawn
-						InvokeLeft();
-						break;
-
-					case 0x1c5: // Queue ready
-						InvokeReady();
-						break;
-				}
+				InvokeReady();
 			}
-			catch (Exception ex)
+			else
 			{
-				Logger.Error(ex, "ProcessZonePacketDownDetour", $"Error: {ex}");
+				InvokeUpdate();
 			}
 		}
+
+#if DEBUG
+		private unsafe void LogQueueDetails(string messagePrefix)
+		{
+			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventDutyFinderQueue)
+			{
+				string dutyName = ContentFinderConditionId != 0 ? ContentFinderCondition?.Name ?? "Unknown" : ContentRouletteId != 0 ? ContentRoulette?.Name ?? "Unknown" : "Unknown";
+				Logger.Debug(messagePrefix, $"QueueState2: {(Queue != null ? Queue->QueueState2 : 0)} QueueState3: {(Queue != null ? Queue->QueueState3 : 0)} Position: {Position} AverageWaitTime: {AverageWaitTime} EstimatedWaitTime: {EstimatedWaitTime} ContentFinderConditionId: {Queue->ContentFinderConditionId} ContentRouletteId: {Queue->ContentRouletteId} Duty: {dutyName}");
+			}
+		}
+#endif
 
 		#region Singleton
 
@@ -250,16 +261,18 @@ namespace SezzUI.GameEvents
 		public static DutyFinderQueue Instance => _ev.Value;
 		public static bool Initialized => _ev.IsValueCreated;
 
-		protected override void Initialize()
+		protected override unsafe void Initialize()
 		{
 			SignatureHelper.Initialise(this);
-			FindQueueAddress();
+			_queue = (IntPtr) UIState.Instance() + 0x11978;
 			base.Initialize();
 		}
 
 		protected override void InternalDispose()
 		{
-			ProcessZonePacketDownHook?.Dispose();
+			JoinQueueHook?.Dispose();
+			OnQueueLeftHook?.Dispose();
+			UpdateQueueStateHook?.Dispose();
 		}
 
 		#endregion
@@ -268,12 +281,9 @@ namespace SezzUI.GameEvents
 
 namespace SezzUI.GameStructs
 {
-	[StructLayout(LayoutKind.Explicit, Size = 0x100)]
+	[StructLayout(LayoutKind.Explicit, Size = 0xB0)]
 	public struct ContentsFinderQueue
 	{
-		// [FieldOffset(0x40)]
-		// public byte QueueState1;
-
 		[FieldOffset(0x75)]
 		public byte QueueState2; // 0 -> 1 -> 2 (Queued), 3 (Ready), 5 (In Duty)
 
@@ -282,9 +292,6 @@ namespace SezzUI.GameStructs
 
 		[FieldOffset(0x7A)]
 		public byte ContentRouletteId;
-
-		// [FieldOffset(0x7B)]
-		// public byte QueuePosition1;
 
 		[FieldOffset(0x82)]
 		public ushort ContentFinderConditionId;
