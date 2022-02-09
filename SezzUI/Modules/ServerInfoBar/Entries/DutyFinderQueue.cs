@@ -91,7 +91,7 @@ namespace SezzUI.Modules.ServerInfoBar.Entries
 			StringBuilder sb = new(ICON);
 
 			byte position = EventManager.DutyFinderQueue.Position;
-			if (position == 1 || EventManager.DutyFinderQueue.IsReady)
+			if (EventManager.DutyFinderQueue.IsReady)
 			{
 				sb.Append(" Ready!");
 			}
