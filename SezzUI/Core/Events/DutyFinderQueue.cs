@@ -181,7 +181,7 @@ namespace SezzUI.GameEvents
 		}
 
 
-		private unsafe void InvokeUpdate()
+		private void InvokeUpdate()
 		{
 			try
 			{
