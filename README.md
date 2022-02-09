@@ -90,6 +90,7 @@ While it should be stable I cannot guarantee that it won't crash. I'm using this
 	* Hide action bar lock.
 	* Action bar paging - swap the main action bar page while holding down a modifier key.
 	* Action bar button row reordering, inverts row order.
+	* Display duty finder queue information in "Server Info" bar.
 
 * Job HUD
 
@@ -254,7 +255,7 @@ FINAL FANTASY is a registered trademark of Square Enix Holdings Co., Ltd. FINAL 
 [issues-shield]: https://img.shields.io/github/issues/mkarer/SezzUI_FFXIV.svg?style=flat-square
 [issues-url]: https://github.com/mkarer/SezzUI_FFXIV/issues
 [license-shield]: https://img.shields.io/github/license/mkarer/SezzUI_FFXIV.svg?style=flat-square
-[license-url]: https://github.com/mkarer/SezzUI_FFXIV/blob/master/LICENSE.txt
+[license-url]: https://github.com/mkarer/SezzUI_FFXIV/blob/master/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/sezz
 [kofi-shield]: https://img.shields.io/badge/Ko--Fi-Donateblack.svg?style=flat-square&logo=kofi&colorB=555
