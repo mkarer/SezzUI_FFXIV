@@ -16,7 +16,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/mkarer/SezzUI_FFXIV">
-    <img src="https://github.com/mkarer/SezzUI_FFXIV/Assets/docs/logo@2x.png" alt="SezzUI" width="150" height="150" srcset="https://raw.githubusercontent.com/mkarer/SezzUI_FFXIV/master/Assets/docs/logo@2x.png 2x, https://raw.githubusercontent.com/mkarer/SezzUI_FFXIV/master/Assets/docs/logo.png 1x">
+    <img src="https://raw.githubusercontent.com/mkarer/SezzUI_FFXIV/master/Assets/docs/logo@2x.png" alt="SezzUI" width="150" height="150" srcset="https://raw.githubusercontent.com/mkarer/SezzUI_FFXIV/master/Assets/docs/logo@2x.png 2x, https://raw.githubusercontent.com/mkarer/SezzUI_FFXIV/master/Assets/docs/logo.png 1x">
   </a>
 
   <h3 align="center">SezzUI for Final Fantasy XIV</h3>
