@@ -102,7 +102,7 @@ namespace SezzUI
 
 		private static void LoadBanner()
 		{
-			string bannerImage = Path.Combine(Path.GetDirectoryName(AssemblyLocation) ?? "", "Media", "Images", "banner_short_x150.png");
+			string bannerImage = Path.Combine(Path.GetDirectoryName(AssemblyLocation) ?? "", "Media", "Images", "Banner150.png");
 
 			if (File.Exists(bannerImage))
 			{

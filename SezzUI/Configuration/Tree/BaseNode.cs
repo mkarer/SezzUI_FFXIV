@@ -162,7 +162,7 @@ namespace SezzUI.Configuration.Tree
 					TextureWrap? banner = Singletons.Get<ConfigurationManager>().BannerImage;
 					if (banner != null)
 					{
-						ImGui.SetCursorPos(new(12, 10));
+						ImGui.SetCursorPos(new(10, 12));
 						ImGui.Image(banner.ImGuiHandle, new(banner.Width, banner.Height));
 					}
 					else

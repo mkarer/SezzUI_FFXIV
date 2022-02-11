@@ -80,7 +80,7 @@ namespace SezzUI.Modules.PluginMenu
 		[Order(2)]
 		public string Command = "";
 
-		[InputText("Title", formattable = false, help = "Text/Icon ::IconFile - has to be in the plugin media folder, example: ::Images\\Icon.png\nText color can be changed using |cAARRGGBB notation.", isMonitored = true)]
+		[InputText("Title", formattable = false, help = "Text/Icon ::IconFile - has to be in the plugin's Media\\Icons folder, example: ::Icon.png\nText color can be changed using |cAARRGGBB notation.", isMonitored = true)]
 		[Order(3)]
 		public string Title = "";
 
