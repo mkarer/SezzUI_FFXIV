@@ -53,7 +53,7 @@ namespace SezzUI.Modules.JobHud
 				EventManager.Cooldown.Watch((uint) icon.CooldownActionId);
 			}
 
-			if (index == -1)
+			if (index < 0 || index > _icons.Count())
 			{
 				_icons.Add(icon);
 			}
