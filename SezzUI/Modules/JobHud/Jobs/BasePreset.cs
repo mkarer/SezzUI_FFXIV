@@ -1,8 +1,8 @@
 ﻿using System.Numerics;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 
-namespace SezzUI.Modules.JobHud
+namespace SezzUI.Modules.JobHud.Jobs
 {
 	public abstract class BasePreset
 	{

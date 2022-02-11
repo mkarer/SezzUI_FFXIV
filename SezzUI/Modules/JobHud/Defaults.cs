@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Numerics;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 
 namespace SezzUI.Modules.JobHud
 {

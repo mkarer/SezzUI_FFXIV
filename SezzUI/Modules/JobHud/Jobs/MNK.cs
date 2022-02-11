@@ -1,4 +1,4 @@
-using SezzUI.Helpers;
+using SezzUI.Helper;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {

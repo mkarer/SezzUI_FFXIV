@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using SezzUI.Interface.BarManager;
 
 namespace SezzUI.Modules.CooldownHud
 {
 	public class CooldownHudItem : IDisposable
 	{
-		public readonly List<BarManager.BarManager> BarManagers = new();
+		public readonly List<BarManager> BarManagers = new();
 		public uint ActionId;
 		public ushort LastPulseCharges = 100;
 

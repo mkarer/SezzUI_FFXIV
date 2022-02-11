@@ -1,7 +1,7 @@
 using System;
 using Dalamud.Game.Gui.Dtr;
 using Dalamud.Game.Text.SeStringHandling;
-using SezzUI.Config;
+using SezzUI.Configuration;
 
 namespace SezzUI.Modules.ServerInfoBar
 {
@@ -15,7 +15,7 @@ namespace SezzUI.Modules.ServerInfoBar
 
 		public void SetText(SeString? text = null)
 		{
-			if (text == null || !Enabled)
+			if (text == null || !(this as IPluginComponent).IsEnabled)
 			{
 				_dtrEntry?.Dispose();
 				_dtrEntry = null;
@@ -24,12 +24,12 @@ namespace SezzUI.Modules.ServerInfoBar
 
 			try
 			{
-				_dtrEntry ??= Plugin.DtrBar.Get(Title);
+				_dtrEntry ??= Service.DtrBar.Get(Title);
 				_dtrEntry.Text = text;
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, "SetText", $"Error creating DTR entry: {ex}");
+				Logger.Error($"Error creating DTR entry: {ex}");
 			}
 		}
 
@@ -38,7 +38,7 @@ namespace SezzUI.Modules.ServerInfoBar
 			Title = title;
 		}
 
-		protected override void InternalDispose()
+		protected override void OnDispose()
 		{
 			_dtrEntry?.Dispose();
 		}

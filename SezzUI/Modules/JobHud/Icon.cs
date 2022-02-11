@@ -6,10 +6,13 @@ using System.Numerics;
 using Dalamud.Game.ClientState.Statuses;
 using ImGuiNET;
 using ImGuiScene;
-using SezzUI.Animator;
 using SezzUI.Enums;
-using SezzUI.GameEvents;
-using SezzUI.Helpers;
+using SezzUI.Game;
+using SezzUI.Game.Events;
+using SezzUI.Game.Events.Cooldown;
+using SezzUI.Helper;
+using SezzUI.Interface.Animation;
+using SezzUI.Logging;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
 
@@ -48,8 +51,8 @@ namespace SezzUI.Modules.JobHud
 		public Bar Parent { get; }
 		internal PluginLogger Logger;
 
-		private readonly Animator.Animator _animatorBorder;
-		private readonly Animator.Animator _animatorTexture;
+		private readonly Animator _animatorBorder;
+		private readonly Animator _animatorTexture;
 		public IconFeatures Features = IconFeatures.Default;
 
 		/// <summary>
@@ -152,7 +155,7 @@ namespace SezzUI.Modules.JobHud
 					if (status != null)
 					{
 						StatusId = status.RowId;
-						Logger.Debug("SetStatusActionId", $"Found matching status for {value}: {StatusId}");
+						Logger.Debug($"Found matching status for {value}: {StatusId}");
 					}
 				}
 			}
@@ -255,7 +258,7 @@ namespace SezzUI.Modules.JobHud
 		{
 			if (Level > 0)
 			{
-				return Level <= (Plugin.ClientState.LocalPlayer?.Level ?? 0);
+				return Level <= (Service.ClientState.LocalPlayer?.Level ?? 0);
 			}
 
 			if (CooldownActionId != null)
@@ -271,7 +274,7 @@ namespace SezzUI.Modules.JobHud
 			return true;
 		}
 
-		public void Draw(Vector2 pos, Vector2 size, Animator.Animator animator, ImDrawListPtr drawList)
+		public void Draw(Vector2 pos, Vector2 size, Animator animator, ImDrawListPtr drawList)
 		{
 			IconState newState = _state;
 			float cooldownTextRemaining = 0;
@@ -285,7 +288,7 @@ namespace SezzUI.Modules.JobHud
 			bool hasEnoughResources = true;
 
 			bool failedCombatCondition = RequiresCombat && !EventManager.Combat.IsInCombat(false);
-			bool failedPetCondition = RequiresPet && !Plugin.BuddyList.PetBuddyPresent;
+			bool failedPetCondition = RequiresPet && !Service.BuddyList.PetBuddyPresent;
 			bool failedCustomCondition = CustomCondition != null && !CustomCondition();
 			bool failedInitialCondition = failedCombatCondition || failedPetCondition || failedCustomCondition;
 
@@ -633,9 +636,9 @@ namespace SezzUI.Modules.JobHud
 				float dur = 250; // duration of one full cycle
 				float frameTime = dur / n; // display duration of 1 single frame
 				uint step = Math.Min(n, Math.Max(1, (uint) Math.Ceiling((uint) (animator.TimeElapsed % dur) / frameTime))) - 1;
-				string image = MediaManager.Instance.BorderGlowTexture[step];
+				string image = Singletons.Get<MediaManager>().BorderGlowTexture[step];
 
-				TextureWrap? tex = ImageCache.Instance.GetImage(image);
+				TextureWrap? tex = Singletons.Get<ImageCache>().GetImage(image);
 				if (tex != null)
 				{
 					uint glowColor = ImGui.ColorConvertFloat4ToU32(new(0.95f, 0.95f, 0.32f, animator.Data.Opacity));

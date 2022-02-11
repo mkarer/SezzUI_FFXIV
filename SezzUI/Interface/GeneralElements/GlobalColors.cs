@@ -1,25 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using SezzUI.Config;
-using SezzUI.Config.Attributes;
+using SezzUI.Configuration;
+using SezzUI.Configuration.Attributes;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Helper;
+using SezzUI.Modules;
 
 namespace SezzUI.Interface.GeneralElements
 {
-	public class GlobalColors : IDisposable
+	public class GlobalColors : IPluginDisposable
 	{
-		#region Singleton
-
 		private MiscColorConfig _miscColorConfig = null!;
 		private RolesColorConfig _rolesColorConfig = null!;
 
 		private Dictionary<uint, PluginConfigColor> ColorMap = null!;
 
-		private GlobalColors()
+		public GlobalColors()
 		{
-			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
-			OnConfigReset(ConfigurationManager.Instance);
+			Singletons.Get<ConfigurationManager>().ResetEvent += OnConfigReset;
+			OnConfigReset(Singletons.Get<ConfigurationManager>());
 		}
 
 		private void OnConfigReset(ConfigurationManager sender)
@@ -91,12 +90,7 @@ namespace SezzUI.Interface.GeneralElements
 			};
 		}
 
-		public static void Initialize()
-		{
-			Instance = new();
-		}
-
-		public static GlobalColors Instance { get; private set; } = null!;
+		bool IPluginDisposable.IsDisposed { get; set; } = false;
 
 		~GlobalColors()
 		{
@@ -111,16 +105,15 @@ namespace SezzUI.Interface.GeneralElements
 
 		protected void Dispose(bool disposing)
 		{
-			if (!disposing)
+			if (!disposing || (this as IPluginDisposable).IsDisposed)
 			{
 				return;
 			}
 
-			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
-			Instance = null!;
-		}
+			Singletons.Get<ConfigurationManager>().ResetEvent -= OnConfigReset;
 
-		#endregion
+			(this as IPluginDisposable).IsDisposed = true;
+		}
 
 		public PluginConfigColor? ColorForJobId(uint jobId) => ColorMap.TryGetValue(jobId, out PluginConfigColor? color) ? color : null;
 
@@ -406,9 +399,5 @@ namespace SezzUI.Interface.GeneralElements
 		[DragFloat("Low Health Color Below Health %", min = 0f, max = 50f, velocity = 1f)]
 		[Order(30)]
 		public float LowHealthColorThreshold = 25f;
-
-		[Combo("Blend Mode", "LAB", "LChab", "XYZ", "RGB", "LChuv", "Luv", "Jzazbz", "JzCzhz")]
-		[Order(35)]
-		public BlendMode BlendMode = BlendMode.LAB;
 	}
 }

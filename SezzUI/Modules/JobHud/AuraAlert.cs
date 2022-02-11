@@ -4,10 +4,11 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Statuses;
 using ImGuiNET;
 using ImGuiScene;
-using SezzUI.Animator;
-using SezzUI.Core;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Game.Events;
+using SezzUI.Helper;
+using SezzUI.Interface;
+using SezzUI.Interface.Animation;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 
@@ -65,7 +66,7 @@ namespace SezzUI.Modules.JobHud
 			set
 			{
 				_imageFile = value;
-				_texture = value != null ? ImageCache.Instance.GetImage(MediaManager.Instance.GetOverlayFile(value)) : null;
+				_texture = value != null ? Singletons.Get<ImageCache>().GetImage(Singletons.Get<MediaManager>().GetOverlayFile(value)) : null;
 				if (_texture != null)
 				{
 					if (_size == Vector2.Zero)
@@ -167,7 +168,7 @@ namespace SezzUI.Modules.JobHud
 				return;
 			}
 
-			PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+			PlayerCharacter? player = Service.ClientState.LocalPlayer;
 			Status? status = null;
 			bool conditionsFailed = false;
 			if (player == null)

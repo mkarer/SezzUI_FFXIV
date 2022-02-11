@@ -4,9 +4,9 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using ImGuiNET;
-using SezzUI.Config;
+using SezzUI.Configuration;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 using SezzUI.Interface.GeneralElements;
 using SezzUI.Modules;
 using SezzUI.Modules.CooldownHud;
@@ -17,7 +17,7 @@ using SezzUI.Modules.ServerInfoBar;
 
 namespace SezzUI.Interface
 {
-	public class HudManager : IDisposable
+	public class HudManager : IPluginDisposable
 	{
 		private GridConfig? _gridConfig;
 		private HUDOptionsConfig? _hudOptions;
@@ -35,23 +35,24 @@ namespace SezzUI.Interface
 		private static PluginMenu? _pluginMenu;
 		private static ServerInfoBar? _serverInfoBar;
 
-		#region Singleton
-
-		public static void Initialize()
-		{
-			Instance = new();
-		}
-
-		public static HudManager Instance { get; private set; } = null!;
-
 		public HudManager()
 		{
-			ConfigurationManager.Instance.ResetEvent += OnConfigReset;
-			ConfigurationManager.Instance.LockEvent += OnHUDLockChanged;
-			ConfigurationManager.Instance.ConfigClosedEvent += OnConfigWindowClosed;
+			ConfigurationManager configurationManager = Singletons.Get<ConfigurationManager>();
+			configurationManager.ResetEvent += OnConfigReset;
+			configurationManager.LockEvent += OnHUDLockChanged;
+			configurationManager.ConfigClosedEvent += OnConfigWindowClosed;
+
+			Singletons.Register(new JobHud(configurationManager.GetConfigObject<JobHudConfig>()));
+			Singletons.Register(new CooldownHud(configurationManager.GetConfigObject<CooldownHudConfig>()));
+			Singletons.Register(new ActionBar(configurationManager.GetConfigObject<ActionBarConfig>()));
+			Singletons.Register(new ElementHider(configurationManager.GetConfigObject<ElementHiderConfig>()));
+			Singletons.Register(new PluginMenu(configurationManager.GetConfigObject<PluginMenuConfig>()));
+			Singletons.Register(new ServerInfoBar(configurationManager.GetConfigObject<ServerInfoBarConfig>()));
 
 			CreateHudElements();
 		}
+
+		bool IPluginDisposable.IsDisposed { get; set; } = false;
 
 		~HudManager()
 		{
@@ -66,7 +67,7 @@ namespace SezzUI.Interface
 
 		protected void Dispose(bool disposing)
 		{
-			if (!disposing)
+			if (!disposing || (this as IPluginDisposable).IsDisposed)
 			{
 				return;
 			}
@@ -76,13 +77,13 @@ namespace SezzUI.Interface
 			_draggableHudElements.Clear();
 			_hudElementsWithPreview.Clear();
 
-			ConfigurationManager.Instance.ResetEvent -= OnConfigReset;
-			ConfigurationManager.Instance.LockEvent -= OnHUDLockChanged;
+			ConfigurationManager configurationManager = Singletons.Get<ConfigurationManager>();
+			configurationManager.ResetEvent -= OnConfigReset;
+			configurationManager.LockEvent -= OnHUDLockChanged;
+			configurationManager.ConfigClosedEvent -= OnConfigWindowClosed;
 
-			Instance = null!;
+			(this as IPluginDisposable).IsDisposed = true;
 		}
-
-		#endregion
 
 		private void OnConfigReset(ConfigurationManager sender)
 		{
@@ -123,8 +124,8 @@ namespace SezzUI.Interface
 
 		private void CreateHudElements()
 		{
-			_gridConfig = ConfigurationManager.Instance.GetConfigObject<GridConfig>();
-			_hudOptions = ConfigurationManager.Instance.GetConfigObject<HUDOptionsConfig>();
+			_gridConfig = Singletons.Get<ConfigurationManager>().GetConfigObject<GridConfig>();
+			_hudOptions = Singletons.Get<ConfigurationManager>().GetConfigObject<HUDOptionsConfig>();
 
 			_modules = new();
 			_hudElementsWithPreview = new();
@@ -148,41 +149,41 @@ namespace SezzUI.Interface
 		private void CreateModules()
 		{
 			// Job HUD
-			_jobHud ??= JobHud.Initialize();
+			_jobHud ??= Singletons.Get<JobHud>();
 			_modules.Add(_jobHud);
 
 			// Cooldown HUD
-			_cooldownHud ??= CooldownHud.Initialize();
+			_cooldownHud ??= Singletons.Get<CooldownHud>();
 			_modules.Add(_cooldownHud);
 
 			// Game UI Tweaks
-			_actionBar ??= ActionBar.Initialize(); // We probably should load this module before ActionBars are getting hidden.
+			_actionBar ??= Singletons.Get<ActionBar>();
 			_modules.Add(_actionBar);
 
-			_elementHider ??= ElementHider.Initialize();
+			_elementHider ??= Singletons.Get<ElementHider>();
 			_modules.Add(_elementHider);
 
 			// Plugin Menu
-			_pluginMenu ??= PluginMenu.Initialize();
+			_pluginMenu ??= Singletons.Get<PluginMenu>();
 			_modules.Add(_pluginMenu);
 
 			// Server Info Bar
-			_serverInfoBar ??= ServerInfoBar.Initialize();
+			_serverInfoBar ??= Singletons.Get<ServerInfoBar>();
 			_modules.Add(_serverInfoBar);
 		}
 
 		public void Draw(DrawState drawState)
 		{
-			TooltipsHelper.Instance.RemoveTooltip(); // remove tooltip from previous frame
+			Singletons.Get<TooltipsHelper>().RemoveTooltip(); // remove tooltip from previous frame
 
 			// don't draw hud when it's not supposed to be visible
 			if (drawState == DrawState.HiddenNotInGame || drawState == DrawState.HiddenDisabled)
 			{
-				_modules.ForEach(module => module.Draw(drawState));
+				_modules.Where(module => (module as IPluginComponent).IsEnabled).ToList().ForEach(module => module.Draw(drawState));
 				return;
 			}
 
-			ClipRectsHelper.Instance.Update();
+			Singletons.Get<ClipRectsHelper>().Update();
 
 			ImGuiHelpers.ForceNextWindowMainViewport();
 			ImGui.SetNextWindowPos(Vector2.Zero);
@@ -199,7 +200,7 @@ namespace SezzUI.Interface
 			// don't draw grid during cutscenes or quest events
 			if (drawState == DrawState.HiddenCutscene || drawState == DrawState.Partially)
 			{
-				_modules.ForEach(module => module.Draw(drawState));
+				_modules.Where(module => (module as IPluginComponent).IsEnabled).ToList().ForEach(module => module.Draw(drawState));
 				ImGui.End();
 				return;
 			}
@@ -211,10 +212,10 @@ namespace SezzUI.Interface
 			}
 
 			// draw modules
-			_modules.ForEach(module => module.Draw(drawState));
+			_modules.Where(module => (module as IPluginComponent).IsEnabled).ToList().ForEach(module => module.Draw(drawState));
 
 			// draw draggable elements
-			if (!ConfigurationManager.Instance.LockHUD)
+			if (!Singletons.Get<ConfigurationManager>().LockHUD)
 			{
 				lock (_draggableHudElements)
 				{
@@ -223,7 +224,7 @@ namespace SezzUI.Interface
 			}
 
 			// draw tooltip
-			TooltipsHelper.Instance.Draw();
+			Singletons.Get<TooltipsHelper>().Draw();
 
 			ImGui.End();
 		}

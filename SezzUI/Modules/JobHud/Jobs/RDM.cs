@@ -1,7 +1,7 @@
 using System.Linq;
 using System.Numerics;
 using Dalamud.Game.ClientState.JobGauge.Types;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {
@@ -81,7 +81,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		private static bool IsManaficationNotOvercapping()
 		{
-			RDMGauge gauge = Plugin.JobGauges.Get<RDMGauge>();
+			RDMGauge gauge = Service.JobGauges.Get<RDMGauge>();
 			return gauge.BlackMana <= 50 && gauge.WhiteMana <= 50;
 		}
 	}

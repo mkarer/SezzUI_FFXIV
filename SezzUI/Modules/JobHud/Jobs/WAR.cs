@@ -1,5 +1,5 @@
 using System.Linq;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {
@@ -9,7 +9,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		public override void Configure(JobHud hud)
 		{
-			byte jobLevel = Plugin.ClientState.LocalPlayer?.Level ?? 0;
+			byte jobLevel = Service.ClientState.LocalPlayer?.Level ?? 0;
 
 			Bar bar1 = new(hud);
 			bar1.Add(new(bar1) {TextureStatusId = 2677, StatusId = 2677, MaxStatusDuration = 60}); // Surging Tempest

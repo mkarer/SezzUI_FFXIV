@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Numerics;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Numerics;
-using SezzUI.Config;
-using SezzUI.Config.Attributes;
+using SezzUI.Configuration;
+using SezzUI.Configuration.Attributes;
 using SezzUI.Enums;
 
-namespace SezzUI.Interface.GeneralElements
+namespace SezzUI.Modules.GameUI
 {
 	public class InteractableAreaConfig : AnchorablePluginConfigObject
 	{
@@ -12,7 +12,7 @@ namespace SezzUI.Interface.GeneralElements
 		[Order(0)]
 		public string Description = "";
 
-		[MultiSelectorAttribute("Elements", isMonitored = true)]
+		[MultiSelector("Elements", isMonitored = true)]
 		[IntStringPair((int) Addon.ActionBar1, "Action Bar 1")]
 		[IntStringPair((int) Addon.ActionBar2, "Action Bar 2")]
 		[IntStringPair((int) Addon.ActionBar3, "Action Bar 3")]

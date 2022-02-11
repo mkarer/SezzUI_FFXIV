@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-using SezzUI.Config;
-using SezzUI.Config.Attributes;
+using SezzUI.Configuration;
+using SezzUI.Configuration.Attributes;
 
-namespace SezzUI.Interface.GeneralElements
+namespace SezzUI.Modules.GameUI
 {
 	[Section("Game UI")]
 	[SubSection("Element Hiding", 0)]

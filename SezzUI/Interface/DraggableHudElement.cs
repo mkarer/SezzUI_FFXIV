@@ -1,9 +1,9 @@
 using System;
 using System.Numerics;
 using ImGuiNET;
-using SezzUI.Config;
+using SezzUI.Configuration;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 
 namespace SezzUI.Interface
 {
@@ -190,7 +190,7 @@ namespace SezzUI.Interface
 				}
 
 				// Update tooltip
-				TooltipsHelper.Instance.ShowTooltipOnCursor(tooltipText);
+				Singletons.Get<TooltipsHelper>().ShowTooltipOnCursor(tooltipText);
 			}
 
 			// Draw window

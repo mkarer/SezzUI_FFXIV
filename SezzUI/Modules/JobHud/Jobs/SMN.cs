@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using Dalamud.Game.ClientState.JobGauge.Types;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {
@@ -63,13 +63,13 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		public static bool IsMissingPet()
 		{
-			if ((Plugin.ClientState.LocalPlayer?.CurrentHp ?? 0) == 0)
+			if ((Service.ClientState.LocalPlayer?.CurrentHp ?? 0) == 0)
 			{
 				return false;
 			}
 
 			long now = Environment.TickCount64;
-			if (Plugin.BuddyList.PetBuddyPresent)
+			if (Service.BuddyList.PetBuddyPresent)
 			{
 				_petSeen = now;
 				return false;
@@ -78,15 +78,15 @@ namespace SezzUI.Modules.JobHud.Jobs
 			return now - _petSeen > 2500;
 		}
 
-		private static bool IsCarbuncleSummoned() => Plugin.BuddyList.PetBuddy != null && Plugin.BuddyList.PetBuddy.PetData.Id == 23;
+		private static bool IsCarbuncleSummoned() => Service.BuddyList.PetBuddy != null && Service.BuddyList.PetBuddy.PetData.Id == 23;
 
-		private static bool IsDemiBahamutSummoned() => Plugin.BuddyList.PetBuddy != null && Plugin.BuddyList.PetBuddy.PetData.Id == 10;
+		private static bool IsDemiBahamutSummoned() => Service.BuddyList.PetBuddy != null && Service.BuddyList.PetBuddy.PetData.Id == 10;
 
 		private static (float, float) GetDemiBahamutDuration()
 		{
 			if (IsDemiBahamutSummoned())
 			{
-				return (Plugin.JobGauges.Get<SMNGauge>().SummonTimerRemaining / 1000f, 15);
+				return (Service.JobGauges.Get<SMNGauge>().SummonTimerRemaining / 1000f, 15);
 			}
 
 			return (0, 0);

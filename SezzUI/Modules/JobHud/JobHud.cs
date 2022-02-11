@@ -5,12 +5,13 @@ using System.Numerics;
 using System.Reflection;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using JetBrains.Annotations;
-using SezzUI.Animator;
-using SezzUI.Config;
+using SezzUI.Configuration;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Game.Events;
+using SezzUI.Helper;
 using SezzUI.Interface;
-using SezzUI.Interface.GeneralElements;
+using SezzUI.Interface.Animation;
+using SezzUI.Modules.JobHud.Jobs;
 
 namespace SezzUI.Modules.JobHud
 {
@@ -20,10 +21,8 @@ namespace SezzUI.Modules.JobHud
 #if DEBUG
 		private readonly JobHudDebugConfig _debugConfig;
 #endif
-		private readonly Animator.Animator _animator = new();
+		private readonly Animator _animator = new();
 		public bool IsShown { get; private set; }
-
-		private bool _isEnabled;
 
 		internal Vector4 AccentColor;
 		public List<Bar> Bars { get; } = new();
@@ -43,10 +42,10 @@ namespace SezzUI.Modules.JobHud
 		public JobHud(JobHudConfig config) : base(config)
 		{
 #if DEBUG
-			_debugConfig = ConfigurationManager.Instance.GetConfigObject<JobHudDebugConfig>();
+			_debugConfig = Singletons.Get<ConfigurationManager>().GetConfigObject<JobHudDebugConfig>();
 #endif
 			config.ValueChangeEvent += OnConfigPropertyChanged;
-			ConfigurationManager.Instance.Reset += OnConfigReset;
+			Singletons.Get<ConfigurationManager>().Reset += OnConfigReset;
 
 			_animator.Timelines.OnShow.Data.DefaultOpacity = 0;
 			_animator.Timelines.OnShow.Data.DefaultOffset.Y = -20;
@@ -63,51 +62,37 @@ namespace SezzUI.Modules.JobHud
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, $"Error loading presets: {ex}");
+				Logger.Error($"Error loading presets: {ex}");
 			}
 
 			DraggableElements.Add(new JobHudDraggableHudElement(this, "Job HUD"));
-			Toggle(Config.Enabled);
+			(this as IPluginComponent).SetEnabledState(Config.Enabled);
 		}
 
-		internal override bool Enable()
+		protected override void OnEnable()
 		{
-			if (!base.Enable())
-			{
-				return false;
-			}
-
-			_isEnabled = !_isEnabled;
-			Plugin.ClientState.Logout += OnLogout;
+			Service.ClientState.Logout += OnLogout;
 			EventManager.Player.JobChanged += OnJobChanged;
 			EventManager.Player.LevelChanged += OnLevelChanged;
 			EventManager.Combat.EnteringCombat += OnEnteringCombat;
 			EventManager.Combat.LeavingCombat += OnLeavingCombat;
-			MediaManager.Instance.PathChanged += OnMediaPathChanged;
+			Singletons.Get<MediaManager>().PathChanged += OnMediaPathChanged;
 
 			Configure();
-			return true;
 		}
 
-		internal override bool Disable()
+		protected override void OnDisable()
 		{
-			if (!base.Disable())
-			{
-				return false;
-			}
-
-			_isEnabled = !_isEnabled;
 			Reset();
 
-			Plugin.ClientState.Logout -= OnLogout;
+			Service.ClientState.Logout -= OnLogout;
 			EventManager.Player.JobChanged -= OnJobChanged;
 			EventManager.Player.LevelChanged -= OnLevelChanged;
 			EventManager.Combat.EnteringCombat -= OnEnteringCombat;
 			EventManager.Combat.LeavingCombat -= OnLeavingCombat;
-			MediaManager.Instance.PathChanged -= OnMediaPathChanged;
+			Singletons.Get<MediaManager>().PathChanged -= OnMediaPathChanged;
 
 			OnLogout(null!, null!);
-			return true;
 		}
 
 		private void Reset()
@@ -124,13 +109,13 @@ namespace SezzUI.Modules.JobHud
 			}
 		}
 
-		private void OnMediaPathChanged(string path) => Reload();
+		private void OnMediaPathChanged(string path) => (this as IPluginComponent).Reload();
 
 		private void Configure()
 		{
 			lock (Bars)
 			{
-				PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+				PlayerCharacter? player = Service.ClientState.LocalPlayer;
 				uint jobId = player?.ClassJob.Id ?? 0;
 				byte level = player?.Level ?? 0;
 
@@ -181,14 +166,14 @@ namespace SezzUI.Modules.JobHud
 			}
 		}
 
-		public override void Draw(DrawState drawState)
+		protected override void OnDraw(DrawState drawState)
 		{
 			if (drawState != DrawState.Visible)
 			{
 				return;
 			}
 
-			if (!Config.Enabled || Plugin.ClientState.LocalPlayer == null || SpellHelper.GetStatus(1534, Unit.Player, false) != null)
+			if (Service.ClientState.LocalPlayer == null || SpellHelper.GetStatus(1534, Unit.Player, false) != null)
 			{
 				// 1534: Role-playing
 				// Condition.RolePlaying ?
@@ -232,7 +217,7 @@ namespace SezzUI.Modules.JobHud
 
 		public void AddAlert(AuraAlert alert)
 		{
-			if (alert.Level > 1 && (Plugin.ClientState.LocalPlayer?.Level ?? 0) < alert.Level)
+			if (alert.Level > 1 && (Service.ClientState.LocalPlayer?.Level ?? 0) < alert.Level)
 			{
 				alert.Dispose();
 			}
@@ -262,12 +247,11 @@ namespace SezzUI.Modules.JobHud
 			}
 		}
 
-		protected override void InternalDispose()
+		protected override void OnDispose()
 		{
-			Toggle(false);
 			_presets.Clear();
 
-			ConfigurationManager.Instance.Reset -= OnConfigReset;
+			Singletons.Get<ConfigurationManager>().Reset -= OnConfigReset;
 			_config.ValueChangeEvent -= OnConfigPropertyChanged;
 		}
 
@@ -281,34 +265,34 @@ namespace SezzUI.Modules.JobHud
 #if DEBUG
 					if (_debugConfig.LogConfigurationManager)
 					{
-						Logger.Debug("OnConfigPropertyChanged", $"Config.Enabled: {Config.Enabled}");
+						Logger.Debug($"Config.Enabled: {Config.Enabled}");
 					}
 #endif
-					Toggle(Config.Enabled);
+					(this as IPluginComponent).SetEnabledState(Config.Enabled);
 					break;
 			}
 		}
 
 		private void OnConfigReset(ConfigurationManager sender, PluginConfigObject config)
 		{
-			if (config is not JobHudConfig)
+			if (config != _config)
 			{
 				return;
 			}
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
-				Logger.Debug("OnConfigReset", "Resetting...");
+				Logger.Debug("Resetting...");
 			}
 #endif
-			Toggle(false);
+			(this as IPluginComponent).Disable();
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
-				Logger.Debug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
+				Logger.Debug($"Config.Enabled: {Config.Enabled}");
 			}
 #endif
-			Toggle(Config.Enabled);
+			(this as IPluginComponent).SetEnabledState(Config.Enabled);
 		}
 
 		#endregion
@@ -348,23 +332,6 @@ namespace SezzUI.Modules.JobHud
 			{
 				Configure();
 			}
-		}
-
-		#endregion
-
-		#region Singleton
-
-		public static JobHud Initialize()
-		{
-			Instance = new(ConfigurationManager.Instance.GetConfigObject<JobHudConfig>());
-			return Instance;
-		}
-
-		public static JobHud Instance { get; private set; } = null!;
-
-		~JobHud()
-		{
-			Dispose(false);
 		}
 
 		#endregion

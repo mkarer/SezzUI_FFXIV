@@ -1,7 +1,8 @@
-using SezzUI.Config;
-using SezzUI.Config.Attributes;
+using SezzUI.Configuration;
+using SezzUI.Configuration.Attributes;
+using SezzUI.Modules.ServerInfoBar.Entries;
 
-namespace SezzUI.Interface.GeneralElements
+namespace SezzUI.Modules.ServerInfoBar
 {
 	[Section("Server Info Bar")]
 	[SubSection("General", 0)]

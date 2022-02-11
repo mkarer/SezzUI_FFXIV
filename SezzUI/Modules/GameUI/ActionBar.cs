@@ -5,13 +5,11 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using SezzUI.Config;
+using SezzUI.Configuration;
 using SezzUI.Enums;
-using SezzUI.GameEvents;
-using SezzUI.GameStructs;
-using SezzUI.Interface.GeneralElements;
-using SezzUI.NativeMethods;
-using SezzUI.NativeMethods.RawInput;
+using SezzUI.Game.Events;
+using SezzUI.Game.RawInput;
+using SezzUI.Helper;
 
 namespace SezzUI.Modules.GameUI
 {
@@ -37,13 +35,8 @@ namespace SezzUI.Modules.GameUI
 		private IntPtr? _setPagePtr;
 		private ActionBarConfig Config => (ActionBarConfig) _config;
 
-		internal override bool Enable()
+		protected override void OnEnable()
 		{
-			if (!base.Enable())
-			{
-				return false;
-			}
-
 			EventManager.Game.AddonsLoaded += OnAddonsLoaded;
 			EventManager.Game.HudLayoutActivated += OnHudLayoutActivated;
 
@@ -55,25 +48,16 @@ namespace SezzUI.Modules.GameUI
 			}
 
 			EnableBarPaging();
-
-			return true;
 		}
 
-		internal override bool Disable()
+		protected override void OnDisable()
 		{
-			if (!base.Disable())
-			{
-				return false;
-			}
-
 			EventManager.Game.AddonsLoaded -= OnAddonsLoaded;
 			EventManager.Game.HudLayoutActivated -= OnHudLayoutActivated;
 
 			Reset();
 			_originalPositions.Clear();
 			DisableBarPaging();
-
-			return true;
 		}
 
 		private void Update()
@@ -101,10 +85,10 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 			if (_debugConfig.LogLayout)
 			{
-				Logger.Debug("UpdateActionBar", $"[{bar}] Updating...");
+				Logger.Debug($"[{bar}] Updating...");
 			}
 #endif
-			AtkUnitBase* addon = (AtkUnitBase*) Plugin.GameGui.GetAddonByName(Addons.Names[bar], 1);
+			AtkUnitBase* addon = (AtkUnitBase*) Service.GameGui.GetAddonByName(Addons.Names[bar], 1);
 			if ((IntPtr) addon != IntPtr.Zero)
 			{
 				ActionBarLayout layout = ((AddonActionBarBase*) addon)->Layout;
@@ -119,7 +103,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 						if (_debugConfig.LogLayout)
 						{
-							Logger.Debug("UpdateActionBar", $"[{bar}] Layout: {layout}");
+							Logger.Debug($"[{bar}] Layout: {layout}");
 						}
 #endif
 						bool updateNodes = addon->UldManager.NodeListCount == 0;
@@ -149,17 +133,17 @@ namespace SezzUI.Modules.GameUI
 						break;
 
 					case ActionBarLayout.Unknown:
-						Logger.Error("UpdateActionBar", $"[{bar}] Error: Unsupported Layout ID: {((AddonActionBarBase*) addon)->LayoutID}");
+						Logger.Error($"[{bar}] Error: Unsupported Layout ID: {((AddonActionBarBase*) addon)->LayoutID}");
 						break;
 
 					default:
-						Logger.Error("UpdateActionBar", $"[{bar}] Error: Unsupported Layout: {layout}");
+						Logger.Error($"[{bar}] Error: Unsupported Layout: {layout}");
 						break;
 				}
 			}
 			else
 			{
-				Logger.Error("UpdateActionBar", $"[{bar}] Error: Invalid addon: {Addons.Names[bar]}");
+				Logger.Error($"[{bar}] Error: Invalid addon: {Addons.Names[bar]}");
 			}
 		}
 
@@ -168,7 +152,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 			if (_debugConfig.LogLayout)
 			{
-				Logger.Debug("InvertActionBarRows", $"[{bar}] Inverting rows...");
+				Logger.Debug($"[{bar}] Inverting rows...");
 			}
 #endif
 			AtkUnitBase* addon = (AtkUnitBase*) addonPtr;
@@ -184,7 +168,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogLayout)
 					{
-						Logger.Debug("InvertActionBarRows", $"[{bar}] Swapping rows: {sourceRow} <> {targetRow}");
+						Logger.Debug($"[{bar}] Swapping rows: {sourceRow} <> {targetRow}");
 					}
 #endif
 					for (byte sourceButtonBase = 0; sourceButtonBase < _dimensions[layout].X; sourceButtonBase++)
@@ -194,7 +178,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 						if (_debugConfig.LogLayout)
 						{
-							Logger.Debug("InvertActionBarRows", $"[{bar}] Swapping buttons: {sourceButton} ({nodeIds[sourceButton]}) <> {targetButton} ({nodeIds[targetButton]})");
+							Logger.Debug($"[{bar}] Swapping buttons: {sourceButton} ({nodeIds[sourceButton]}) <> {targetButton} ({nodeIds[targetButton]})");
 						}
 #endif
 						AtkResNode* sourceNode = addon->GetNodeById(nodeIds[sourceButton]);
@@ -207,7 +191,7 @@ namespace SezzUI.Modules.GameUI
 						}
 						else
 						{
-							Logger.Error("InvertActionBarRows", $"[{bar}] Error: Nodes not found!");
+							Logger.Error($"[{bar}] Error: Nodes not found!");
 						}
 					}
 				}
@@ -223,7 +207,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 				if (_debugConfig.LogLayout)
 				{
-					Logger.Debug("CacheActionBarPositions", $"[{bar}] Ignored, already cached!");
+					Logger.Debug($"[{bar}] Ignored, already cached!");
 				}
 #endif
 				return true;
@@ -231,7 +215,7 @@ namespace SezzUI.Modules.GameUI
 
 			if (addon->UldManager.NodeListCount == 0)
 			{
-				Logger.Error("CacheActionBarPositions", $"[{bar}] Error: Addon has no child nodes!");
+				Logger.Error($"[{bar}] Error: Addon has no child nodes!");
 				return false;
 			}
 
@@ -255,7 +239,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 							if (_debugConfig.LogLayout)
 							{
-								Logger.Debug("CacheActionBarPositions", $"[{bar}] Caching node: ID: {node->NodeID} X: {node->X} Y: {node->Y}");
+								Logger.Debug($"[{bar}] Caching node: ID: {node->NodeID} X: {node->X} Y: {node->Y}");
 							}
 #endif
 							_originalPositions[bar].Add(node->NodeID, new(node->X, node->Y));
@@ -267,7 +251,7 @@ namespace SezzUI.Modules.GameUI
 
 			if (buttonsFound != _maxButtons)
 			{
-				Logger.Error("CacheActionBarPositions", $"[{bar}] Error: Invalid amount of buttons: {buttonsFound}/{_maxButtons}");
+				Logger.Error($"[{bar}] Error: Invalid amount of buttons: {buttonsFound}/{_maxButtons}");
 				_originalPositions.Remove(bar);
 				return false;
 			}
@@ -300,11 +284,11 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 			if (_debugConfig.LogLayout)
 			{
-				Logger.Debug("ResetActionBar", $"[{bar}] Resetting element: {Addons.Names[bar]}");
+				Logger.Debug($"[{bar}] Resetting element: {Addons.Names[bar]}");
 			}
 #endif
 
-			AtkUnitBase* addon = (AtkUnitBase*) Plugin.GameGui.GetAddonByName(Addons.Names[bar], 1);
+			AtkUnitBase* addon = (AtkUnitBase*) Service.GameGui.GetAddonByName(Addons.Names[bar], 1);
 			if ((IntPtr) addon != IntPtr.Zero)
 			{
 				foreach ((uint nodeId, Vector2<float> pos) in _originalPositions[bar])
@@ -316,13 +300,13 @@ namespace SezzUI.Modules.GameUI
 					}
 					else
 					{
-						Logger.Error("ResetActionBar", $"[{bar}] Error: Invalid node ID: {nodeId}");
+						Logger.Error($"[{bar}] Error: Invalid node ID: {nodeId}");
 					}
 				}
 			}
 			else
 			{
-				Logger.Error("ResetActionBar", $"[{bar}] Error: Invalid addon: {Addons.Names[bar]}");
+				Logger.Error($"[{bar}] Error: Invalid addon: {Addons.Names[bar]}");
 			}
 		}
 
@@ -368,12 +352,12 @@ namespace SezzUI.Modules.GameUI
 				return;
 			}
 
-			if (Plugin.SigScanner.TryScanText("E8 ?? ?? ?? ?? FF C3 83 FB 38 7E E0 BA ?? ?? ?? ?? 48 8B CF", out IntPtr setPagePtr)) // 6.0.5: ffxiv_dx11.exe+80D130
+			if (Service.SigScanner.TryScanText("E8 ?? ?? ?? ?? FF C3 83 FB 38 7E E0 BA ?? ?? ?? ?? 48 8B CF", out IntPtr setPagePtr)) // 6.0.5: ffxiv_dx11.exe+80D130
 			{
 #if DEBUG
 				if (_debugConfig.LogSigScanner)
 				{
-					Logger.Debug("ScanBarPagingSignatures", $"SetPage Address: {setPagePtr.ToInt64():X}");
+					Logger.Debug($"SetPage Address: {setPagePtr.ToInt64():X}");
 				}
 #endif
 				_setPagePtr = setPagePtr;
@@ -383,34 +367,34 @@ namespace SezzUI.Modules.GameUI
 				}
 				catch (Exception ex)
 				{
-					Logger.Error(ex, "ScanBarPagingSignatures", $"Error: {ex}");
+					Logger.Error(ex);
 				}
 			}
 			else
 			{
-				Logger.Error("ScanBarPagingSignatures", "Error: SetPage signature not found!");
+				Logger.Error("Error: SetPage signature not found!");
 			}
 		}
 
-		public override void Draw(DrawState state)
+		protected override void OnDraw(DrawState state)
 		{
 			if (_msgWindow != null && _msgWindow.Handle == IntPtr.Zero)
 			{
 				bool success = false;
 				if (!_msgWindow.CreateWindow())
 				{
-					Logger.Error("Draw", "Error: Failed to setup Bar Paging, CreateWindow failed!");
+					Logger.Error("Error: Failed to setup Bar Paging, CreateWindow failed!");
 				}
 				else if (!_msgWindow.RegisterDevices())
 				{
-					Logger.Error("Draw", "Error: Failed to setup Bar Paging: RegisterDevices failed! Bar Paging will now be disabled!");
+					Logger.Error("Error: Failed to setup Bar Paging: RegisterDevices failed! Bar Paging will now be disabled!");
 				}
 				else
 				{
 #if DEBUG
 					if (_debugConfig.LogBarPaging)
 					{
-						Logger.Debug("Draw", "Bar Paging enabled, RawInputNativeWindow successfully created.");
+						Logger.Debug("Bar Paging enabled, RawInputNativeWindow successfully created.");
 					}
 #endif
 					success = true;
@@ -419,8 +403,8 @@ namespace SezzUI.Modules.GameUI
 
 				if (!success)
 				{
-					Plugin.ChatGui.PrintError("SezzUI failed to setup Bar Paging - it will now be disabled and can only be enabled again after RESTARTING the game!");
-					Plugin.ChatGui.PrintError("You can (and should) check the Dalamud logfile for further details.");
+					Service.ChatGui.PrintError("SezzUI failed to setup Bar Paging - it will now be disabled and can only be enabled again after RESTARTING the game!");
+					Service.ChatGui.PrintError("You can (and should) check the Dalamud logfile for further details.");
 					Config.EnableBarPaging = false;
 					_msgWindow.Dispose();
 					_msgWindow = null;
@@ -433,7 +417,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 			// if (_debugConfig.LogRawInputEventHandling)
 			// {
-			// 	Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} 0x{vkCode:X} State: {state}");
+			// 	Logger.Debug($"Key: {vkCode} 0x{vkCode:X} State: {state}");
 			// }
 #endif
 
@@ -444,7 +428,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogRawInputEventHandling)
 					{
-						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} 0x{vkCode:X} State: {state} (HoldingCtrl)");
+						Logger.Debug($"Key: {vkCode} 0x{vkCode:X} State: {state} (HoldingCtrl)");
 					}
 #endif
 					SetActionBarPage((byte) Config.BarPagingPageCtrl);
@@ -454,7 +438,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogRawInputEventHandling)
 					{
-						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} 0x{vkCode:X} State: {state} (HoldingAlt)");
+						Logger.Debug($"Key: {vkCode} 0x{vkCode:X} State: {state} (HoldingAlt)");
 					}
 #endif
 					SetActionBarPage((byte) Config.BarPagingPageAlt);
@@ -478,7 +462,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogRawInputEventHandling)
 					{
-						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} 0x{vkCode:X} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (NoModifiers)");
+						Logger.Debug($"Key: {vkCode} 0x{vkCode:X} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (NoModifiers)");
 					}
 #endif
 					SetActionBarPage(0);
@@ -489,7 +473,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogRawInputEventHandling)
 					{
-						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} 0x{vkCode:X} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (ReleasedAlt)");
+						Logger.Debug($"Key: {vkCode} 0x{vkCode:X} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (ReleasedAlt)");
 					}
 #endif
 					SetActionBarPage(pressedCtrl ? (byte) Config.BarPagingPageCtrl : _pageDefault);
@@ -500,7 +484,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 					if (_debugConfig.LogRawInputEventHandling)
 					{
-						Logger.Debug("OnKeyStateChanged", $"Key: {vkCode} 0x{vkCode:X} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (ReleasedCtrl)");
+						Logger.Debug($"Key: {vkCode} 0x{vkCode:X} State: {state} Ctrl: {pressedCtrl} Alt {pressedAlt} (ReleasedCtrl)");
 					}
 #endif
 					SetActionBarPage(pressedAlt ? (byte) Config.BarPagingPageAlt : _pageDefault);
@@ -517,7 +501,7 @@ namespace SezzUI.Modules.GameUI
 
 			if (_setPagePtr == null)
 			{
-				Plugin.ChatGui.PrintError("Signature scan failed, Bar Paging will not be available!");
+				Service.ChatGui.PrintError("Signature scan failed, Bar Paging will not be available!");
 			}
 			else
 			{
@@ -549,7 +533,7 @@ namespace SezzUI.Modules.GameUI
 		/// </summary>
 		private unsafe void CheckStuckModifiers()
 		{
-			AtkUnitBase* actionBar = (AtkUnitBase*) Plugin.GameGui.GetAddonByName("_ActionBar", 1);
+			AtkUnitBase* actionBar = (AtkUnitBase*) Service.GameGui.GetAddonByName("_ActionBar", 1);
 			if ((IntPtr) actionBar == IntPtr.Zero || !actionBar->IsVisible)
 			{
 				return;
@@ -561,7 +545,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 				if (_debugConfig.LogBarPaging)
 				{
-					Logger.Debug("CheckStuckModifiers", "Swapping back to default page.");
+					Logger.Debug("Swapping back to default page.");
 				}
 #endif
 
@@ -606,19 +590,19 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 				if (_debugConfig.LogBarPaging)
 				{
-					Logger.Debug("SetActionBarPage", $"EventManager.Game.AreAddonsReady: {EventManager.Game.AreAddonsReady} _setActionBarPage {_setActionBarPage}");
+					Logger.Debug($"EventManager.Game.AreAddonsReady: {EventManager.Game.AreAddonsReady} _setActionBarPage {_setActionBarPage}");
 				}
 #endif
 				return;
 			}
 
-			AtkUnitBase* actionBar = (AtkUnitBase*) Plugin.GameGui.GetAddonByName("_ActionBar", 1);
+			AtkUnitBase* actionBar = (AtkUnitBase*) Service.GameGui.GetAddonByName("_ActionBar", 1);
 			if ((IntPtr) actionBar == IntPtr.Zero || !actionBar->IsVisible)
 			{
 #if DEBUG
 				if (_debugConfig.LogBarPaging)
 				{
-					Logger.Debug("SetActionBarPage", $"_ActionBar: {((IntPtr) actionBar).ToInt64():X} IsVisible {actionBar->IsVisible}");
+					Logger.Debug($"_ActionBar: {((IntPtr) actionBar).ToInt64():X} IsVisible {actionBar->IsVisible}");
 				}
 #endif
 				return;
@@ -631,11 +615,11 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 				if (_debugConfig.LogBarPaging)
 				{
-					Logger.Debug("SetActionBarPage", $"Page: {page}");
+					Logger.Debug($"Page: {page}");
 				}
 #endif
 
-				IntPtr agentActionBar = Plugin.GameGui.FindAgentInterface(actionBar);
+				IntPtr agentActionBar = Service.GameGui.FindAgentInterface(actionBar);
 				if (agentActionBar != IntPtr.Zero)
 				{
 					try
@@ -644,26 +628,24 @@ namespace SezzUI.Modules.GameUI
 					}
 					catch (Exception ex)
 					{
-						Logger.Error(ex, "SetActionBarPage", $"Error: {ex}");
+						Logger.Error(ex);
 					}
 				}
 			}
 #if DEBUG
 			else if (_debugConfig.LogBarPaging)
 			{
-				Logger.Debug("SetActionBarPage", $"HasPetHotbar: {actionBarBase->HasPetHotbar} HotbarID {actionBarBase->HotbarID}");
+				Logger.Debug($"HasPetHotbar: {actionBarBase->HasPetHotbar} HotbarID {actionBarBase->HotbarID}");
 			}
 #endif
 		}
 
 		#endregion
 
-		#region Singleton
-
-		private ActionBar(ActionBarConfig config) : base(config)
+		public ActionBar(ActionBarConfig config) : base(config)
 		{
 #if DEBUG
-			_debugConfig = ConfigurationManager.Instance.GetConfigObject<ActionBarDebugConfig>();
+			_debugConfig = Singletons.Get<ConfigurationManager>().GetConfigObject<ActionBarDebugConfig>();
 #endif
 			Config.ValueChangeEvent += OnConfigPropertyChanged;
 			Config.Bar1.ValueChangeEvent += OnConfigPropertyChanged;
@@ -677,21 +659,12 @@ namespace SezzUI.Modules.GameUI
 			Config.Bar9.ValueChangeEvent += OnConfigPropertyChanged;
 			Config.Bar10.ValueChangeEvent += OnConfigPropertyChanged;
 
-			ConfigurationManager.Instance.Reset += OnConfigReset;
-			Enable();
+			Singletons.Get<ConfigurationManager>().Reset += OnConfigReset;
+			(this as IPluginComponent).Enable();
 		}
 
-		public static ActionBar Initialize()
+		protected override void OnDispose()
 		{
-			Instance = new(ConfigurationManager.Instance.GetConfigObject<ActionBarConfig>());
-			return Instance;
-		}
-
-		public static ActionBar Instance { get; private set; } = null!;
-
-		protected override void InternalDispose()
-		{
-			Disable();
 			Config.Bar1.ValueChangeEvent -= OnConfigPropertyChanged;
 			Config.Bar2.ValueChangeEvent -= OnConfigPropertyChanged;
 			Config.Bar3.ValueChangeEvent -= OnConfigPropertyChanged;
@@ -703,15 +676,8 @@ namespace SezzUI.Modules.GameUI
 			Config.Bar9.ValueChangeEvent -= OnConfigPropertyChanged;
 			Config.Bar10.ValueChangeEvent -= OnConfigPropertyChanged;
 			Config.ValueChangeEvent -= OnConfigPropertyChanged;
-			ConfigurationManager.Instance.Reset -= OnConfigReset;
+			Singletons.Get<ConfigurationManager>().Reset -= OnConfigReset;
 		}
-
-		~ActionBar()
-		{
-			Dispose(false);
-		}
-
-		#endregion
 
 		#region Configuration Events
 
@@ -725,12 +691,12 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 						if (_debugConfig.LogConfigurationManager)
 						{
-							Logger.Debug("OnConfigPropertyChanged", $"{sender.GetType().Name}: {args.PropertyName}: {barConfig.Enabled}");
+							Logger.Debug($"{sender.GetType().Name}: {args.PropertyName}: {barConfig.Enabled}");
 						}
 #endif
 						if (barConfig.Enabled)
 						{
-							if (Game.Instance.IsInGame())
+							if (EventManager.Game.IsInGame())
 							{
 								// Update bar now.
 								// If not ingame all bars will be updated later anyways.
@@ -739,7 +705,7 @@ namespace SezzUI.Modules.GameUI
 						}
 						else
 						{
-							if (Game.Instance.IsInGame())
+							if (EventManager.Game.IsInGame())
 							{
 								ResetActionBar(barConfig.Bar, barConfig);
 							}
@@ -753,10 +719,10 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 						if (_debugConfig.LogConfigurationManager)
 						{
-							Logger.Debug("OnConfigPropertyChanged", $"{sender.GetType().Name}: {args.PropertyName}: {barConfig.InvertRowOrdering}");
+							Logger.Debug($"{sender.GetType().Name}: {args.PropertyName}: {barConfig.InvertRowOrdering}");
 						}
 #endif
-						if (barConfig.Enabled && Game.Instance.IsInGame())
+						if (barConfig.Enabled && EventManager.Game.IsInGame())
 						{
 							UpdateActionBar(barConfig.Bar, barConfig);
 						}
@@ -772,7 +738,7 @@ namespace SezzUI.Modules.GameUI
 #if DEBUG
 						if (_debugConfig.LogConfigurationManager)
 						{
-							Logger.Debug("OnConfigPropertyChanged", $"{args.PropertyName}: {Config.EnableBarPaging}");
+							Logger.Debug($"{args.PropertyName}: {Config.EnableBarPaging}");
 						}
 #endif
 						ToggleBarPaging(Config.EnableBarPaging);
@@ -783,14 +749,14 @@ namespace SezzUI.Modules.GameUI
 
 		private void OnConfigReset(ConfigurationManager sender, PluginConfigObject config)
 		{
-			if (config is not ActionBarConfig)
+			if (config != _config)
 			{
 				return;
 			}
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
-				Logger.Debug("OnConfigReset", "Resetting...");
+				Logger.Debug("Resetting...");
 			}
 #endif
 			Reset();

@@ -1,5 +1,5 @@
-﻿using SezzUI.Config;
-using SezzUI.Config.Attributes;
+﻿using SezzUI.Configuration;
+using SezzUI.Configuration.Attributes;
 
 namespace SezzUI.Interface.GeneralElements
 {

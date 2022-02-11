@@ -1,7 +1,7 @@
 ﻿using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 
-namespace SezzUI.Modules.CooldownHud
+namespace SezzUI.Modules.CooldownHud.Jobs
 {
 	public abstract class BasePreset
 	{

@@ -1,8 +1,7 @@
 ﻿using System.Numerics;
 using ImGuiNET;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 using SezzUI.Interface;
-using SezzUI.Interface.GeneralElements;
 
 namespace SezzUI.Modules.GameUI
 {

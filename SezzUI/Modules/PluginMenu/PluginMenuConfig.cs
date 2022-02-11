@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using System.Numerics;
 using Newtonsoft.Json;
-using SezzUI.Config;
-using SezzUI.Config.Attributes;
+using SezzUI.Configuration;
+using SezzUI.Configuration.Attributes;
 using SezzUI.Enums;
-using SezzUI.Modules.PluginMenu;
 
-namespace SezzUI.Interface.GeneralElements
+namespace SezzUI.Modules.PluginMenu
 {
 	[DisableParentSettings("Size")]
 	[Section("Plugin Menu")]

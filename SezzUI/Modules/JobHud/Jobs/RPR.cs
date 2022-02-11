@@ -3,7 +3,7 @@ using System.Numerics;
 using Dalamud.Game.ClientState.JobGauge.Types;
 using Dalamud.Game.ClientState.Statuses;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {
@@ -115,11 +115,11 @@ namespace SezzUI.Modules.JobHud.Jobs
 			return statusEnhancedGallows != null || statusEnhancedGibbet == null;
 		}
 
-		private static bool IsEnshrouded() => Plugin.JobGauges.Get<RPRGauge>().EnshroudedTimeRemaining > 0;
+		private static bool IsEnshrouded() => Service.JobGauges.Get<RPRGauge>().EnshroudedTimeRemaining > 0;
 
 		private static bool HasOneLemureLeft()
 		{
-			RPRGauge gauge = Plugin.JobGauges.Get<RPRGauge>();
+			RPRGauge gauge = Service.JobGauges.Get<RPRGauge>();
 			return gauge.EnshroudedTimeRemaining > 0 && gauge.LemureShroud == 1 && gauge.VoidShroud == 0;
 		}
 

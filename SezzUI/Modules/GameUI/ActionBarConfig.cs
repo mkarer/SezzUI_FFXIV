@@ -1,9 +1,8 @@
 ﻿using Newtonsoft.Json;
-using SezzUI.Config;
-using SezzUI.Config.Attributes;
-using SezzUI.Enums;
+using SezzUI.Configuration;
+using SezzUI.Configuration.Attributes;
 
-namespace SezzUI.Interface.GeneralElements
+namespace SezzUI.Modules.GameUI
 {
 	[DisableParentSettings("Enabled")]
 	[Section("Game UI")]

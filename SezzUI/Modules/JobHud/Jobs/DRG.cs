@@ -1,7 +1,7 @@
 using System.Numerics;
 using Dalamud.Game.ClientState.JobGauge.Types;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {
@@ -42,6 +42,6 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		private static bool HasLifeOfTheDragon() => GetLifeOfTheDragonDuration() > 0;
 
-		private static float GetLifeOfTheDragonDuration() => Plugin.JobGauges.Get<DRGGauge>().LOTDTimer / 1000f;
+		private static float GetLifeOfTheDragonDuration() => Service.JobGauges.Get<DRGGauge>().LOTDTimer / 1000f;
 	}
 }

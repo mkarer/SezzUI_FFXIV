@@ -5,12 +5,13 @@ using System.Reflection;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiScene;
-using SezzUI.BarManager;
-using SezzUI.Config;
+using SezzUI.Configuration;
 using SezzUI.Enums;
-using SezzUI.GameEvents;
-using SezzUI.Helpers;
-using SezzUI.Interface.GeneralElements;
+using SezzUI.Game.Events;
+using SezzUI.Game.Events.Cooldown;
+using SezzUI.Helper;
+using SezzUI.Interface.BarManager;
+using SezzUI.Modules.CooldownHud.Jobs;
 
 namespace SezzUI.Modules.CooldownHud
 {
@@ -18,7 +19,7 @@ namespace SezzUI.Modules.CooldownHud
 	{
 		private const ushort INITIAL_PULSE_CHARGES = 100; // Unreachable amount of charges.
 		private const ushort NO_PULSE_AFTER_ELAPSED_FINISHED = 3000; // Don't show pulse if the cooldown finished ages ago...
-		private readonly List<BarManager.BarManager> _barManagers = new();
+		private readonly List<BarManager> _barManagers = new();
 		private readonly Dictionary<uint, CooldownHudItem> _cooldowns = new();
 		private readonly Dictionary<uint, BasePreset> _presets = new();
 		private readonly Dictionary<uint, int?> _iconOverride = new();
@@ -60,7 +61,7 @@ namespace SezzUI.Modules.CooldownHud
 		{
 			lock (_cooldowns)
 			{
-				PlayerCharacter? player = Plugin.ClientState.LocalPlayer;
+				PlayerCharacter? player = Service.ClientState.LocalPlayer;
 				uint jobId = player?.ClassJob.Id ?? 0;
 				byte level = player?.Level ?? 0;
 
@@ -82,7 +83,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 				if (_debugConfig.LogGeneral)
 				{
-					Logger.Debug("Configure", $"Setting up cooldowns for Job ID: {_currentJobId} Level: {_currentLevel}");
+					Logger.Debug($"Setting up cooldowns for Job ID: {_currentJobId} Level: {_currentLevel}");
 				}
 #endif
 
@@ -110,7 +111,7 @@ namespace SezzUI.Modules.CooldownHud
 		{
 			foreach ((uint actionId, _) in _cooldowns)
 			{
-				CooldownData data = Cooldown.Instance.Get(actionId);
+				CooldownData data = EventManager.Cooldown.Get(actionId);
 				if (data.IsActive)
 				{
 					OnCooldownChanged(actionId, data, false);
@@ -118,7 +119,7 @@ namespace SezzUI.Modules.CooldownHud
 			}
 		}
 
-		public override void Draw(DrawState state)
+		protected override void OnDraw(DrawState state)
 		{
 			if (state != DrawState.Visible && state != DrawState.Partially)
 			{
@@ -151,7 +152,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 				if (_debugConfig.LogCooldownPulseAnimations)
 				{
-					Logger.Debug("Draw", $"Removing CooldownPulse: Action ID: {pulse.ActionId} Charges: {pulse.Charges} Created: {pulse.Created} Expired: {expired} Animating: {pulse.Animator.IsAnimating}");
+					Logger.Debug($"Removing CooldownPulse: Action ID: {pulse.ActionId} Charges: {pulse.Charges} Created: {pulse.Created} Expired: {expired} Animating: {pulse.Animator.IsAnimating}");
 				}
 #endif
 				pulse.Dispose();
@@ -159,7 +160,7 @@ namespace SezzUI.Modules.CooldownHud
 			}
 		}
 
-		public void RegisterCooldown(uint actionId, BarManager.BarManager barManager, bool adjustAction = true)
+		public void RegisterCooldown(uint actionId, BarManager barManager, bool adjustAction = true)
 		{
 			switch (actionId)
 			{
@@ -182,13 +183,13 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 					if (_debugConfig.LogCooldownRegistration)
 					{
-						Logger.Debug("RegisterCooldown", $"Action ID: {actionId} Bar Manager ID: {barManager.Id} ({string.Join(", ", _cooldowns[actionId].BarManagers.Select(x => x.Id))})");
+						Logger.Debug($"Action ID: {actionId} Bar Manager ID: {barManager.Id} ({string.Join(", ", _cooldowns[actionId].BarManagers.Select(x => x.Id))})");
 					}
 #endif
 				}
 				else
 				{
-					Logger.Error("RegisterCooldown", $"Action ID: {actionId} Failed to register cooldown - already registered to Bar Manager ID: {barManager.Id}");
+					Logger.Error($"Action ID: {actionId} Failed to register cooldown - already registered to Bar Manager ID: {barManager.Id}");
 				}
 			}
 			else
@@ -204,7 +205,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 				if (_debugConfig.LogCooldownRegistration)
 				{
-					Logger.Debug("RegisterCooldown", $"Action ID: {actionId} Bar Manager ID: {barManager.Id}");
+					Logger.Debug($"Action ID: {actionId} Bar Manager ID: {barManager.Id}");
 				}
 #endif
 			}
@@ -212,14 +213,14 @@ namespace SezzUI.Modules.CooldownHud
 
 		public void RegisterCooldown(uint actionId, string barManagerId, bool adjustAction = true)
 		{
-			BarManager.BarManager? barManager = _barManagers.Where(x => x.Id == barManagerId).FirstOrDefault();
+			BarManager? barManager = _barManagers.Where(x => x.Id == barManagerId).FirstOrDefault();
 			if (barManager != null)
 			{
 				RegisterCooldown(actionId, barManager, adjustAction);
 			}
 			else
 			{
-				Logger.Error("RegisterCooldown", $"Action ID: {actionId} Failed to register cooldown - invalid Bar Manager ID: {barManagerId}");
+				Logger.Error($"Action ID: {actionId} Failed to register cooldown - invalid Bar Manager ID: {barManagerId}");
 			}
 		}
 
@@ -231,7 +232,7 @@ namespace SezzUI.Modules.CooldownHud
 			}
 			else
 			{
-				Logger.Error("RegisterCooldown", $"Action ID: {actionId} Failed to register cooldown - invalid Bar Manager Index: {barManagerIndex}");
+				Logger.Error($"Action ID: {actionId} Failed to register cooldown - invalid Bar Manager Index: {barManagerIndex}");
 			}
 		}
 
@@ -251,32 +252,20 @@ namespace SezzUI.Modules.CooldownHud
 			texture = SpellHelper.GetIconTexture((ushort?) iconId, out bool _);
 		}
 
-		internal override bool Enable()
+		protected override void OnEnable()
 		{
-			if (!base.Enable())
-			{
-				return false;
-			}
-
 			EventManager.Player.JobChanged += OnJobChanged;
 			EventManager.Player.LevelChanged += OnLevelChanged;
 			EventManager.Cooldown.CooldownStarted += OnCooldownStarted;
 			EventManager.Cooldown.CooldownChanged += OnCooldownChanged;
 			EventManager.Cooldown.CooldownFinished += OnCooldownFinished;
-			MediaManager.Instance.PathChanged += OnMediaPathChanged;
+			Singletons.Get<MediaManager>().PathChanged += OnMediaPathChanged;
 
 			Configure();
-
-			return true;
 		}
 
-		internal override bool Disable()
+		protected override void OnDisable()
 		{
-			if (!base.Disable())
-			{
-				return false;
-			}
-
 			Reset();
 
 			EventManager.Player.JobChanged -= OnJobChanged;
@@ -286,9 +275,7 @@ namespace SezzUI.Modules.CooldownHud
 			EventManager.Cooldown.CooldownChanged -= OnCooldownChanged;
 			EventManager.Cooldown.CooldownFinished -= OnCooldownFinished;
 
-			MediaManager.Instance.PathChanged -= OnMediaPathChanged;
-
-			return true;
+			Singletons.Get<MediaManager>().PathChanged -= OnMediaPathChanged;
 		}
 
 		#region Cooldown Pulse
@@ -303,13 +290,13 @@ namespace SezzUI.Modules.CooldownHud
 			if (!_cooldowns.ContainsKey(actionId))
 			{
 				// This should actually never happen.
-				Logger.Error("Pulse", $"Action ID: {actionId} Tried to show cooldown pulse for unknown cooldown!");
+				Logger.Error($"Action ID: {actionId} Tried to show cooldown pulse for unknown cooldown!");
 				return;
 			}
 #if DEBUG
 			if (_debugConfig.LogCooldownPulseAnimations)
 			{
-				Logger.Debug("Pulse", $"Action ID: {actionId} Charges: {charges}");
+				Logger.Debug($"Action ID: {actionId} Charges: {charges}");
 			}
 #endif
 			_cooldowns[actionId].LastPulseCharges = charges;
@@ -336,18 +323,16 @@ namespace SezzUI.Modules.CooldownHud
 
 		#endregion
 
-		#region Singleton
-
 		public CooldownHud(CooldownHudConfig config) : base(config)
 		{
 			_config.ValueChangeEvent += OnConfigPropertyChanged;
-			ConfigurationManager.Instance.Reset += OnConfigReset;
+			Singletons.Get<ConfigurationManager>().Reset += OnConfigReset;
 #if DEBUG
-			_debugConfig = ConfigurationManager.Instance.GetConfigObject<CooldownHudDebugConfig>();
+			_debugConfig = Singletons.Get<ConfigurationManager>().GetConfigObject<CooldownHudDebugConfig>();
 #endif
 
 			// TEMPORARY CONFIGURATION
-			BarManager.BarManager primaryBarManager = new("Primary");
+			BarManager primaryBarManager = new("Primary");
 			primaryBarManager.Anchor = DrawAnchor.BottomLeft;
 			primaryBarManager.Position = new(22f, -634f);
 			primaryBarManager.BarConfig.Style = BarManagerStyle.Ruri;
@@ -355,7 +340,7 @@ namespace SezzUI.Modules.CooldownHud
 			primaryBarManager.BarConfig.ShowDurationRemaining = true;
 			_barManagers.Add(primaryBarManager);
 
-			BarManager.BarManager secondaryBarManager = new("Secondary");
+			BarManager secondaryBarManager = new("Secondary");
 			secondaryBarManager.Anchor = DrawAnchor.Center;
 			secondaryBarManager.Position = new(369, 0);
 			secondaryBarManager.BarConfig.Style = BarManagerStyle.Ruri;
@@ -369,37 +354,22 @@ namespace SezzUI.Modules.CooldownHud
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex, $"Error loading presets: {ex}");
+				Logger.Error($"Error loading presets: {ex}");
 			}
 
-			Toggle(Config.Enabled);
+			(this as IPluginComponent).SetEnabledState(Config.Enabled);
 		}
 
-		public static CooldownHud Initialize()
-		{
-			Instance = new(ConfigurationManager.Instance.GetConfigObject<CooldownHudConfig>());
-			return Instance;
-		}
-
-		public static CooldownHud Instance { get; private set; } = null!;
-
-		protected override void InternalDispose()
+		protected override void OnDispose()
 		{
 			_config.ValueChangeEvent -= OnConfigPropertyChanged;
-			ConfigurationManager.Instance.Reset -= OnConfigReset;
+			Singletons.Get<ConfigurationManager>().Reset -= OnConfigReset;
 
 			_barManagers.ForEach(manager => manager.Dispose());
 			_barManagers.Clear();
 			_presets.Clear();
 			_iconOverride.Clear();
 		}
-
-		~CooldownHud()
-		{
-			Dispose(false);
-		}
-
-		#endregion
 
 		#region Configuration Events
 
@@ -411,14 +381,14 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 					if (_debugConfig.LogConfigurationManager)
 					{
-						Logger.Debug("OnConfigPropertyChanged", $"{args.PropertyName}: {Config.Enabled}");
+						Logger.Debug($"{args.PropertyName}: {Config.Enabled}");
 					}
 #endif
-					Toggle(Config.Enabled);
+					(this as IPluginComponent).SetEnabledState(Config.Enabled);
 					break;
 
 				case "BarManagerRelatedProperty": // TODO: Check sender type for BarManager related settings...
-					if (Enabled)
+					if ((this as IPluginComponent).IsEnabled)
 					{
 						ConfigureBarManagers();
 					}
@@ -429,7 +399,7 @@ namespace SezzUI.Modules.CooldownHud
 
 		private void OnConfigReset(ConfigurationManager sender, PluginConfigObject config)
 		{
-			if (config is not CooldownHudConfig)
+			if (config != _config)
 			{
 				return;
 			}
@@ -437,22 +407,22 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
-				Logger.Debug("OnConfigReset", "Resetting...");
+				Logger.Debug("Resetting...");
 			}
 #endif
-			Disable();
+			(this as IPluginComponent).Disable();
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
-				Logger.Debug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
+				Logger.Debug($"Config.Enabled: {Config.Enabled}");
 			}
 #endif
-			Toggle(Config.Enabled);
+			(this as IPluginComponent).SetEnabledState(Config.Enabled);
 		}
 
 		#endregion
 
-		private void OnMediaPathChanged(string path) => Reload();
+		private void OnMediaPathChanged(string path) => (this as IPluginComponent).Reload();
 
 		#region Game Events
 
@@ -491,7 +461,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 				if (_debugConfig.LogCooldownEventHandling)
 				{
-					Logger.Debug("OnCooldownStarted", $"BarManager Result: {result} Active Bars: {barManager.Count}");
+					Logger.Debug($"BarManager Result: {result} Active Bars: {barManager.Count}");
 				}
 #endif
 			});
@@ -511,7 +481,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 				if (_debugConfig.LogCooldownEventHandling)
 				{
-					Logger.Debug("OnCooldownChanged", $"BarManager Result: {result} Active Bars: {barManager.Count}");
+					Logger.Debug($"BarManager Result: {result} Active Bars: {barManager.Count}");
 				}
 #endif
 
@@ -542,7 +512,7 @@ namespace SezzUI.Modules.CooldownHud
 			if (elapsedFinish <= NO_PULSE_AFTER_ELAPSED_FINISHED && CanPulse(actionId, data.CurrentCharges))
 			{
 				// Bar is very likely not available anymore here, because it was removed by BarManager.RemoveExpired
-				GetActionDisplayData(actionId, data.Type, out string? name, out TextureWrap? texture);
+				GetActionDisplayData(actionId, data.Type, out string? _, out TextureWrap? texture);
 				Pulse(actionId, texture, data.CurrentCharges);
 			}
 
@@ -553,7 +523,7 @@ namespace SezzUI.Modules.CooldownHud
 #if DEBUG
 				if (_debugConfig.LogCooldownEventHandling)
 				{
-					Logger.Debug("OnCooldownFinished", $"BarManager Result: {result} Active Bars: {barManager.Count}");
+					Logger.Debug($"BarManager Result: {result} Active Bars: {barManager.Count}");
 				}
 #endif
 			});

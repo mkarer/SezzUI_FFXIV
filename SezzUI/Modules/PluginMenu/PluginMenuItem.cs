@@ -3,8 +3,8 @@ using System.Linq;
 using System.Numerics;
 using ImGuiNET;
 using ImGuiScene;
-using SezzUI.Helpers;
-using SezzUI.Interface.GeneralElements;
+using SezzUI.Helper;
+using SezzUI.Logging;
 
 namespace SezzUI.Modules.PluginMenu
 {
@@ -33,7 +33,7 @@ namespace SezzUI.Modules.PluginMenu
 
 			if (Config.Title.StartsWith("::") && Config.Title.Length > 2)
 			{
-				Texture = ImageCache.Instance.GetImage(MediaManager.Instance.GetIconFile(Config.Title.Substring(2)));
+				Texture = Singletons.Get<ImageCache>().GetImage(Singletons.Get<MediaManager>().GetIconFile(Config.Title.Substring(2)));
 				if (Texture != null)
 				{
 					contentSize.X = contentSize.Y;
@@ -78,7 +78,7 @@ namespace SezzUI.Modules.PluginMenu
 				}
 				catch (Exception ex)
 				{
-					Logger.Error(ex, $"[PluginMenuItem::GetPluginToggleState] Error: {ex}");
+					Logger.Error($"[PluginMenuItem::GetPluginToggleState] Error: {ex}");
 				}
 			}
 

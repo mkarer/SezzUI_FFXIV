@@ -1,6 +1,7 @@
 using System.Collections.Generic;
-using SezzUI.Config;
-using SezzUI.Interface.GeneralElements;
+using SezzUI.Configuration;
+using SezzUI.Helper;
+using SezzUI.Modules.PluginMenu;
 using SezzUI.Modules.ServerInfoBar.Entries;
 
 namespace SezzUI.Modules.ServerInfoBar
@@ -14,80 +15,44 @@ namespace SezzUI.Modules.ServerInfoBar
 
 		private readonly List<Entry> _entries;
 
-		internal override bool Enable()
+		protected override void OnEnable()
 		{
-			if (!base.Enable())
-			{
-				return false;
-			}
-
-			_entries.ForEach(entry => entry.Toggle(entry.Config.Enabled));
-			return true;
+			_entries.ForEach(entry => (entry as IPluginComponent).SetEnabledState(entry.Config.Enabled));
 		}
 
-		internal override bool Disable()
+		protected override void OnDisable()
 		{
-			if (!base.Disable())
-			{
-				return false;
-			}
-
-			Logger.Debug("Disable entries");
-
-			_entries.ForEach(entry => entry.Disable());
-			return true;
+			_entries.ForEach(entry => (entry as IPluginComponent).Disable());
 		}
-
-		#region Constructor
 
 		public ServerInfoBar(PluginConfigObject config) : base(config)
 		{
 #if DEBUG
-			_debugConfig = ConfigurationManager.Instance.GetConfigObject<PluginMenuDebugConfig>();
+			_debugConfig = Singletons.Get<ConfigurationManager>().GetConfigObject<PluginMenuDebugConfig>();
 #endif
 			Config.ValueChangeEvent += OnConfigPropertyChanged;
-			ConfigurationManager.Instance.Reset += OnConfigReset;
+			Singletons.Get<ConfigurationManager>().Reset += OnConfigReset;
 
 			_entries = new()
 			{
 				new DutyFinderQueue(Config.DutyFinderQueueStatus)
 			};
 
-			Toggle(Config.Enabled);
+			(this as IPluginComponent).SetEnabledState(Config.Enabled);
 		}
 
-		#endregion
-
-		#region Finalizer
-
-		protected override void InternalDispose()
+		protected override void OnDispose()
 		{
-			Disable();
-
 			_entries.ForEach(entry => entry.Dispose());
 
 			Config.ValueChangeEvent -= OnConfigPropertyChanged;
-			ConfigurationManager.Instance.Reset -= OnConfigReset;
+			Singletons.Get<ConfigurationManager>().Reset -= OnConfigReset;
 		}
-
-		#endregion
-
-		#region Singleton
-
-		public static ServerInfoBar Initialize()
-		{
-			Instance = new(ConfigurationManager.Instance.GetConfigObject<ServerInfoBarConfig>());
-			return Instance;
-		}
-
-		public static ServerInfoBar Instance { get; private set; } = null!;
 
 		~ServerInfoBar()
 		{
 			Dispose(false);
 		}
-
-		#endregion
 
 		#region Configuration Events
 
@@ -99,17 +64,17 @@ namespace SezzUI.Modules.ServerInfoBar
 #if DEBUG
 					if (_debugConfig.LogConfigurationManager)
 					{
-						Logger.Debug("OnConfigPropertyChanged", $"{args.PropertyName}: {Config.Enabled}");
+						Logger.Debug($"{args.PropertyName}: {Config.Enabled}");
 					}
 #endif
-					Toggle(Config.Enabled);
+					(this as IPluginComponent).SetEnabledState(Config.Enabled);
 					break;
 			}
 		}
 
 		private void OnConfigReset(ConfigurationManager sender, PluginConfigObject config)
 		{
-			if (config is not ServerInfoBarConfig)
+			if (config != _config)
 			{
 				return;
 			}
@@ -117,17 +82,17 @@ namespace SezzUI.Modules.ServerInfoBar
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
-				Logger.Debug("OnConfigReset", "Resetting...");
+				Logger.Debug("Resetting...");
 			}
 #endif
-			Disable();
+			(this as IPluginComponent).Disable();
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
-				Logger.Debug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
+				Logger.Debug($"Config.Enabled: {Config.Enabled}");
 			}
 #endif
-			Toggle(Config.Enabled);
+			(this as IPluginComponent).SetEnabledState(Config.Enabled);
 		}
 
 		#endregion

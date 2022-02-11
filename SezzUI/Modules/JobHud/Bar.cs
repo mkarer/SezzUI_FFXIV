@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Game.Events;
+using SezzUI.Helper;
+using SezzUI.Interface.Animation;
 
 namespace SezzUI.Modules.JobHud
 {
@@ -64,7 +66,7 @@ namespace SezzUI.Modules.JobHud
 			Size.X = IconSize.X * _icons.Count() + (_icons.Count() - 1) * IconPadding;
 		}
 
-		public void Draw(Vector2 anchor, Animator.Animator animator)
+		public void Draw(Vector2 anchor, Animator animator)
 		{
 			if (!HasIcons)
 			{

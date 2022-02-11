@@ -2,7 +2,9 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Game.ClientState.JobGauge.Types;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Game;
+using SezzUI.Game.Events;
+using SezzUI.Helper;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {
@@ -49,13 +51,13 @@ namespace SezzUI.Modules.JobHud.Jobs
 			roleBar.Add(new(roleBar) {TextureActionId = 2241, CooldownActionId = 2241, StatusId = 488, MaxStatusDuration = 20}, 1); // Shade Shift
 		}
 
-		private static bool IsMeisuiUsable() => Plugin.JobGauges.Get<NINGauge>().Ninki <= 50 && IsHidden();
+		private static bool IsMeisuiUsable() => Service.JobGauges.Get<NINGauge>().Ninki <= 50 && IsHidden();
 
 		private static bool IsHidden() => SpellHelper.GetStatus(507, Unit.Player) != null || SpellHelper.GetStatus(614, Unit.Player) != null;
 
 		private static (float, float) GetHutonDuration()
 		{
-			NINGauge gauge = Plugin.JobGauges.Get<NINGauge>();
+			NINGauge gauge = Service.JobGauges.Get<NINGauge>();
 			if (gauge.HutonTimer != 0)
 			{
 				return (gauge.HutonTimer / 1000f, 60f);

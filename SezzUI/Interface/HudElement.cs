@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using Dalamud.Game.ClientState.Objects.Types;
-using SezzUI.Config;
+using SezzUI.Configuration;
 
 namespace SezzUI.Interface
 {

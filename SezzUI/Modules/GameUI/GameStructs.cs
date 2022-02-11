@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SezzUI.Enums;
 
-namespace SezzUI.GameStructs
+namespace SezzUI.Modules.GameUI
 {
 	[StructLayout(LayoutKind.Explicit, Size = 0x248)]
 	public struct AddonActionBarBase

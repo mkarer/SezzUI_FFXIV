@@ -2,7 +2,7 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Game.ClientState.JobGauge.Types;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {
@@ -72,10 +72,10 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		private static bool IsInAstralFireOrIsInUmbralIce()
 		{
-			BLMGauge gauge = Plugin.JobGauges.Get<BLMGauge>();
+			BLMGauge gauge = Service.JobGauges.Get<BLMGauge>();
 			return gauge.InAstralFire || gauge.InUmbralIce;
 		}
 
-		private static bool IsParadoxActive() => Plugin.JobGauges.Get<BLMGauge>().IsParadoxActive;
+		private static bool IsParadoxActive() => Service.JobGauges.Get<BLMGauge>().IsParadoxActive;
 	}
 }

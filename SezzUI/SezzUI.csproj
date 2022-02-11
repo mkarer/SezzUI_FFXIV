@@ -12,9 +12,9 @@
     <!-- Assembly Configuration -->
     <PropertyGroup>
         <AssemblyName>SezzUI</AssemblyName>
-        <AssemblyVersion>0.0.0.11</AssemblyVersion>
-        <FileVersion>0.0.0.11</FileVersion>
-        <InformationalVersion>0.0.0.11</InformationalVersion>
+        <AssemblyVersion>0.0.0.12</AssemblyVersion>
+        <FileVersion>0.0.0.12</FileVersion>
+        <InformationalVersion>0.0.0.12</InformationalVersion>
     </PropertyGroup>
 
     <!-- Build Configuration -->
@@ -119,6 +119,19 @@
     </ItemGroup>
     <ItemGroup>
         <File Include="NativeMethods.txt" />
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Update="Logging\PluginLogger.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>PluginLogger.tt</DependentUpon>
+      </Compile>
+    </ItemGroup>
+    <ItemGroup>
+      <None Update="Logging\PluginLogger.tt">
+        <Generator>TextTemplatingFileGenerator</Generator>
+        <LastGenOutput>PluginLogger.cs</LastGenOutput>
+      </None>
     </ItemGroup>
 
     <!-- ILRepack Task-->

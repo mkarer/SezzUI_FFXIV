@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SezzUI.Enums
+namespace SezzUI.Modules.GameUI
 {
 	public enum Addon
 	{

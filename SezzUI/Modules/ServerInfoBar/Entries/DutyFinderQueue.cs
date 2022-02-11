@@ -1,7 +1,8 @@
 using System.Text;
-using SezzUI.Config;
-using SezzUI.Config.Attributes;
-using SezzUI.Interface.GeneralElements;
+using SezzUI.Configuration;
+using SezzUI.Configuration.Attributes;
+using SezzUI.Game.Events;
+using SezzUI.Helper;
 
 namespace SezzUI.Modules.ServerInfoBar.Entries
 {
@@ -13,15 +14,13 @@ namespace SezzUI.Modules.ServerInfoBar.Entries
 		public DutyFinderQueue(DutyFinderQueueEntryConfig config) : base(config, "SezzUI: Duty Finder Queue Status")
 		{
 			Config.ValueChangeEvent += OnConfigPropertyChanged;
-			ConfigurationManager.Instance.Reset += OnConfigReset;
+			Singletons.Get<ConfigurationManager>().Reset += OnConfigReset;
 		}
 
-		protected override void InternalDispose()
+		protected override void OnDispose()
 		{
 			Config.ValueChangeEvent -= OnConfigPropertyChanged;
-			ConfigurationManager.Instance.Reset += OnConfigReset;
-
-			base.InternalDispose();
+			Singletons.Get<ConfigurationManager>().Reset -= OnConfigReset;
 		}
 
 		private void OnConfigReset(ConfigurationManager configurationManager, PluginConfigObject config)
@@ -31,7 +30,7 @@ namespace SezzUI.Modules.ServerInfoBar.Entries
 				return;
 			}
 
-			Toggle(Config.Enabled);
+			(this as IPluginComponent).SetEnabledState(Config.Enabled);
 			Update();
 		}
 
@@ -39,7 +38,7 @@ namespace SezzUI.Modules.ServerInfoBar.Entries
 		{
 			if (args.PropertyName == "Enabled")
 			{
-				Toggle(Config.Enabled);
+				(this as IPluginComponent).SetEnabledState(Config.Enabled);
 			}
 			else
 			{
@@ -47,38 +46,24 @@ namespace SezzUI.Modules.ServerInfoBar.Entries
 			}
 		}
 
-		internal override bool Enable()
+		protected override void OnEnable()
 		{
-			if (!base.Enable())
-			{
-				return false;
-			}
-
 			EventManager.DutyFinderQueue.Update += Update;
 			EventManager.DutyFinderQueue.Joined += Update;
 			EventManager.DutyFinderQueue.Left += ClearText;
 			EventManager.DutyFinderQueue.Ready += Update;
 
 			Update();
-
-			return true;
 		}
 
-		internal override bool Disable()
+		protected override void OnDisable()
 		{
-			if (!base.Disable())
-			{
-				return false;
-			}
-
 			EventManager.DutyFinderQueue.Update -= Update;
 			EventManager.DutyFinderQueue.Joined -= Update;
 			EventManager.DutyFinderQueue.Left -= ClearText;
 			EventManager.DutyFinderQueue.Ready -= Update;
 
 			ClearText();
-
-			return true;
 		}
 
 		private void Update()
@@ -126,10 +111,7 @@ namespace SezzUI.Modules.ServerInfoBar.Entries
 			SetText(sb.ToString());
 		}
 	}
-}
 
-namespace SezzUI.Interface.GeneralElements
-{
 	public class DutyFinderQueueEntryConfig : PluginConfigObject
 	{
 		[InputText("Text Segment Separator", formattable = false, isMonitored = true)]

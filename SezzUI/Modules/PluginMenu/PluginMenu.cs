@@ -6,12 +6,10 @@ using System.Numerics;
 using System.Text.RegularExpressions;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using JetBrains.Annotations;
-using SezzUI.Config;
+using SezzUI.Configuration;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 using SezzUI.Interface;
-using SezzUI.Interface.GeneralElements;
 using XivCommon;
 
 namespace SezzUI.Modules.PluginMenu
@@ -33,9 +31,9 @@ namespace SezzUI.Modules.PluginMenu
 
 		private bool _forceUpdate = true;
 
-		public override unsafe void Draw(DrawState drawState)
+		protected override unsafe void OnDraw(DrawState drawState)
 		{
-			if (!Enabled || drawState != DrawState.Visible && drawState != DrawState.Partially)
+			if (drawState != DrawState.Visible && drawState != DrawState.Partially)
 			{
 				return;
 			}
@@ -51,7 +49,7 @@ namespace SezzUI.Modules.PluginMenu
 				return;
 			}
 
-			IntPtr nowLoading = Plugin.GameGui.GetAddonByName("NowLoading", 1);
+			IntPtr nowLoading = Service.GameGui.GetAddonByName("NowLoading", 1);
 			AtkResNode* nowLoadingNode = ((AtkUnitBase*) nowLoading)->RootNode;
 			float opacity = !nowLoadingNode->IsVisible ? 1f : Math.Min(160f, 160 - nowLoadingNode->Alpha_2) / 160f; // At about 172 the _NaviMap is hidden here.
 			if (opacity <= 0)
@@ -145,7 +143,7 @@ namespace SezzUI.Modules.PluginMenu
 							if (now - _lastError > 5000)
 							{
 								_lastError = now;
-								Logger.Error(ex, "Draw", $"Error: {ex}");
+								Logger.Error(ex);
 							}
 						}
 					}
@@ -157,7 +155,7 @@ namespace SezzUI.Modules.PluginMenu
 					// Tooltip
 					if (item.Config.Tooltip != "" && ImGui.IsMouseHoveringRect(buttonPos, buttonPos + item.Size))
 					{
-						TooltipsHelper.Instance.ShowTooltipOnCursor(item.Config.Tooltip);
+						Singletons.Get<TooltipsHelper>().ShowTooltipOnCursor(item.Config.Tooltip);
 					}
 
 					if (i + 1 < enabledItems.Count())
@@ -170,38 +168,26 @@ namespace SezzUI.Modules.PluginMenu
 			ImGuiHelper.PopButtonStyle();
 		}
 
-		internal override bool Enable()
+		protected override void OnEnable()
 		{
-			if (!base.Enable())
-			{
-				return false;
-			}
-
-			MediaManager.Instance.PathChanged += OnMediaPathChanged;
-			MediaManager.Instance.FontAssignmentsChanged += OnFontAssignmentsChanged;
-			Plugin.UiBuilder.BuildFonts += OnBuildFonts;
+			Singletons.Get<MediaManager>().PathChanged += OnMediaPathChanged;
+			Singletons.Get<MediaManager>().FontAssignmentsChanged += OnFontAssignmentsChanged;
+			Service.PluginInterface.UiBuilder.BuildFonts += OnBuildFonts;
 
 			_forceUpdate = true;
 			UpdateItems();
-			return true;
 		}
 
-		internal override bool Disable()
+		protected override void OnDisable()
 		{
-			if (!base.Disable())
-			{
-				return false;
-			}
-
-			MediaManager.Instance.PathChanged -= OnMediaPathChanged;
-			MediaManager.Instance.FontAssignmentsChanged -= OnFontAssignmentsChanged;
-			Plugin.UiBuilder.BuildFonts -= OnBuildFonts;
-			return true;
+			Singletons.Get<MediaManager>().PathChanged -= OnMediaPathChanged;
+			Singletons.Get<MediaManager>().FontAssignmentsChanged -= OnFontAssignmentsChanged;
+			Service.PluginInterface.UiBuilder.BuildFonts -= OnBuildFonts;
 		}
 
 		private void UpdateItems()
 		{
-			if (Enabled && Plugin.DrawState != DrawState.Unknown)
+			if ((this as IPluginComponent).IsEnabled && Plugin.DrawState != DrawState.Unknown)
 			{
 				// ImGui isn't ready while DrawState is Unknown and will crash if we try to calculate item text sizes!
 				_items.ForEach(item => item.Update());
@@ -229,25 +215,21 @@ namespace SezzUI.Modules.PluginMenu
 			}
 		}
 
-		#region Constructor
-
-		private PluginMenu(AnchorablePluginConfigObject config) : base(config)
+		public PluginMenu(AnchorablePluginConfigObject config) : base(config)
 		{
 #if DEBUG
-			_debugConfig = ConfigurationManager.Instance.GetConfigObject<PluginMenuDebugConfig>();
+			_debugConfig = Singletons.Get<ConfigurationManager>().GetConfigObject<PluginMenuDebugConfig>();
 #endif
 			_xivCommon = new();
 			Config.ValueChangeEvent += OnConfigPropertyChanged;
 			Config.Items.ForEach(x => x.ValueChangeEvent += OnConfigPropertyChanged);
 
-			ConfigurationManager.Instance.Reset += OnConfigReset;
+			Singletons.Get<ConfigurationManager>().Reset += OnConfigReset;
 			_items = new() {new(Config.Item1), new(Config.Item2), new(Config.Item3), new(Config.Item4), new(Config.Item5), new(Config.Item6), new(Config.Item7), new(Config.Item8), new(Config.Item9), new(Config.Item10)};
 
 			DraggableElements.Add(new PluginMenuDraggableHudElement(this, "Plugin Menu"));
-			Toggle(Config.Enabled);
+			(this as IPluginComponent).SetEnabledState(Config.Enabled);
 		}
-
-		#endregion
 
 		#region Configuration Events
 
@@ -255,7 +237,7 @@ namespace SezzUI.Modules.PluginMenu
 		{
 			_lastError = 0;
 
-			if (sender is PluginMenuItemConfig itemConfig)
+			if (sender is PluginMenuItemConfig)
 			{
 				UpdateItems();
 				return;
@@ -267,17 +249,17 @@ namespace SezzUI.Modules.PluginMenu
 #if DEBUG
 					if (_debugConfig.LogConfigurationManager)
 					{
-						Logger.Debug("OnConfigPropertyChanged", $"{args.PropertyName}: {Config.Enabled}");
+						Logger.Debug($"{args.PropertyName}: {Config.Enabled}");
 					}
 #endif
-					Toggle(Config.Enabled);
+					(this as IPluginComponent).SetEnabledState(Config.Enabled);
 					break;
 			}
 		}
 
 		private void OnConfigReset(ConfigurationManager sender, PluginConfigObject config)
 		{
-			if (config is not PluginMenuConfig)
+			if (config != _config)
 			{
 				return;
 			}
@@ -286,53 +268,31 @@ namespace SezzUI.Modules.PluginMenu
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
-				Logger.Debug("OnConfigReset", "Resetting...");
+				Logger.Debug("Resetting...");
 			}
 #endif
-			Disable();
+			(this as IPluginComponent).Disable();
 #if DEBUG
 			if (_debugConfig.LogConfigurationManager)
 			{
-				Logger.Debug("OnConfigReset", $"Config.Enabled: {Config.Enabled}");
+				Logger.Debug($"Config.Enabled: {Config.Enabled}");
 			}
 #endif
-			Toggle(Config.Enabled);
+			(this as IPluginComponent).SetEnabledState(Config.Enabled);
 		}
 
 		#endregion
 
-		#region Finalizer
-
-		protected override void InternalDispose()
+		protected override void OnDispose()
 		{
-			Disable();
 			Config.ValueChangeEvent -= OnConfigPropertyChanged;
 			Config.Items.ForEach(x => x.ValueChangeEvent -= OnConfigPropertyChanged);
-			ConfigurationManager.Instance.Reset -= OnConfigReset;
+			Singletons.Get<ConfigurationManager>().Reset -= OnConfigReset;
 
 			_items.ForEach(item => item.Dispose());
 			_items.Clear();
 			_xivCommon.Dispose();
 		}
-
-		#endregion
-
-		#region Singleton
-
-		public static PluginMenu Initialize()
-		{
-			Instance = new(ConfigurationManager.Instance.GetConfigObject<PluginMenuConfig>());
-			return Instance;
-		}
-
-		public static PluginMenu Instance { get; private set; } = null!;
-
-		~PluginMenu()
-		{
-			Dispose(false);
-		}
-
-		#endregion
 	}
 
 	#region Draggable Element
@@ -341,7 +301,7 @@ namespace SezzUI.Modules.PluginMenu
 	{
 		private readonly PluginMenu _parent;
 
-		public PluginMenuDraggableHudElement([NotNull] PluginMenu parent, [CanBeNull] string? displayName = null, [CanBeNull] string? id = null) : base((AnchorablePluginConfigObject) parent.GetConfig(), displayName, id)
+		public PluginMenuDraggableHudElement(PluginMenu parent, string? displayName = null, string? id = null) : base((AnchorablePluginConfigObject) parent.GetConfig(), displayName, id)
 		{
 			_parent = parent;
 		}

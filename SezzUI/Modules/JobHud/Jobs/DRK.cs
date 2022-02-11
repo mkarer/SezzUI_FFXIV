@@ -1,5 +1,5 @@
 ﻿using Dalamud.Game.ClientState.JobGauge.Types;
-using SezzUI.Helpers;
+using SezzUI.Helper;
 
 namespace SezzUI.Modules.JobHud.Jobs
 {
@@ -30,7 +30,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		private static (float, float) GetLivingShadowDuration()
 		{
-			DRKGauge gauge = Plugin.JobGauges.Get<DRKGauge>();
+			DRKGauge gauge = Service.JobGauges.Get<DRKGauge>();
 			if (gauge.ShadowTimeRemaining != 0)
 			{
 				return (gauge.ShadowTimeRemaining / 1000f, 24f);

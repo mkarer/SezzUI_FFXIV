@@ -1,8 +1,8 @@
-﻿using SezzUI.Config;
-using SezzUI.Config.Attributes;
+﻿using SezzUI.Configuration;
+using SezzUI.Configuration.Attributes;
 using SezzUI.Enums;
 
-namespace SezzUI.Interface.GeneralElements
+namespace SezzUI.Modules.JobHud
 {
 	[DisableParentSettings("Size", "Anchor")]
 	[Section("Job HUD")]
@@ -12,7 +12,7 @@ namespace SezzUI.Interface.GeneralElements
 		[Checkbox("Enable Aura Alerts")]
 		[Order(20)]
 		public bool EnableAuraAlerts = true;
-		
+
 		public void Reset()
 		{
 			Enabled = true;

@@ -2,7 +2,7 @@
   "Author": "Sezz",
   "Name": "SezzUI",
   "InternalName": "SezzUI",
-  "AssemblyVersion": "0.0.0.11",
+  "AssemblyVersion": "0.0.0.12",
   "Punchline": "Minimalistic UI Additions + Tweaks\nWARNING: This is still in alpha and very likely to crash!",
   "Description": "A port of my World of Warcraft UI for Final Fantasy XIV.",
   "RepoUrl": "https://github.com/mkarer/SezzUI_FFXIV",

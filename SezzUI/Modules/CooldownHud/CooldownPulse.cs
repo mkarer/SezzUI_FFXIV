@@ -2,10 +2,10 @@
 using System.Numerics;
 using ImGuiNET;
 using ImGuiScene;
-using SezzUI.Animator;
-using SezzUI.Core;
 using SezzUI.Enums;
-using SezzUI.Helpers;
+using SezzUI.Helper;
+using SezzUI.Interface;
+using SezzUI.Interface.Animation;
 
 namespace SezzUI.Modules.CooldownHud
 {
@@ -58,7 +58,7 @@ namespace SezzUI.Modules.CooldownHud
 				_iconId = value;
 				if (value != null)
 				{
-					Texture = TexturesCache.Instance.GetTextureFromIconId((uint) value);
+					Texture = Singletons.Get<TexturesCache>().GetTextureFromIconId((uint) value);
 				}
 			}
 		}

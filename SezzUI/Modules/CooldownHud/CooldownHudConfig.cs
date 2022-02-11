@@ -1,8 +1,8 @@
-﻿using SezzUI.Config;
-using SezzUI.Config.Attributes;
+﻿using SezzUI.Configuration;
+using SezzUI.Configuration.Attributes;
 using SezzUI.Enums;
 
-namespace SezzUI.Interface.GeneralElements
+namespace SezzUI.Modules.CooldownHud
 {
 	[Section("Cooldown HUD")]
 	[SubSection("General", 0)]
