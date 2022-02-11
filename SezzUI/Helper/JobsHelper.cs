@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Dalamud.Game.ClientState.JobGauge.Types;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using Lumina.Excel;
+using Lumina.Excel.GeneratedSheets;
 using SezzUI.Enums;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 
@@ -309,6 +311,12 @@ namespace SezzUI.Helper
 			}
 
 			return 0;
+		}
+
+		public static uint GetParentJobId(uint jobId)
+		{
+			ExcelSheet<ClassJob>? classJobSheet = Service.DataManager.GetExcelSheet<ClassJob>();
+			return classJobSheet?.GetRow(jobId)?.ClassJobParent.Row ?? 0;
 		}
 
 		public static uint RoleIconIDForBattleCompanion => 62041;

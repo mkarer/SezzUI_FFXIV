@@ -65,6 +65,16 @@ namespace SezzUI.Modules.JobHud
 				Logger.Error($"Error loading presets: {ex}");
 			}
 
+			_presets.Keys.ToList().ForEach(jobId =>
+			{
+				BasePreset preset = _presets[jobId];
+				uint parentJobId = JobsHelper.GetParentJobId(jobId);
+				if (preset.JobId != JobIDs.SCH && parentJobId != 0 && parentJobId != preset.JobId && !_presets.ContainsKey(parentJobId))
+				{
+					_presets.Add(parentJobId, preset);
+				}
+			});
+
 			DraggableElements.Add(new JobHudDraggableHudElement(this, "Job HUD"));
 			(this as IPluginComponent).SetEnabledState(Config.Enabled);
 		}

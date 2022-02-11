@@ -356,6 +356,16 @@ namespace SezzUI.Modules.CooldownHud
 			{
 				Logger.Error($"Error loading presets: {ex}");
 			}
+			
+			_presets.Keys.ToList().ForEach(jobId =>
+			{
+				BasePreset preset = _presets[jobId];
+				uint parentJobId = JobsHelper.GetParentJobId(jobId);
+				if (preset.JobId != JobIDs.SCH && parentJobId != 0 && parentJobId != preset.JobId && !_presets.ContainsKey(parentJobId))
+				{
+					_presets.Add(parentJobId, preset);
+				}
+			});
 
 			(this as IPluginComponent).SetEnabledState(Config.Enabled);
 		}

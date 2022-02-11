@@ -61,6 +61,12 @@ namespace SezzUI.Modules.JobHud.Jobs
 					barDPSCasterRole.Add(new(barDPSCasterRole) {TextureActionId = 7559, CooldownActionId = 7559, StatusId = 160, MaxStatusDuration = 6, IconClipMultiplier = new(0, 0.4f)}); // Surecast
 					hud.AddBar(barDPSCasterRole);
 					break;
+
+				default:
+					Bar barUnsupported = new(hud);
+					barUnsupported.IconSize = new(38, 26);
+					hud.AddBar(barUnsupported);
+					break;
 			}
 
 			// --------------------------------------------------------------------------------
