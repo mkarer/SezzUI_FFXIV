@@ -17,7 +17,9 @@ using SezzUI.Hooking;
 using SezzUI.Interface;
 using SezzUI.Interface.GeneralElements;
 using SezzUI.Logging;
+#if DEBUG
 using SezzUI.Modules.Test;
+#endif
 
 namespace SezzUI
 {
@@ -44,7 +46,7 @@ namespace SezzUI
 
 			AssemblyLocation = pluginInterface.AssemblyLocation.DirectoryName != null ? pluginInterface.AssemblyLocation.DirectoryName : Assembly.GetExecutingAssembly().Location;
 			AssemblyLocation = AssemblyLocation.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-			Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.1.0";
+			Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.1.1";
 
 			LoadBanner();
 
