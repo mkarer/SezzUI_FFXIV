@@ -7,13 +7,13 @@ namespace SezzUI.Modules.ServerInfoBar
 {
 	public abstract class Entry : PluginModule
 	{
-		public string Title;
+		public string Title { get; protected set; }
 		private DtrBarEntry? _dtrEntry;
-		public PluginConfigObject Config => _config;
+		internal PluginConfigObject Config => _config;
 
-		public void ClearText() => SetText();
+		protected void ClearText() => SetText();
 
-		public void SetText(SeString? text = null)
+		protected void SetText(SeString? text = null)
 		{
 			if (text == null || !(this as IPluginComponent).IsEnabled)
 			{
