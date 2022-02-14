@@ -356,7 +356,7 @@ namespace SezzUI.Modules.CooldownHud
 			{
 				Logger.Error($"Error loading presets: {ex}");
 			}
-			
+
 			_presets.Keys.ToList().ForEach(jobId =>
 			{
 				BasePreset preset = _presets[jobId];
@@ -367,6 +367,7 @@ namespace SezzUI.Modules.CooldownHud
 				}
 			});
 
+			DraggableElements.Add(new(Config.CooldownHudPulse, "Cooldown Pulse"));
 			(this as IPluginComponent).SetEnabledState(Config.Enabled);
 		}
 
