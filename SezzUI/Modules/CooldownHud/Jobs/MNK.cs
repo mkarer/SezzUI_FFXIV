@@ -9,6 +9,8 @@ namespace SezzUI.Modules.CooldownHud.Jobs
 		public override void Configure(CooldownHud hud)
 		{
 			base.Configure(hud);
+
+			hud.RegisterCooldown(16475); // Anatman
 		}
 	}
 }
