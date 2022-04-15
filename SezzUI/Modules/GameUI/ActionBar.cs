@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using Microsoft.VisualBasic.Logging;
 using SezzUI.Configuration;
 using SezzUI.Enums;
 using SezzUI.Game.Events;
@@ -619,7 +620,7 @@ namespace SezzUI.Modules.GameUI
 				}
 #endif
 
-				IntPtr agentActionBar = Service.GameGui.FindAgentInterface(actionBar);
+				IntPtr agentActionBar = Service.GameGui.FindAgentInterface((IntPtr) actionBar);
 				if (agentActionBar != IntPtr.Zero)
 				{
 					try
@@ -630,6 +631,10 @@ namespace SezzUI.Modules.GameUI
 					{
 						Logger.Error(ex);
 					}
+				}
+				else
+				{
+					Logger.Error("Failed to find agent interface for _ActionBar");
 				}
 			}
 #if DEBUG
