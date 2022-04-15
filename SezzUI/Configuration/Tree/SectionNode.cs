@@ -50,7 +50,7 @@ namespace SezzUI.Configuration.Tree
 
 						DrawExportResetContextMenu(subSectionNode, subSectionNode.Name);
 
-						ImGui.BeginChild("subconfig value", new(0, 0), true);
+						ImGui.BeginChild("##SubConfig", new(0, 0), true);
 						didReset |= subSectionNode.Draw(ref changed);
 						ImGui.EndChild();
 

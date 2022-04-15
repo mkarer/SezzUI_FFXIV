@@ -58,6 +58,8 @@ namespace SezzUI.Helper
 			}
 		}
 
+		public static bool IsRegistered<T>() => _activeInstances.Values.OfType<T>().Any();
+
 		public static void Dispose()
 		{
 			Dispose<IPluginDisposable>();
