@@ -311,7 +311,7 @@ namespace SezzUI.Helper
 #if DEBUG
 					if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsMediaManager)
 					{
-						Logger.Debug("Success -> Key: {fontKey} Font: {fontData.Name} Size: {fontData.Size} FontSource: {fontData.Source} FileSource: {fontData.File.Source} Path: {fontData.File.Path}");
+						Logger.Debug($"Success -> Key: {fontKey} Font: {fontData.Name} Size: {fontData.Size} FontSource: {fontData.Source} FileSource: {fontData.File.Source} Path: {fontData.File.Path}");
 					}
 #endif
 				}
