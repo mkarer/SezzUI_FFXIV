@@ -46,7 +46,7 @@ namespace SezzUI
 
 			AssemblyLocation = pluginInterface.AssemblyLocation.DirectoryName != null ? pluginInterface.AssemblyLocation.DirectoryName : Assembly.GetExecutingAssembly().Location;
 			AssemblyLocation = AssemblyLocation.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-			Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.1.1";
+			Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.1.2";
 
 			LoadBanner();
 
