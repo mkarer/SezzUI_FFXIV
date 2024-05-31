@@ -28,26 +28,26 @@ bar.Add(new Icon(bar) { TextureActionId = 3573, CooldownActionId = 3573, StatusI
 
 Full explanation:
 
-| Texture Property | Description |
-| --- | --- |
+| Texture Property         | Description                                                         |
+|--------------------------|---------------------------------------------------------------------|
 | `TextureActionId = 3573` | Show the icon of Ley Lines action (affected by GetAdjustedActionId) |
 
-| Cooldown Property | Description |
-| --- | --- |
+| Cooldown Property         | Description                                                         |
+|---------------------------|---------------------------------------------------------------------|
 | `CooldownActionId = 3573` | Show cooldown of Ley Lines action (affected by GetAdjustedActionId) |
 
-| Status Property | Description |
-| --- | --- |
-| `StatusId = 737` | Check for Ley Lines status (NOT affected by GetAdjustedActionId, if this would be needed we could use StatusActionId instead) |
+| Status Property          | Description                                                                                                                                                                        |
+|--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `StatusId = 737`         | Check for Ley Lines status (NOT affected by GetAdjustedActionId, if this would be needed we could use StatusActionId instead)                                                      |
 | `MaxStatusDuration = 30` | A maximum duration has to be specified because it is not available in the [Status](https://goatcorp.github.io/Dalamud/api/FFXIVClientStructs.FFXIV.Client.Game.Status.html) object |
 
-| Border Glow Property | Description |
-| --- | --- |
-| `GlowBorderInvertCheck = true` | Invert Status + Usable condition |
-| `GlowBorderStatusId = 738` | Check for NOT HAVING Circle of Power status (GlowBorderInvertCheck!) |
-| `GlowBorderStatusIdForced = 737` | Check for Ley Lines status (not affected by GlowBorderInvertCheck) |
-| `GlowBorderUsable = true` | Check if Ley Lines action is NOT USABLE (GlowBorderInvertCheck!) |
+| Border Glow Property             | Description                                                          |
+|----------------------------------|----------------------------------------------------------------------|
+| `GlowBorderInvertCheck = true`   | Invert Status + Usable condition                                     |
+| `GlowBorderStatusId = 738`       | Check for NOT HAVING Circle of Power status (GlowBorderInvertCheck!) |
+| `GlowBorderStatusIdForced = 737` | Check for Ley Lines status (not affected by GlowBorderInvertCheck)   |
+| `GlowBorderUsable = true`        | Check if Ley Lines action is NOT USABLE (GlowBorderInvertCheck!)     |
 
-| Level Property | Description                                                                                                                                                                                                      |
-| --- |------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Level = 52` | Ley Lines is only available at level 52, don't display the icon when not at least at that level. This is optional, if ommited will check against the required level of `TextureActionId` or `CooldownActionId`. |
+| Level Property | Description                                                                                                                                                                                                     |
+|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Level = 52`   | Ley Lines is only available at level 52, don't display the icon when not at least at that level. This is optional, if ommited will check against the required level of `TextureActionId` or `CooldownActionId`. |

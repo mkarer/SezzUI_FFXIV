@@ -4,118 +4,117 @@ using System.Numerics;
 using ImGuiNET;
 using SezzUI.Configuration.Attributes;
 
-namespace SezzUI.Configuration.Tree
+namespace SezzUI.Configuration.Tree;
+
+public class SectionNode : Node
 {
-	public class SectionNode : Node
+	public bool Selected;
+	public string Name = null!;
+	public bool ForceAllowExport = false;
+
+	protected override bool AllowExport()
 	{
-		public bool Selected;
-		public string Name = null!;
-		public bool ForceAllowExport = false;
-
-		protected override bool AllowExport()
+		if (ForceAllowExport)
 		{
-			if (ForceAllowExport)
-			{
-				return true;
-			}
-
-			return base.AllowExport();
+			return true;
 		}
 
-		public bool Draw(ref bool changed, float alpha)
+		return base.AllowExport();
+	}
+
+	public bool Draw(ref bool changed, float alpha)
+	{
+		if (!Selected)
 		{
-			if (!Selected)
+			return false;
+		}
+
+		bool didReset = false;
+
+		ImGui.NewLine();
+
+		ImGui.BeginChild("SezzUI_Settings_Tab", new(0, -ImGui.GetFrameHeightWithSpacing() - 15), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse); // Leave room for 1 line below us
+
+		{
+			ImGui.PushStyleColor(ImGuiCol.Tab, new Vector4(45f / 255f, 45f / 255f, 45f / 255f, alpha));
+			ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(45f / 255f, 45f / 255f, 45f / 255f, alpha));
+
+			if (ImGui.BeginTabBar("##Tabs", ImGuiTabBarFlags.None))
 			{
-				return false;
-			}
-
-			bool didReset = false;
-
-			ImGui.NewLine();
-
-			ImGui.BeginChild("SezzUI_Settings_Tab", new(0, -ImGui.GetFrameHeightWithSpacing() - 15), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse); // Leave room for 1 line below us
-
-			{
-				ImGui.PushStyleColor(ImGuiCol.Tab, new Vector4(45f / 255f, 45f / 255f, 45f / 255f, alpha));
-				ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(45f / 255f, 45f / 255f, 45f / 255f, alpha));
-
-				if (ImGui.BeginTabBar("##Tabs", ImGuiTabBarFlags.None))
+				foreach (SubSectionNode subSectionNode in _children)
 				{
-					foreach (SubSectionNode subSectionNode in _children)
+					if (!ImGui.BeginTabItem(subSectionNode.Name))
 					{
-						if (!ImGui.BeginTabItem(subSectionNode.Name))
-						{
-							continue;
-						}
-
-						DrawExportResetContextMenu(subSectionNode, subSectionNode.Name);
-
-						ImGui.BeginChild("##SubConfig", new(0, 0), true);
-						didReset |= subSectionNode.Draw(ref changed);
-						ImGui.EndChild();
-
-						ImGui.EndTabItem();
+						continue;
 					}
 
-					ImGui.EndTabBar();
+					DrawExportResetContextMenu(subSectionNode, subSectionNode.Name);
+
+					ImGui.BeginChild("##SubConfig", new(0, 0), true);
+					didReset |= subSectionNode.Draw(ref changed);
+					ImGui.EndChild();
+
+					ImGui.EndTabItem();
 				}
 
-				ImGui.PopStyleColor(2);
-
-				didReset |= DrawResetModal();
+				ImGui.EndTabBar();
 			}
 
-			ImGui.EndChild();
+			ImGui.PopStyleColor(2);
 
-			return didReset;
+			didReset |= DrawResetModal();
 		}
 
-		public override void Save(string path)
+		ImGui.EndChild();
+
+		return didReset;
+	}
+
+	public override void Save(string path)
+	{
+		foreach (SubSectionNode child in _children)
 		{
-			foreach (SubSectionNode child in _children)
-			{
-				child.Save(Path.Combine(path, Name));
-			}
+			child.Save(Path.Combine(path, Name));
 		}
+	}
 
-		public override void Load(string path, string currentVersion, string? previousVersion = null)
+	public override void Load(string path, string currentVersion, string? previousVersion = null)
+	{
+		foreach (SubSectionNode child in _children)
 		{
-			foreach (SubSectionNode child in _children)
-			{
-				child.Load(Path.Combine(path, Name), currentVersion, previousVersion);
-			}
+			child.Load(Path.Combine(path, Name), currentVersion, previousVersion);
 		}
+	}
 
-		public ConfigPageNode? GetOrAddConfig<T>() where T : PluginConfigObject
+	public ConfigPageNode? GetOrAddConfig<T>() where T : PluginConfigObject
+	{
+		object[] attributes = typeof(T).GetCustomAttributes(true);
+
+		foreach (object attribute in attributes)
 		{
-			object[] attributes = typeof(T).GetCustomAttributes(true);
-
-			foreach (object attribute in attributes)
+			if (attribute is SubSectionAttribute subSectionAttribute)
 			{
-				if (attribute is SubSectionAttribute subSectionAttribute)
+				foreach (SubSectionNode subSectionNode in _children)
 				{
-					foreach (SubSectionNode subSectionNode in _children)
+					if (subSectionNode.Name == subSectionAttribute.SubSectionName)
 					{
-						if (subSectionNode.Name == subSectionAttribute.SubSectionName)
-						{
-							return subSectionNode.GetOrAddConfig<T>();
-						}
-					}
-
-					if (subSectionAttribute.Depth == 0)
-					{
-						NestedSubSectionNode newNode = new();
-						newNode.Name = subSectionAttribute.SubSectionName;
-						newNode.Depth = 0;
-						_children.Add(newNode);
-
-						return newNode.GetOrAddConfig<T>();
+						return subSectionNode.GetOrAddConfig<T>();
 					}
 				}
-			}
 
-			Type type = typeof(T);
-			throw new ArgumentException("The provided configuration object does not specify a sub-section: " + type.Name);
+				if (subSectionAttribute.Depth == 0)
+				{
+					NestedSubSectionNode newNode = new();
+					newNode.Name = subSectionAttribute.SubSectionName;
+					newNode.Depth = 0;
+					_children.Add(newNode);
+
+					return newNode.GetOrAddConfig<T>();
+				}
+			}
 		}
+
+		Type type = typeof(T);
+		throw new ArgumentException("The provided configuration object does not specify a sub-section: " + type.Name);
 	}
 }

@@ -1,6 +1,5 @@
-namespace SezzUI.Modules.CooldownHud.Jobs
+namespace SezzUI.Modules.CooldownHud.Jobs;
+
+public sealed class Base : BasePreset
 {
-	public sealed class Base : BasePreset
-	{
-	}
 }

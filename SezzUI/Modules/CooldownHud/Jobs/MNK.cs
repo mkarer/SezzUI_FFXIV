@@ -1,16 +1,15 @@
 using SezzUI.Helper;
 
-namespace SezzUI.Modules.CooldownHud.Jobs
+namespace SezzUI.Modules.CooldownHud.Jobs;
+
+public sealed class MNK : BasePreset
 {
-	public sealed class MNK : BasePreset
+	public override uint JobId => JobIDs.MNK;
+
+	public override void Configure(CooldownHud hud)
 	{
-		public override uint JobId => JobIDs.MNK;
+		base.Configure(hud);
 
-		public override void Configure(CooldownHud hud)
-		{
-			base.Configure(hud);
-
-			hud.RegisterCooldown(16475); // Anatman
-		}
+		hud.RegisterCooldown(16475); // Anatman
 	}
 }

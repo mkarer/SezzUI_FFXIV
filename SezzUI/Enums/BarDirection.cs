@@ -1,10 +1,9 @@
-namespace SezzUI.Enums
+namespace SezzUI.Enums;
+
+public enum BarDirection
 {
-	public enum BarDirection
-	{
-		Left,
-		Right,
-		Up,
-		Down
-	}
+	Left,
+	Right,
+	Up,
+	Down
 }

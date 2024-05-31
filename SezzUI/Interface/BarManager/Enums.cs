@@ -1,8 +1,7 @@
-﻿namespace SezzUI.Interface.BarManager
+﻿namespace SezzUI.Interface.BarManager;
+
+public enum BarManagerStyle
 {
-	public enum BarManagerStyle
-	{
-		Classic,
-		Ruri
-	}
+	Classic,
+	Ruri
 }

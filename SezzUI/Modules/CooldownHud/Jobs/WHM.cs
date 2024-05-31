@@ -1,14 +1,13 @@
 using SezzUI.Helper;
 
-namespace SezzUI.Modules.CooldownHud.Jobs
-{
-	public sealed class WHM : BasePreset
-	{
-		public override uint JobId => JobIDs.WHM;
+namespace SezzUI.Modules.CooldownHud.Jobs;
 
-		public override void Configure(CooldownHud hud)
-		{
-			base.Configure(hud);
-		}
+public sealed class WHM : BasePreset
+{
+	public override uint JobId => JobIDs.WHM;
+
+	public override void Configure(CooldownHud hud)
+	{
+		base.Configure(hud);
 	}
 }

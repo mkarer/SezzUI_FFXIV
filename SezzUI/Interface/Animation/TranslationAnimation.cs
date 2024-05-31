@@ -1,47 +1,46 @@
 ﻿using System;
 using System.Numerics;
 
-namespace SezzUI.Interface.Animation
+namespace SezzUI.Interface.Animation;
+
+public class TranslationAnimation : BaseAnimation
 {
-	public class TranslationAnimation : BaseAnimation
+	public Vector2 OffsetFrom;
+	public Vector2 OffsetTo;
+
+	public TranslationAnimation(Vector2 from, Vector2 to, uint duration = 0, uint delayStart = 0, uint delayEnd = 0)
 	{
-		public Vector2 OffsetFrom;
-		public Vector2 OffsetTo;
+		Duration = (uint) Math.Max(50f, duration);
+		StartDelay = delayStart;
+		EndDelay = delayEnd;
 
-		public TranslationAnimation(Vector2 from, Vector2 to, uint duration = 0, uint delayStart = 0, uint delayEnd = 0)
+		OffsetFrom = from;
+		OffsetTo = to;
+	}
+
+	public override void Update()
+	{
+		if (IsPlaying && TicksStart != null)
 		{
-			Duration = (uint) Math.Max(50f, duration);
-			StartDelay = delayStart;
-			EndDelay = delayEnd;
+			int ticksNow = Environment.TickCount;
+			int timeElapsed = ticksNow - (int) TicksStart;
 
-			OffsetFrom = from;
-			OffsetTo = to;
-		}
-
-		public override void Update()
-		{
-			if (IsPlaying && TicksStart != null)
+			if (timeElapsed > StartDelay && timeElapsed <= StartDelay + Duration)
 			{
-				int ticksNow = Environment.TickCount;
-				int timeElapsed = ticksNow - (int) TicksStart;
+				int timeElapsedAnimating = timeElapsed - (int) StartDelay;
 
-				if (timeElapsed > StartDelay && timeElapsed <= StartDelay + Duration)
+				Vector2 range = OffsetTo - OffsetFrom;
+				float progress = Math.Min(1, Math.Max(0, timeElapsedAnimating / (float) Duration));
+				if (Data != null)
 				{
-					int timeElapsedAnimating = timeElapsed - (int) StartDelay;
-
-					Vector2 range = OffsetTo - OffsetFrom;
-					float progress = Math.Min(1, Math.Max(0, timeElapsedAnimating / (float) Duration));
-					if (Data != null)
-					{
-						Data.Offset = OffsetFrom + range * progress;
-					}
+					Data.Offset = OffsetFrom + range * progress;
 				}
+			}
 
-				if (timeElapsed > StartDelay + Duration + EndDelay)
-				{
-					// Done
-					IsPlaying = false;
-				}
+			if (timeElapsed > StartDelay + Duration + EndDelay)
+			{
+				// Done
+				IsPlaying = false;
 			}
 		}
 	}

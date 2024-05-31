@@ -1,7 +1,6 @@
-namespace SezzUI.Logging
+namespace SezzUI.Logging;
+
+public interface IPluginLogger
 {
-	public interface IPluginLogger
-	{
-		public PluginLogger Logger { get; protected set; }
-	}
+	public PluginLogger Logger { get; protected set; }
 }

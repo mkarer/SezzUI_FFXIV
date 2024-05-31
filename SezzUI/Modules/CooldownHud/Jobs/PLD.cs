@@ -1,14 +1,13 @@
 using SezzUI.Helper;
 
-namespace SezzUI.Modules.CooldownHud.Jobs
-{
-	public sealed class PLD : BasePreset
-	{
-		public override uint JobId => JobIDs.PLD;
+namespace SezzUI.Modules.CooldownHud.Jobs;
 
-		public override void Configure(CooldownHud hud)
-		{
-			base.Configure(hud);
-		}
+public sealed class PLD : BasePreset
+{
+	public override uint JobId => JobIDs.PLD;
+
+	public override void Configure(CooldownHud hud)
+	{
+		base.Configure(hud);
 	}
 }

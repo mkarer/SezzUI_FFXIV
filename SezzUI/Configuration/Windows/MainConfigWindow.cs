@@ -6,62 +6,61 @@ using SezzUI.Configuration.Tree;
 using SezzUI.Helper;
 using SezzUI.Interface.GeneralElements;
 
-namespace SezzUI.Configuration.Windows
+namespace SezzUI.Configuration.Windows;
+
+public class MainConfigWindow : Window
 {
-	public class MainConfigWindow : Window
+	public BaseNode? node { get; set; }
+	public Action? CloseAction;
+
+	private float _alpha = 1f;
+	private Vector2 _lastWindowPos = Vector2.Zero;
+
+	public MainConfigWindow(string name) : base(name)
 	{
-		public BaseNode? node { get; set; }
-		public Action? CloseAction;
+		Flags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollWithMouse;
 
-		private float _alpha = 1f;
-		private Vector2 _lastWindowPos = Vector2.Zero;
+		Size = new Vector2(1050, 750);
+	}
 
-		public MainConfigWindow(string name) : base(name)
+	public override void OnClose()
+	{
+		CloseAction?.Invoke();
+	}
+
+	private bool CheckWindowFocus()
+	{
+		Vector2 mousePos = ImGui.GetMousePos();
+		Vector2 endPos = _lastWindowPos + Size!.Value;
+
+		return mousePos.X >= _lastWindowPos.X && mousePos.X <= endPos.X && mousePos.Y >= _lastWindowPos.Y && mousePos.Y <= endPos.Y;
+	}
+
+	public override void PreDraw()
+	{
+		_alpha = 1;
+
+		HUDOptionsConfig? config = Singletons.Get<ConfigurationManager>().GetConfigObject<HUDOptionsConfig>();
+		if (config?.DimConfigWindow == true)
 		{
-			Flags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollWithMouse;
-
-			Size = new Vector2(1050, 750);
+			_alpha = CheckWindowFocus() ? 1 : 0.5f;
 		}
 
-		public override void OnClose()
-		{
-			CloseAction?.Invoke();
-		}
+		ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(255f / 255f, 255f / 255f, 255f / 255f, 77f / 255f * _alpha));
+		ImGui.PushStyleColor(ImGuiCol.BorderShadow, new Vector4(0f / 255f, 0f / 255f, 0f / 255f, 1f * _alpha));
+		ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0f / 255f, 0f / 255f, 0f / 255f, 0.95f * _alpha));
 
-		private bool CheckWindowFocus()
-		{
-			Vector2 mousePos = ImGui.GetMousePos();
-			Vector2 endPos = _lastWindowPos + Size!.Value;
+		ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1);
+		ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 1);
+	}
 
-			return mousePos.X >= _lastWindowPos.X && mousePos.X <= endPos.X && mousePos.Y >= _lastWindowPos.Y && mousePos.Y <= endPos.Y;
-		}
+	public override void Draw()
+	{
+		_lastWindowPos = ImGui.GetWindowPos();
 
-		public override void PreDraw()
-		{
-			_alpha = 1;
+		ImGui.PopStyleColor(3);
+		ImGui.PopStyleVar(2);
 
-			HUDOptionsConfig? config = Singletons.Get<ConfigurationManager>().GetConfigObject<HUDOptionsConfig>();
-			if (config?.DimConfigWindow == true)
-			{
-				_alpha = CheckWindowFocus() ? 1 : 0.5f;
-			}
-
-			ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(255f / 255f, 255f / 255f, 255f / 255f, 77f / 255f * _alpha));
-			ImGui.PushStyleColor(ImGuiCol.BorderShadow, new Vector4(0f / 255f, 0f / 255f, 0f / 255f, 1f * _alpha));
-			ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0f / 255f, 0f / 255f, 0f / 255f, 0.95f * _alpha));
-
-			ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1);
-			ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 1);
-		}
-
-		public override void Draw()
-		{
-			_lastWindowPos = ImGui.GetWindowPos();
-
-			ImGui.PopStyleColor(3);
-			ImGui.PopStyleVar(2);
-
-			node?.Draw(_alpha);
-		}
+		node?.Draw(_alpha);
 	}
 }

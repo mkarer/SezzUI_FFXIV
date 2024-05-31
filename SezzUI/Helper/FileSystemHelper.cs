@@ -3,42 +3,41 @@ using System.IO;
 using Dalamud.Utility;
 using SezzUI.Logging;
 
-namespace SezzUI.Helper
+namespace SezzUI.Helper;
+
+public static class FileSystemHelper
 {
-	public static class FileSystemHelper
+	internal static PluginLogger Logger;
+
+	static FileSystemHelper()
 	{
-		internal static PluginLogger Logger;
+		Logger = new("FileSystemHelper");
+	}
 
-		static FileSystemHelper()
+	private static bool Validate(string? path, out string validatedPath, bool expectFile, bool expectDirectory)
+	{
+		validatedPath = "";
+		if (!path.IsNullOrEmpty())
 		{
-			Logger = new("FileSystemHelper");
-		}
-
-		private static bool Validate(string? path, out string validatedPath, bool expectFile, bool expectDirectory)
-		{
-			validatedPath = "";
-			if (!path.IsNullOrEmpty())
+			try
 			{
-				try
+				string fullPath = Path.GetFullPath(path!);
+				if ((expectFile && File.Exists(fullPath)) || (expectDirectory && Directory.Exists(fullPath)))
 				{
-					string fullPath = Path.GetFullPath(path!);
-					if (expectFile && File.Exists(fullPath) || expectDirectory && Directory.Exists(fullPath))
-					{
-						validatedPath = fullPath;
-						return true;
-					}
-				}
-				catch (Exception ex)
-				{
-					Logger.Warning($"Failed to validate path: {path} (expectFile: {expectFile} expectDirectory: {expectDirectory})");
-					Logger.Warning(ex);
+					validatedPath = fullPath;
+					return true;
 				}
 			}
-
-			return false;
+			catch (Exception ex)
+			{
+				Logger.Warning($"Failed to validate path: {path} (expectFile: {expectFile} expectDirectory: {expectDirectory})");
+				Logger.Warning(ex);
+			}
 		}
 
-		public static bool ValidatePath(string? path, out string validatedPath) => Validate(path, out validatedPath, false, true);
-		public static bool ValidateFile(string? file, out string validatedFileName) => Validate(file, out validatedFileName, true, false);
+		return false;
 	}
+
+	public static bool ValidatePath(string? path, out string validatedPath) => Validate(path, out validatedPath, false, true);
+	public static bool ValidateFile(string? file, out string validatedFileName) => Validate(file, out validatedFileName, true, false);
 }

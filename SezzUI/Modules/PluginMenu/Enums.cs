@@ -1,8 +1,7 @@
-namespace SezzUI.Modules.PluginMenu
+namespace SezzUI.Modules.PluginMenu;
+
+public enum ItemType
 {
-	public enum ItemType
-	{
-		SezzUI,
-		ChatCommand
-	}
+	SezzUI,
+	ChatCommand
 }

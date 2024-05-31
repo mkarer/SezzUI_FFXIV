@@ -1,43 +1,42 @@
 ﻿using SezzUI.Configuration;
 using SezzUI.Configuration.Attributes;
 
-namespace SezzUI.Interface.GeneralElements
+namespace SezzUI.Interface.GeneralElements;
+
+[Exportable(false)]
+[Section("Misc")]
+[SubSection("Grid", 0)]
+public class GridConfig : PluginConfigObject
 {
-	[Exportable(false)]
-	[Section("Misc")]
-	[SubSection("Grid", 0)]
-	public class GridConfig : PluginConfigObject
+	public new static GridConfig DefaultConfig()
 	{
-		public new static GridConfig DefaultConfig()
-		{
-			GridConfig config = new();
-			config.Enabled = false;
+		GridConfig config = new();
+		config.Enabled = false;
 
-			return config;
-		}
-
-		[DragFloat("Background Alpha", min = 0, max = 1, velocity = .05f)]
-		[Order(10)]
-		public float BackgroundAlpha = 0.3f;
-
-		[Checkbox("Show Center Lines")]
-		[Order(15)]
-		public bool ShowCenterLines = true;
-
-		[Checkbox("Show Anchor Points")]
-		[Order(20)]
-		public bool ShowAnchorPoints = true;
-
-		[Checkbox("Grid Divisions", spacing = true)]
-		[Order(25)]
-		public bool ShowGrid = true;
-
-		[DragInt("Divisions Distance", min = 50, max = 500)]
-		[Order(30, collapseWith = nameof(ShowGrid))]
-		public int GridDivisionsDistance = 50;
-
-		[DragInt("Subdivision Count", min = 1, max = 10)]
-		[Order(35, collapseWith = nameof(ShowGrid))]
-		public int GridSubdivisionCount = 4;
+		return config;
 	}
+
+	[DragFloat("Background Alpha", min = 0, max = 1, velocity = .05f)]
+	[Order(10)]
+	public float BackgroundAlpha = 0.3f;
+
+	[Checkbox("Show Center Lines")]
+	[Order(15)]
+	public bool ShowCenterLines = true;
+
+	[Checkbox("Show Anchor Points")]
+	[Order(20)]
+	public bool ShowAnchorPoints = true;
+
+	[Checkbox("Grid Divisions", spacing = true)]
+	[Order(25)]
+	public bool ShowGrid = true;
+
+	[DragInt("Divisions Distance", min = 50, max = 500)]
+	[Order(30, collapseWith = nameof(ShowGrid))]
+	public int GridDivisionsDistance = 50;
+
+	[DragInt("Subdivision Count", min = 1, max = 10)]
+	[Order(35, collapseWith = nameof(ShowGrid))]
+	public int GridSubdivisionCount = 4;
 }

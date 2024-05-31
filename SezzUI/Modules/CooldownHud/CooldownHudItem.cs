@@ -2,33 +2,32 @@
 using System.Collections.Generic;
 using SezzUI.Interface.BarManager;
 
-namespace SezzUI.Modules.CooldownHud
+namespace SezzUI.Modules.CooldownHud;
+
+public class CooldownHudItem : IDisposable
 {
-	public class CooldownHudItem : IDisposable
+	public readonly List<BarManager> BarManagers = new();
+	public uint ActionId;
+	public ushort LastPulseCharges = 100;
+
+	public void Dispose()
 	{
-		public readonly List<BarManager> BarManagers = new();
-		public uint ActionId;
-		public ushort LastPulseCharges = 100;
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 
-		public void Dispose()
+	~CooldownHudItem()
+	{
+		Dispose(false);
+	}
+
+	private void Dispose(bool disposing)
+	{
+		if (!disposing)
 		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
+			return;
 		}
 
-		~CooldownHudItem()
-		{
-			Dispose(false);
-		}
-
-		private void Dispose(bool disposing)
-		{
-			if (!disposing)
-			{
-				return;
-			}
-
-			BarManagers.Clear();
-		}
+		BarManagers.Clear();
 	}
 }

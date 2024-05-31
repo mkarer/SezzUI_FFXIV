@@ -1,12 +1,11 @@
-﻿namespace SezzUI.Enums
+﻿namespace SezzUI.Enums;
+
+public enum Unit
 {
-	public enum Unit
-	{
-		Player,
-		Target,
-		TargetOrPlayer,
-		TargetOfTarget,
-		FocusTarget,
-		Any
-	}
+	Player,
+	Target,
+	TargetOrPlayer,
+	TargetOfTarget,
+	FocusTarget,
+	Any
 }

@@ -8,123 +8,122 @@ using Dalamud.Interface.Internal;
 using SezzUI.Logging;
 using SezzUI.Modules;
 
-namespace SezzUI.Helper
+namespace SezzUI.Helper;
+
+public class ImageCache : IPluginDisposable
 {
-	public class ImageCache : IPluginDisposable
+	private readonly ConcurrentDictionary<string, IDalamudTextureWrap> _cache = new();
+	internal PluginLogger Logger;
+
+	public IDalamudTextureWrap? GetImage(string? file)
 	{
-		private readonly ConcurrentDictionary<string, IDalamudTextureWrap> _cache = new();
-		internal PluginLogger Logger;
-
-		public IDalamudTextureWrap? GetImage(string? file)
+		if (file == null)
 		{
-			if (file == null)
-			{
-				return null;
-			}
-
-			if (_cache.ContainsKey(file))
-			{
-				return _cache[file];
-			}
-
-            IDalamudTextureWrap? newTexture = LoadImage(file);
-			if (newTexture == null)
-			{
-				return null;
-			}
-
-			if (!_cache.TryAdd(file, newTexture))
-			{
-				Logger.Error($"Failed to cache texture: {file}.");
-			}
-
-			return newTexture;
-		}
-
-		private IDalamudTextureWrap? LoadImage(string file)
-		{
-			try
-			{
-				if (File.Exists(file))
-				{
-					return Services.PluginInterface.UiBuilder.LoadImage(file);
-				}
-			}
-			catch
-			{
-				//
-			}
-
 			return null;
 		}
 
-		public bool RemovePath(string path)
+		if (_cache.ContainsKey(file))
 		{
-			string dirSeparator = Regex.Escape(Path.DirectorySeparatorChar.ToString());
-			string filePattern = $"^{Regex.Escape(path.TrimEnd(Path.DirectorySeparatorChar))}(?:{dirSeparator}[^{dirSeparator}]*)$";
-			string iconOverridePattern = $"^{Regex.Escape(path.TrimEnd(Path.DirectorySeparatorChar))}(?:{dirSeparator}[0-9]+{dirSeparator}[^{dirSeparator}]*)$";
-			return Remove(_cache.Keys.Where(file => Regex.IsMatch(file, filePattern) || Regex.IsMatch(file, iconOverridePattern)));
+			return _cache[file];
 		}
 
-		public bool Remove(string file)
+		IDalamudTextureWrap? newTexture = LoadImage(file);
+		if (newTexture == null)
 		{
+			return null;
+		}
+
+		if (!_cache.TryAdd(file, newTexture))
+		{
+			Logger.Error($"Failed to cache texture: {file}.");
+		}
+
+		return newTexture;
+	}
+
+	private IDalamudTextureWrap? LoadImage(string file)
+	{
+		try
+		{
+			if (File.Exists(file))
+			{
+				return Services.PluginInterface.UiBuilder.LoadImage(file);
+			}
+		}
+		catch
+		{
+			//
+		}
+
+		return null;
+	}
+
+	public bool RemovePath(string path)
+	{
+		string dirSeparator = Regex.Escape(Path.DirectorySeparatorChar.ToString());
+		string filePattern = $"^{Regex.Escape(path.TrimEnd(Path.DirectorySeparatorChar))}(?:{dirSeparator}[^{dirSeparator}]*)$";
+		string iconOverridePattern = $"^{Regex.Escape(path.TrimEnd(Path.DirectorySeparatorChar))}(?:{dirSeparator}[0-9]+{dirSeparator}[^{dirSeparator}]*)$";
+		return Remove(_cache.Keys.Where(file => Regex.IsMatch(file, filePattern) || Regex.IsMatch(file, iconOverridePattern)));
+	}
+
+	public bool Remove(string file)
+	{
 #if DEBUG
-			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsImageCache)
-			{
-				Logger.Debug($"Removing texture from cache: {file}.");
-			}
+		if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsImageCache)
+		{
+			Logger.Debug($"Removing texture from cache: {file}.");
+		}
 #endif
-			_cache[file]?.Dispose();
-			if (!_cache.TryRemove(file, out _))
-			{
-				Logger.Debug($"Failed to remove cached texture: {file}.");
-				return false;
-			}
-
-			return true;
-		}
-
-		public bool Remove(IEnumerable files)
+		_cache[file]?.Dispose();
+		if (!_cache.TryRemove(file, out _))
 		{
-			bool success = true;
-
-			foreach (string file in files)
-			{
-				success &= Remove(file);
-			}
-
-			return success;
+			Logger.Debug($"Failed to remove cached texture: {file}.");
+			return false;
 		}
 
-		public ImageCache()
+		return true;
+	}
+
+	public bool Remove(IEnumerable files)
+	{
+		bool success = true;
+
+		foreach (string file in files)
 		{
-			Logger = new(GetType().Name);
+			success &= Remove(file);
 		}
 
-		bool IPluginDisposable.IsDisposed { get; set; } = false;
+		return success;
+	}
 
-		~ImageCache()
+	public ImageCache()
+	{
+		Logger = new(GetType().Name);
+	}
+
+	bool IPluginDisposable.IsDisposed { get; set; } = false;
+
+	~ImageCache()
+	{
+		Dispose(false);
+	}
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	protected void Dispose(bool disposing)
+	{
+		if (!disposing || (this as IPluginDisposable).IsDisposed)
 		{
-			Dispose(false);
+			return;
 		}
 
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+		Remove(_cache.Keys);
+		_cache.Clear();
 
-		protected void Dispose(bool disposing)
-		{
-			if (!disposing || (this as IPluginDisposable).IsDisposed)
-			{
-				return;
-			}
-
-			Remove(_cache.Keys);
-			_cache.Clear();
-
-			(this as IPluginDisposable).IsDisposed = true;
-		}
+		(this as IPluginDisposable).IsDisposed = true;
 	}
 }

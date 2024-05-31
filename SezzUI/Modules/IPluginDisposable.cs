@@ -1,9 +1,8 @@
 using System;
 
-namespace SezzUI.Modules
+namespace SezzUI.Modules;
+
+public interface IPluginDisposable : IDisposable
 {
-	public interface IPluginDisposable : IDisposable
-	{
-		bool IsDisposed { get; internal set; }
-	}
+	bool IsDisposed { get; internal set; }
 }

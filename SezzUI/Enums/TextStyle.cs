@@ -1,9 +1,8 @@
-﻿namespace SezzUI.Enums
+﻿namespace SezzUI.Enums;
+
+public enum TextStyle
 {
-	public enum TextStyle
-	{
-		Normal,
-		Shadowed,
-		Outline
-	}
+	Normal,
+	Shadowed,
+	Outline
 }

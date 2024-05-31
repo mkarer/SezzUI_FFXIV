@@ -1,12 +1,11 @@
 ﻿using SezzUI.Modules;
 
-namespace SezzUI.Game.Events
+namespace SezzUI.Game.Events;
+
+internal abstract class BaseEvent : BaseModule
 {
-	internal abstract class BaseEvent : BaseModule
+	protected BaseEvent()
 	{
-		protected BaseEvent()
-		{
-			Logger.SetPrefix($"Event:{GetType().Name}");
-		}
+		Logger.SetPrefix($"Event:{GetType().Name}");
 	}
 }
