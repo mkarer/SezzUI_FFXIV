@@ -89,7 +89,7 @@ namespace SezzUI.Modules.GameUI
 				Logger.Debug($"[{bar}] Updating...");
 			}
 #endif
-			AtkUnitBase* addon = (AtkUnitBase*) Service.GameGui.GetAddonByName(Addons.Names[bar], 1);
+			AtkUnitBase* addon = (AtkUnitBase*) Services.GameGui.GetAddonByName(Addons.Names[bar], 1);
 			if ((IntPtr) addon != IntPtr.Zero)
 			{
 				ActionBarLayout layout = ((AddonActionBarBase*) addon)->Layout;
@@ -289,7 +289,7 @@ namespace SezzUI.Modules.GameUI
 			}
 #endif
 
-			AtkUnitBase* addon = (AtkUnitBase*) Service.GameGui.GetAddonByName(Addons.Names[bar], 1);
+			AtkUnitBase* addon = (AtkUnitBase*) Services.GameGui.GetAddonByName(Addons.Names[bar], 1);
 			if ((IntPtr) addon != IntPtr.Zero)
 			{
 				foreach ((uint nodeId, Vector2<float> pos) in _originalPositions[bar])
@@ -353,7 +353,7 @@ namespace SezzUI.Modules.GameUI
 				return;
 			}
 
-			if (Service.SigScanner.TryScanText("E8 ?? ?? ?? ?? FF C3 83 FB 38 7E E0 BA ?? ?? ?? ?? 48 8B CF", out IntPtr setPagePtr)) // 6.0.5: ffxiv_dx11.exe+80D130
+			if (Services.SigScanner.TryScanText("E8 ?? ?? ?? ?? FF C3 83 FB 38 7E E0 BA ?? ?? ?? ?? 48 8B CF", out IntPtr setPagePtr)) // 6.0.5: ffxiv_dx11.exe+80D130
 			{
 #if DEBUG
 				if (_debugConfig.LogSigScanner)
@@ -404,8 +404,8 @@ namespace SezzUI.Modules.GameUI
 
 				if (!success)
 				{
-					Service.ChatGui.PrintError("SezzUI failed to setup Bar Paging - it will now be disabled and can only be enabled again after RESTARTING the game!");
-					Service.ChatGui.PrintError("You can (and should) check the Dalamud logfile for further details.");
+					Services.Chat.PrintError("SezzUI failed to setup Bar Paging - it will now be disabled and can only be enabled again after RESTARTING the game!");
+					Services.Chat.PrintError("You can (and should) check the Dalamud logfile for further details.");
 					Config.EnableBarPaging = false;
 					_msgWindow.Dispose();
 					_msgWindow = null;
@@ -502,7 +502,7 @@ namespace SezzUI.Modules.GameUI
 
 			if (_setPagePtr == null)
 			{
-				Service.ChatGui.PrintError("Signature scan failed, Bar Paging will not be available!");
+				Services.Chat.PrintError("Signature scan failed, Bar Paging will not be available!");
 			}
 			else
 			{
@@ -534,7 +534,7 @@ namespace SezzUI.Modules.GameUI
 		/// </summary>
 		private unsafe void CheckStuckModifiers()
 		{
-			AtkUnitBase* actionBar = (AtkUnitBase*) Service.GameGui.GetAddonByName("_ActionBar", 1);
+			AtkUnitBase* actionBar = (AtkUnitBase*) Services.GameGui.GetAddonByName("_ActionBar", 1);
 			if ((IntPtr) actionBar == IntPtr.Zero || !actionBar->IsVisible)
 			{
 				return;
@@ -597,7 +597,7 @@ namespace SezzUI.Modules.GameUI
 				return;
 			}
 
-			AtkUnitBase* actionBar = (AtkUnitBase*) Service.GameGui.GetAddonByName("_ActionBar", 1);
+			AtkUnitBase* actionBar = (AtkUnitBase*) Services.GameGui.GetAddonByName("_ActionBar", 1);
 			if ((IntPtr) actionBar == IntPtr.Zero || !actionBar->IsVisible)
 			{
 #if DEBUG
@@ -620,7 +620,7 @@ namespace SezzUI.Modules.GameUI
 				}
 #endif
 
-				IntPtr agentActionBar = Service.GameGui.FindAgentInterface((IntPtr) actionBar);
+				IntPtr agentActionBar = Services.GameGui.FindAgentInterface((IntPtr) actionBar);
 				if (agentActionBar != IntPtr.Zero)
 				{
 					try

@@ -6,6 +6,7 @@ using System.Numerics;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface;
 using Dalamud.Interface.ImGuiFileDialog;
+using Dalamud.Plugin.Services;
 using ImGuiNET;
 using Newtonsoft.Json;
 using SezzUI.Configuration.Attributes;
@@ -231,7 +232,7 @@ namespace SezzUI.Configuration.Profiles
 
 		public void UpdateCurrentProfile()
 		{
-			PlayerCharacter? player = Service.ClientState.LocalPlayer;
+			PlayerCharacter? player = Services.ClientState.LocalPlayer;
 			if (player == null)
 			{
 				return;
@@ -306,7 +307,7 @@ namespace SezzUI.Configuration.Profiles
 			try
 			{
 				Save();
-				Service.PluginInterface.UiBuilder.RebuildFonts();
+				Services.PluginInterface.UiBuilder.RebuildFonts();
 			}
 			catch (Exception ex)
 			{

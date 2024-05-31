@@ -14,7 +14,7 @@ using SezzUI.Logging;
 
 namespace SezzUI.Helper
 {
-	public static class DalamudHelper
+	public static partial class DalamudHelper
 	{
 		internal static T GetService<T>() => (T) typeof(IDalamudPlugin).Assembly.GetType("Dalamud.Service`1")!.MakeGenericType(typeof(T)).GetMethod("Get", BindingFlags.Static | BindingFlags.Public)!.Invoke(null, null)!;
 		internal static object GetService(string name) => typeof(IDalamudPlugin).Assembly.GetType("Dalamud.Service`1")!.MakeGenericType(typeof(IDalamudPlugin).Assembly.GetType(name)!).GetMethod("Get", BindingFlags.Static | BindingFlags.Public)!.Invoke(null, null)!;
@@ -28,15 +28,16 @@ namespace SezzUI.Helper
 		public static IReadOnlyList<PluginEntry> Plugins { get; private set; }
 		internal static PluginLogger Logger;
 
-		public static string AssetDirectory => GetService("Dalamud.DalamudStartInfo").GetPropertyValue<string>("AssetDirectory");
+		public static string AssetDirectory => GetService("Dalamud.Dalamud").GetPropertyValue<DirectoryInfo>("AssetDirectory").FullName;
 
 		public static (string?, uint?, ImFontPtr? imFontPtr) GetDefaultFont()
 		{
-			// At the time of implementing this the default font is: NotoSansCJKjp-Medium.otf (17px)
-			string assetDirectory = null!;
+            // At the time of implementing this the default font is: NotoSansCJKjp-Medium.otf (17px)
+            // 2024-06-01: The default font is now: ProggyClean.ttf (13px)
+            string assetDirectory = null!;
 			try
 			{
-				assetDirectory = AssetDirectory;
+                assetDirectory = AssetDirectory;
 			}
 			catch (Exception ex)
 			{
@@ -48,13 +49,13 @@ namespace SezzUI.Helper
 			{
 				ImFontPtr defaultFont = io.Fonts.Fonts[0];
 				string defaultFontName = defaultFont.GetDebugName();
-				//Logger.Debug("GetDefaultFont", $"ImGui Default Font[0]: {defaultFontName}");
+				Logger.Debug($"ImGui Default Font[0]: {defaultFontName}");
 
-				Match dalamudFontMatch = Regex.Match(defaultFontName, @"^(.*), ([1-9]\d*(\.)\d*|0?(\.)\d*[1-9]\d*|[1-9]\d*)px$");
+				Match dalamudFontMatch = regexDalamudFont().Match(defaultFontName);
 				if (dalamudFontMatch.Success && uint.TryParse(dalamudFontMatch.Groups[2].Value, out uint dalamudFontSize)) // 17
 				{
 					string dalamudFontFile = dalamudFontMatch.Groups[1].Value; // NotoSansCJKjp-Medium.otf
-					//Logger.Debug("GetDefaultFont", $"Dalamud Font: {dalamudFontFile} Size: {dalamudFontSize}px");
+					Logger.Debug($"Dalamud Font: {dalamudFontFile} Size: {dalamudFontSize}px");
 					return (Path.Combine(assetDirectory, "UIRes", dalamudFontFile), dalamudFontSize, defaultFont);
 				}
 			}
@@ -70,28 +71,33 @@ namespace SezzUI.Helper
 			List<PluginEntry> list = new();
 			foreach (object plugin in pluginList)
 			{
-				if (plugin.GetType().GetProperty("DalamudInterface", BindingFlags.Public | BindingFlags.Instance)!.GetValue(plugin) == null)
-				{
-					continue;
-				}
+                var pluginDalamudInterface = plugin.GetType().GetProperty("DalamudInterface", BindingFlags.Public | BindingFlags.Instance)!.GetValue(plugin);
+                if (pluginDalamudInterface == null)
+                {
+                    continue;
+                }
+                var pluginUiBuilder = pluginDalamudInterface.GetType().GetProperty("UiBuilder", BindingFlags.Public | BindingFlags.Instance)!.GetValue(pluginDalamudInterface);
+                if (pluginUiBuilder == null)
+                {
+                    continue;
+                }
 
-				try
-				{
+                try
+                {
 					string name = plugin.GetPropertyValue<string>("Name");
-					bool loaded = plugin.GetPropertyValue<bool>("IsLoaded");
+                    bool loaded = plugin.GetPropertyValue<bool>("IsLoaded");
 					if (loaded)
 					{
-						bool enabled = true; // Assume that all unsupported plugins are enabled
+						bool enabled = true; // Assume that all unsupported plugins are enabled...
 
 						switch (name)
 						{
 							case "TextAdvance":
 								enabled = plugin.GetFieldValue<IDalamudPlugin>("instance").GetFieldValue<bool>("Enabled");
-								//Logger.Debug("RefreshPlugins", $"Plugin: {name} Enabled: {enabled}");
 								break;
 						}
 
-						//Logger.Debug("RefreshPlugins", $"Plugin: {name} Enabled: {enabled}");
+						//Logger.Debug($"Plugin: {name} Enabled: {enabled}");
 						PluginEntry entry = new()
 						{
 							Name = name,
@@ -115,5 +121,8 @@ namespace SezzUI.Helper
 			Logger = new("DalamudHelper");
 			Plugins = new List<PluginEntry>();
 		}
-	}
+
+        [GeneratedRegex(@"^(.*), ([1-9]\d*(\.)\d*|0?(\.)\d*[1-9]\d*|[1-9]\d*)px$")]
+        private static partial Regex regexDalamudFont();
+    }
 }

@@ -72,10 +72,10 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		private static bool IsInAstralFireOrIsInUmbralIce()
 		{
-			BLMGauge gauge = Service.JobGauges.Get<BLMGauge>();
+			BLMGauge gauge = Services.JobGauges.Get<BLMGauge>();
 			return gauge.InAstralFire || gauge.InUmbralIce;
 		}
 
-		private static bool IsParadoxActive() => Service.JobGauges.Get<BLMGauge>().IsParadoxActive;
+		private static bool IsParadoxActive() => Services.JobGauges.Get<BLMGauge>().IsParadoxActive;
 	}
 }

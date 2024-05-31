@@ -195,7 +195,7 @@ namespace SezzUI.Configuration.Tree
 
 			ImGui.BeginGroup();
 
-			ImGui.SetCursorPos(new(ImGui.GetWindowContentRegionWidth() / 2f - buttonWidth - 5, ImGui.GetCursorPosY()));
+			ImGui.SetCursorPos(new(ImGui.GetWindowContentRegionMax().X / 2f - buttonWidth - 5, ImGui.GetCursorPosY()));
 
 			if (ImGui.Button("Export", new(buttonWidth, 24)))
 			{

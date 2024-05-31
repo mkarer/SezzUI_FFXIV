@@ -1,7 +1,7 @@
 ﻿using System;
-using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
+using Dalamud.Plugin.Services;
 using SezzUI.Modules;
 
 namespace SezzUI.Game.Events
@@ -21,15 +21,15 @@ namespace SezzUI.Game.Events
 		protected override void OnEnable()
 		{
 			_lastState = !IsInCombat();
-			Service.Framework.Update += OnFrameworkUpdate;
+			Services.Framework.Update += OnFrameworkUpdate;
 		}
 
 		protected override void OnDisable()
 		{
-			Service.Framework.Update -= OnFrameworkUpdate;
+			Services.Framework.Update -= OnFrameworkUpdate;
 		}
 
-		private void OnFrameworkUpdate(Framework framework)
+		private void OnFrameworkUpdate(IFramework framework)
 		{
 			try
 			{
@@ -46,7 +46,7 @@ namespace SezzUI.Game.Events
 			bool state = _lastState;
 			try
 			{
-				state = Service.Condition[ConditionFlag.InCombat] || treatWeaponOutAsCombat && Service.ClientState.LocalPlayer != null && Service.ClientState.LocalPlayer.StatusFlags.HasFlag(StatusFlags.WeaponOut);
+				state = Services.Condition[ConditionFlag.InCombat] || treatWeaponOutAsCombat && Services.ClientState.LocalPlayer != null && Services.ClientState.LocalPlayer.StatusFlags.HasFlag(StatusFlags.WeaponOut);
 			}
 			catch (Exception ex)
 			{

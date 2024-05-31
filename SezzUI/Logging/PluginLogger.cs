@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Dalamud.Logging;
 
 namespace SezzUI.Logging
 {
@@ -26,7 +25,7 @@ namespace SezzUI.Logging
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				PluginLog.Verbose(new StringBuilder("[").Append(_prefix).Append(_prefix != "" ? "::" : "").Append(callerName).Append(':').Append(lineNumber).Append("] ").Append(m).ToString());
+				Services.PluginLog.Verbose(new StringBuilder("[").Append(_prefix).Append(_prefix != "" ? "::" : "").Append(callerName).Append(':').Append(lineNumber).Append("] ").Append(m).ToString());
 			}
 		}
 #else
@@ -34,17 +33,17 @@ namespace SezzUI.Logging
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				PluginLog.Verbose(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
+				Service.PluginLog.Verbose(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
 			}
 		}
 #endif
 
 #if DEBUG
-		public void Debug(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1)
+        public void Debug(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1)
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				PluginLog.Debug(new StringBuilder("[").Append(_prefix).Append(_prefix != "" ? "::" : "").Append(callerName).Append(':').Append(lineNumber).Append("] ").Append(m).ToString());
+                Services.PluginLog.Debug(new StringBuilder("[").Append(_prefix).Append(_prefix != "" ? "::" : "").Append(callerName).Append(':').Append(lineNumber).Append("] ").Append(m).ToString());
 			}
 		}
 #else
@@ -52,17 +51,17 @@ namespace SezzUI.Logging
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				PluginLog.Debug(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
+				Service.PluginLog.Debug(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
 			}
 		}
 #endif
 
 #if DEBUG
-		public void Information(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1)
+        public void Information(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1)
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				PluginLog.Information(new StringBuilder("[").Append(_prefix).Append(_prefix != "" ? "::" : "").Append(callerName).Append(':').Append(lineNumber).Append("] ").Append(m).ToString());
+                Services.PluginLog.Information(new StringBuilder("[").Append(_prefix).Append(_prefix != "" ? "::" : "").Append(callerName).Append(':').Append(lineNumber).Append("] ").Append(m).ToString());
 			}
 		}
 #else
@@ -70,17 +69,17 @@ namespace SezzUI.Logging
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				PluginLog.Information(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
+				Service.PluginLog.Information(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
 			}
 		}
 #endif
 
 #if DEBUG
-		public void Warning(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1)
+        public void Warning(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1)
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				PluginLog.Warning(new StringBuilder("[").Append(_prefix).Append(_prefix != "" ? "::" : "").Append(callerName).Append(':').Append(lineNumber).Append("] ").Append(m).ToString());
+                Services.PluginLog.Warning(new StringBuilder("[").Append(_prefix).Append(_prefix != "" ? "::" : "").Append(callerName).Append(':').Append(lineNumber).Append("] ").Append(m).ToString());
 			}
 		}
 #else
@@ -88,17 +87,17 @@ namespace SezzUI.Logging
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				PluginLog.Warning(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
+				Service.PluginLog.Warning(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
 			}
 		}
 #endif
 
 #if DEBUG
-		public void Error(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1)
+        public void Error(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1)
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				PluginLog.Error(new StringBuilder("[").Append(_prefix).Append(_prefix != "" ? "::" : "").Append(callerName).Append(':').Append(lineNumber).Append("] ").Append(m).ToString());
+                Services.PluginLog.Error(new StringBuilder("[").Append(_prefix).Append(_prefix != "" ? "::" : "").Append(callerName).Append(':').Append(lineNumber).Append("] ").Append(m).ToString());
 			}
 		}
 #else
@@ -106,17 +105,17 @@ namespace SezzUI.Logging
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				PluginLog.Error(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
+				Service.PluginLog.Error(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
 			}
 		}
 #endif
 
 #if DEBUG
-		public void Fatal(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1)
+        public void Fatal(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1)
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				PluginLog.Fatal(new StringBuilder("[").Append(_prefix).Append(_prefix != "" ? "::" : "").Append(callerName).Append(':').Append(lineNumber).Append("] ").Append(m).ToString());
+                Services.PluginLog.Fatal(new StringBuilder("[").Append(_prefix).Append(_prefix != "" ? "::" : "").Append(callerName).Append(':').Append(lineNumber).Append("] ").Append(m).ToString());
 			}
 		}
 #else
@@ -124,12 +123,12 @@ namespace SezzUI.Logging
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				PluginLog.Fatal(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
+				Service.PluginLog.Fatal(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
 			}
 		}
 #endif
 
-		private static IEnumerable<string> SplitMessage(object message)
+        private static IEnumerable<string> SplitMessage(object message)
 		{
 			if (message is IList list)
 			{

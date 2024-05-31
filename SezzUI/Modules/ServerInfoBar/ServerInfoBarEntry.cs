@@ -24,7 +24,7 @@ namespace SezzUI.Modules.ServerInfoBar
 
 			try
 			{
-				_dtrEntry ??= Service.DtrBar.Get(Title);
+				_dtrEntry ??= Services.DtrBar.Get(Title);
 				_dtrEntry.Text = text;
 			}
 			catch (Exception ex)

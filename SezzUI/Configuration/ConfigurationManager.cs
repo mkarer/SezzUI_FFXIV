@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Dalamud.Interface.Internal;
 using Dalamud.Interface.Windowing;
 using ImGuiScene;
 using SezzUI.Configuration.Profiles;
@@ -28,7 +29,7 @@ namespace SezzUI.Configuration
 	{
 		internal PluginLogger Logger;
 
-		public readonly TextureWrap? BannerImage;
+		public readonly IDalamudTextureWrap? BannerImage;
 
 		private BaseNode _configBaseNode;
 
@@ -114,7 +115,7 @@ namespace SezzUI.Configuration
 		{
 			Logger = new(GetType().Name);
 			BannerImage = Plugin.BannerTexture;
-			ConfigDirectory = Service.PluginInterface.GetPluginConfigDirectory();
+			ConfigDirectory = Services.PluginInterface.GetPluginConfigDirectory();
 
 			_configBaseNode = new();
 			InitializeBaseNode(_configBaseNode);
@@ -146,7 +147,7 @@ namespace SezzUI.Configuration
 
 			CheckVersion();
 
-			Service.ClientState.Logout += OnLogout;
+			Services.ClientState.Logout += OnLogout;
 		}
 
 		bool IPluginDisposable.IsDisposed { get; set; } = false;
@@ -170,7 +171,7 @@ namespace SezzUI.Configuration
 			}
 
 			ConfigBaseNode.ConfigObjectResetEvent -= OnConfigNodeReset;
-			Service.ClientState.Logout -= OnLogout;
+			Services.ClientState.Logout -= OnLogout;
 			BannerImage?.Dispose();
 
 			(this as IPluginDisposable).IsDisposed = true;
@@ -190,7 +191,7 @@ namespace SezzUI.Configuration
 			Reset?.Invoke(this, config);
 		}
 
-		private void OnLogout(object? sender, EventArgs? args)
+		private void OnLogout()
 		{
 			SaveConfigurations();
 			ProfilesManager.Instance.SaveCurrentProfile();
@@ -468,6 +469,7 @@ namespace SezzUI.Configuration
 			typeof(JobHudDebugConfig),
 #endif
 			typeof(CooldownHudConfig),
+			typeof(CooldownHudGroupsConfig),
 #if DEBUG
 			typeof(CooldownHudDebugConfig),
 #endif

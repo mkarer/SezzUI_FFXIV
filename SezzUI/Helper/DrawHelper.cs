@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using Dalamud.Interface.Internal;
 using ImGuiNET;
 using ImGuiScene;
 using SezzUI.Enums;
@@ -102,7 +103,7 @@ namespace SezzUI.Helper
 		/// </summary>
 		public static void DrawBackdropEdge(string edgeFile, Vector2 backdropPos, Vector2 backdropSize, uint glowColor, ImDrawListPtr drawList, uint size = 8, short inset = -8)
 		{
-			TextureWrap? texture = Singletons.Get<ImageCache>().GetImage(edgeFile);
+            IDalamudTextureWrap? texture = Singletons.Get<ImageCache>().GetImage(edgeFile);
 			if (texture == null)
 			{
 				return;

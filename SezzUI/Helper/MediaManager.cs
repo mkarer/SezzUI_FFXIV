@@ -190,7 +190,7 @@ namespace SezzUI.Helper
 					Logger.Debug("Success");
 				}
 #endif
-				Service.PluginInterface.UiBuilder.RebuildFonts();
+				Services.PluginInterface.UiBuilder.RebuildFonts();
 			}
 			else
 			{
@@ -207,7 +207,7 @@ namespace SezzUI.Helper
 					ImGuiFontData.Remove(fontKey);
 				}
 
-				Service.PluginInterface.UiBuilder.RebuildFonts();
+				Services.PluginInterface.UiBuilder.RebuildFonts();
 			}
 		}
 
@@ -228,7 +228,7 @@ namespace SezzUI.Helper
 				Logger.Debug($"Success -> Key: {fontKey} Name: {fontData.Name} Size: {fontData.Size} CN/JP: {fontData.Chinese} KR: {fontData.Korean} Path: {fontData.File.Path}");
 			}
 #endif
-			Service.PluginInterface.UiBuilder.RebuildFonts();
+			Services.PluginInterface.UiBuilder.RebuildFonts();
 			return true;
 		}
 
@@ -422,11 +422,11 @@ namespace SezzUI.Helper
 					Logger.Debug("Default font aren't available, retrying...");
 				}
 #endif
-				Service.PluginInterface.UiBuilder.RebuildFonts();
+				Services.PluginInterface.UiBuilder.RebuildFonts();
 			}
 			else
 			{
-				Service.PluginInterface.UiBuilder.Draw -= OnDraw;
+				Services.PluginInterface.UiBuilder.Draw -= OnDraw;
 			}
 		}
 
@@ -440,8 +440,8 @@ namespace SezzUI.Helper
 			Singletons.Get<ConfigurationManager>().Reset += OnConfigReset;
 			Config.Media.ValueChangeEvent += OnConfigPropertyChanged;
 			Config.Fonts.ValueChangeEvent += OnConfigPropertyChanged;
-			Service.PluginInterface.UiBuilder.Draw += OnDraw;
-			Service.PluginInterface.UiBuilder.BuildFonts += BuildFonts;
+			Services.PluginInterface.UiBuilder.Draw += OnDraw;
+			Services.PluginInterface.UiBuilder.BuildFonts += BuildFonts;
 
 			// Images
 			if (Config.Media.Path != "" && !Config.Media.Path.EndsWith(Path.DirectorySeparatorChar))
@@ -477,7 +477,7 @@ namespace SezzUI.Helper
 			}
 
 			Config.Fonts.UpdateCustomFonts();
-			Service.PluginInterface.UiBuilder.RebuildFonts();
+			Services.PluginInterface.UiBuilder.RebuildFonts();
 		}
 
 		bool IPluginDisposable.IsDisposed { get; set; } = false;
@@ -500,11 +500,11 @@ namespace SezzUI.Helper
 				return;
 			}
 
-			Service.PluginInterface.UiBuilder.Draw -= OnDraw;
+			Services.PluginInterface.UiBuilder.Draw -= OnDraw;
 			Singletons.Get<ConfigurationManager>().Reset -= OnConfigReset;
 			Config.Media.ValueChangeEvent -= OnConfigPropertyChanged;
 			Config.Fonts.ValueChangeEvent -= OnConfigPropertyChanged;
-			Service.PluginInterface.UiBuilder.BuildFonts -= BuildFonts;
+			Services.PluginInterface.UiBuilder.BuildFonts -= BuildFonts;
 
 			ImGuiFontData.Clear();
 			ImGuiFonts.Clear();

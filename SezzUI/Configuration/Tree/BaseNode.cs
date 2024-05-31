@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
+using Dalamud.Interface.Internal;
 using ImGuiNET;
 using ImGuiScene;
 using SezzUI.Configuration.Attributes;
@@ -159,7 +160,7 @@ namespace SezzUI.Configuration.Tree
 				ImGui.BeginGroup(); // Left
 				{
 					// banner
-					TextureWrap? banner = Singletons.Get<ConfigurationManager>().BannerImage;
+					IDalamudTextureWrap? banner = Singletons.Get<ConfigurationManager>().BannerImage;
 					if (banner != null)
 					{
 						ImGui.SetCursorPos(new(10, 12));

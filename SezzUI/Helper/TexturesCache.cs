@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using Dalamud.Interface.Internal;
 using Dalamud.Plugin.Ipc;
 using ImGuiScene;
 using Lumina.Excel;
@@ -10,19 +11,19 @@ namespace SezzUI.Helper
 {
 	public class TexturesCache : IPluginDisposable
 	{
-		private readonly ConcurrentDictionary<uint, TextureWrap> _cache = new();
-		private readonly ConcurrentDictionary<string, TextureWrap> _pathCache = new();
+		private readonly ConcurrentDictionary<uint, IDalamudTextureWrap> _cache = new();
+		private readonly ConcurrentDictionary<string, IDalamudTextureWrap> _pathCache = new();
 		private readonly ICallGateSubscriber<string, string> _penumbraPathResolver;
 		internal PluginLogger Logger;
 
-		public TextureWrap? GetTexture<T>(uint rowId, uint stackCount = 0, bool hdIcon = true) where T : ExcelRow
+		public IDalamudTextureWrap? GetTexture<T>(uint rowId, uint stackCount = 0, bool hdIcon = true) where T : ExcelRow
 		{
-			ExcelSheet<T>? sheet = Service.DataManager.GetExcelSheet<T>();
+			ExcelSheet<T>? sheet = Services.Data.GetExcelSheet<T>();
 
 			return sheet == null ? null : GetTexture<T>(sheet.GetRow(rowId), stackCount, hdIcon);
 		}
 
-		public TextureWrap? GetTexture<T>(dynamic? row, uint stackCount = 0, bool hdIcon = true) where T : ExcelRow
+		public IDalamudTextureWrap? GetTexture<T>(dynamic? row, uint stackCount = 0, bool hdIcon = true) where T : ExcelRow
 		{
 			if (row == null)
 			{
@@ -33,14 +34,14 @@ namespace SezzUI.Helper
 			return GetTextureFromIconId(iconId, stackCount, hdIcon);
 		}
 
-		public TextureWrap? GetTextureFromIconId(uint iconId, uint stackCount = 0, bool hdIcon = true)
+		public IDalamudTextureWrap? GetTextureFromIconId(uint iconId, uint stackCount = 0, bool hdIcon = true)
 		{
-			if (_cache.TryGetValue(iconId + stackCount, out TextureWrap? texture))
+			if (_cache.TryGetValue(iconId + stackCount, out IDalamudTextureWrap? texture))
 			{
 				return texture;
 			}
 
-			TextureWrap? newTexture = LoadTexture(iconId + stackCount, hdIcon);
+			IDalamudTextureWrap? newTexture = LoadTexture(iconId + stackCount, hdIcon);
 			if (newTexture == null)
 			{
 				return null;
@@ -54,14 +55,14 @@ namespace SezzUI.Helper
 			return newTexture;
 		}
 
-		public TextureWrap? GetTextureFromPath(string path)
+		public IDalamudTextureWrap? GetTextureFromPath(string path)
 		{
-			if (_pathCache.TryGetValue(path, out TextureWrap? texture))
+			if (_pathCache.TryGetValue(path, out IDalamudTextureWrap? texture))
 			{
 				return texture;
 			}
 
-			TextureWrap? newTexture = LoadTexture(path);
+			IDalamudTextureWrap? newTexture = LoadTexture(path);
 			if (newTexture == null)
 			{
 				return null;
@@ -75,7 +76,7 @@ namespace SezzUI.Helper
 			return newTexture;
 		}
 
-		private TextureWrap? LoadTexture(uint id, bool hdIcon)
+		private IDalamudTextureWrap? LoadTexture(uint id, bool hdIcon)
 		{
 			string hdString = hdIcon ? "_hr1" : "";
 			string path = $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}{hdString}.tex";
@@ -83,7 +84,7 @@ namespace SezzUI.Helper
 			return LoadTexture(path);
 		}
 
-		private TextureWrap? LoadTexture(string path)
+		private IDalamudTextureWrap? LoadTexture(string path)
 		{
 			try
 			{
@@ -113,7 +114,7 @@ namespace SezzUI.Helper
 
 		private void RemoveTexture<T>(uint rowId) where T : ExcelRow
 		{
-			ExcelSheet<T>? sheet = Service.DataManager.GetExcelSheet<T>();
+			ExcelSheet<T>? sheet = Services.Data.GetExcelSheet<T>();
 
 			if (sheet == null)
 			{
@@ -165,7 +166,7 @@ namespace SezzUI.Helper
 		public TexturesCache()
 		{
 			Logger = new(GetType().Name);
-			_penumbraPathResolver = Service.PluginInterface.GetIpcSubscriber<string, string>("Penumbra.ResolveDefaultPath");
+			_penumbraPathResolver = Services.PluginInterface.GetIpcSubscriber<string, string>("Penumbra.ResolveDefaultPath");
 		}
 
 		bool IPluginDisposable.IsDisposed { get; set; } = false;
@@ -190,7 +191,7 @@ namespace SezzUI.Helper
 
 			foreach (uint key in _cache.Keys)
 			{
-				TextureWrap? tex = _cache[key];
+				IDalamudTextureWrap? tex = _cache[key];
 				tex?.Dispose();
 			}
 

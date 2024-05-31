@@ -55,7 +55,7 @@ namespace SezzUI.Hooking
 
 		HookWrapper<T>? Hook<T>(string signature, T detour, int addressOffset = 0, bool failable = false) where T : Delegate
 		{
-			if (!Service.SigScanner.TryScanText(signature, out IntPtr address))
+			if (!Services.SigScanner.TryScanText(signature, out IntPtr address))
 			{
 				(this as IPluginLogger)?.Logger.Error($"Failed to find {detour.GetType()} hook target address with signature {signature}");
 
@@ -85,8 +85,9 @@ namespace SezzUI.Hooking
 #endif
 
 			Hooks ??= new();
-			Hook<T> hook = new(address, detour);
-			HookWrapper<T> wrappedHook = new(hook);
+            Hook<T> hook = Services.HookProvider.HookFromAddress<T>(address, detour);
+
+            HookWrapper<T> wrappedHook = new(hook);
 			Hooks.Add(wrappedHook);
 			return wrappedHook;
 		}

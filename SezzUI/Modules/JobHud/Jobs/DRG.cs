@@ -42,6 +42,6 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		private static bool HasLifeOfTheDragon() => GetLifeOfTheDragonDuration() > 0;
 
-		private static float GetLifeOfTheDragonDuration() => Service.JobGauges.Get<DRGGauge>().LOTDTimer / 1000f;
+		private static float GetLifeOfTheDragonDuration() => Services.JobGauges.Get<DRGGauge>().LOTDTimer / 1000f;
 	}
 }

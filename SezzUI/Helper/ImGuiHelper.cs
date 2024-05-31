@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using Dalamud.Interface;
@@ -9,6 +7,7 @@ using ImGuiNET;
 using SezzUI.Configuration;
 using SezzUI.Configuration.Tree;
 using SezzUI.Enums;
+using SezzUI.Interface;
 using SezzUI.Logging;
 
 namespace SezzUI.Helper
@@ -172,8 +171,13 @@ namespace SezzUI.Helper
 			return DrawConfirmationModal(title, new[] {message});
 		}
 
-		public static (bool, bool) DrawConfirmationModal(string title, IEnumerable<string> textLines)
+		public static (bool, bool) DrawConfirmationModal(string title, string[] textLines)
 		{
+			if (textLines.Length == 0)
+			{
+				return (false, true);
+			}
+
 			Singletons.Get<ConfigurationManager>().ShowingModalWindow = true;
 
 			bool didConfirm = false;
@@ -184,17 +188,29 @@ namespace SezzUI.Helper
 			Vector2 center = ImGui.GetMainViewport().GetCenter();
 			ImGui.SetNextWindowPos(center, ImGuiCond.Appearing, new(0.5f, 0.5f));
 
-			bool p_open = true; // i've no idea what this is used for
+			bool pOpen = true; // i've no idea what this is used for
 
-			if (ImGui.BeginPopupModal(title + " ##SezzUI", ref p_open, ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
+			if (ImGui.BeginPopupModal(title + " ##SezzUI", ref pOpen, ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
 			{
+				float height = Math.Min((ImGui.CalcTextSize(" ").Y + 5) * textLines.Length, 240);
+
 				float width = 300;
-				float height = Math.Min((ImGui.CalcTextSize(" ").Y + 5) * textLines.Count(), 240);
+				foreach (string textLine in textLines)
+				{
+					width = Math.Max(width, ImGui.CalcTextSize(textLine).X);
+				}
 
 				ImGui.BeginChild("confirmation_modal_message", new(width, height), false);
 				foreach (string text in textLines)
 				{
-					ImGui.Text(text);
+					if (text.StartsWith("\u24d8"))
+					{
+						ImGui.TextColored(Style.Colors.Hint.Vector, text[1..]);
+					}
+					else
+					{
+						ImGui.Text(text);
+					}
 				}
 
 				ImGui.EndChild();
@@ -242,8 +258,8 @@ namespace SezzUI.Helper
 			Vector2 center = ImGui.GetMainViewport().GetCenter();
 			ImGui.SetNextWindowPos(center, ImGuiCond.Appearing, new(0.5f, 0.5f));
 
-			bool p_open = true; // i've no idea what this is used for
-			if (ImGui.BeginPopupModal("Error ##SezzUI", ref p_open, ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
+			bool pOpen = true; // i've no idea what this is used for
+			if (ImGui.BeginPopupModal("Error ##SezzUI", ref pOpen, ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
 			{
 				ImGui.Text(message);
 				ImGui.NewLine();
@@ -360,6 +376,38 @@ namespace SezzUI.Helper
 			ImGui.TextColored(new(0f / 255f, 174f / 255f, 255f / 255f, 1f), "\u2002\u2514");
 			ImGui.SameLine();
 			ImGui.SetCursorPosY(oldCursor.Y);
+		}
+
+		#endregion
+
+		#region Configuration: Notice
+
+		public static void DrawInformationNotice(string message, object id) => DrawNotice(message, FontAwesomeIcon.InfoCircle, Style.Colors.Information, id);
+		public static void DrawAlertNotice(string message, object id) => DrawNotice(message, FontAwesomeIcon.ExclamationCircle, Style.Colors.Alert, id);
+		public static void DrawErrorNotice(string message, object id) => DrawNotice(message, FontAwesomeIcon.Times, Style.Colors.Error, id);
+
+		public static void DrawNotice(string message, FontAwesomeIcon icon, PluginConfigColor color, object id)
+		{
+			ImGuiStylePtr style = ImGui.GetStyle();
+			Vector2 size = new(ImGui.GetContentRegionAvail().X, 0);
+			size.Y += ImGui.CalcTextSize(message, size.X - ImGui.GetTextLineHeight() - 2 * style.FramePadding.X - style.ScrollbarSize).Y;
+			size.Y += ImGui.GetFrameHeightWithSpacing() - 3f;
+
+			ImGui.PushStyleColor(ImGuiCol.ChildBg, color.Background);
+			ImGui.PushStyleColor(ImGuiCol.Border, color.Vector.AddTransparency(0.5f));
+
+			if (ImGui.BeginChild($"##SezzUI_Notice{id}", size, true))
+			{
+				ImGui.PushFont(UiBuilder.IconFont);
+				ImGui.AlignTextToFramePadding();
+				ImGui.TextColored(color.Vector, icon.ToIconString());
+				ImGui.PopFont();
+				ImGui.SameLine();
+				ImGui.TextWrapped(message);
+				ImGui.EndChild();
+			}
+
+			ImGui.PopStyleColor(2);
 		}
 
 		#endregion

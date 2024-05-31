@@ -115,11 +115,11 @@ namespace SezzUI.Modules.JobHud.Jobs
 			return statusEnhancedGallows != null || statusEnhancedGibbet == null;
 		}
 
-		private static bool IsEnshrouded() => Service.JobGauges.Get<RPRGauge>().EnshroudedTimeRemaining > 0;
+		private static bool IsEnshrouded() => Services.JobGauges.Get<RPRGauge>().EnshroudedTimeRemaining > 0;
 
 		private static bool HasOneLemureLeft()
 		{
-			RPRGauge gauge = Service.JobGauges.Get<RPRGauge>();
+			RPRGauge gauge = Services.JobGauges.Get<RPRGauge>();
 			return gauge.EnshroudedTimeRemaining > 0 && gauge.LemureShroud == 1 && gauge.VoidShroud == 0;
 		}
 

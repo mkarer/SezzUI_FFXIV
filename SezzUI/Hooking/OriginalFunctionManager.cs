@@ -1,4 +1,5 @@
 ﻿using System;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using SezzUI.Helper;
 using SezzUI.Logging;
@@ -31,15 +32,16 @@ namespace SezzUI.Hooking
 
 				try
 				{
-					// Client::Game::ActionManager.GetAdjustedActionId
+                    // Client::Game::ActionManager.GetAdjustedActionId
+                    throw new Exception("Currently unsupported.");
 					string getAdjustedActionIdSig = AsmHelper.GetSignature<ActionManager>("GetAdjustedActionId") ?? "E8 ?? ?? ?? ?? 8B F8 3B DF";
-					_originalGetAdjustedActionId = new(getAdjustedActionIdSig, "81 FA 2D 01 00 00 7F 42 0F 84 4B 01 00 00 8D 42 EB");
+					_originalGetAdjustedActionId = new(getAdjustedActionIdSig, "81 FA 2D 01 00 00 7F 42 0F 84 4B 01 00 00 8D 42 EB"); // TODO: Needs to get updated first.
 				}
 				catch (Exception ex)
 				{
-					Service.ChatGui.PrintError("SezzUI failed to reassemble GetAdjustedActionId to work around hooking issues.");
-					Service.ChatGui.PrintError("If you're using XIVCombo or a similar plugin most action-related features won't work correctly.");
-					Service.ChatGui.PrintError("You can (and should) check the Dalamud logfile for further details.");
+                    Services.Chat.PrintError("SezzUI failed to reassemble GetAdjustedActionId to work around hooking issues.");
+					Services.Chat.PrintError("If you're using XIVCombo or a similar plugin most action-related features won't work correctly.");
+					Services.Chat.PrintError("You can (and should) check the Dalamud logfile for further details.");
 					Logger.Error(ex);
 				}
 			}

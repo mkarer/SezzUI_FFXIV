@@ -4,6 +4,8 @@ using System.Linq;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Statuses;
+using Dalamud.Game.ClientState.Objects;
+using Dalamud.Plugin.Services;
 using Dalamud.Utility;
 using ImGuiScene;
 using Lumina.Excel;
@@ -14,6 +16,7 @@ using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 using LuminaActionIndirection = Lumina.Excel.GeneratedSheets.ActionIndirection;
 using LuminaGeneralAction = Lumina.Excel.GeneratedSheets.GeneralAction;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
+using Dalamud.Interface.Internal;
 
 namespace SezzUI.Helper
 {
@@ -29,9 +32,9 @@ namespace SezzUI.Helper
 		{
 			Logger = new("SpellHelper");
 
-			_sheetAction = Service.DataManager.Excel.GetSheet<LuminaAction>();
-			_sheetGeneralAction = Service.DataManager.Excel.GetSheet<LuminaGeneralAction>();
-			_sheetStatus = Service.DataManager.Excel.GetSheet<LuminaStatus>();
+			_sheetAction = Services.Data.Excel.GetSheet<LuminaAction>();
+			_sheetGeneralAction = Services.Data.Excel.GetSheet<LuminaGeneralAction>();
+			_sheetStatus = Services.Data.Excel.GetSheet<LuminaStatus>();
 
 			_actionAdjustments = new()
 			{
@@ -46,7 +49,7 @@ namespace SezzUI.Helper
 			// ActionIndirection data: 25800 (Aethercharge) -> 25831 (Summon Phoenix)
 			List<uint> adjustmentWhitelist = new() {25800u};
 
-			ExcelSheet<LuminaActionIndirection>? sheetActionIndirection = Service.DataManager.Excel.GetSheet<LuminaActionIndirection>();
+			ExcelSheet<LuminaActionIndirection>? sheetActionIndirection = Services.Data.Excel.GetSheet<LuminaActionIndirection>();
 			sheetActionIndirection?.Where(a => a.ClassJob.Value?.RowId > 0 && a.PreviousComboAction.Value is {RowId: > 0} && !adjustmentWhitelist.Contains(a.PreviousComboAction.Value.RowId)).ToList().ForEach(a =>
 			{
 				LuminaAction previousAction = a.PreviousComboAction.Value!; // It's never null.
@@ -63,8 +66,8 @@ namespace SezzUI.Helper
 		}
 
 		public static uint GetAdjustedActionId(uint actionId, bool debug = false)
-		{
-			byte level = Service.ClientState.LocalPlayer?.Level ?? 0;
+        {
+			byte level = Services.ClientState.LocalPlayer?.Level ?? 0;
 			uint actionIdAdjusted = _actionAdjustments.TryGetValue(actionId, out Dictionary<uint, uint>? actionAdjustments) ? actionAdjustments.Where(a => level >= a.Key).OrderByDescending(a => a.Key).Select(a => a.Value).FirstOrDefault() : 0;
 			if (debug)
 			{
@@ -74,7 +77,7 @@ namespace SezzUI.Helper
 			return actionIdAdjusted > 0 ? actionIdAdjusted : OriginalFunctionManager.GetAdjustedActionId(actionId);
 		}
 
-		public static TextureWrap? GetIconTexture(ushort? iconId, out bool isOverriden)
+		public static IDalamudTextureWrap? GetIconTexture(uint? iconId, out bool isOverriden)
 		{
 			isOverriden = false;
 			if (iconId == null)
@@ -82,7 +85,7 @@ namespace SezzUI.Helper
 				return null;
 			}
 
-			TextureWrap? texture = Singletons.Get<ImageCache>().GetImage(Singletons.Get<MediaManager>().GetIconFile($"{iconId / 1000 * 1000:000000}\\{iconId:000000}.png"));
+            IDalamudTextureWrap? texture = Singletons.Get<ImageCache>().GetImage(Singletons.Get<MediaManager>().GetIconFile($"{iconId / 1000 * 1000:000000}\\{iconId:000000}.png"));
 			if (texture != null)
 			{
 				isOverriden = true;
@@ -95,13 +98,13 @@ namespace SezzUI.Helper
 			return texture;
 		}
 
-		public static TextureWrap? GetActionIconTexture(uint actionId, out bool isOverriden)
+		public static IDalamudTextureWrap? GetActionIconTexture(uint actionId, out bool isOverriden)
 		{
 			isOverriden = false;
 			return GetIconTexture(GetAction(actionId)?.Icon, out isOverriden);
 		}
 
-		public static TextureWrap? GetStatusIconTexture(uint statusId, out bool isOverriden)
+		public static IDalamudTextureWrap? GetStatusIconTexture(uint statusId, out bool isOverriden)
 		{
 			isOverriden = false;
 			return GetIconTexture(GetStatus(statusId)?.Icon, out isOverriden);
@@ -134,19 +137,19 @@ namespace SezzUI.Helper
 
 		public static BattleChara? GetUnit(Unit unit)
 		{
-			PlayerCharacter? player = Service.ClientState.LocalPlayer;
+			PlayerCharacter? player = Services.ClientState.LocalPlayer;
 			if (player == null)
 			{
 				return null;
 			}
 
-			GameObject? target = Service.TargetManager.SoftTarget ?? Service.TargetManager.Target;
+			GameObject? target = Services.TargetManager.SoftTarget ?? Services.TargetManager.Target;
 			GameObject? actor = unit switch
 			{
 				Unit.Player => player,
 				Unit.Target => target,
-				Unit.TargetOfTarget => Utils.FindTargetOfTarget(player, target, Service.ObjectTable),
-				Unit.FocusTarget => Service.TargetManager.FocusTarget,
+				Unit.TargetOfTarget => Utils.FindTargetOfTarget(player, target, Services.Objects),
+				Unit.FocusTarget => Services.TargetManager.FocusTarget,
 				_ => null
 			};
 
@@ -180,7 +183,7 @@ namespace SezzUI.Helper
 				BattleChara? actor = GetUnit(unit);
 				if (actor != null)
 				{
-					PlayerCharacter? player = Service.ClientState.LocalPlayer;
+					PlayerCharacter? player = Services.ClientState.LocalPlayer;
 					if (player == null)
 					{
 						return null;
@@ -188,7 +191,7 @@ namespace SezzUI.Helper
 
 					foreach (Status status in actor.StatusList)
 					{
-						if (status.StatusId == statusId && (!mustMatchPlayerSource || mustMatchPlayerSource && status.SourceID == player.ObjectId))
+						if (status.StatusId == statusId && (!mustMatchPlayerSource || mustMatchPlayerSource && status.SourceId == player.ObjectId))
 						{
 							return status;
 						}
@@ -220,7 +223,7 @@ namespace SezzUI.Helper
 				BattleChara? actor = GetUnit(unit);
 				if (actor != null)
 				{
-					PlayerCharacter? player = Service.ClientState.LocalPlayer;
+					PlayerCharacter? player = Services.ClientState.LocalPlayer;
 					if (player == null)
 					{
 						return null;
@@ -232,7 +235,7 @@ namespace SezzUI.Helper
 					foreach (Status status in actor.StatusList)
 					{
 						int foundIndex = Array.IndexOf(statusIds, status.StatusId);
-						if (foundIndex > -1 && (!mustMatchPlayerSource || mustMatchPlayerSource && status.SourceID == player.ObjectId) && (bestIndex == -1 || foundIndex < bestIndex))
+						if (foundIndex > -1 && (!mustMatchPlayerSource || mustMatchPlayerSource && status.SourceId == player.ObjectId) && (bestIndex == -1 || foundIndex < bestIndex))
 						{
 							bestIndex = foundIndex;
 							bestStatus = status;

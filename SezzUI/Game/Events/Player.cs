@@ -1,6 +1,8 @@
 ﻿using System;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Plugin.Services;
+using SezzUI.Helper;
 using SezzUI.Modules;
 
 namespace SezzUI.Game.Events
@@ -25,15 +27,15 @@ namespace SezzUI.Game.Events
 
 		protected override void OnEnable()
 		{
-			Service.Framework.Update += OnFrameworkUpdate;
+			Services.Framework.Update += OnFrameworkUpdate;
 		}
 
 		protected override void OnDisable()
 		{
-			Service.Framework.Update -= OnFrameworkUpdate;
+			Services.Framework.Update -= OnFrameworkUpdate;
 		}
 
-		private void OnFrameworkUpdate(Framework framework)
+		private void OnFrameworkUpdate(IFramework framework)
 		{
 			try
 			{
@@ -47,7 +49,7 @@ namespace SezzUI.Game.Events
 
 		private void Update()
 		{
-			PlayerCharacter? player = Service.ClientState.LocalPlayer;
+			PlayerCharacter? player = Services.ClientState.LocalPlayer;
 
 			try
 			{

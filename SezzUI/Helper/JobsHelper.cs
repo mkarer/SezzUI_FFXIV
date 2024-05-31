@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Dalamud.Game.ClientState.JobGauge.Types;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
@@ -45,12 +46,12 @@ namespace SezzUI.Helper
 		public static unsafe byte GetUnsyncedLevel()
 		{
 			UIState* uiState = UIState.Instance();
-			if (Service.ClientState.LocalPlayer == null || uiState == null || uiState->PlayerState.SyncedLevel == 0 || Service.ClientState.LocalPlayer?.ClassJob == null || Service.ClientState.LocalPlayer.ClassJob.GameData == null)
+			if (Services.ClientState.LocalPlayer == null || uiState == null || uiState->PlayerState.SyncedLevel == 0 || Services.ClientState.LocalPlayer?.ClassJob == null || Services.ClientState.LocalPlayer.ClassJob.GameData == null)
 			{
-				return Service.ClientState.LocalPlayer?.Level ?? 0;
+				return Services.ClientState.LocalPlayer?.Level ?? 0;
 			}
 
-			int index = Service.ClientState.LocalPlayer.ClassJob.GameData.ExpArrayIndex & 0xff;
+			int index = Services.ClientState.LocalPlayer.ClassJob.GameData.ExpArrayIndex & 0xff;
 			return (byte) uiState->PlayerState.ClassJobLevelArray[index];
 		}
 
@@ -62,13 +63,13 @@ namespace SezzUI.Helper
 				return false;
 			}
 
-			byte jobLevel = action.IsRoleAction ? GetUnsyncedLevel() : Service.ClientState.LocalPlayer?.Level ?? 0;
+			byte jobLevel = action.IsRoleAction ? GetUnsyncedLevel() : Services.ClientState.LocalPlayer?.Level ?? 0;
 			return action.ClassJobLevel <= jobLevel;
 		}
 
 		public static (int, int) GetPower(PowerType powerType)
 		{
-			PlayerCharacter? player = Service.ClientState.LocalPlayer;
+			PlayerCharacter? player = Services.ClientState.LocalPlayer;
 			byte jobLevel = player?.Level ?? 0;
 
 			switch (powerType)
@@ -77,43 +78,43 @@ namespace SezzUI.Helper
 					return player != null ? ((int) player.CurrentMp, (int) player.MaxMp) : (0, 0);
 
 				case PowerType.Oath:
-					return jobLevel >= 35 ? (Service.JobGauges.Get<PLDGauge>().OathGauge, 100) : (0, 0);
+					return jobLevel >= 35 ? (Services.JobGauges.Get<PLDGauge>().OathGauge, 100) : (0, 0);
 
 				case PowerType.WhiteMana:
-					return (Service.JobGauges.Get<RDMGauge>().WhiteMana, 100);
+					return (Services.JobGauges.Get<RDMGauge>().WhiteMana, 100);
 
 				case PowerType.BlackMana:
-					return (Service.JobGauges.Get<RDMGauge>().BlackMana, 100);
+					return (Services.JobGauges.Get<RDMGauge>().BlackMana, 100);
 
 				case PowerType.ManaStacks:
-					return (Service.JobGauges.Get<RDMGauge>().ManaStacks, 3);
+					return (Services.JobGauges.Get<RDMGauge>().ManaStacks, 3);
 
 				case PowerType.Blood:
-					return jobLevel >= 62 ? (Service.JobGauges.Get<DRKGauge>().Blood, 100) : (0, 0);
+					return jobLevel >= 62 ? (Services.JobGauges.Get<DRKGauge>().Blood, 100) : (0, 0);
 
 				case PowerType.Ammo:
-					return jobLevel >= 30 ? (Service.JobGauges.Get<GNBGauge>().Ammo, jobLevel >= 88 ? 3 : 2) : (0, 0);
+					return jobLevel >= 30 ? (Services.JobGauges.Get<GNBGauge>().Ammo, jobLevel >= 88 ? 3 : 2) : (0, 0);
 
 				case PowerType.Heat:
-					return (Service.JobGauges.Get<MCHGauge>().Heat, 100);
+					return (Services.JobGauges.Get<MCHGauge>().Heat, 100);
 
 				case PowerType.Battery:
-					return (Service.JobGauges.Get<MCHGauge>().Battery, 100);
+					return (Services.JobGauges.Get<MCHGauge>().Battery, 100);
 
 				case PowerType.Chakra:
-					return (Service.JobGauges.Get<MNKGauge>().Chakra, 100);
+					return (Services.JobGauges.Get<MNKGauge>().Chakra, 100);
 
 				case PowerType.Ninki:
-					return (Service.JobGauges.Get<NINGauge>().Ninki, 100);
+					return (Services.JobGauges.Get<NINGauge>().Ninki, 100);
 
 				case PowerType.Soul:
-					return (Service.JobGauges.Get<RPRGauge>().Soul, 100);
+					return (Services.JobGauges.Get<RPRGauge>().Soul, 100);
 
 				case PowerType.Shroud:
-					return (Service.JobGauges.Get<RPRGauge>().Shroud, 100);
+					return (Services.JobGauges.Get<RPRGauge>().Shroud, 100);
 
 				case PowerType.Lemure:
-					return (Service.JobGauges.Get<RPRGauge>().LemureShroud, 5);
+					return (Services.JobGauges.Get<RPRGauge>().LemureShroud, 5);
 
 				case PowerType.Addersgall:
 				{
@@ -122,38 +123,38 @@ namespace SezzUI.Helper
 						return (0, 0);
 					}
 
-					SGEGauge gauge = Service.JobGauges.Get<SGEGauge>();
+					SGEGauge gauge = Services.JobGauges.Get<SGEGauge>();
 					float adderScale = gauge.Addersgall + gauge.AddersgallTimer / 20000f; // 20s Addersgall Cooldown
 					return ((int) Math.Floor(adderScale), 3);
 				}
 
 				case PowerType.Addersting:
-					return jobLevel >= 66 ? (Service.JobGauges.Get<SGEGauge>().Addersting, 3) : (0, 0);
+					return jobLevel >= 66 ? (Services.JobGauges.Get<SGEGauge>().Addersting, 3) : (0, 0);
 
 				case PowerType.Kenki:
-					return (Service.JobGauges.Get<SAMGauge>().Kenki, 100);
+					return (Services.JobGauges.Get<SAMGauge>().Kenki, 100);
 
 				case PowerType.MeditationStacks:
-					return (Service.JobGauges.Get<SAMGauge>().MeditationStacks, 100);
+					return (Services.JobGauges.Get<SAMGauge>().MeditationStacks, 100);
 
 				case PowerType.Sen:
 				{
-					SAMGauge gauge = Service.JobGauges.Get<SAMGauge>();
+					SAMGauge gauge = Services.JobGauges.Get<SAMGauge>();
 					return (0 + (gauge.HasSetsu ? 1 : 0) + (gauge.HasGetsu ? 1 : 0) + (gauge.HasKa ? 1 : 0), 3);
 				}
 
 				case PowerType.Beast:
-					return jobLevel >= 35 ? (Service.JobGauges.Get<WARGauge>().BeastGauge, 100) : (0, 0);
+					return jobLevel >= 35 ? (Services.JobGauges.Get<WARGauge>().BeastGauge, 100) : (0, 0);
 
 				case PowerType.Lily:
 				{
-					WHMGauge gauge = Service.JobGauges.Get<WHMGauge>();
+					WHMGauge gauge = Services.JobGauges.Get<WHMGauge>();
 					float lilyScale = gauge.Lily + gauge.LilyTimer / 30000f; // 30s Lily Cooldown
 					return ((int) Math.Floor(lilyScale), 3);
 				}
 
 				case PowerType.BloodLily:
-					return (Service.JobGauges.Get<WHMGauge>().BloodLily, 3);
+					return (Services.JobGauges.Get<WHMGauge>().BloodLily, 3);
 
 				case PowerType.PolyglotStacks:
 					if (jobLevel < 70)
@@ -161,7 +162,7 @@ namespace SezzUI.Helper
 						return (0, 0);
 					}
 
-					return (Service.JobGauges.Get<BLMGauge>().PolyglotStacks, jobLevel >= 80 ? 2 : 1);
+					return (Services.JobGauges.Get<BLMGauge>().PolyglotStacks, jobLevel >= 80 ? 2 : 1);
 
 				case PowerType.FirstmindsFocus:
 					if (jobLevel < 90)
@@ -169,7 +170,7 @@ namespace SezzUI.Helper
 						return (0, 0);
 					}
 
-					return (Service.JobGauges.Get<DRGGauge>().FirstmindsFocusCount, 2);
+					return (Services.JobGauges.Get<DRGGauge>().FirstmindsFocusCount, 2);
 
 				case PowerType.EyeOfTheDragon:
 					if (jobLevel < 60)
@@ -177,7 +178,7 @@ namespace SezzUI.Helper
 						return (0, 0);
 					}
 
-					return (Service.JobGauges.Get<DRGGauge>().EyeCount, 2);
+					return (Services.JobGauges.Get<DRGGauge>().EyeCount, 2);
 
 				case PowerType.Aetherflow:
 					if (jobLevel < 10)
@@ -315,7 +316,7 @@ namespace SezzUI.Helper
 
 		public static uint GetParentJobId(uint jobId)
 		{
-			ExcelSheet<ClassJob>? classJobSheet = Service.DataManager.GetExcelSheet<ClassJob>();
+			ExcelSheet<ClassJob>? classJobSheet = Services.Data.GetExcelSheet<ClassJob>();
 			return classJobSheet?.GetRow(jobId)?.ClassJobParent.Row ?? 0;
 		}
 

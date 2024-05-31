@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using FFXIVClientStructs.Attributes;
+using FFXIVClientStructs.Interop.Attributes;
 using Iced.Intel;
 using SezzUI.Logging;
 

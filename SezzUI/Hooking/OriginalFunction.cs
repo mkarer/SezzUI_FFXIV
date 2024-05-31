@@ -46,7 +46,7 @@ namespace SezzUI.Hooking
 		public OriginalFunction(string signature, string originalBytesString = "")
 		{
 			InitializeLogger();
-			_originalPointer = Service.SigScanner.ScanText(signature);
+			_originalPointer = Services.SigScanner.ScanText(signature);
 			_originalBytes = Convert.FromHexString(AsmHelper.CleanHexString(originalBytesString));
 			Initialize();
 		}
@@ -54,7 +54,7 @@ namespace SezzUI.Hooking
 		public OriginalFunction(string signature, byte[] originalBytes)
 		{
 			InitializeLogger();
-			_originalPointer = Service.SigScanner.ScanText(signature);
+			_originalPointer = Services.SigScanner.ScanText(signature);
 			_originalBytes = originalBytes;
 			Initialize();
 		}
@@ -86,7 +86,7 @@ namespace SezzUI.Hooking
 			}
 #endif
 			// Read current memory
-			CurrentProcess.SafeReadRaw(_originalPointer, out byte[] currentBytes, MAX_HOOK_LENGTH);
+			CurrentProcess.SafeReadRaw((nuint)(nint)_originalPointer, out byte[] currentBytes, MAX_HOOK_LENGTH);
 #if DEBUG
 			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsOriginalFunctionManager)
 			{
@@ -181,19 +181,18 @@ namespace SezzUI.Hooking
 #endif
 
 			// Create new instructions
-			(long min, long max) = Utilities.GetRelativeJumpMinMax((long) _originalPointer, int.MaxValue - MAX_FUNCTION_SIZE);
+			(nuint min, nuint max) = Utilities.GetRelativeJumpMinMax((nuint)(nint)_originalPointer, int.MaxValue - MAX_FUNCTION_SIZE);
 			MemoryBuffer buffer = Utilities.FindOrCreateBufferInRange(MAX_FUNCTION_SIZE, min, max, 1);
 			List<byte> opCodes = new();
 
-			_newPointer = buffer.ExecuteWithLock(() =>
+            _newPointer = new((nint)buffer.ExecuteWithLock(() =>
 			{
 				buffer.SetAlignment(16);
-				IntPtr currAddress = buffer.Properties.WritePointer;
 
 				List<string> assemblyCode = new()
 				{
 					"use64",
-					$"org {currAddress}"
+					$"org {buffer.Properties.WritePointer}"
 				};
 
 				List<Instruction> originalInstructions = AsmHelper.DecodeInstructions(_originalBytes[..hookLength], _originalPointer);
@@ -209,7 +208,7 @@ namespace SezzUI.Hooking
 				Utilities.FillArrayUntilSize<byte>(opCodes, 0x90, MAX_FUNCTION_SIZE);
 
 				return buffer.Add(opCodes.ToArray(), 1);
-			});
+			}));
 
 			// Dump
 #if DEBUG

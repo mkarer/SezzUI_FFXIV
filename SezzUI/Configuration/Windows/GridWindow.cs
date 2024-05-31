@@ -40,7 +40,7 @@ namespace SezzUI.Configuration.Windows
 			node.Draw(ref changed);
 
 			ImGui.SetCursorPos(new(8, 260));
-			if (ImGui.Button("Lock HUD", new(ImGui.GetWindowContentRegionWidth(), 30)))
+			if (ImGui.Button("Lock HUD", new(ImGui.GetWindowContentRegionMax().X, 30)))
 			{
 				configurationManager.LockHUD = true;
 			}

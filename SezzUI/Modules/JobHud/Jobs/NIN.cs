@@ -51,13 +51,13 @@ namespace SezzUI.Modules.JobHud.Jobs
 			roleBar.Add(new(roleBar) {TextureActionId = 2241, CooldownActionId = 2241, StatusId = 488, MaxStatusDuration = 20}, 1); // Shade Shift
 		}
 
-		private static bool IsMeisuiUsable() => Service.JobGauges.Get<NINGauge>().Ninki <= 50 && IsHidden();
+		private static bool IsMeisuiUsable() => Services.JobGauges.Get<NINGauge>().Ninki <= 50 && IsHidden();
 
 		private static bool IsHidden() => SpellHelper.GetStatus(507, Unit.Player) != null || SpellHelper.GetStatus(614, Unit.Player) != null;
 
 		private static (float, float) GetHutonDuration()
 		{
-			NINGauge gauge = Service.JobGauges.Get<NINGauge>();
+			NINGauge gauge = Services.JobGauges.Get<NINGauge>();
 			if (gauge.HutonTimer != 0)
 			{
 				return (gauge.HutonTimer / 1000f, 60f);

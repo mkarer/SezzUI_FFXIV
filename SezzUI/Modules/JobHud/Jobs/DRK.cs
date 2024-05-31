@@ -30,7 +30,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		private static (float, float) GetLivingShadowDuration()
 		{
-			DRKGauge gauge = Service.JobGauges.Get<DRKGauge>();
+			DRKGauge gauge = Services.JobGauges.Get<DRKGauge>();
 			if (gauge.ShadowTimeRemaining != 0)
 			{
 				return (gauge.ShadowTimeRemaining / 1000f, 24f);

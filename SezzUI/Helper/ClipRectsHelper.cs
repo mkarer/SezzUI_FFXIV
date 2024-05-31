@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -185,18 +186,12 @@ namespace SezzUI.Helper
 				return;
 			}
 
-			AtkUnitBase** addonList = &loadedUnitsList->AtkUnitEntries;
-			if (addonList == null)
-			{
-				return;
-			}
-
 			for (int i = 0; i < loadedUnitsList->Count; i++)
 			{
 				try
 				{
-					AtkUnitBase* addon = addonList[i];
-					if (addon == null || !addon->IsVisible || addon->WindowNode == null || addon->Scale == 0)
+                    AtkUnitBase* addon = *(AtkUnitBase**)Unsafe.AsPointer(ref loadedUnitsList->EntriesSpan[i]);
+                    if (addon == null || !addon->IsVisible || addon->WindowNode == null || addon->Scale == 0)
 					{
 						continue;
 					}

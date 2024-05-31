@@ -6,6 +6,8 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using SezzUI.Hooking;
 using SezzUI.Modules;
 using SezzUI.Modules.GameUI;
+using SezzUI.Helper;
+using Dalamud.Plugin.Services;
 
 namespace SezzUI.Game.Events
 {
@@ -48,10 +50,10 @@ namespace SezzUI.Game.Events
 
 		protected override void OnEnable()
 		{
-			Service.Condition.ConditionChange += OnConditionChange;
-			Service.Framework.Update += OnFrameworkUpdate;
-			Service.ClientState.Login += OnLogin;
-			Service.ClientState.Logout += OnLogout;
+            Services.Condition.ConditionChange += OnConditionChange;
+			Services.Framework.Update += OnFrameworkUpdate;
+			Services.ClientState.Login += OnLogin;
+			Services.ClientState.Logout += OnLogout;
 
 			if (IsInGame())
 			{
@@ -61,10 +63,10 @@ namespace SezzUI.Game.Events
 
 		protected override void OnDisable()
 		{
-			Service.Condition.ConditionChange -= OnConditionChange;
-			Service.Framework.Update -= OnFrameworkUpdate;
-			Service.ClientState.Login -= OnLogin;
-			Service.ClientState.Logout -= OnLogout;
+            Services.Condition.ConditionChange -= OnConditionChange;
+			Services.Framework.Update -= OnFrameworkUpdate;
+			Services.ClientState.Login -= OnLogin;
+			Services.ClientState.Logout -= OnLogout;
 
 			AreAddonsLoaded = false;
 			_addonsReady = false;
@@ -78,7 +80,7 @@ namespace SezzUI.Game.Events
 		///     Player is in game and addons are loaded.
 		/// </summary>
 		/// <returns></returns>
-		public bool IsInGame() => Service.ClientState.IsLoggedIn && !Service.Condition[ConditionFlag.CreatingCharacter];
+		public bool IsInGame() => Services.ClientState.IsLoggedIn && !Services.Condition[ConditionFlag.CreatingCharacter];
 
 		private void SetAddonsLoaded(bool loaded, bool readyStateChanged = false)
 		{
@@ -116,12 +118,12 @@ namespace SezzUI.Game.Events
 			}
 		}
 
-		private void OnLogin(object? sender, EventArgs e)
+		private void OnLogin()
 		{
 			SetAddonsLoaded(true);
 		}
 
-		private void OnLogout(object? sender, EventArgs e)
+		private void OnLogout()
 		{
 			SetAddonsLoaded(false);
 		}
@@ -133,20 +135,20 @@ namespace SezzUI.Game.Events
 				return AreAddonsVisible;
 			}
 
-			return Service.ClientState.IsLoggedIn && !(Service.Condition[ConditionFlag.WatchingCutscene] || Service.Condition[ConditionFlag.WatchingCutscene78] || Service.Condition[ConditionFlag.OccupiedInCutSceneEvent] || Service.Condition[ConditionFlag.CreatingCharacter] || Service.Condition[ConditionFlag.BetweenAreas] || Service.Condition[ConditionFlag.BetweenAreas51] || Service.Condition[ConditionFlag.OccupiedSummoningBell] || Service.Condition[ConditionFlag.OccupiedInQuestEvent] || Service.Condition[ConditionFlag.OccupiedInEvent]);
+			return Services.ClientState.IsLoggedIn && !(Services.Condition[ConditionFlag.WatchingCutscene] || Services.Condition[ConditionFlag.WatchingCutscene78] || Services.Condition[ConditionFlag.OccupiedInCutSceneEvent] || Services.Condition[ConditionFlag.CreatingCharacter] || Services.Condition[ConditionFlag.BetweenAreas] || Services.Condition[ConditionFlag.BetweenAreas51] || Services.Condition[ConditionFlag.OccupiedSummoningBell] || Services.Condition[ConditionFlag.OccupiedInQuestEvent] || Services.Condition[ConditionFlag.OccupiedInEvent]);
 		}
 
 		private bool AreActionBarsLoaded()
 		{
-			AtkUnitBase* addon = (AtkUnitBase*) Service.GameGui.GetAddonByName(Addons.Names[Addon.ActionBar1], 1);
-			return (IntPtr) addon != IntPtr.Zero && addon->UldManager.LoadedState == 3 && addon->RootNode->DrawFlags == 12;
+			AtkUnitBase* addon = (AtkUnitBase*) Services.GameGui.GetAddonByName(Addons.Names[Addon.ActionBar1], 1);
+			return (IntPtr) addon != IntPtr.Zero && addon->UldManager.LoadedState == AtkLoadState.Loaded && addon->RootNode->DrawFlags == 12;
 		}
 
-		private void OnFrameworkUpdate(Framework framework)
+		private void OnFrameworkUpdate(IFramework framework)
 		{
 			bool addonVisibility = AreAddonsShown(false);
 
-			if (AreAddonsLoaded && (!_addonsReady || _hudLayout != UNKNOWN_HUD_LAYOUT && !_hudLayoutReady) && Service.ClientState.IsLoggedIn)
+			if (AreAddonsLoaded && (!_addonsReady || _hudLayout != UNKNOWN_HUD_LAYOUT && !_hudLayoutReady) && Services.ClientState.IsLoggedIn)
 			{
 				// This is giga bullshit, maybe someday I'm skilled enough to fix this.
 				bool addonsReady = AreActionBarsLoaded();

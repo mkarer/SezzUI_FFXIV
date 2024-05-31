@@ -81,7 +81,7 @@ namespace SezzUI.Modules.JobHud
 
 		protected override void OnEnable()
 		{
-			Service.ClientState.Logout += OnLogout;
+			Services.ClientState.Logout += OnLogout;
 			EventManager.Player.JobChanged += OnJobChanged;
 			EventManager.Player.LevelChanged += OnLevelChanged;
 			EventManager.Combat.EnteringCombat += OnEnteringCombat;
@@ -95,14 +95,14 @@ namespace SezzUI.Modules.JobHud
 		{
 			Reset();
 
-			Service.ClientState.Logout -= OnLogout;
+			Services.ClientState.Logout -= OnLogout;
 			EventManager.Player.JobChanged -= OnJobChanged;
 			EventManager.Player.LevelChanged -= OnLevelChanged;
 			EventManager.Combat.EnteringCombat -= OnEnteringCombat;
 			EventManager.Combat.LeavingCombat -= OnLeavingCombat;
 			Singletons.Get<MediaManager>().PathChanged -= OnMediaPathChanged;
 
-			OnLogout(null!, null!);
+			OnLogout();
 		}
 
 		private void Reset()
@@ -125,7 +125,7 @@ namespace SezzUI.Modules.JobHud
 		{
 			lock (Bars)
 			{
-				PlayerCharacter? player = Service.ClientState.LocalPlayer;
+				PlayerCharacter? player = Services.ClientState.LocalPlayer;
 				uint jobId = player?.ClassJob.Id ?? 0;
 				byte level = player?.Level ?? 0;
 
@@ -183,7 +183,7 @@ namespace SezzUI.Modules.JobHud
 				return;
 			}
 
-			if (Service.ClientState.LocalPlayer == null || SpellHelper.GetStatus(1534, Unit.Player, false) != null)
+			if (Services.ClientState.LocalPlayer == null || SpellHelper.GetStatus(1534, Unit.Player, false) != null)
 			{
 				// 1534: Role-playing
 				// Condition.RolePlaying ?
@@ -227,7 +227,7 @@ namespace SezzUI.Modules.JobHud
 
 		public void AddAlert(AuraAlert alert)
 		{
-			if (alert.Level > 1 && (Service.ClientState.LocalPlayer?.Level ?? 0) < alert.Level)
+			if (alert.Level > 1 && (Services.ClientState.LocalPlayer?.Level ?? 0) < alert.Level)
 			{
 				alert.Dispose();
 			}
@@ -309,7 +309,7 @@ namespace SezzUI.Modules.JobHud
 
 		#region Events
 
-		private void OnLogout(object? sender, EventArgs e)
+		private void OnLogout()
 		{
 			Hide(true);
 		}

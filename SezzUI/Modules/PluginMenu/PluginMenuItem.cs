@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Numerics;
+using Dalamud.Interface.Internal;
 using ImGuiNET;
 using ImGuiScene;
 using SezzUI.Helper;
@@ -12,7 +13,7 @@ namespace SezzUI.Modules.PluginMenu
 	{
 		public PluginMenuItemConfig Config;
 		public Vector2 Size = new(60f, 30f);
-		public TextureWrap? Texture;
+		public IDalamudTextureWrap? Texture;
 		internal PluginLogger Logger;
 
 		public Vector4 Color => !_toggleState ? Config.Color.Vector : Config.ColorToggled.Vector;

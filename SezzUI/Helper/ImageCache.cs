@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using ImGuiScene;
+using Dalamud.Interface.Internal;
 using SezzUI.Logging;
 using SezzUI.Modules;
 
@@ -12,10 +12,10 @@ namespace SezzUI.Helper
 {
 	public class ImageCache : IPluginDisposable
 	{
-		private readonly ConcurrentDictionary<string, TextureWrap> _cache = new();
+		private readonly ConcurrentDictionary<string, IDalamudTextureWrap> _cache = new();
 		internal PluginLogger Logger;
 
-		public TextureWrap? GetImage(string? file)
+		public IDalamudTextureWrap? GetImage(string? file)
 		{
 			if (file == null)
 			{
@@ -27,7 +27,7 @@ namespace SezzUI.Helper
 				return _cache[file];
 			}
 
-			TextureWrap? newTexture = LoadImage(file);
+            IDalamudTextureWrap? newTexture = LoadImage(file);
 			if (newTexture == null)
 			{
 				return null;
@@ -41,13 +41,13 @@ namespace SezzUI.Helper
 			return newTexture;
 		}
 
-		private TextureWrap? LoadImage(string file)
+		private IDalamudTextureWrap? LoadImage(string file)
 		{
 			try
 			{
 				if (File.Exists(file))
 				{
-					return Service.PluginInterface.UiBuilder.LoadImage(file);
+					return Services.PluginInterface.UiBuilder.LoadImage(file);
 				}
 			}
 			catch

@@ -23,7 +23,7 @@ namespace SezzUI.Modules.Test
 
 		public static void RunTest()
 		{
-			Service.ChatGui.Print("Okay.");
+			Services.Chat.Print("Okay.");
 
 			try
 			{

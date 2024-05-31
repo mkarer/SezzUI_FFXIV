@@ -24,8 +24,8 @@ namespace SezzUI.Game.Events
 		public unsafe bool IsReady => Queue != null ? Queue->IsReady() : false;
 		public unsafe byte ContentRouletteId => Queue != null ? Queue->ContentRouletteId : (byte) 0;
 		public unsafe uint ContentFinderConditionId => Queue != null ? Queue->ContentFinderConditionId : 0u;
-		public ContentFinderCondition? ContentFinderCondition => ContentFinderConditionId != 0 ? Service.DataManager.GetExcelSheet<ContentFinderCondition>()?.GetRow(ContentFinderConditionId) : null;
-		public ContentRoulette? ContentRoulette => ContentRouletteId != 0 ? Service.DataManager.GetExcelSheet<ContentRoulette>()?.GetRow(ContentRouletteId) : null;
+		public ContentFinderCondition? ContentFinderCondition => ContentFinderConditionId != 0 ? Services.Data.GetExcelSheet<ContentFinderCondition>()?.GetRow(ContentFinderConditionId) : null;
+		public ContentRoulette? ContentRoulette => ContentRouletteId != 0 ? Services.Data.GetExcelSheet<ContentRoulette>()?.GetRow(ContentRouletteId) : null;
 
 		private delegate IntPtr JoinQueueDelegate(IntPtr queue, int unused, byte unk1);
 
@@ -65,7 +65,7 @@ namespace SezzUI.Game.Events
 
 		protected override void OnEnable()
 		{
-			Service.ClientState.Logout += OnLogout; // Shouldn't be needed, better be safe though.
+			Services.ClientState.Logout += OnLogout; // Shouldn't be needed, better be safe though.
 
 			if (IsQueued)
 			{
@@ -75,26 +75,26 @@ namespace SezzUI.Game.Events
 
 		protected override void OnDisable()
 		{
-			Service.ClientState.Logout -= OnLogout;
-			Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
+			Services.ClientState.Logout -= OnLogout;
+			Services.ClientState.TerritoryChanged -= OnTerritoryChanged;
 			_queueStarted = null;
 		}
 
-		private void OnLogout(object? sender, EventArgs e)
+		private void OnLogout()
 		{
 			InvokeLeft();
 		}
 
-		private unsafe void OnTerritoryChanged(object? sender, ushort territoryType)
+		private unsafe void OnTerritoryChanged(ushort territoryType)
 		{
 #if DEBUG
 			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventDutyFinderQueue)
 			{
-				Logger.Debug($"territoryType: {territoryType} ContentFinderCondition.TerritoryType {ContentFinderCondition?.TerritoryType} QueueState2: {(Queue != null ? Queue->QueueState2 : 0)} QueueState3: {(Queue != null ? Queue->QueueState3 : 0)} Position: {Position} AverageWaitTime: {AverageWaitTime} EstimatedWaitTime: {EstimatedWaitTime} ContentFinderConditionId: {Queue->ContentFinderConditionId} ContentRouletteId: {Queue->ContentRouletteId} WaitingForDuty {Service.Condition[ConditionFlag.WaitingForDuty]} BoundByDuty {Service.Condition[ConditionFlag.BoundByDuty]} BoundByDuty56 {Service.Condition[ConditionFlag.BoundByDuty56]} BoundByDuty95 {Service.Condition[ConditionFlag.BoundByDuty95]}");
+				Logger.Debug($"territoryType: {territoryType} ContentFinderCondition.TerritoryType {ContentFinderCondition?.TerritoryType} QueueState2: {(Queue != null ? Queue->QueueState2 : 0)} QueueState3: {(Queue != null ? Queue->QueueState3 : 0)} Position: {Position} AverageWaitTime: {AverageWaitTime} EstimatedWaitTime: {EstimatedWaitTime} ContentFinderConditionId: {Queue->ContentFinderConditionId} ContentRouletteId: {Queue->ContentRouletteId} WaitingForDuty {Services.Condition[ConditionFlag.WaitingForDuty]} BoundByDuty {Services.Condition[ConditionFlag.BoundByDuty]} BoundByDuty56 {Services.Condition[ConditionFlag.BoundByDuty56]} BoundByDuty95 {Services.Condition[ConditionFlag.BoundByDuty95]}");
 			}
 #endif
 
-			if (_queueStarted != null && Queue != null && ((ContentFinderCondition?.TerritoryType.Row ?? ushort.MaxValue) == territoryType || Queue->IsInDuty() || Service.Condition[ConditionFlag.BoundByDuty] || Service.Condition[ConditionFlag.BoundByDuty56] || Service.Condition[ConditionFlag.BoundByDuty95] || Service.Condition[ConditionFlag.WaitingForDuty]))
+			if (_queueStarted != null && Queue != null && ((ContentFinderCondition?.TerritoryType.Row ?? ushort.MaxValue) == territoryType || Queue->IsInDuty() || Services.Condition[ConditionFlag.BoundByDuty] || Services.Condition[ConditionFlag.BoundByDuty56] || Services.Condition[ConditionFlag.BoundByDuty95] || Services.Condition[ConditionFlag.WaitingForDuty]))
 			{
 				InvokeLeft(); // In a duty, not in the queue.
 			}
@@ -114,7 +114,7 @@ namespace SezzUI.Game.Events
 			}
 #endif
 			_queueStarted = DateTime.Now;
-			Service.ClientState.TerritoryChanged += OnTerritoryChanged;
+			Services.ClientState.TerritoryChanged += OnTerritoryChanged;
 
 			try
 			{
@@ -128,7 +128,7 @@ namespace SezzUI.Game.Events
 
 		private void InvokeLeft()
 		{
-			Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
+			Services.ClientState.TerritoryChanged -= OnTerritoryChanged;
 
 			if (_queueStarted == null)
 			{

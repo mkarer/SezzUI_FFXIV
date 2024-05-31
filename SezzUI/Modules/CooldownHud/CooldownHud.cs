@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Interface.Internal;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiScene;
 using SezzUI.Configuration;
@@ -61,7 +63,7 @@ namespace SezzUI.Modules.CooldownHud
 		{
 			lock (_cooldowns)
 			{
-				PlayerCharacter? player = Service.ClientState.LocalPlayer;
+				PlayerCharacter? player = Services.ClientState.LocalPlayer;
 				uint jobId = player?.ClassJob.Id ?? 0;
 				byte level = player?.Level ?? 0;
 
@@ -241,12 +243,12 @@ namespace SezzUI.Modules.CooldownHud
 			RegisterCooldown(actionId, 0, adjustAction);
 		}
 
-		private void GetActionDisplayData(uint actionId, ActionType actionType, out string? name, out TextureWrap? texture)
+		private void GetActionDisplayData(uint actionId, ActionType actionType, out string? name, out IDalamudTextureWrap? texture)
 		{
-			name = actionType == ActionType.General ? SpellHelper.GetGeneralActionName(actionId) : SpellHelper.GetActionName(actionId);
+			name = actionType == ActionType.GeneralAction ? SpellHelper.GetGeneralActionName(actionId) : SpellHelper.GetActionName(actionId);
 			if (!_iconOverride.TryGetValue(actionId, out int? iconId))
 			{
-				iconId = actionType == ActionType.General ? SpellHelper.GetGeneralActionIconId(actionId) : SpellHelper.GetActionIconId(actionId);
+				iconId = actionType == ActionType.GeneralAction ? SpellHelper.GetGeneralActionIconId(actionId) : SpellHelper.GetActionIconId(actionId);
 			}
 
 			texture = SpellHelper.GetIconTexture((ushort?) iconId, out bool _);
@@ -270,11 +272,9 @@ namespace SezzUI.Modules.CooldownHud
 
 			EventManager.Player.JobChanged -= OnJobChanged;
 			EventManager.Player.LevelChanged -= OnLevelChanged;
-
 			EventManager.Cooldown.CooldownStarted -= OnCooldownStarted;
 			EventManager.Cooldown.CooldownChanged -= OnCooldownChanged;
 			EventManager.Cooldown.CooldownFinished -= OnCooldownFinished;
-
 			Singletons.Get<MediaManager>().PathChanged -= OnMediaPathChanged;
 		}
 
@@ -285,7 +285,7 @@ namespace SezzUI.Modules.CooldownHud
 			Pulse(bar.Id, bar.Icon, (ushort) ((bar.Data != null ? (ushort) bar.Data : 0) + (early ? 1 : 0)));
 		}
 
-		private void Pulse(uint actionId, TextureWrap? texture, ushort charges)
+		private void Pulse(uint actionId, IDalamudTextureWrap? texture, ushort charges)
 		{
 			if (!_cooldowns.ContainsKey(actionId))
 			{
@@ -467,7 +467,7 @@ namespace SezzUI.Modules.CooldownHud
 			_cooldowns[actionId].LastPulseCharges = INITIAL_PULSE_CHARGES;
 			_cooldowns[actionId].BarManagers.ForEach(barManager =>
 			{
-				GetActionDisplayData(actionId, data.Type, out string? name, out TextureWrap? texture);
+				GetActionDisplayData(actionId, data.Type, out string? name, out IDalamudTextureWrap? texture);
 				bool result = barManager.Add(actionId, name ?? "Unknown Action", data.MaxCharges > 1 && data.CurrentCharges > 0 ? "x1" : null, texture, data.StartTime, data.Duration, data.CurrentCharges);
 #if DEBUG
 				if (_debugConfig.LogCooldownEventHandling)
@@ -487,7 +487,7 @@ namespace SezzUI.Modules.CooldownHud
 
 			_cooldowns[actionId].BarManagers.ForEach(barManager =>
 			{
-				GetActionDisplayData(actionId, data.Type, out string? name, out TextureWrap? texture);
+				GetActionDisplayData(actionId, data.Type, out string? name, out IDalamudTextureWrap? texture);
 				bool result = barManager.Update(actionId, name ?? "Unknown Action", data.MaxCharges > 1 && data.CurrentCharges > 0 ? "x1" : null, texture, data.StartTime, data.Duration, data.CurrentCharges);
 #if DEBUG
 				if (_debugConfig.LogCooldownEventHandling)
@@ -523,7 +523,7 @@ namespace SezzUI.Modules.CooldownHud
 			if (elapsedFinish <= NO_PULSE_AFTER_ELAPSED_FINISHED && CanPulse(actionId, data.CurrentCharges))
 			{
 				// Bar is very likely not available anymore here, because it was removed by BarManager.RemoveExpired
-				GetActionDisplayData(actionId, data.Type, out string? _, out TextureWrap? texture);
+				GetActionDisplayData(actionId, data.Type, out string? _, out IDalamudTextureWrap? texture);
 				Pulse(actionId, texture, data.CurrentCharges);
 			}
 

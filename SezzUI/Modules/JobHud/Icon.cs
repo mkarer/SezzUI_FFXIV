@@ -10,11 +10,13 @@ using SezzUI.Enums;
 using SezzUI.Game;
 using SezzUI.Game.Events;
 using SezzUI.Game.Events.Cooldown;
+using Dalamud.Plugin.Services;
 using SezzUI.Helper;
 using SezzUI.Interface.Animation;
 using SezzUI.Logging;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
+using Dalamud.Interface.Internal;
 
 namespace SezzUI.Modules.JobHud
 {
@@ -105,7 +107,7 @@ namespace SezzUI.Modules.JobHud
 
 		private uint? _textureStatusId;
 
-		private TextureWrap? _texture;
+		private IDalamudTextureWrap? _texture;
 
 		/// <summary>
 		///     Action ID that will be used to display cooldown spiral and text.
@@ -258,7 +260,7 @@ namespace SezzUI.Modules.JobHud
 		{
 			if (Level > 0)
 			{
-				return Level <= (Service.ClientState.LocalPlayer?.Level ?? 0);
+				return Level <= (Services.ClientState.LocalPlayer?.Level ?? 0);
 			}
 
 			if (CooldownActionId != null)
@@ -288,7 +290,7 @@ namespace SezzUI.Modules.JobHud
 			bool hasEnoughResources = true;
 
 			bool failedCombatCondition = RequiresCombat && !EventManager.Combat.IsInCombat(false);
-			bool failedPetCondition = RequiresPet && !Service.BuddyList.PetBuddyPresent;
+			bool failedPetCondition = RequiresPet && Services.BuddyList.PetBuddy == null;
 			bool failedCustomCondition = CustomCondition != null && !CustomCondition();
 			bool failedInitialCondition = failedCombatCondition || failedPetCondition || failedCustomCondition;
 
@@ -638,7 +640,7 @@ namespace SezzUI.Modules.JobHud
 				uint step = Math.Min(n, Math.Max(1, (uint) Math.Ceiling((uint) (animator.TimeElapsed % dur) / frameTime))) - 1;
 				string image = Singletons.Get<MediaManager>().BorderGlowTexture[step];
 
-				TextureWrap? tex = Singletons.Get<ImageCache>().GetImage(image);
+				IDalamudTextureWrap? tex = Singletons.Get<ImageCache>().GetImage(image);
 				if (tex != null)
 				{
 					uint glowColor = ImGui.ColorConvertFloat4ToU32(new(0.95f, 0.95f, 0.32f, animator.Data.Opacity));

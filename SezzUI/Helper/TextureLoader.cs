@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Dalamud.Interface.Internal;
 using Dalamud.Utility;
 using ImGuiScene;
 using Lumina.Data.Files;
@@ -20,21 +21,21 @@ namespace SezzUI.Helper
 			Logger = new("TextureLoader");
 		}
 
-		public static TextureWrap? LoadTexture(string path, bool manualLoad)
+		public static IDalamudTextureWrap? LoadTexture(string path, bool manualLoad)
 		{
 			if (!manualLoad)
 			{
-				TexFile? iconFile = Service.DataManager.GetFile<TexFile>(path);
+				TexFile? iconFile = Services.Data.GetFile<TexFile>(path);
 				if (iconFile != null)
 				{
-					return Service.PluginInterface.UiBuilder.LoadImageRaw(iconFile.GetRgbaImageData(), iconFile.Header.Width, iconFile.Header.Height, 4);
+					return Services.PluginInterface.UiBuilder.LoadImageRaw(iconFile.GetRgbaImageData(), iconFile.Header.Width, iconFile.Header.Height, 4);
 				}
 			}
 
 			return ManuallyLoadTexture(path);
 		}
 
-		private static TextureWrap? ManuallyLoadTexture(string path)
+		private static IDalamudTextureWrap? ManuallyLoadTexture(string path)
 		{
 			try
 			{
@@ -55,7 +56,7 @@ namespace SezzUI.Helper
 					return null;
 				}
 
-				return Service.PluginInterface.UiBuilder.LoadImageRaw(GetRgbaImageData(imageData), header.Width, header.Height, 4);
+				return Services.PluginInterface.UiBuilder.LoadImageRaw(GetRgbaImageData(imageData), header.Width, header.Height, 4);
 			}
 			catch
 			{
@@ -77,16 +78,16 @@ namespace SezzUI.Helper
 				case TextureFormat.DXT5:
 					Decompress(SquishOptions.DXT5, src, dst, width, height);
 					return true;
-				case TextureFormat.R5G5B5A1:
+				case TextureFormat.B5G5R5A1:
 					ProcessA1R5G5B5(src, dst, width, height);
 					return true;
-				case TextureFormat.R4G4B4A4:
+				case TextureFormat.B4G4R4A4:
 					ProcessA4R4G4B4(src, dst, width, height);
 					return true;
 				case TextureFormat.L8:
 					ProcessR3G3B2(src, dst, width, height);
 					return true;
-				case TextureFormat.A8R8G8B8:
+				case TextureFormat.B8G8R8A8:
 					Array.Copy(src, dst, dst.Length);
 					return true;
 			}

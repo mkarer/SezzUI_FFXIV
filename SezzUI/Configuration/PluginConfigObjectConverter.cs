@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.Serialization;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -47,7 +47,7 @@ namespace SezzUI.Configuration
 				// last resource, hackily create an instance without calling the constructor
 				if (config == null)
 				{
-					config = (T) FormatterServices.GetUninitializedObject(type);
+					config = (T) RuntimeHelpers.GetUninitializedObject(type);
 				}
 			}
 			catch (Exception ex)

@@ -47,11 +47,11 @@ namespace SezzUI.Modules.JobHud.Jobs
 			roleBar.Add(new(roleBar) {TextureActionId = 7408, CooldownActionId = 7408, StatusId = 1202, MaxStatusDuration = 15, StatusSourcePlayer = false}, 1); // Nature's Minne
 		}
 
-		private static bool IsPlaying() => Service.JobGauges.Get<BRDGauge>().Song != Song.NONE;
+		private static bool IsPlaying() => Services.JobGauges.Get<BRDGauge>().Song != Song.NONE;
 
 		private static (float, float) GetSongDuration(Song song)
 		{
-			BRDGauge gauge = Service.JobGauges.Get<BRDGauge>();
+			BRDGauge gauge = Services.JobGauges.Get<BRDGauge>();
 			if (gauge.Song == song)
 			{
 				return (gauge.SongTimer / 1000f, 45f);
@@ -69,7 +69,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 				_ => 0
 			};
 
-			BRDGauge gauge = Service.JobGauges.Get<BRDGauge>();
+			BRDGauge gauge = Services.JobGauges.Get<BRDGauge>();
 			return (gauge.Song == song ? gauge.Repertoire : (byte) 0, maxStacks);
 		}
 

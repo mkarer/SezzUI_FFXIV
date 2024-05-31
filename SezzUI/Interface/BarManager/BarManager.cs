@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Dalamud.Interface.Internal;
 using ImGuiScene;
 using SezzUI.Enums;
 using SezzUI.Helper;
@@ -30,7 +31,7 @@ namespace SezzUI.Interface.BarManager
 			Id = id != "" ? id : Guid.NewGuid().ToString();
 		}
 
-		public bool Add(uint id, string? text, string? text2, TextureWrap? icon, long start, uint duration, object? data = null, bool allowUpdating = true)
+		public bool Add(uint id, string? text, string? text2, IDalamudTextureWrap? icon, long start, uint duration, object? data = null, bool allowUpdating = true)
 		{
 			if (!allowUpdating && Get(id) != null)
 			{
@@ -40,7 +41,7 @@ namespace SezzUI.Interface.BarManager
 			return Update(id, text, text2, icon, start, duration, data);
 		}
 
-		public bool Update(uint id, string? text, string? text2, TextureWrap? icon, long start, uint duration, object? data = null, bool allowAdding = true)
+		public bool Update(uint id, string? text, string? text2, IDalamudTextureWrap? icon, long start, uint duration, object? data = null, bool allowAdding = true)
 		{
 			BarManagerBar? bar = Get(id);
 
@@ -59,7 +60,7 @@ namespace SezzUI.Interface.BarManager
 			return false;
 		}
 
-		public bool Update(BarManagerBar bar, string? text, string? text2, TextureWrap? icon, long start, uint duration, object? data = null)
+		public bool Update(BarManagerBar bar, string? text, string? text2, IDalamudTextureWrap? icon, long start, uint duration, object? data = null)
 		{
 			bar.Text = text;
 			bar.CountText = text2;

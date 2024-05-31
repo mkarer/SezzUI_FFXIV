@@ -9,7 +9,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		public override void Configure(JobHud hud)
 		{
-			byte jobLevel = Service.ClientState.LocalPlayer?.Level ?? 0;
+			byte jobLevel = Services.ClientState.LocalPlayer?.Level ?? 0;
 
 			Bar bar1 = new(hud);
 			bar1.Add(new(bar1) {TextureActionId = 20, CooldownActionId = 20, StatusId = 76, MaxStatusDuration = 25}); // Fight of Flight

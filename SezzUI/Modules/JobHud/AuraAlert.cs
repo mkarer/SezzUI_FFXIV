@@ -11,6 +11,8 @@ using SezzUI.Interface;
 using SezzUI.Interface.Animation;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
+using Dalamud.Plugin.Services;
+using Dalamud.Interface.Internal;
 
 namespace SezzUI.Modules.JobHud
 {
@@ -80,7 +82,7 @@ namespace SezzUI.Modules.JobHud
 		}
 
 		private string? _imageFile;
-		private TextureWrap? _texture;
+		private IDalamudTextureWrap? _texture;
 		public byte BorderSize = 0;
 
 		public bool GlowBackdrop = false;
@@ -168,7 +170,7 @@ namespace SezzUI.Modules.JobHud
 				return;
 			}
 
-			PlayerCharacter? player = Service.ClientState.LocalPlayer;
+			PlayerCharacter? player = Services.ClientState.LocalPlayer;
 			Status? status = null;
 			bool conditionsFailed = false;
 			if (player == null)

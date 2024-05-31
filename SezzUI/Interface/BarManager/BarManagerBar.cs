@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using Dalamud.Interface.Internal;
 using ImGuiNET;
 using ImGuiScene;
 using SezzUI.Enums;
@@ -16,7 +17,7 @@ namespace SezzUI.Interface.BarManager
 
 		public string? Text;
 		public string? CountText;
-		public TextureWrap? Icon;
+		public IDalamudTextureWrap? Icon;
 		public object? Data;
 
 		public long StartTime = 0;
@@ -53,7 +54,7 @@ namespace SezzUI.Interface.BarManager
 							Vector2 sizeIcon = new(Config.Size.Y - 2 * Config.BorderSize, Config.Size.Y - 2 * Config.BorderSize);
 							(Vector2 uv0, Vector2 uv1) = DrawHelper.GetTexCoordinates(sizeIcon);
 
-							drawList.AddRectFilled(posIcon, posIcon + sizeIcon, ImGui.ColorConvertFloat4ToU32(Config.BackgroundColor), 0);
+							drawList.AddRectFilled(posIcon, posIcon + sizeIcon, Config.BackgroundColor.Base, 0);
 							drawList.AddImage(Icon.ImGuiHandle, posIcon, posIcon + sizeIcon, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Vector4.One));
 
 							posBar.X += sizeIcon.X + 4;
@@ -62,7 +63,7 @@ namespace SezzUI.Interface.BarManager
 							// Border
 							if (Config.BorderSize > 0)
 							{
-								drawList.AddRect(position, position + sizeIcon.AddXY(Config.BorderSize * 2), ImGui.ColorConvertFloat4ToU32(Config.BorderColor), 0, ImDrawFlags.None, Config.BorderSize);
+								drawList.AddRect(position, position + sizeIcon.AddXY(Config.BorderSize * 2), Config.BorderColor.Base, 0, ImDrawFlags.None, Config.BorderSize);
 								posBar.X += Config.BorderSize * 2;
 								sizeBar.X -= Config.BorderSize * 2;
 							}
@@ -71,7 +72,7 @@ namespace SezzUI.Interface.BarManager
 						// Bar Border
 						if (Config.BorderSize > 0)
 						{
-							drawList.AddRect(posBar, posBar + sizeBar, ImGui.ColorConvertFloat4ToU32(Config.BorderColor), 0, ImDrawFlags.None, Config.BorderSize);
+							drawList.AddRect(posBar, posBar + sizeBar, Config.BorderColor.Base, 0, ImDrawFlags.None, Config.BorderSize);
 							posBar.X += Config.BorderSize;
 							posBar.Y += Config.BorderSize;
 							sizeBar.X -= Config.BorderSize * 2;
@@ -79,30 +80,30 @@ namespace SezzUI.Interface.BarManager
 						}
 
 						// Bar BG
-						drawList.AddRectFilled(posBar, posBar + sizeBar, ImGui.ColorConvertFloat4ToU32(Config.BackgroundColor), 0);
+						drawList.AddRectFilled(posBar, posBar + sizeBar, Config.BackgroundColor.Base, 0);
 
 						// Bar
 						float fillPercent = (Config.FillInverted ? Remaining : (float) Elapsed) / Duration;
 						Vector2 sizeBarFilled = new(Config.FillDirection.IsHorizontal() ? sizeBar.X * fillPercent : sizeBar.X, !Config.FillDirection.IsHorizontal() ? sizeBar.Y * fillPercent : sizeBar.Y);
-						drawList.AddRectFilled(posBar, posBar + sizeBarFilled, ImGui.ColorConvertFloat4ToU32(Config.FillColor), 0);
+						drawList.AddRectFilled(posBar, posBar + sizeBarFilled, Config.FillColor.Base, 0);
 
 						// Text: Name
 						if (Text != null)
 						{
-							DrawHelper.DrawAnchoredText(Config.NameTextStyle, DrawAnchor.Left, Text, new(posBar.X, position.Y), new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
+							DrawHelper.DrawAnchoredText(Config.NameTextStyle, DrawAnchor.Left, Text, new(posBar.X, position.Y), new(0, Config.Size.Y), Config.NameTextColor.Base, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
 						}
 
 						// Text: Count
 						if (CountText != null)
 						{
 							Vector2 posText2 = Text == null ? new(posBar.X, position.Y) : new(posBar.X + 5 + (Text == null ? Vector2.Zero : ImGui.CalcTextSize(Text)).X, position.Y);
-							DrawHelper.DrawAnchoredText(Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.CountTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
+							DrawHelper.DrawAnchoredText(Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y), Config.CountTextColor.Base, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
 						}
 
 						// Text: Duration
 						if (Config.ShowDuration)
 						{
-							DrawHelper.DrawAnchoredText(Config.NameTextStyle, DrawAnchor.Right, DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), position, Config.Size, ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, -5);
+							DrawHelper.DrawAnchoredText(Config.NameTextStyle, DrawAnchor.Right, DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, (ushort) Config.MillisecondsThreshold, false), position, Config.Size, Config.NameTextColor.Base, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, -5);
 						}
 					}
 						break;
@@ -115,7 +116,7 @@ namespace SezzUI.Interface.BarManager
 						// Border
 						if (Config.BorderSize > 0)
 						{
-							drawList.AddRect(position, position + Config.Size, ImGui.ColorConvertFloat4ToU32(Config.BorderColor), 0, ImDrawFlags.None, Config.BorderSize);
+							drawList.AddRect(position, position + Config.Size, Config.BorderColor.Base, 0, ImDrawFlags.None, Config.BorderSize);
 							posBar.X += Config.BorderSize;
 							posBar.Y += Config.BorderSize;
 							sizeBar.X -= 2 * Config.BorderSize;
@@ -129,7 +130,7 @@ namespace SezzUI.Interface.BarManager
 							Vector2 sizeIcon = new(Config.Size.Y - 2 * Config.BorderSize, Config.Size.Y - 2 * Config.BorderSize);
 							(Vector2 uv0, Vector2 uv1) = DrawHelper.GetTexCoordinates(sizeIcon);
 
-							drawList.AddRectFilled(posIcon, posIcon + sizeIcon, ImGui.ColorConvertFloat4ToU32(Config.BackgroundColor), 0);
+							drawList.AddRectFilled(posIcon, posIcon + sizeIcon, Config.BackgroundColor.Base, 0);
 							drawList.AddImage(Icon.ImGuiHandle, posIcon, posIcon + sizeIcon, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Vector4.One));
 
 							posBar.X += sizeIcon.X;
@@ -139,37 +140,37 @@ namespace SezzUI.Interface.BarManager
 							if (Config.BorderSize > 0)
 							{
 								Vector2 posIconBorder = new(posIcon.X + sizeIcon.X, posIcon.Y);
-								drawList.AddLine(posIconBorder, posIconBorder.AddY(sizeIcon.Y), ImGui.ColorConvertFloat4ToU32(Config.BorderColor), Config.BorderSize);
+								drawList.AddLine(posIconBorder, posIconBorder.AddY(sizeIcon.Y), Config.BorderColor.Base, Config.BorderSize);
 								posBar.X += Config.BorderSize;
 								sizeBar.X -= Config.BorderSize;
 							}
 						}
 
 						// Bar BG
-						drawList.AddRectFilled(posBar, posBar + sizeBar, ImGui.ColorConvertFloat4ToU32(Config.BackgroundColor), 0);
+						drawList.AddRectFilled(posBar, posBar + sizeBar, Config.BackgroundColor.Base, 0);
 
 						// Bar
 						float fillPercent = (Config.FillInverted ? Remaining : (float) Elapsed) / Duration;
 						Vector2 sizeBarFilled = new(Config.FillDirection.IsHorizontal() ? sizeBar.X * fillPercent : sizeBar.X, !Config.FillDirection.IsHorizontal() ? sizeBar.Y * fillPercent : sizeBar.Y);
-						drawList.AddRectFilled(posBar, posBar + sizeBarFilled, ImGui.ColorConvertFloat4ToU32(Config.FillColor), 0);
+						drawList.AddRectFilled(posBar, posBar + sizeBarFilled, Config.FillColor.Base, 0);
 
 						// Text: Name
 						if (Text != null)
 						{
-							DrawHelper.DrawAnchoredText(Config.NameTextStyle, DrawAnchor.Left, Text, posBar, new(0, sizeBar.Y), ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 4);
+							DrawHelper.DrawAnchoredText(Config.NameTextStyle, DrawAnchor.Left, Text, posBar, new(0, sizeBar.Y), Config.NameTextColor.Base, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 4);
 						}
 
 						// Text: Count
 						if (CountText != null)
 						{
 							Vector2 posText2 = Text == null ? new(posBar.X, posBar.Y) : new(posBar.X + 5 + (Text == null ? Vector2.Zero : ImGui.CalcTextSize(Text)).X, posBar.Y);
-							DrawHelper.DrawAnchoredText(Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y), ImGui.ColorConvertFloat4ToU32(Config.CountTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
+							DrawHelper.DrawAnchoredText(Config.CountTextStyle, DrawAnchor.Left, CountText, posText2, new(0, Config.Size.Y), Config.CountTextColor.Base, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, 5);
 						}
 
 						// Text: Duration
 						if (Config.ShowDuration)
 						{
-							DrawHelper.DrawAnchoredText(Config.NameTextStyle, DrawAnchor.Right, DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, Config.MillisecondsThreshold, false), posBar, sizeBar, ImGui.ColorConvertFloat4ToU32(Config.NameTextColor), ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, -4);
+							DrawHelper.DrawAnchoredText(Config.NameTextStyle, DrawAnchor.Right, DrawHelper.FormatDuration(Config.ShowDurationRemaining ? Remaining : Elapsed, (ushort) Config.MillisecondsThreshold, false), posBar, sizeBar, Config.NameTextColor.Base, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 1)), drawList, -4);
 						}
 					}
 						break;

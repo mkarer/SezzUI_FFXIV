@@ -81,7 +81,7 @@ namespace SezzUI.Modules.JobHud.Jobs
 
 		private static bool IsManaficationNotOvercapping()
 		{
-			RDMGauge gauge = Service.JobGauges.Get<RDMGauge>();
+			RDMGauge gauge = Services.JobGauges.Get<RDMGauge>();
 			return gauge.BlackMana <= 50 && gauge.WhiteMana <= 50;
 		}
 	}

@@ -13,6 +13,7 @@ using Dalamud.Game.ClientState.Statuses;
 using SezzUI.Configuration;
 using SezzUI.Interface.GeneralElements;
 using SezzUI.Logging;
+using Dalamud.Plugin.Services;
 
 namespace SezzUI.Helper
 {
@@ -64,12 +65,12 @@ namespace SezzUI.Helper
 
 		public static bool IsOnCleanseJob()
 		{
-			PlayerCharacter? player = Service.ClientState.LocalPlayer;
+			PlayerCharacter? player = Services.ClientState.LocalPlayer;
 
 			return player != null && JobsHelper.IsJobWithCleanse(player.ClassJob.Id, player.Level);
 		}
 
-		public static GameObject? FindTargetOfTarget(GameObject? target, GameObject? player, ObjectTable actors)
+		public static GameObject? FindTargetOfTarget(GameObject? target, GameObject? player, IObjectTable actors)
 		{
 			if (target == null)
 			{

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -72,7 +73,7 @@ namespace SezzUI.Modules.GameUI
 			EventManager.Game.HudLayoutActivated += OnHudLayoutActivated;
 
 			_wasHudLayoutAgentVisible = false;
-			_isHudLayoutAgentVisible = Service.GameGui.GetAddonByName("HudLayout", 1) != IntPtr.Zero;
+			_isHudLayoutAgentVisible = Services.GameGui.GetAddonByName("HudLayout", 1) != IntPtr.Zero;
 
 			if (EventManager.Game.IsInGame() && EventManager.Game.AreAddonsShown())
 			{
@@ -104,7 +105,7 @@ namespace SezzUI.Modules.GameUI
 
 		private void OnHudLayoutActivated(uint hudLayout, bool ready)
 		{
-			if (Service.ClientState.IsLoggedIn && !_initialUpdate && !_isHudLayoutAgentVisible && ready)
+			if (Services.ClientState.IsLoggedIn && !_initialUpdate && !_isHudLayoutAgentVisible && ready)
 			{
 				// Force update after switching layouts!
 #if DEBUG
@@ -119,7 +120,7 @@ namespace SezzUI.Modules.GameUI
 
 		private void OnAddonsVisibilityChanged(bool visible)
 		{
-			if (!Service.ClientState.IsLoggedIn || !_initialUpdate)
+			if (!Services.ClientState.IsLoggedIn || !_initialUpdate)
 			{
 				return;
 			}
@@ -326,7 +327,7 @@ namespace SezzUI.Modules.GameUI
 						Logger.Debug($"Addon: {element} ShouldShow: {shouldShow} IsVisible: {node->IsVisible}");
 					}
 #endif
-					node->Flags ^= 0x10;
+                    node->NodeFlags &= ~NodeFlags.Visible;
 				}
 			}
 		}
@@ -347,7 +348,6 @@ namespace SezzUI.Modules.GameUI
 			}
 
 			AtkUnitList* loadedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.AllLoadedUnitsList;
-			AtkUnitBase** addonList = &loadedUnitsList->AtkUnitEntries;
 
 #if DEBUG
 			if (_debugConfig.LogVisibilityStatesVerbose)
@@ -361,8 +361,8 @@ namespace SezzUI.Modules.GameUI
 
 			for (int i = 0; i < loadedUnitsList->Count; i++)
 			{
-				AtkUnitBase* addon = addonList[i];
-				if (addon == null || addon->RootNode == null || addon->UldManager.LoadedState != 3)
+                AtkUnitBase* addon = *(AtkUnitBase**)Unsafe.AsPointer(ref loadedUnitsList->EntriesSpan[i]); 
+                if (addon == null || addon->RootNode == null || addon->UldManager.LoadedState != AtkLoadState.Loaded)
 				{
 					continue;
 				}
@@ -466,7 +466,7 @@ namespace SezzUI.Modules.GameUI
 
 			try
 			{
-				AgentInterface* agentHudLayout = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalID((uint) AgentId.HudLayout);
+				AgentInterface* agentHudLayout = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.HudLayout);
 				_showHudLayoutHook = (this as IHookAccessor).Hook<ShowAgentInterfaceDelegate>(agentHudLayout->VTable->Show, ShowAgentInterfaceDetour);
 				_hideHudLayoutHook = (this as IHookAccessor).Hook<HideAgentInterfaceDelegate>(agentHudLayout->VTable->Hide, HideAgentInterfaceDetour);
 			}

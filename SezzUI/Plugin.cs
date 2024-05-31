@@ -4,10 +4,9 @@ using System.IO;
 using System.Reflection;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Command;
+using Dalamud.Interface.Internal;
 using Dalamud.Plugin;
-using FFXIVClientStructs;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiScene;
 using SezzUI.Configuration;
 using SezzUI.Configuration.Profiles;
 using SezzUI.Enums;
@@ -19,6 +18,7 @@ using SezzUI.Interface.GeneralElements;
 using SezzUI.Logging;
 #if DEBUG
 using SezzUI.Modules.Test;
+using XivCommon;
 #endif
 
 namespace SezzUI
@@ -32,7 +32,7 @@ namespace SezzUI
 		public static GeneralDebugConfig DebugConfig { get; private set; } = null!;
 #endif
 		public static PluginLogger Logger = new();
-		public static TextureWrap? BannerTexture;
+		public static IDalamudTextureWrap? BannerTexture;
 
 		public static readonly NumberFormatInfo NumberFormatInfo = CultureInfo.GetCultureInfo("en-GB").NumberFormat;
 
@@ -41,14 +41,21 @@ namespace SezzUI
 
 		public Plugin(DalamudPluginInterface pluginInterface)
 		{
-			pluginInterface.Create<Service>();
-			Resolver.Initialize(Service.SigScanner.SearchBase);
+            var services = pluginInterface.Create<Services>();
+            if (services == null)
+            {
+                throw new Exception("Could not create services!");
+            }
 
-			AssemblyLocation = pluginInterface.AssemblyLocation.DirectoryName != null ? pluginInterface.AssemblyLocation.DirectoryName : Assembly.GetExecutingAssembly().Location;
+            AssemblyLocation = pluginInterface.AssemblyLocation.DirectoryName != null ? pluginInterface.AssemblyLocation.DirectoryName : Assembly.GetExecutingAssembly().Location;
 			AssemblyLocation = AssemblyLocation.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-			Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.1.3";
+			Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.1.6";
 
-			LoadBanner();
+#if DEBUG
+            Logger.Debug($"{Name} Version {Version}");
+#endif
+
+            LoadBanner();
 
 			// initialize a not-necessarily-defaults configuration
 			_configurationManager = new();
@@ -72,20 +79,20 @@ namespace SezzUI
 			_hudManager = new();
 			Singletons.Register(_hudManager, 40);
 
-			Service.PluginInterface.UiBuilder.DisableAutomaticUiHide = true;
-			Service.PluginInterface.UiBuilder.DisableCutsceneUiHide = true;
-			Service.PluginInterface.UiBuilder.DisableGposeUiHide = true;
-			Service.PluginInterface.UiBuilder.DisableUserUiHide = true;
-			Service.PluginInterface.UiBuilder.Draw += Draw;
-			Service.PluginInterface.UiBuilder.OpenConfigUi += OpenConfigUi;
+			Services.PluginInterface.UiBuilder.DisableAutomaticUiHide = true;
+			Services.PluginInterface.UiBuilder.DisableCutsceneUiHide = true;
+			Services.PluginInterface.UiBuilder.DisableGposeUiHide = true;
+			Services.PluginInterface.UiBuilder.DisableUserUiHide = true;
+			Services.PluginInterface.UiBuilder.Draw += Draw;
+			Services.PluginInterface.UiBuilder.OpenConfigUi += OpenConfigUi;
 
-			Service.CommandManager.AddHandler("/sezzui", new(PluginCommand)
+            Services.Commands.AddHandler("/sezzui", new(PluginCommand)
 			{
 				HelpMessage = "Opens the SezzUI configuration window.",
 				ShowInHelp = true
 			});
 			CommandInfo alias = new(PluginCommand) {ShowInHelp = false};
-			Service.CommandManager.AddHandler("/sezz", alias);
+            Services.Commands.AddHandler("/sezz", alias);
 
 #if DEBUG
 			if (DebugConfig?.ShowConfigurationOnLogin ?? false)
@@ -95,8 +102,13 @@ namespace SezzUI
 #endif
 		}
 
+        private void Initalize()
+        {
+
+        }
+
 #if DEBUG
-		private static void OnConfigReset(ConfigurationManager sender)
+        private static void OnConfigReset(ConfigurationManager sender)
 		{
 			DebugConfig = sender.GetConfigObject<GeneralDebugConfig>();
 		}
@@ -110,7 +122,7 @@ namespace SezzUI
 			{
 				try
 				{
-					BannerTexture = Service.PluginInterface.UiBuilder.LoadImage(bannerImage);
+					BannerTexture = Services.PluginInterface.UiBuilder.LoadImage(bannerImage);
 				}
 				catch (Exception ex)
 				{
@@ -170,7 +182,7 @@ namespace SezzUI
 
 		private void Draw()
 		{
-			Service.PluginInterface.UiBuilder.OverrideGameCursor = false;
+			Services.PluginInterface.UiBuilder.OverrideGameCursor = false;
 
 			DrawState drawState = GetDrawState();
 			if (DrawState != drawState)
@@ -205,7 +217,7 @@ namespace SezzUI
 		{
 			try
 			{
-				IntPtr addon = Service.GameGui.GetAddonByName(name, 1);
+				IntPtr addon = Services.GameGui.GetAddonByName(name, 1);
 				return addon != IntPtr.Zero && ((AtkUnitBase*) addon)->IsVisible;
 			}
 			catch (Exception ex)
@@ -220,29 +232,29 @@ namespace SezzUI
 		{
 			// TODO: Flags for partial state (_NaviMap,  _ActionBar, others?)
 			// Dalamud conditions
-			if (!Service.ClientState.IsLoggedIn || Service.Condition[ConditionFlag.CreatingCharacter] || Service.Condition[ConditionFlag.BetweenAreas] || Service.Condition[ConditionFlag.BetweenAreas51] || Service.ClientState.LocalPlayer == null)
+			if (!Services.ClientState.IsLoggedIn || Services.Condition[ConditionFlag.CreatingCharacter] || Services.Condition[ConditionFlag.BetweenAreas] || Services.Condition[ConditionFlag.BetweenAreas51] || Services.ClientState.LocalPlayer == null)
 			{
 				return DrawState.HiddenNotInGame;
 			}
 
-			if (!Singletons.Get<ConfigurationManager>().ShowHUD || Service.GameGui.GameUiHidden)
+			if (!Singletons.Get<ConfigurationManager>().ShowHUD || Services.GameGui.GameUiHidden)
 			{
 				return DrawState.HiddenDisabled;
 			}
 
-			if (Service.Condition[ConditionFlag.WatchingCutscene] || Service.Condition[ConditionFlag.WatchingCutscene78] || Service.Condition[ConditionFlag.OccupiedInCutSceneEvent])
+			if (Services.Condition[ConditionFlag.WatchingCutscene] || Services.Condition[ConditionFlag.WatchingCutscene78] || Services.Condition[ConditionFlag.OccupiedInCutSceneEvent])
 			{
 				// WatchingCutscene includes Group Pose
 				return IsAddonVisible("_NaviMap") ? DrawState.Partially : DrawState.HiddenCutscene;
 			}
 
-			if (Service.Condition[ConditionFlag.OccupiedSummoningBell])
+			if (Services.Condition[ConditionFlag.OccupiedSummoningBell])
 			{
 				return DrawState.Partially;
 			}
 
 			// Quest interaction
-			if (Service.Condition[ConditionFlag.OccupiedInQuestEvent] || Service.Condition[ConditionFlag.OccupiedInEvent])
+			if (Services.Condition[ConditionFlag.OccupiedInQuestEvent] || Services.Condition[ConditionFlag.OccupiedInEvent])
 			{
 				return DrawState.Partially;
 			}
@@ -275,12 +287,12 @@ namespace SezzUI
 				return;
 			}
 
-			Service.PluginInterface.UiBuilder.Draw -= Draw;
-			Service.PluginInterface.UiBuilder.OpenConfigUi -= OpenConfigUi;
-			Service.PluginInterface.UiBuilder.RebuildFonts();
+			Services.PluginInterface.UiBuilder.Draw -= Draw;
+			Services.PluginInterface.UiBuilder.OpenConfigUi -= OpenConfigUi;
+			Services.PluginInterface.UiBuilder.RebuildFonts();
 
-			Service.CommandManager.RemoveHandler("/sezzui");
-			Service.CommandManager.RemoveHandler("/sezz");
+            Services.Commands.RemoveHandler("/sezzui");
+            Services.Commands.RemoveHandler("/sezz");
 
 #if DEBUG
 			_configurationManager.ResetEvent -= OnConfigReset;

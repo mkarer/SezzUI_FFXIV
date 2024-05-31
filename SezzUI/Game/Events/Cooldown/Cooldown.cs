@@ -5,7 +5,7 @@
  * Just like in World of Warcraft we don't care about the accumulated duration of all charges,
  * instead we only care about one charge.
  *
- * IMPORTANT: Only ActionType.Spell is supported, to watch "General" actions lookup their action ID first.
+ * IMPORTANT: Only ActionType.Action is supported, to watch "General" actions lookup their action ID first.
  * This can easily be done by enabling debug logging and using the action, SendAction and ReceiveActionEffect
  * should output the correct ID.
  *
@@ -18,6 +18,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using JetBrains.Annotations;
 using SezzUI.Helper;
@@ -123,7 +124,7 @@ namespace SezzUI.Game.Events.Cooldown
 			else
 			{
 				_watchedActions[actionId] = 1;
-				Update(actionId, ActionType.Spell);
+				Update(actionId, ActionType.Action);
 			}
 		}
 
@@ -174,7 +175,7 @@ namespace SezzUI.Game.Events.Cooldown
 
 		private bool Update(uint actionId, ActionType actionType)
 		{
-			PlayerCharacter? player = Service.ClientState.LocalPlayer;
+			PlayerCharacter? player = Services.ClientState.LocalPlayer;
 			if (player == null)
 			{
 				return false;
@@ -274,7 +275,7 @@ namespace SezzUI.Game.Events.Cooldown
 		{
 			foreach (KeyValuePair<uint, ushort> kvp in _watchedActions)
 			{
-				Update(kvp.Key, ActionType.Spell);
+				Update(kvp.Key, ActionType.Action);
 			}
 		}
 
@@ -368,7 +369,7 @@ namespace SezzUI.Game.Events.Cooldown
 			ScheduleUpdate(actionIds, 2500);
 		}
 
-		private void OnFrameworkUpdate(Framework framework)
+		private void OnFrameworkUpdate(IFramework framework)
 		{
 			if (_delayedUpdates.Any())
 			{
@@ -377,7 +378,7 @@ namespace SezzUI.Game.Events.Cooldown
 					uint actionId = _delayedUpdates[^1].Item2;
 					//Logger.Debug($"TickCount64 {Environment.TickCount64} UpdateTickCount64 {_delayedUpdates[^1].Item1} ActionID {actionId}");
 					_delayedUpdates.RemoveAt(_delayedUpdates.Count - 1);
-					Update(actionId, ActionType.Spell);
+					Update(actionId, ActionType.Action);
 				}
 			}
 		}
@@ -388,7 +389,7 @@ namespace SezzUI.Game.Events.Cooldown
 
 		private readonly ActionManager* _actionManager;
 
-		private void GetRecastTimes(uint actionId, out float total, out float elapsed, ActionType actionType = ActionType.Spell)
+		private void GetRecastTimes(uint actionId, out float total, out float elapsed, ActionType actionType = ActionType.Action)
 		{
 			total = 0f;
 			elapsed = 0f;
@@ -472,11 +473,11 @@ namespace SezzUI.Game.Events.Cooldown
 #if DEBUG
 			if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownHooks)
 			{
-				Logger.Debug($"Action ID: {actionId} Type: {actionType} Name: {((ActionType) actionType == ActionType.Spell ? SpellHelper.GetActionName(actionId) ?? "?" : "?")} Target: 0x{targetObjectId:X} ({Service.ObjectTable.SearchById((uint) targetObjectId)?.Name.TextValue ?? "??"})");
+				Logger.Debug($"Action ID: {actionId} Type: {actionType} Name: {((ActionType) actionType == ActionType.Action ? SpellHelper.GetActionName(actionId) ?? "?" : "?")} Target: 0x{targetObjectId:X} ({Services.Objects.SearchById((uint) targetObjectId)?.Name.TextValue ?? "??"})");
 			}
 #endif
 
-			if ((ActionType) actionType != ActionType.Spell || targetObjectId != Service.ClientState.LocalPlayer?.ObjectId)
+			if ((ActionType) actionType != ActionType.Action || targetObjectId != Services.ClientState.LocalPlayer?.ObjectId)
 			{
 				return;
 			}
@@ -488,7 +489,7 @@ namespace SezzUI.Game.Events.Cooldown
 		{
 			_receiveActionEffectHook!.Original(sourceActorId, sourceActor, vectorPosition, effectHeader, effectArray, effectTrail);
 
-			if (sourceActorId != Service.ClientState.LocalPlayer?.ObjectId || effectHeader == IntPtr.Zero)
+			if (sourceActorId != Services.ClientState.LocalPlayer?.ObjectId || effectHeader == IntPtr.Zero)
 			{
 				return;
 			}
@@ -499,10 +500,10 @@ namespace SezzUI.Game.Events.Cooldown
 #if DEBUG
 				if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventCooldownHooks)
 				{
-					Logger.Debug($"Action ID: {header.ActionId} Type: {header.Type} Name: {((ActionType) header.Type == ActionType.Spell ? SpellHelper.GetActionName(header.ActionId) ?? "?" : "?")} Source: 0x{sourceActorId:X} ({Service.ObjectTable.SearchById((uint) sourceActorId)?.Name.TextValue ?? "??"}) Target: 0x{header.TargetObjectId:X} ({Service.ObjectTable.SearchById((uint) header.TargetObjectId)?.Name.TextValue ?? "??"})");
+					Logger.Debug($"Action ID: {header.ActionId} Type: {header.Type} Name: {((ActionType) header.Type == ActionType.Action ? SpellHelper.GetActionName(header.ActionId) ?? "?" : "?")} Source: 0x{sourceActorId:X} ({Services.Objects.SearchById((uint) sourceActorId)?.Name.TextValue ?? "??"}) Target: 0x{header.TargetObjectId:X} ({Services.Objects.SearchById((uint) header.TargetObjectId)?.Name.TextValue ?? "??"})");
 				}
 #endif
-				if ((ActionType) header.Type == ActionType.Spell)
+				if ((ActionType) header.Type == ActionType.Action)
 				{
 					TryUpdateIfWatched(header.ActionId, (ActionType) header.Type);
 				}
@@ -519,13 +520,13 @@ namespace SezzUI.Game.Events.Cooldown
 
 		protected override void OnEnable()
 		{
-			Service.Framework.Update += OnFrameworkUpdate;
+			Services.Framework.Update += OnFrameworkUpdate;
 			_receiveActionEffectHook?.Enable();
 		}
 
 		protected override void OnDisable()
 		{
-			Service.Framework.Update -= OnFrameworkUpdate;
+			Services.Framework.Update -= OnFrameworkUpdate;
 			_receiveActionEffectHook?.Disable();
 			_delayedUpdates.Clear();
 			_cache.Clear();

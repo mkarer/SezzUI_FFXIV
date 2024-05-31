@@ -49,7 +49,7 @@ namespace SezzUI.Modules.PluginMenu
 				return;
 			}
 
-			IntPtr nowLoading = Service.GameGui.GetAddonByName("NowLoading", 1);
+			IntPtr nowLoading = Services.GameGui.GetAddonByName("NowLoading", 1);
 			AtkResNode* nowLoadingNode = ((AtkUnitBase*) nowLoading)->RootNode;
 			float opacity = !nowLoadingNode->IsVisible ? 1f : Math.Min(160f, 160 - nowLoadingNode->Alpha_2) / 160f; // At about 172 the _NaviMap is hidden here.
 			if (opacity <= 0)
@@ -172,7 +172,7 @@ namespace SezzUI.Modules.PluginMenu
 		{
 			Singletons.Get<MediaManager>().PathChanged += OnMediaPathChanged;
 			Singletons.Get<MediaManager>().FontAssignmentsChanged += OnFontAssignmentsChanged;
-			Service.PluginInterface.UiBuilder.BuildFonts += OnBuildFonts;
+			Services.PluginInterface.UiBuilder.BuildFonts += OnBuildFonts;
 
 			_forceUpdate = true;
 			UpdateItems();
@@ -182,7 +182,7 @@ namespace SezzUI.Modules.PluginMenu
 		{
 			Singletons.Get<MediaManager>().PathChanged -= OnMediaPathChanged;
 			Singletons.Get<MediaManager>().FontAssignmentsChanged -= OnFontAssignmentsChanged;
-			Service.PluginInterface.UiBuilder.BuildFonts -= OnBuildFonts;
+			Services.PluginInterface.UiBuilder.BuildFonts -= OnBuildFonts;
 		}
 
 		private void UpdateItems()
@@ -220,7 +220,7 @@ namespace SezzUI.Modules.PluginMenu
 #if DEBUG
 			_debugConfig = Singletons.Get<ConfigurationManager>().GetConfigObject<PluginMenuDebugConfig>();
 #endif
-			_xivCommon = new();
+			_xivCommon = new(Services.PluginInterface);
 			Config.ValueChangeEvent += OnConfigPropertyChanged;
 			Config.Items.ForEach(x => x.ValueChangeEvent += OnConfigPropertyChanged);
 

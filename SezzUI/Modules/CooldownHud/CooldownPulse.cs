@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using Dalamud.Interface.Internal;
 using ImGuiNET;
 using ImGuiScene;
 using SezzUI.Enums;
@@ -15,7 +16,7 @@ namespace SezzUI.Modules.CooldownHud
 
 		private uint? _iconId;
 
-		private TextureWrap? _texture;
+		private IDalamudTextureWrap? _texture;
 		public uint ActionId;
 		public DrawAnchor Anchor = DrawAnchor.Center;
 
@@ -63,7 +64,7 @@ namespace SezzUI.Modules.CooldownHud
 			}
 		}
 
-		public TextureWrap? Texture
+		public IDalamudTextureWrap? Texture
 		{
 			get => _texture;
 			set
