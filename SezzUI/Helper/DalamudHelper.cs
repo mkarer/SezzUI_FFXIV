@@ -51,7 +51,7 @@ public static partial class DalamudHelper
 			string defaultFontName = defaultFont.GetDebugName();
 			Logger.Debug($"ImGui Default Font[0]: {defaultFontName}");
 
-			Match dalamudFontMatch = regexDalamudFont().Match(defaultFontName);
+			Match dalamudFontMatch = RegexDalamudFont().Match(defaultFontName);
 			if (dalamudFontMatch.Success && uint.TryParse(dalamudFontMatch.Groups[2].Value, out uint dalamudFontSize)) // 17
 			{
 				string dalamudFontFile = dalamudFontMatch.Groups[1].Value; // NotoSansCJKjp-Medium.otf
@@ -124,5 +124,5 @@ public static partial class DalamudHelper
 	}
 
 	[GeneratedRegex(@"^(.*), ([1-9]\d*(\.)\d*|0?(\.)\d*[1-9]\d*|[1-9]\d*)px$")]
-	private static partial Regex regexDalamudFont();
+	private static partial Regex RegexDalamudFont();
 }
