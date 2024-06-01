@@ -10,7 +10,6 @@ using SezzUI.Configuration;
 using SezzUI.Enums;
 using SezzUI.Helper;
 using SezzUI.Interface;
-using XivCommon;
 
 namespace SezzUI.Modules.PluginMenu;
 
@@ -20,7 +19,6 @@ public class PluginMenu : PluginModule
 #if DEBUG
 	private readonly PluginMenuDebugConfig _debugConfig;
 #endif
-	private readonly XivCommonBase _xivCommon;
 	private readonly List<PluginMenuItem> _items;
 	private static long _lastError;
 	private const byte BORDER_SIZE = 1;
@@ -94,7 +92,7 @@ public class PluginMenu : PluginModule
 							Logger.Debug($"Executing command: {item.Config.Command}");
 						}
 #endif
-						_xivCommon.Functions.Chat.SendMessage(item.Config.Command);
+						ChatHelper.SendMessage(item.Config.Command);
 					}
 				}
 
@@ -172,7 +170,7 @@ public class PluginMenu : PluginModule
 	{
 		Singletons.Get<MediaManager>().PathChanged += OnMediaPathChanged;
 		Singletons.Get<MediaManager>().FontAssignmentsChanged += OnFontAssignmentsChanged;
-		Services.PluginInterface.UiBuilder.BuildFonts += OnBuildFonts;
+		//Services.PluginInterface.UiBuilder.BuildFonts += OnBuildFonts;
 
 		_forceUpdate = true;
 		UpdateItems();
@@ -182,7 +180,7 @@ public class PluginMenu : PluginModule
 	{
 		Singletons.Get<MediaManager>().PathChanged -= OnMediaPathChanged;
 		Singletons.Get<MediaManager>().FontAssignmentsChanged -= OnFontAssignmentsChanged;
-		Services.PluginInterface.UiBuilder.BuildFonts -= OnBuildFonts;
+		//Services.PluginInterface.UiBuilder.BuildFonts -= OnBuildFonts;
 	}
 
 	private void UpdateItems()
@@ -220,7 +218,6 @@ public class PluginMenu : PluginModule
 #if DEBUG
 		_debugConfig = Singletons.Get<ConfigurationManager>().GetConfigObject<PluginMenuDebugConfig>();
 #endif
-		_xivCommon = new(Services.PluginInterface);
 		Config.ValueChangeEvent += OnConfigPropertyChanged;
 		Config.Items.ForEach(x => x.ValueChangeEvent += OnConfigPropertyChanged);
 
@@ -291,7 +288,6 @@ public class PluginMenu : PluginModule
 
 		_items.ForEach(item => item.Dispose());
 		_items.Clear();
-		_xivCommon.Dispose();
 	}
 }
 
