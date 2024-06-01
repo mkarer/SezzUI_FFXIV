@@ -33,7 +33,7 @@ public class PluginLogger
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				Service.PluginLog.Verbose(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
+				Services.PluginLog.Verbose(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
 			}
 		}
 #endif
@@ -51,7 +51,7 @@ public class PluginLogger
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				Service.PluginLog.Debug(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
+				Services.PluginLog.Debug(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
 			}
 		}
 #endif
@@ -69,7 +69,7 @@ public class PluginLogger
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				Service.PluginLog.Information(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
+				Services.PluginLog.Information(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
 			}
 		}
 #endif
@@ -87,7 +87,7 @@ public class PluginLogger
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				Service.PluginLog.Warning(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
+				Services.PluginLog.Warning(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
 			}
 		}
 #endif
@@ -105,7 +105,7 @@ public class PluginLogger
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				Service.PluginLog.Error(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
+				Services.PluginLog.Error(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
 			}
 		}
 #endif
@@ -123,7 +123,7 @@ public class PluginLogger
 		{
 			foreach (string m in SplitMessage(message))
 			{
-				Service.PluginLog.Fatal(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
+				Services.PluginLog.Fatal(new StringBuilder().Append(_prefix != "" ? $"[{_prefix}] " : "").Append(m).ToString());
 			}
 		}
 #endif
