@@ -84,6 +84,7 @@ public class Plugin : IDalamudPlugin
 		Services.PluginInterface.UiBuilder.DisableUserUiHide = true;
 		Services.PluginInterface.UiBuilder.Draw += Draw;
 		Services.PluginInterface.UiBuilder.OpenConfigUi += OpenConfigUi;
+		Services.PluginInterface.UiBuilder.OpenMainUi += OpenConfigUi;
 
 		Services.Commands.AddHandler("/sezzui", new(PluginCommand)
 		{
@@ -284,6 +285,7 @@ public class Plugin : IDalamudPlugin
 
 		Services.PluginInterface.UiBuilder.Draw -= Draw;
 		Services.PluginInterface.UiBuilder.OpenConfigUi -= OpenConfigUi;
+		Services.PluginInterface.UiBuilder.OpenMainUi -= OpenConfigUi;
 		Services.PluginInterface.UiBuilder.RebuildFonts();
 
 		Services.Commands.RemoveHandler("/sezzui");
