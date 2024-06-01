@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Dalamud.Interface;
+using Dalamud.Interface.ManagedFontAtlas;
+using Dalamud.Interface.Utility;
 using Dalamud.Utility;
 using ImGuiNET;
 using SezzUI.Configuration;
@@ -15,6 +18,7 @@ namespace SezzUI.Helper;
 
 public class MediaManager : IPluginDisposable
 {
+	// ReSharper disable once InconsistentNaming
 	protected PluginConfigObject _config;
 	public GeneralMediaConfig Config => (GeneralMediaConfig) _config;
 
@@ -22,13 +26,13 @@ public class MediaManager : IPluginDisposable
 
 	private readonly string _defaultPath;
 	private string _customPath;
-
+	private readonly UiBuilder _uiBuilder;
+	
 	public static readonly Dictionary<string, FontData> ImGuiFontData = new(); // Available Fonts (Plugin)
-	public static readonly Dictionary<string, ImFontPtr> ImGuiFonts = new(); // Available Fonts (Plugin)
+	public static readonly Dictionary<string, IFontHandle> ImGuiFonts = new(); // Available Fonts (Plugin)
 	public static readonly List<FontFile> FontFiles = new(); // Available Fonts (Filesystem)
 
 	private const string DEFAULT_FONT = "CabinCondensed-SemiBold";
-
 	public static readonly Dictionary<PluginFontSize, string> DefaultFonts = new()
 	{
 		{PluginFontSize.ExtraExtraSmall, $"{DEFAULT_FONT}_14"},
@@ -163,18 +167,13 @@ public class MediaManager : IPluginDisposable
 
 	public static FontScope PushFont(string? fontKey)
 	{
-		if (string.IsNullOrEmpty(fontKey))
+		if (!string.IsNullOrEmpty(fontKey) && ImGuiFonts.TryGetValue(fontKey, out IFontHandle? fontHandle))
 		{
-			fontKey = DefaultFonts[PluginFontSize.Medium];
+			return new(fontHandle);
 		}
 
-		if (!ImGuiFonts.ContainsKey(fontKey))
-		{
-			return new(false);
-		}
-
-		ImGui.PushFont(ImGuiFonts[fontKey]);
-		return new(true);
+		Singletons.Get<MediaManager>().Logger.Error($"Invalid font key \"{fontKey}\" - using default ({DefaultFonts[PluginFontSize.Medium]})");
+		return PushFont(DefaultFonts[PluginFontSize.Medium]);
 	}
 
 	public void RemoveFont(FontData fontData)
@@ -182,7 +181,6 @@ public class MediaManager : IPluginDisposable
 		string fontKey = ImGuiFontData.FirstOrDefault(x => x.Value.Equals(fontData)).Key;
 		if (!fontKey.IsNullOrEmpty())
 		{
-			ImGuiFonts.Remove(fontKey);
 			ImGuiFontData.Remove(fontKey);
 #if DEBUG
 			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsMediaManager)
@@ -190,7 +188,7 @@ public class MediaManager : IPluginDisposable
 				Logger.Debug("Success");
 			}
 #endif
-			Services.PluginInterface.UiBuilder.RebuildFonts();
+			BuildFonts();
 		}
 		else
 		{
@@ -207,11 +205,11 @@ public class MediaManager : IPluginDisposable
 				ImGuiFontData.Remove(fontKey);
 			}
 
-			Services.PluginInterface.UiBuilder.RebuildFonts();
+			Singletons.Get<MediaManager>().BuildFonts();
 		}
 	}
 
-	public bool AddFont(FontData fontData)
+	public bool AddFont(FontData fontData, bool rebuild = true)
 	{
 		string fontKey = GetFontKey(fontData);
 		if (ImGuiFontData.ContainsKey(fontKey))
@@ -228,7 +226,10 @@ public class MediaManager : IPluginDisposable
 			Logger.Debug($"Success -> Key: {fontKey} Name: {fontData.Name} Size: {fontData.Size} CN/JP: {fontData.Chinese} KR: {fontData.Korean} Path: {fontData.File.Path}");
 		}
 #endif
-		Services.PluginInterface.UiBuilder.RebuildFonts();
+		if (rebuild)
+		{
+			BuildFonts();
+		}
 		return true;
 	}
 
@@ -292,7 +293,7 @@ public class MediaManager : IPluginDisposable
 
 	private void BuildFonts()
 	{
-		ImGuiFonts.Clear();
+		DisposeFontHandles();
 
 		ImGuiIOPtr io = ImGui.GetIO();
 
@@ -305,9 +306,23 @@ public class MediaManager : IPluginDisposable
 
 			try
 			{
-				ImVector? ranges = GetCharacterRanges(fontData, io);
-				ImFontPtr imFont = !ranges.HasValue ? io.Fonts.AddFontFromFileTTF(fontData.File.Path, fontData.Size) : io.Fonts.AddFontFromFileTTF(fontData.File.Path, fontData.Size, null, ranges.Value.Data);
-				ImGuiFonts[fontKey] = imFont;
+				IFontHandle fontHandle = _uiBuilder.FontAtlas.NewDelegateFontHandle
+				(
+					e => e.OnPreBuild
+					(
+						tk => tk.AddFontFromFile
+						(
+							fontData.File.Path,
+							new SafeFontConfig
+							{
+								SizePx = fontData.Size,
+								GlyphRanges = this.GetCharacterRanges(fontData, io),
+							}
+						)
+					)
+				);
+
+				ImGuiFonts[fontKey] = fontHandle;
 #if DEBUG
 				if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsMediaManager)
 				{
@@ -322,30 +337,29 @@ public class MediaManager : IPluginDisposable
 		}
 	}
 
-	private unsafe ImVector? GetCharacterRanges(FontData fontData, ImGuiIOPtr io)
+	private ushort[]? GetCharacterRanges(FontData fontData, ImGuiIOPtr io)
 	{
 		if (!fontData.Chinese && !fontData.Korean)
 		{
 			return null;
 		}
-
-		ImFontGlyphRangesBuilderPtr builder = new(ImGuiNative.ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder());
-
-		if (fontData.Chinese)
+		
+		using (ImGuiHelpers.NewFontGlyphRangeBuilderPtrScoped(out ImFontGlyphRangesBuilderPtr builder))
 		{
-			// GetGlyphRangesChineseFull() includes Default + Hiragana, Katakana, Half-Width, Selection of 1946 Ideographs
-			// https://skia.googlesource.com/external/github.com/ocornut/imgui/+/v1.53/extra_fonts/README.txt
-			builder.AddRanges(io.Fonts.GetGlyphRangesChineseFull());
+			if (fontData.Chinese)
+			{
+				// GetGlyphRangesChineseFull() includes Default + Hiragana, Katakana, Half-Width, Selection of 1946 Ideographs
+				// https://skia.googlesource.com/external/github.com/ocornut/imgui/+/v1.53/extra_fonts/README.txt
+				builder.AddRanges(io.Fonts.GetGlyphRangesChineseFull());
+			}
+
+			if (fontData.Korean)
+			{
+				builder.AddRanges(io.Fonts.GetGlyphRangesKorean());
+			}
+
+			return builder.BuildRangesToArray();
 		}
-
-		if (fontData.Korean)
-		{
-			builder.AddRanges(io.Fonts.GetGlyphRangesKorean());
-		}
-
-		builder.BuildRanges(out ImVector ranges);
-
-		return ranges;
 	}
 
 	private void UpdateDalamudFont()
@@ -403,45 +417,27 @@ public class MediaManager : IPluginDisposable
 #endif
 		}
 	}
-
-	private void OnDraw()
+	
+	private void DisposeFontHandles()
 	{
-		UpdateDalamudFont();
-
-		// Check if default fonts are built. It did fail once for me, so it might happen again...
-		if (!DefaultFonts.Values.All(fontKey => ImGuiFonts.ContainsKey(fontKey)))
+		foreach ((string _, IFontHandle handle) in ImGuiFonts)
 		{
-#if DEBUG
-			if (Plugin.DebugConfig.LogComponents && Plugin.DebugConfig.LogComponentsMediaManager)
-			{
-				foreach (string fontKey in DefaultFonts.Values)
-				{
-					Logger.Debug($"Font {fontKey} built: {ImGuiFonts.ContainsKey(fontKey)}");
-				}
-
-				Logger.Debug("Default font aren't available, retrying...");
-			}
-#endif
-			Services.PluginInterface.UiBuilder.RebuildFonts();
+			handle.Dispose();
 		}
-		else
-		{
-			Services.PluginInterface.UiBuilder.Draw -= OnDraw;
-		}
+            
+		ImGuiFonts.Clear();
 	}
-
 	#endregion
 
-	public MediaManager()
+	public MediaManager(UiBuilder uiBuilder)
 	{
 		Logger = new("MediaManager");
 
 		_config = Singletons.Get<ConfigurationManager>().GetConfigObject<GeneralMediaConfig>();
+		_uiBuilder = uiBuilder;
 		Singletons.Get<ConfigurationManager>().Reset += OnConfigReset;
 		Config.Media.ValueChangeEvent += OnConfigPropertyChanged;
 		Config.Fonts.ValueChangeEvent += OnConfigPropertyChanged;
-		Services.PluginInterface.UiBuilder.Draw += OnDraw;
-		Services.PluginInterface.UiBuilder.BuildFonts += BuildFonts;
 
 		// Images
 		if (Config.Media.Path != "" && !Config.Media.Path.EndsWith(Path.DirectorySeparatorChar))
@@ -462,6 +458,7 @@ public class MediaManager : IPluginDisposable
 		}
 
 		// Fonts
+		UpdateDalamudFont();
 		UpdateAvailableFonts();
 		foreach ((_, string fontKey) in DefaultFonts)
 		{
@@ -470,14 +467,14 @@ public class MediaManager : IPluginDisposable
 
 		foreach ((string fontKey, FontData fontData) in Config.Fonts.CustomFonts)
 		{
-			if (!AddFont(fontData))
+			if (!AddFont(fontData, false))
 			{
 				Config.Fonts.CustomFonts.Remove(fontKey);
 			}
 		}
 
 		Config.Fonts.UpdateCustomFonts();
-		Services.PluginInterface.UiBuilder.RebuildFonts();
+		BuildFonts();
 	}
 
 	bool IPluginDisposable.IsDisposed { get; set; } = false;
@@ -500,14 +497,12 @@ public class MediaManager : IPluginDisposable
 			return;
 		}
 
-		Services.PluginInterface.UiBuilder.Draw -= OnDraw;
 		Singletons.Get<ConfigurationManager>().Reset -= OnConfigReset;
 		Config.Media.ValueChangeEvent -= OnConfigPropertyChanged;
 		Config.Fonts.ValueChangeEvent -= OnConfigPropertyChanged;
-		Services.PluginInterface.UiBuilder.BuildFonts -= BuildFonts;
 
+		DisposeFontHandles();
 		ImGuiFontData.Clear();
-		ImGuiFonts.Clear();
 		FontFiles.Clear();
 
 		(this as IPluginDisposable).IsDisposed = true;
@@ -630,18 +625,17 @@ public enum PluginFontSize
 
 public class FontScope : IDisposable
 {
-	private readonly bool _fontPushed;
+	private readonly IFontHandle? _handle;
 
-	public FontScope(bool fontPushed)
+	public FontScope(IFontHandle? handle)
 	{
-		_fontPushed = fontPushed;
+		_handle = handle;
+		_handle?.Push();
 	}
 
 	public void Dispose()
 	{
-		if (_fontPushed)
-		{
-			ImGui.PopFont();
-		}
+		_handle?.Pop();
+		GC.SuppressFinalize(this);
 	}
 }

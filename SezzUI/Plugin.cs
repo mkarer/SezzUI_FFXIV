@@ -66,7 +66,7 @@ public class Plugin : IDalamudPlugin
 		_configurationManager.ResetEvent += OnConfigReset;
 #endif
 
-		Singletons.Register(new MediaManager(), 70);
+		Singletons.Register(new MediaManager(pluginInterface.UiBuilder), 70);
 		Singletons.Register(new ClipRectsHelper(), 50);
 		Singletons.Register(new GlobalColors(), 50);
 		Singletons.Register(new TexturesCache(), 80);
@@ -94,15 +94,11 @@ public class Plugin : IDalamudPlugin
 		Services.Commands.AddHandler("/sezz", alias);
 
 #if DEBUG
-		if (DebugConfig?.ShowConfigurationOnLogin ?? false)
+		if (DebugConfig.ShowConfigurationOnLogin)
 		{
 			OpenConfigUi();
 		}
 #endif
-	}
-
-	private void Initalize()
-	{
 	}
 
 #if DEBUG
