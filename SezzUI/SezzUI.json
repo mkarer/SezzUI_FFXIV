@@ -8,8 +8,8 @@
   "RepoUrl": "https://github.com/mkarer/SezzUI_FFXIV",
   "IconUrl": "https://ffxiv.sezz.at/plugins/SezzUI/icon.png",
   "ImageUrls": [],
-  "CategoryTags": [
-    "ui"
+  "Tags": [
+    "UI", "Sezz"
   ],
   "ApplicableVersion": "any",
   "DalamudApiLevel": 9
