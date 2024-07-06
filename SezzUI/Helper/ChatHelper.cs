@@ -46,20 +46,20 @@ public static class ChatHelper
 		}
 	}
 
-    /// <summary>
-    ///     <para>
-    ///         Send a given message to the chat box. <b>This can send chat to the server.</b>
-    ///     </para>
-    ///     <para>
-    ///         <b>This method is unsafe.</b> This method does no checking on your input and
-    ///         may send content to the server that the normal client could not. You must
-    ///         verify what you're sending and handle content and length to properly use
-    ///         this.
-    ///     </para>
-    /// </summary>
-    /// <param name="message">Message to send</param>
-    /// <exception cref="InvalidOperationException">If the signature for this function could not be found</exception>
-    public static unsafe void SendMessageUnsafe(byte[] message)
+	/// <summary>
+	///     <para>
+	///         Send a given message to the chat box. <b>This can send chat to the server.</b>
+	///     </para>
+	///     <para>
+	///         <b>This method is unsafe.</b> This method does no checking on your input and
+	///         may send content to the server that the normal client could not. You must
+	///         verify what you're sending and handle content and length to properly use
+	///         this.
+	///     </para>
+	/// </summary>
+	/// <param name="message">Message to send</param>
+	/// <exception cref="InvalidOperationException">If the signature for this function could not be found</exception>
+	public static unsafe void SendMessageUnsafe(byte[] message)
 	{
 		if (ProcessChatBox == null)
 		{
@@ -68,7 +68,7 @@ public static class ChatHelper
 
 		var uiModule = (IntPtr) Framework.Instance()->GetUIModule();
 
-		using ChatPayload payload = new ChatPayload(message);
+		using ChatPayload payload = new(message);
 		var mem1 = Marshal.AllocHGlobal(400);
 		Marshal.StructureToPtr(payload, mem1, false);
 
@@ -77,23 +77,23 @@ public static class ChatHelper
 		Marshal.FreeHGlobal(mem1);
 	}
 
-    /// <summary>
-    ///     <para>
-    ///         Send a given message to the chat box. <b>This can send chat to the server.</b>
-    ///     </para>
-    ///     <para>
-    ///         This method is slightly less unsafe than <see cref="SendMessageUnsafe" />. It
-    ///         will throw exceptions for certain inputs that the client can't normally send,
-    ///         but it is still possible to make mistakes. Use with caution.
-    ///     </para>
-    /// </summary>
-    /// <param name="message">message to send</param>
-    /// <exception cref="ArgumentException">
-    ///     If <paramref name="message" /> is empty, longer than 500 bytes in UTF-8, or
-    ///     contains invalid characters.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">If the signature for this function could not be found</exception>
-    public static void SendMessage(string message)
+	/// <summary>
+	///     <para>
+	///         Send a given message to the chat box. <b>This can send chat to the server.</b>
+	///     </para>
+	///     <para>
+	///         This method is slightly less unsafe than <see cref="SendMessageUnsafe" />. It
+	///         will throw exceptions for certain inputs that the client can't normally send,
+	///         but it is still possible to make mistakes. Use with caution.
+	///     </para>
+	/// </summary>
+	/// <param name="message">message to send</param>
+	/// <exception cref="ArgumentException">
+	///     If <paramref name="message" /> is empty, longer than 500 bytes in UTF-8, or
+	///     contains invalid characters.
+	/// </exception>
+	/// <exception cref="InvalidOperationException">If the signature for this function could not be found</exception>
+	public static void SendMessage(string message)
 	{
 		var bytes = Encoding.UTF8.GetBytes(message);
 		if (bytes.Length == 0)
@@ -114,20 +114,20 @@ public static class ChatHelper
 		SendMessageUnsafe(bytes);
 	}
 
-    /// <summary>
-    ///     <para>
-    ///         Sanitises a string by removing any invalid input.
-    ///     </para>
-    ///     <para>
-    ///         The result of this method is safe to use with
-    ///         <see cref="SendMessage" />, provided that it is not empty or too
-    ///         long.
-    ///     </para>
-    /// </summary>
-    /// <param name="text">text to sanitise</param>
-    /// <returns>sanitised text</returns>
-    /// <exception cref="InvalidOperationException">If the signature for this function could not be found</exception>
-    public static unsafe string SanitiseText(string text)
+	/// <summary>
+	///     <para>
+	///         Sanitises a string by removing any invalid input.
+	///     </para>
+	///     <para>
+	///         The result of this method is safe to use with
+	///         <see cref="SendMessage" />, provided that it is not empty or too
+	///         long.
+	///     </para>
+	/// </summary>
+	/// <param name="text">text to sanitise</param>
+	/// <returns>sanitised text</returns>
+	/// <exception cref="InvalidOperationException">If the signature for this function could not be found</exception>
+	public static unsafe string SanitiseText(string text)
 	{
 		if (_sanitiseString == null)
 		{

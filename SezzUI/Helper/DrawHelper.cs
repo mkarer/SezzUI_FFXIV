@@ -102,7 +102,7 @@ public static class DrawHelper
 	/// </summary>
 	public static void DrawBackdropEdge(string edgeFile, Vector2 backdropPos, Vector2 backdropSize, uint glowColor, ImDrawListPtr drawList, uint size = 8, short inset = -8)
 	{
-		IDalamudTextureWrap? texture = Singletons.Get<ImageCache>().GetImage(edgeFile);
+		IDalamudTextureWrap? texture = Singletons.Get<MediaManager>().GetTextureFromFilesystem(edgeFile);
 		if (texture == null)
 		{
 			return;

@@ -36,9 +36,14 @@ public class PluginMenu : PluginModule
 			return;
 		}
 
-		if (_forceUpdate) // TODO
+		if (_forceUpdate)
 		{
 			UpdateItems();
+		}
+		else
+		{
+			// TODO: We should only need to resize after a texture is loaded
+			UpdateSize();
 		}
 
 		List<PluginMenuItem> enabledItems = _items.Where(item => item.Config.Enabled).ToList();

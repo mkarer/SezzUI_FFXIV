@@ -16,6 +16,7 @@ public class ImageCache : IPluginDisposable
 	private readonly ConcurrentDictionary<string, ISharedImmediateTexture> _cache = new();
 	internal PluginLogger Logger;
 
+	[Obsolete("Don't use!", true)]
 	public IDalamudTextureWrap? GetImage(string? file)
 	{
 		if (file == null)

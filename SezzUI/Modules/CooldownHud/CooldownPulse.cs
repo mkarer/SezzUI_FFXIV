@@ -13,9 +13,6 @@ public sealed class CooldownPulse : AnimatedHudElement
 {
 	public readonly long Created;
 
-	private uint? _iconId;
-
-	private IDalamudTextureWrap? _texture;
 	public uint ActionId;
 	public DrawAnchor Anchor = DrawAnchor.Center;
 
@@ -50,31 +47,26 @@ public sealed class CooldownPulse : AnimatedHudElement
 		Created = Environment.TickCount64;
 	}
 
-	public uint? IconId
-	{
-		get => _iconId;
-		set
-		{
-			_iconId = value;
-			if (value != null)
-			{
-				Texture = Singletons.Get<TexturesCache>().GetTextureFromIconId((uint) value);
-			}
-		}
-	}
+	public uint? IconId;
 
 	public IDalamudTextureWrap? Texture
 	{
-		get => _texture;
-		set
+		get
 		{
-			_texture = value;
-			if (value != null)
+			IDalamudTextureWrap? texture = null;
+
+			if (IconId != null)
 			{
-				float cutoff = 1.6f;
-				IconUv0 = new(cutoff / value.Width, cutoff / value.Height);
-				IconUv1 = new(1f - cutoff / value.Width, 1f - cutoff / value.Height);
+				texture = Singletons.Get<MediaManager>().GetTextureFromIconId((uint) IconId);
+				if (texture != null)
+				{
+					float cutoff = 1.6f;
+					IconUv0 = new(cutoff / texture.Width, cutoff / texture.Height);
+					IconUv1 = new(1f - cutoff / texture.Width, 1f - cutoff / texture.Height);
+				}
 			}
+
+			return texture;
 		}
 	}
 
@@ -93,10 +85,10 @@ public sealed class CooldownPulse : AnimatedHudElement
 		string windowId = $"SezzUI_CooldownPulse{IconId}";
 		DrawHelper.DrawInWindow(windowId, elementPosition, elementSize, false, false, drawList =>
 		{
-			if (_texture != null)
+			if (Texture != null && Texture.ImGuiHandle != IntPtr.Zero)
 			{
 				// Texture
-				drawList.AddImage(_texture.ImGuiHandle, elementPosition, elementPosition + elementSize, IconUv0, IconUv1, ImGui.ColorConvertFloat4ToU32(Vector4.One.AddTransparency(Animator.Data.Opacity)));
+				drawList.AddImage(Texture.ImGuiHandle, elementPosition, elementPosition + elementSize, IconUv0, IconUv1, ImGui.ColorConvertFloat4ToU32(Vector4.One.AddTransparency(Animator.Data.Opacity)));
 
 				// Border
 				if (BorderSize > 0)

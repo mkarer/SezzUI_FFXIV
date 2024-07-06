@@ -12,7 +12,7 @@ public class PluginMenuItem : IDisposable
 {
 	public PluginMenuItemConfig Config;
 	public Vector2 Size = new(60f, 30f);
-	public IDalamudTextureWrap? Texture;
+	public bool HasTexture => Config.Title.StartsWith("::") && Config.Title.Length > 2;
 	internal PluginLogger Logger;
 
 	public Vector4 Color => !_toggleState ? Config.Color.Vector : Config.ColorToggled.Vector;
@@ -28,26 +28,36 @@ public class PluginMenuItem : IDisposable
 			return;
 		}
 
-		Texture = null;
-		Vector2 contentSize = new(16f, Size.Y);
-
-		if (Config.Title.StartsWith("::") && Config.Title.Length > 2)
-		{
-			Texture = Singletons.Get<ImageCache>().GetImage(Singletons.Get<MediaManager>().GetIconFile(Config.Title.Substring(2)));
-			if (Texture != null)
-			{
-				contentSize.X = contentSize.Y;
-			}
-		}
-		else
-		{
-			string text = Tags.RegexColorTags.IsMatch(Config.Title) ? Tags.RegexColorTags.Replace(Config.Title, "") : Config.Title;
-			contentSize = ImGui.CalcTextSize(text);
-			contentSize.X += 2 * 8;
-		}
-
-		Size.X = contentSize.X;
+		IDalamudTextureWrap? texture = Texture; // Request texture and calculate size
 		Toggle(GetPluginToggleState(false));
+	}
+
+	public IDalamudTextureWrap? Texture
+	{
+		get
+		{
+			IDalamudTextureWrap? texture = null;
+			Vector2 contentSize = new(16f, Size.Y);
+
+			if (HasTexture)
+			{
+				string? file = Singletons.Get<MediaManager>().GetIconFileName(Config.Title.Substring(2));
+				texture = file != null ? Services.TextureProvider.GetFromFile(file!).GetWrapOrEmpty() : null;
+				if (texture != null && texture.ImGuiHandle != IntPtr.Zero)
+				{
+					contentSize.X = contentSize.Y;
+				}
+			}
+			else
+			{
+				string text = Tags.RegexColorTags.IsMatch(Config.Title) ? Tags.RegexColorTags.Replace(Config.Title, "") : Config.Title;
+				contentSize = ImGui.CalcTextSize(text);
+				contentSize.X += 2 * 8;
+			}
+
+			Size.X = contentSize.X;
+			return texture;
+		}
 	}
 
 	public void Toggle()

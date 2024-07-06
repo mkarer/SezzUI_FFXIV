@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Dalamud.Interface.Textures.TextureWraps;
 using SezzUI.Enums;
 using SezzUI.Helper;
 
@@ -30,17 +29,17 @@ public class BarManager : IDisposable
 		Id = id != "" ? id : Guid.NewGuid().ToString();
 	}
 
-	public bool Add(uint id, string? text, string? text2, IDalamudTextureWrap? icon, long start, uint duration, object? data = null, bool allowUpdating = true)
+	public bool Add(uint id, string? text, string? text2, uint? iconId, long start, uint duration, object? data = null, bool allowUpdating = true)
 	{
 		if (!allowUpdating && Get(id) != null)
 		{
 			return false;
 		}
 
-		return Update(id, text, text2, icon, start, duration, data);
+		return Update(id, text, text2, iconId, start, duration, data);
 	}
 
-	public bool Update(uint id, string? text, string? text2, IDalamudTextureWrap? icon, long start, uint duration, object? data = null, bool allowAdding = true)
+	public bool Update(uint id, string? text, string? text2, uint? iconId, long start, uint duration, object? data = null, bool allowAdding = true)
 	{
 		BarManagerBar? bar = Get(id);
 
@@ -53,17 +52,17 @@ public class BarManager : IDisposable
 
 		if (bar != null)
 		{
-			return Update(bar, text, text2, icon, start, duration, data);
+			return Update(bar, text, text2, iconId, start, duration, data);
 		}
 
 		return false;
 	}
 
-	public bool Update(BarManagerBar bar, string? text, string? text2, IDalamudTextureWrap? icon, long start, uint duration, object? data = null)
+	public bool Update(BarManagerBar bar, string? text, string? text2, uint? iconId, long start, uint duration, object? data = null)
 	{
 		bar.Text = text;
 		bar.CountText = text2;
-		bar.Icon = icon;
+		bar.IconId = iconId;
 		bar.StartTime = start;
 		bar.Duration = duration;
 		bar.Data = data;

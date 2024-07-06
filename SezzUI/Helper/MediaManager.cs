@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Dalamud.Interface;
 using Dalamud.Interface.ManagedFontAtlas;
+using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Utility;
 using ImGuiNET;
@@ -59,37 +60,37 @@ public class MediaManager : IPluginDisposable
 
 	#region Files
 
-	public string? GetOverlayFile(string fileName, bool allowOverride = true)
+	public string? GetOverlayFileName(string fileName, bool allowOverride = true)
 	{
 		if (fileName.IsNullOrWhitespace() || !fileName.ToLower().EndsWith(".png"))
 		{
 			return null;
 		}
 
-		return GetFile(Path.Combine("Images", "Overlays", fileName), allowOverride);
+		return GetFileName(Path.Combine("Images", "Overlays", fileName), allowOverride);
 	}
 
-	public string? GetIconFile(string fileName, bool allowOverride = true)
+	public string? GetIconFileName(string fileName, bool allowOverride = true)
 	{
 		if (fileName.IsNullOrWhitespace() || !fileName.ToLower().EndsWith(".png"))
 		{
 			return null;
 		}
 
-		return GetFile(Path.Combine("Icons", fileName), allowOverride);
+		return GetFileName(Path.Combine("Icons", fileName), allowOverride);
 	}
 
-	public string? GetFontFile(string fileName, bool allowOverride = true)
+	public string? GetFontFileName(string fileName, bool allowOverride = true)
 	{
 		if (fileName.IsNullOrWhitespace() || (!fileName.ToLower().EndsWith(".ttf") && !fileName.ToLower().EndsWith(".otf")))
 		{
 			return null;
 		}
 
-		return GetFile(Path.Combine("Fonts", fileName), allowOverride);
+		return GetFileName(Path.Combine("Fonts", fileName), allowOverride);
 	}
 
-	public string? GetMediaFile(string fileName, bool allowOverride = true) => !fileName.IsNullOrWhitespace() ? GetFile(fileName, allowOverride) : null;
+	public string? GetMediaFileName(string fileName, bool allowOverride = true) => !fileName.IsNullOrWhitespace() ? GetFileName(fileName, allowOverride) : null;
 
 	/// <summary>
 	///     Tries to lookup a file in custom media path and default media path.
@@ -97,7 +98,7 @@ public class MediaManager : IPluginDisposable
 	/// <param name="fileName">Name of the file to lookup, may include relative path.</param>
 	/// <param name="allowOverride">Lookup file in custom media path.</param>
 	/// <returns>NULL if lookup failed, otherwise the full path.</returns>
-	private string? GetFile(string? fileName, bool allowOverride = true)
+	private string? GetFileName(string? fileName, bool allowOverride = true)
 	{
 		if (fileName == null)
 		{
@@ -418,6 +419,40 @@ public class MediaManager : IPluginDisposable
 		}
 
 		ImGuiFonts.Clear();
+	}
+
+	#endregion
+
+	#region Textures
+
+	/// <summary>
+	///     Retrieve texture by icon id from game files.
+	/// </summary>
+	public IDalamudTextureWrap? GetTextureFromIconId(uint iconId) => Services.TextureProvider.GetFromGameIcon(new(iconId)).GetWrapOrDefault();
+
+	/// <summary>
+	///     Retrieve texture by icon id from filesystem (if available) and fails over to game files.
+	/// </summary>
+	public IDalamudTextureWrap? GetTextureFromIconIdOverridable(uint iconId, out bool isOverridden)
+	{
+		IDalamudTextureWrap? texture = GetTextureFromFilesystem(GetIconFileName($"{iconId / 1000 * 1000:000000}\\{iconId:000000}.png"));
+		isOverridden = texture != null;
+		return texture ?? GetTextureFromIconId(iconId);
+	}
+
+	/// <summary>
+	///     Retrieve texture from filesystem.
+	/// </summary>
+	/// <param name="file">Full path to PNG file</param>
+	/// <returns></returns>
+	public IDalamudTextureWrap? GetTextureFromFilesystem(string? file)
+	{
+		if (file != null && File.Exists(file))
+		{
+			return Services.TextureProvider.GetFromFile(file).GetWrapOrEmpty();
+		}
+
+		return null;
 	}
 
 	#endregion

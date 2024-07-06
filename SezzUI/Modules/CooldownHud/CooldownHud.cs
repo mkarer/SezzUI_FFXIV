@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Dalamud.Game.ClientState.Objects.SubKinds;
-using Dalamud.Interface.Textures.TextureWraps;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using SezzUI.Configuration;
 using SezzUI.Enums;
@@ -241,15 +240,15 @@ public class CooldownHud : PluginModule
 		RegisterCooldown(actionId, 0, adjustAction);
 	}
 
-	private void GetActionDisplayData(uint actionId, ActionType actionType, out string? name, out IDalamudTextureWrap? texture)
+	private void GetActionDisplayData(uint actionId, ActionType actionType, out string? name, out uint? iconId)
 	{
 		name = actionType == ActionType.GeneralAction ? SpellHelper.GetGeneralActionName(actionId) : SpellHelper.GetActionName(actionId);
-		if (!_iconOverride.TryGetValue(actionId, out int? iconId))
+		if (!_iconOverride.TryGetValue(actionId, out int? iconIdDisplay) || iconIdDisplay == null)
 		{
-			iconId = actionType == ActionType.GeneralAction ? SpellHelper.GetGeneralActionIconId(actionId) : SpellHelper.GetActionIconId(actionId);
+			iconIdDisplay = actionType == ActionType.GeneralAction ? SpellHelper.GetGeneralActionIconId(actionId) : SpellHelper.GetActionIconId(actionId);
 		}
 
-		texture = SpellHelper.GetIconTexture((ushort?) iconId, out bool _);
+		iconId = (uint) iconIdDisplay!;
 	}
 
 	protected override void OnEnable()
@@ -280,10 +279,10 @@ public class CooldownHud : PluginModule
 
 	private void Pulse(BarManagerBar bar, bool early)
 	{
-		Pulse(bar.Id, bar.Icon, (ushort) ((bar.Data != null ? (ushort) bar.Data : 0) + (early ? 1 : 0)));
+		Pulse(bar.Id, bar.IconId, (ushort) ((bar.Data != null ? (ushort) bar.Data : 0) + (early ? 1 : 0)));
 	}
 
-	private void Pulse(uint actionId, IDalamudTextureWrap? texture, ushort charges)
+	private void Pulse(uint actionId, uint? iconId, ushort charges)
 	{
 		if (!_cooldowns.ContainsKey(actionId))
 		{
@@ -303,7 +302,7 @@ public class CooldownHud : PluginModule
 		{
 			ActionId = actionId,
 			Charges = charges,
-			Texture = texture,
+			IconId = iconId,
 			Position = Config.CooldownHudPulse.Position,
 			Size = Config.CooldownHudPulse.Size,
 			Anchor = Config.CooldownHudPulse.Anchor
@@ -465,8 +464,8 @@ public class CooldownHud : PluginModule
 		_cooldowns[actionId].LastPulseCharges = INITIAL_PULSE_CHARGES;
 		_cooldowns[actionId].BarManagers.ForEach(barManager =>
 		{
-			GetActionDisplayData(actionId, data.Type, out string? name, out IDalamudTextureWrap? texture);
-			bool result = barManager.Add(actionId, name ?? "Unknown Action", data.MaxCharges > 1 && data.CurrentCharges > 0 ? "x1" : null, texture, data.StartTime, data.Duration, data.CurrentCharges);
+			GetActionDisplayData(actionId, data.Type, out string? name, out uint? iconId);
+			bool result = barManager.Add(actionId, name ?? "Unknown Action", data.MaxCharges > 1 && data.CurrentCharges > 0 ? "x1" : null, iconId, data.StartTime, data.Duration, data.CurrentCharges);
 #if DEBUG
 			if (_debugConfig.LogCooldownEventHandling)
 			{
@@ -485,8 +484,8 @@ public class CooldownHud : PluginModule
 
 		_cooldowns[actionId].BarManagers.ForEach(barManager =>
 		{
-			GetActionDisplayData(actionId, data.Type, out string? name, out IDalamudTextureWrap? texture);
-			bool result = barManager.Update(actionId, name ?? "Unknown Action", data.MaxCharges > 1 && data.CurrentCharges > 0 ? "x1" : null, texture, data.StartTime, data.Duration, data.CurrentCharges);
+			GetActionDisplayData(actionId, data.Type, out string? name, out uint? iconId);
+			bool result = barManager.Update(actionId, name ?? "Unknown Action", data.MaxCharges > 1 && data.CurrentCharges > 0 ? "x1" : null, iconId, data.StartTime, data.Duration, data.CurrentCharges);
 #if DEBUG
 			if (_debugConfig.LogCooldownEventHandling)
 			{
@@ -521,8 +520,8 @@ public class CooldownHud : PluginModule
 		if (elapsedFinish <= NO_PULSE_AFTER_ELAPSED_FINISHED && CanPulse(actionId, data.CurrentCharges))
 		{
 			// Bar is very likely not available anymore here, because it was removed by BarManager.RemoveExpired
-			GetActionDisplayData(actionId, data.Type, out string? _, out IDalamudTextureWrap? texture);
-			Pulse(actionId, texture, data.CurrentCharges);
+			GetActionDisplayData(actionId, data.Type, out string? _, out uint? iconId);
+			Pulse(actionId, iconId, data.CurrentCharges);
 		}
 
 		_cooldowns[actionId].LastPulseCharges = INITIAL_PULSE_CHARGES;

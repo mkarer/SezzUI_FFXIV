@@ -82,17 +82,7 @@ public static class SpellHelper
 			return null;
 		}
 
-		IDalamudTextureWrap? texture = Singletons.Get<ImageCache>().GetImage(Singletons.Get<MediaManager>().GetIconFile($"{iconId / 1000 * 1000:000000}\\{iconId:000000}.png"));
-		if (texture != null)
-		{
-			isOverriden = true;
-		}
-		else
-		{
-			texture = Singletons.Get<TexturesCache>().GetTextureFromIconId((ushort) iconId);
-		}
-
-		return texture;
+		return Singletons.Get<MediaManager>().GetTextureFromIconIdOverridable((uint) iconId, out isOverriden);
 	}
 
 	public static IDalamudTextureWrap? GetActionIconTexture(uint actionId, out bool isOverriden)

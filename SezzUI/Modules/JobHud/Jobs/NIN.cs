@@ -58,10 +58,11 @@ public sealed class NIN : BasePreset
 	private static (float, float) GetHutonDuration()
 	{
 		NINGauge gauge = Services.JobGauges.Get<NINGauge>();
-		if (gauge.HutonTimer != 0)
-		{
-			return (gauge.HutonTimer / 1000f, 60f);
-		}
+		// TODO
+		// if (gauge.HutonTimer != 0)
+		// {
+		// 	return (gauge.HutonTimer / 1000f, 60f);
+		// }
 
 		return (0, 0);
 	}

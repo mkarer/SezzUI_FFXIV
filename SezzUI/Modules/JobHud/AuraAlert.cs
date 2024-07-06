@@ -64,7 +64,7 @@ public sealed class AuraAlert : AnimatedHudElement
 		set
 		{
 			_imageFile = value;
-			_texture = value != null ? Singletons.Get<ImageCache>().GetImage(Singletons.Get<MediaManager>().GetOverlayFile(value)) : null;
+			_texture = value != null ? Singletons.Get<MediaManager>().GetTextureFromFilesystem(Singletons.Get<MediaManager>().GetOverlayFileName(value)) : null;
 			if (_texture != null)
 			{
 				if (_size == Vector2.Zero)
@@ -124,6 +124,7 @@ public sealed class AuraAlert : AnimatedHudElement
 	public void UseStatusIcon(uint statusId)
 	{
 		_texture = SpellHelper.GetStatusIconTexture(statusId, out bool isOverriden);
+		_imageStatusId = statusId;
 		if (_texture != null)
 		{
 			if (isOverriden)
@@ -137,6 +138,8 @@ public sealed class AuraAlert : AnimatedHudElement
 		}
 	}
 
+	private uint? _imageStatusId;
+
 	/// <summary>
 	///     Uses game icon from action as texture. Can be overriden with custom images.
 	///     Don't forget to set aura size first!
@@ -146,6 +149,7 @@ public sealed class AuraAlert : AnimatedHudElement
 	{
 		uint actionIdAdjusted = SpellHelper.GetAdjustedActionId(actionId);
 		_texture = SpellHelper.GetActionIconTexture(actionIdAdjusted, out bool isOverriden);
+		_imageActionId = actionIdAdjusted;
 		if (_texture != null)
 		{
 			if (isOverriden)
@@ -158,6 +162,8 @@ public sealed class AuraAlert : AnimatedHudElement
 			}
 		}
 	}
+
+	private uint? _imageActionId;
 
 	public override void Draw(int elapsed = 0)
 	{
@@ -237,6 +243,20 @@ public sealed class AuraAlert : AnimatedHudElement
 		if (!conditionsFailed)
 		{
 			Show();
+
+			// TODO
+			if (_imageActionId != null)
+			{
+				UseActionIcon((uint) _imageActionId);
+			}
+			else if (_imageStatusId != null)
+			{
+				UseStatusIcon((uint) _imageStatusId);
+			}
+			else if (_imageFile != null)
+			{
+				Image = _imageFile;
+			}
 		}
 
 		if (IsShown || Animator.IsAnimating)
@@ -256,7 +276,7 @@ public sealed class AuraAlert : AnimatedHudElement
 					DrawHelper.DrawBackdropEdgeGlow(elementPosition, elementSize, ImGui.ColorConvertFloat4ToU32(GlowColor.AddTransparency(Animator.Data.Opacity)), drawList, GlowBackdropSize, (short) -GlowBackdropSize);
 				}
 
-				if (_texture != null)
+				if (_texture != null && _texture.ImGuiHandle != IntPtr.Zero)
 				{
 					// Texture
 					drawList.AddImage(_texture.ImGuiHandle, elementPosition, elementPosition + elementSize, ImageUV0, ImageUV1, ImGui.ColorConvertFloat4ToU32(Color.AddTransparency(Animator.Data.Opacity)));

@@ -575,8 +575,18 @@ public class Icon : IDisposable
 		// Draw
 		// --------------------------------------------------------------------------------
 
+		// TODO
+		if (_textureActionId != null)
+		{
+			TextureActionId = _textureActionId;
+		}
+		else if (_textureStatusId != null)
+		{
+			TextureStatusId = _textureStatusId;
+		}
+
 		// Backdrop + Icon Texture
-		if (_texture != null)
+		if (_texture != null && _texture.ImGuiHandle != IntPtr.Zero)
 		{
 			if (newState != _state)
 			{
@@ -637,7 +647,7 @@ public class Icon : IDisposable
 			uint step = Math.Min(n, Math.Max(1, (uint) Math.Ceiling((uint) (animator.TimeElapsed % dur) / frameTime))) - 1;
 			string image = Singletons.Get<MediaManager>().BorderGlowTexture[step];
 
-			IDalamudTextureWrap? tex = Singletons.Get<ImageCache>().GetImage(image);
+			IDalamudTextureWrap? tex = Singletons.Get<MediaManager>().GetTextureFromFilesystem(image);
 			if (tex != null)
 			{
 				uint glowColor = ImGui.ColorConvertFloat4ToU32(new(0.95f, 0.95f, 0.32f, animator.Data.Opacity));

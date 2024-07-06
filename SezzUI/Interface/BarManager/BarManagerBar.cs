@@ -16,7 +16,7 @@ public class BarManagerBar : IDisposable
 
 	public string? Text;
 	public string? CountText;
-	public IDalamudTextureWrap? Icon;
+	public uint? IconId;
 	public object? Data;
 
 	public long StartTime = 0;
@@ -47,24 +47,28 @@ public class BarManagerBar : IDisposable
 					posBar.Y += Config.Size.Y - sizeBar.Y;
 
 					// Icon
-					if (Icon != null)
+					if (IconId != null)
 					{
-						Vector2 posIcon = new(position.X + Config.BorderSize, position.Y + Config.BorderSize);
-						Vector2 sizeIcon = new(Config.Size.Y - 2 * Config.BorderSize, Config.Size.Y - 2 * Config.BorderSize);
-						(Vector2 uv0, Vector2 uv1) = DrawHelper.GetTexCoordinates(sizeIcon);
-
-						drawList.AddRectFilled(posIcon, posIcon + sizeIcon, Config.BackgroundColor.Base, 0);
-						drawList.AddImage(Icon.ImGuiHandle, posIcon, posIcon + sizeIcon, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Vector4.One));
-
-						posBar.X += sizeIcon.X + 4;
-						sizeBar.X -= sizeIcon.X + 4;
-
-						// Border
-						if (Config.BorderSize > 0)
+						IDalamudTextureWrap? icon = Singletons.Get<MediaManager>().GetTextureFromIconIdOverridable((uint) IconId, out _);
+						if (icon != null && icon.ImGuiHandle != IntPtr.Zero)
 						{
-							drawList.AddRect(position, position + sizeIcon.AddXY(Config.BorderSize * 2), Config.BorderColor.Base, 0, ImDrawFlags.None, Config.BorderSize);
-							posBar.X += Config.BorderSize * 2;
-							sizeBar.X -= Config.BorderSize * 2;
+							Vector2 posIcon = new(position.X + Config.BorderSize, position.Y + Config.BorderSize);
+							Vector2 sizeIcon = new(Config.Size.Y - 2 * Config.BorderSize, Config.Size.Y - 2 * Config.BorderSize);
+							(Vector2 uv0, Vector2 uv1) = DrawHelper.GetTexCoordinates(sizeIcon);
+
+							drawList.AddRectFilled(posIcon, posIcon + sizeIcon, Config.BackgroundColor.Base, 0);
+							drawList.AddImage(icon.ImGuiHandle, posIcon, posIcon + sizeIcon, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Vector4.One));
+
+							posBar.X += sizeIcon.X + 4;
+							sizeBar.X -= sizeIcon.X + 4;
+
+							// Border
+							if (Config.BorderSize > 0)
+							{
+								drawList.AddRect(position, position + sizeIcon.AddXY(Config.BorderSize * 2), Config.BorderColor.Base, 0, ImDrawFlags.None, Config.BorderSize);
+								posBar.X += Config.BorderSize * 2;
+								sizeBar.X -= Config.BorderSize * 2;
+							}
 						}
 					}
 
@@ -123,25 +127,29 @@ public class BarManagerBar : IDisposable
 					}
 
 					// Icon
-					if (Icon != null)
+					if (IconId != null)
 					{
-						Vector2 posIcon = new(position.X + Config.BorderSize, position.Y + Config.BorderSize);
-						Vector2 sizeIcon = new(Config.Size.Y - 2 * Config.BorderSize, Config.Size.Y - 2 * Config.BorderSize);
-						(Vector2 uv0, Vector2 uv1) = DrawHelper.GetTexCoordinates(sizeIcon);
-
-						drawList.AddRectFilled(posIcon, posIcon + sizeIcon, Config.BackgroundColor.Base, 0);
-						drawList.AddImage(Icon.ImGuiHandle, posIcon, posIcon + sizeIcon, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Vector4.One));
-
-						posBar.X += sizeIcon.X;
-						sizeBar.X -= sizeIcon.X;
-
-						// Border
-						if (Config.BorderSize > 0)
+						IDalamudTextureWrap? icon = Singletons.Get<MediaManager>().GetTextureFromIconIdOverridable((uint) IconId, out _);
+						if (icon != null && icon.ImGuiHandle != IntPtr.Zero)
 						{
-							Vector2 posIconBorder = new(posIcon.X + sizeIcon.X, posIcon.Y);
-							drawList.AddLine(posIconBorder, posIconBorder.AddY(sizeIcon.Y), Config.BorderColor.Base, Config.BorderSize);
-							posBar.X += Config.BorderSize;
-							sizeBar.X -= Config.BorderSize;
+							Vector2 posIcon = new(position.X + Config.BorderSize, position.Y + Config.BorderSize);
+							Vector2 sizeIcon = new(Config.Size.Y - 2 * Config.BorderSize, Config.Size.Y - 2 * Config.BorderSize);
+							(Vector2 uv0, Vector2 uv1) = DrawHelper.GetTexCoordinates(sizeIcon);
+
+							drawList.AddRectFilled(posIcon, posIcon + sizeIcon, Config.BackgroundColor.Base, 0);
+							drawList.AddImage(icon.ImGuiHandle, posIcon, posIcon + sizeIcon, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Vector4.One));
+
+							posBar.X += sizeIcon.X;
+							sizeBar.X -= sizeIcon.X;
+
+							// Border
+							if (Config.BorderSize > 0)
+							{
+								Vector2 posIconBorder = new(posIcon.X + sizeIcon.X, posIcon.Y);
+								drawList.AddLine(posIconBorder, posIconBorder.AddY(sizeIcon.Y), Config.BorderColor.Base, Config.BorderSize);
+								posBar.X += Config.BorderSize;
+								sizeBar.X -= Config.BorderSize;
+							}
 						}
 					}
 

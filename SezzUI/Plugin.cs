@@ -69,7 +69,6 @@ public class Plugin : IDalamudPlugin
 		Singletons.Register(new MediaManager(pluginInterface.UiBuilder), 70);
 		Singletons.Register(new ClipRectsHelper(), 50);
 		Singletons.Register(new GlobalColors(), 50);
-		Singletons.Register(new TexturesCache(), 80);
 		Singletons.Register(new ImageCache(), 80);
 		Singletons.Register(new TooltipsHelper(), 80);
 		Singletons.Register(new OriginalFunctionManager(), 60);
