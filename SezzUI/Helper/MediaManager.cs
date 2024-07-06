@@ -26,13 +26,14 @@ public class MediaManager : IPluginDisposable
 
 	private readonly string _defaultPath;
 	private string _customPath;
-	private readonly UiBuilder _uiBuilder;
-	
+	private readonly IUiBuilder _uiBuilder;
+
 	public static readonly Dictionary<string, FontData> ImGuiFontData = new(); // Available Fonts (Plugin)
 	public static readonly Dictionary<string, IFontHandle> ImGuiFonts = new(); // Available Fonts (Plugin)
 	public static readonly List<FontFile> FontFiles = new(); // Available Fonts (Filesystem)
 
 	private const string DEFAULT_FONT = "CabinCondensed-SemiBold";
+
 	public static readonly Dictionary<PluginFontSize, string> DefaultFonts = new()
 	{
 		{PluginFontSize.ExtraExtraSmall, $"{DEFAULT_FONT}_14"},
@@ -230,6 +231,7 @@ public class MediaManager : IPluginDisposable
 		{
 			BuildFonts();
 		}
+
 		return true;
 	}
 
@@ -306,21 +308,11 @@ public class MediaManager : IPluginDisposable
 
 			try
 			{
-				IFontHandle fontHandle = _uiBuilder.FontAtlas.NewDelegateFontHandle
-				(
-					e => e.OnPreBuild
-					(
-						tk => tk.AddFontFromFile
-						(
-							fontData.File.Path,
-							new SafeFontConfig
-							{
-								SizePx = fontData.Size,
-								GlyphRanges = this.GetCharacterRanges(fontData, io),
-							}
-						)
-					)
-				);
+				IFontHandle fontHandle = _uiBuilder.FontAtlas.NewDelegateFontHandle(e => e.OnPreBuild(tk => tk.AddFontFromFile(fontData.File.Path, new()
+				{
+					SizePx = fontData.Size,
+					GlyphRanges = GetCharacterRanges(fontData, io)
+				})));
 
 				ImGuiFonts[fontKey] = fontHandle;
 #if DEBUG
@@ -343,7 +335,7 @@ public class MediaManager : IPluginDisposable
 		{
 			return null;
 		}
-		
+
 		using (ImGuiHelpers.NewFontGlyphRangeBuilderPtrScoped(out ImFontGlyphRangesBuilderPtr builder))
 		{
 			if (fontData.Chinese)
@@ -417,19 +409,20 @@ public class MediaManager : IPluginDisposable
 #endif
 		}
 	}
-	
+
 	private void DisposeFontHandles()
 	{
 		foreach ((string _, IFontHandle handle) in ImGuiFonts)
 		{
 			handle.Dispose();
 		}
-            
+
 		ImGuiFonts.Clear();
 	}
+
 	#endregion
 
-	public MediaManager(UiBuilder uiBuilder)
+	public MediaManager(IUiBuilder uiBuilder)
 	{
 		Logger = new("MediaManager");
 

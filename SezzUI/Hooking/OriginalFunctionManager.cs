@@ -1,6 +1,5 @@
 ﻿using System;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using SezzUI.Helper;
 using SezzUI.Logging;
 using SezzUI.Modules;
 
@@ -33,8 +32,9 @@ internal class OriginalFunctionManager : IPluginDisposable
 			{
 				// Client::Game::ActionManager.GetAdjustedActionId
 				throw new("Currently unsupported.");
-				string getAdjustedActionIdSig = AsmHelper.GetSignature<ActionManager>("GetAdjustedActionId") ?? "E8 ?? ?? ?? ?? 8B F8 3B DF";
-				_originalGetAdjustedActionId = new(getAdjustedActionIdSig, "81 FA 2D 01 00 00 7F 42 0F 84 4B 01 00 00 8D 42 EB"); // TODO: Needs to get updated first.
+				// TODO: https://github.com/goatcorp/Dalamud/pull/1843
+				// string getAdjustedActionIdSig = AsmHelper.GetSignature<ActionManager>("GetAdjustedActionId") ?? "E8 ?? ?? ?? ?? 89 03 8B 03";
+				// _originalGetAdjustedActionId = new(getAdjustedActionIdSig, "81 FA 2D 01 00 00 7F 42 0F 84 4B 01 00 00 8D 42 EB"); // TODO: Needs to get updated first.
 			}
 			catch (Exception ex)
 			{

@@ -41,7 +41,7 @@ internal sealed unsafe class Game : BaseEvent, IHookAccessor
 
 	public Game()
 	{
-		_setHudLayoutHook = (this as IHookAccessor).Hook<SetHudLayoutDelegate>("E8 ?? ?? ?? ?? 33 C0 EB 15", SetHudLayoutDetour, 0, true);
+		_setHudLayoutHook = (this as IHookAccessor).Hook<SetHudLayoutDelegate>("E8 ?? ?? ?? ?? 33 C0 EB 12", SetHudLayoutDetour, 0, true); // https://github.com/zacharied/FFXIV-Plugin-HudManager/blob/testing/HUDManager/Hud.cs
 
 		(this as IPluginComponent).Enable();
 	}

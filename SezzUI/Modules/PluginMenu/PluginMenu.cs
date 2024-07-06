@@ -36,7 +36,7 @@ public class PluginMenu : PluginModule
 			return;
 		}
 
-		if (_forceUpdate)
+		if (_forceUpdate) // TODO
 		{
 			UpdateItems();
 		}
@@ -49,7 +49,7 @@ public class PluginMenu : PluginModule
 
 		IntPtr nowLoading = Services.GameGui.GetAddonByName("NowLoading");
 		AtkResNode* nowLoadingNode = ((AtkUnitBase*) nowLoading)->RootNode;
-		float opacity = !nowLoadingNode->IsVisible ? 1f : Math.Min(160f, 160 - nowLoadingNode->Alpha_2) / 160f; // At about 172 the _NaviMap is hidden here.
+		float opacity = !nowLoadingNode->IsVisible() ? 1f : Math.Min(160f, 160 - nowLoadingNode->Alpha_2) / 160f; // At about 172 the _NaviMap is hidden here.
 		if (opacity <= 0)
 		{
 			return;

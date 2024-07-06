@@ -4,8 +4,10 @@ using System.IO;
 using System.Reflection;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Command;
-using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures;
+using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SezzUI.Configuration;
 using SezzUI.Configuration.Profiles;
@@ -31,14 +33,14 @@ public class Plugin : IDalamudPlugin
 	public static GeneralDebugConfig DebugConfig { get; private set; } = null!;
 #endif
 	public static PluginLogger Logger = new();
-	public static IDalamudTextureWrap? BannerTexture;
+	public static ISharedImmediateTexture? BannerTexture;
 
 	public static readonly NumberFormatInfo NumberFormatInfo = CultureInfo.GetCultureInfo("en-GB").NumberFormat;
 
 	private readonly ConfigurationManager _configurationManager;
 	private readonly HudManager _hudManager;
 
-	public Plugin(DalamudPluginInterface pluginInterface)
+	public Plugin(IDalamudPluginInterface pluginInterface)
 	{
 		Services? services = pluginInterface.Create<Services>();
 		if (services == null)
@@ -48,13 +50,11 @@ public class Plugin : IDalamudPlugin
 
 		AssemblyLocation = pluginInterface.AssemblyLocation.DirectoryName != null ? pluginInterface.AssemblyLocation.DirectoryName : Assembly.GetExecutingAssembly().Location;
 		AssemblyLocation = AssemblyLocation.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-		Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.1.7";
+		Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.1.8";
 
 #if DEBUG
 		Logger.Debug($"{Name} Version {Version}");
 #endif
-
-		LoadBanner();
 
 		// initialize a not-necessarily-defaults configuration
 		_configurationManager = new();
@@ -97,7 +97,7 @@ public class Plugin : IDalamudPlugin
 #if DEBUG
 		if (DebugConfig.ShowConfigurationOnLogin)
 		{
-			OpenConfigUi();
+			Services.Framework.Update += OpenConfigUiOnFrameworkUpdate;
 		}
 #endif
 	}
@@ -107,27 +107,31 @@ public class Plugin : IDalamudPlugin
 	{
 		DebugConfig = sender.GetConfigObject<GeneralDebugConfig>();
 	}
+
+	private void OpenConfigUiOnFrameworkUpdate(IFramework unused)
+	{
+		Services.Framework.Update -= OpenConfigUiOnFrameworkUpdate;
+		OpenConfigUi();
+	}
+
 #endif
 
-	private static void LoadBanner()
+	public static IDalamudTextureWrap? GetBanner()
 	{
-		string bannerImage = Path.Combine(Path.GetDirectoryName(AssemblyLocation) ?? "", "Media", "Images", "Banner150.png");
-
-		if (File.Exists(bannerImage))
+		if (BannerTexture == null)
 		{
+			string bannerImage = Path.Combine(Path.GetDirectoryName(AssemblyLocation) ?? "", "Media", "Images", "Banner150.png");
 			try
 			{
-				BannerTexture = Services.PluginInterface.UiBuilder.LoadImage(bannerImage);
+				BannerTexture = Services.TextureProvider.GetFromFile(bannerImage);
 			}
 			catch (Exception ex)
 			{
 				Logger.Error($"Error loading banner from file ({bannerImage}): {ex}");
 			}
 		}
-		else
-		{
-			Logger.Error($"Banner image doesn't exist: {bannerImage}");
-		}
+
+		return BannerTexture?.GetWrapOrEmpty();
 	}
 
 	private static void PluginCommand(string command, string arguments)
@@ -286,7 +290,10 @@ public class Plugin : IDalamudPlugin
 		Services.PluginInterface.UiBuilder.Draw -= Draw;
 		Services.PluginInterface.UiBuilder.OpenConfigUi -= OpenConfigUi;
 		Services.PluginInterface.UiBuilder.OpenMainUi -= OpenConfigUi;
-		Services.PluginInterface.UiBuilder.RebuildFonts();
+		Services.PluginInterface.UiBuilder.FontAtlas.BuildFontsAsync();
+#if DEBUG
+		Services.Framework.Update -= OpenConfigUiOnFrameworkUpdate;
+#endif
 
 		Services.Commands.RemoveHandler("/sezzui");
 		Services.Commands.RemoveHandler("/sezz");

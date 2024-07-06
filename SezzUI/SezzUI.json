@@ -2,15 +2,17 @@
   "Author": "Sezz",
   "Name": "SezzUI",
   "InternalName": "SezzUI",
-  "AssemblyVersion": "0.0.1.7",
+  "AssemblyVersion": "0.0.1.8",
   "Punchline": "Minimalistic UI Additions + Tweaks\nWARNING: This is still in alpha and very likely to crash!",
   "Description": "A port of my World of Warcraft UI for Final Fantasy XIV.",
   "RepoUrl": "https://github.com/mkarer/SezzUI_FFXIV",
   "IconUrl": "https://ffxiv.sezz.at/plugins/SezzUI/icon.png",
   "ImageUrls": [],
   "Tags": [
-    "UI", "Sezz"
+    "UI",
+    "Sezz"
   ],
   "ApplicableVersion": "any",
-  "DalamudApiLevel": 9
+  "LoadPriority": 0,
+  "DalamudApiLevel": 10
 }

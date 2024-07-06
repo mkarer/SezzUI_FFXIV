@@ -239,10 +239,10 @@ public class ActionBar : PluginModule
 #if DEBUG
 						if (_debugConfig.LogLayout)
 						{
-							Logger.Debug($"[{bar}] Caching node: ID: {node->NodeID} X: {node->X} Y: {node->Y}");
+							Logger.Debug($"[{bar}] Caching node: ID: {node->NodeId} X: {node->X} Y: {node->Y}");
 						}
 #endif
-						_originalPositions[bar].Add(node->NodeID, new(node->X, node->Y));
+						_originalPositions[bar].Add(node->NodeId, new(node->X, node->Y));
 						buttonsFound++;
 					}
 				}

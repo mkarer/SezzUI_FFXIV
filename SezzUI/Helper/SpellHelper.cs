@@ -4,7 +4,7 @@ using System.Linq;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Statuses;
-using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Utility;
 using Lumina.Excel;
 using SezzUI.Enums;
@@ -132,16 +132,16 @@ public static class SpellHelper
 		return null;
 	}
 
-	public static BattleChara? GetUnit(Unit unit)
+	public static IBattleChara? GetUnit(Unit unit)
 	{
-		PlayerCharacter? player = Services.ClientState.LocalPlayer;
+		IPlayerCharacter? player = Services.ClientState.LocalPlayer;
 		if (player == null)
 		{
 			return null;
 		}
 
-		GameObject? target = Services.TargetManager.SoftTarget ?? Services.TargetManager.Target;
-		GameObject? actor = unit switch
+		IGameObject? target = Services.TargetManager.SoftTarget ?? Services.TargetManager.Target;
+		IGameObject? actor = unit switch
 		{
 			Unit.Player => player,
 			Unit.Target => target,
@@ -150,9 +150,9 @@ public static class SpellHelper
 			_ => null
 		};
 
-		if (actor is BattleChara)
+		if (actor is IBattleChara)
 		{
-			return (BattleChara) actor;
+			return (IBattleChara) actor;
 		}
 
 		return null;
@@ -177,10 +177,10 @@ public static class SpellHelper
 		}
 		else
 		{
-			BattleChara? actor = GetUnit(unit);
+			IBattleChara? actor = GetUnit(unit);
 			if (actor != null)
 			{
-				PlayerCharacter? player = Services.ClientState.LocalPlayer;
+				IPlayerCharacter? player = Services.ClientState.LocalPlayer;
 				if (player == null)
 				{
 					return null;
@@ -188,7 +188,7 @@ public static class SpellHelper
 
 				foreach (Status status in actor.StatusList)
 				{
-					if (status.StatusId == statusId && (!mustMatchPlayerSource || (mustMatchPlayerSource && status.SourceId == player.ObjectId)))
+					if (status.StatusId == statusId && (!mustMatchPlayerSource || (mustMatchPlayerSource && status.SourceId == player.GameObjectId)))
 					{
 						return status;
 					}
@@ -217,10 +217,10 @@ public static class SpellHelper
 		}
 		else
 		{
-			BattleChara? actor = GetUnit(unit);
+			IBattleChara? actor = GetUnit(unit);
 			if (actor != null)
 			{
-				PlayerCharacter? player = Services.ClientState.LocalPlayer;
+				IPlayerCharacter? player = Services.ClientState.LocalPlayer;
 				if (player == null)
 				{
 					return null;
@@ -232,7 +232,7 @@ public static class SpellHelper
 				foreach (Status status in actor.StatusList)
 				{
 					int foundIndex = Array.IndexOf(statusIds, status.StatusId);
-					if (foundIndex > -1 && (!mustMatchPlayerSource || (mustMatchPlayerSource && status.SourceId == player.ObjectId)) && (bestIndex == -1 || foundIndex < bestIndex))
+					if (foundIndex > -1 && (!mustMatchPlayerSource || (mustMatchPlayerSource && status.SourceId == player.GameObjectId)) && (bestIndex == -1 || foundIndex < bestIndex))
 					{
 						bestIndex = foundIndex;
 						bestStatus = status;

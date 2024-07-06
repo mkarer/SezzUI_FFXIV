@@ -4,7 +4,8 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures;
+using Dalamud.Interface.Textures.TextureWraps;
 using SezzUI.Logging;
 using SezzUI.Modules;
 
@@ -12,7 +13,7 @@ namespace SezzUI.Helper;
 
 public class ImageCache : IPluginDisposable
 {
-	private readonly ConcurrentDictionary<string, IDalamudTextureWrap> _cache = new();
+	private readonly ConcurrentDictionary<string, ISharedImmediateTexture> _cache = new();
 	internal PluginLogger Logger;
 
 	public IDalamudTextureWrap? GetImage(string? file)
@@ -22,32 +23,35 @@ public class ImageCache : IPluginDisposable
 			return null;
 		}
 
-		if (_cache.ContainsKey(file))
+		if (_cache.TryGetValue(file, out ISharedImmediateTexture? cachedTexture) && cachedTexture != null)
 		{
-			return _cache[file];
+			return cachedTexture.GetWrapOrDefault();
 		}
 
-		IDalamudTextureWrap? newTexture = LoadImage(file);
-		if (newTexture == null)
+		ISharedImmediateTexture? newTexture = LoadImage(file);
+		if (newTexture != null)
 		{
-			return null;
+			if (!_cache.TryAdd(file, newTexture))
+			{
+				Logger.Error($"Failed to cache texture: {file}.");
+			}
+		}
+		else
+		{
+			Logger.Error($"Failed to load texture: {file}");
 		}
 
-		if (!_cache.TryAdd(file, newTexture))
-		{
-			Logger.Error($"Failed to cache texture: {file}.");
-		}
-
-		return newTexture;
+		return newTexture?.GetWrapOrDefault();
 	}
 
-	private IDalamudTextureWrap? LoadImage(string file)
+	private ISharedImmediateTexture? LoadImage(string file)
 	{
 		try
 		{
 			if (File.Exists(file))
 			{
-				return Services.PluginInterface.UiBuilder.LoadImage(file);
+				Logger.Debug($"Loading texture: {file}");
+				return Services.TextureProvider.GetFromFile(file);
 			}
 		}
 		catch
@@ -74,7 +78,7 @@ public class ImageCache : IPluginDisposable
 			Logger.Debug($"Removing texture from cache: {file}.");
 		}
 #endif
-		_cache[file]?.Dispose();
+		//_cache[file]?.Dispose();
 		if (!_cache.TryRemove(file, out _))
 		{
 			Logger.Debug($"Failed to remove cached texture: {file}.");

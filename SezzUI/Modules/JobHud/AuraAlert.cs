@@ -2,7 +2,7 @@
 using System.Numerics;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Statuses;
-using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures.TextureWraps;
 using ImGuiNET;
 using SezzUI.Enums;
 using SezzUI.Game.Events;
@@ -166,7 +166,7 @@ public sealed class AuraAlert : AnimatedHudElement
 			return;
 		}
 
-		PlayerCharacter? player = Services.ClientState.LocalPlayer;
+		IPlayerCharacter? player = Services.ClientState.LocalPlayer;
 		Status? status = null;
 		bool conditionsFailed = false;
 		if (player == null)

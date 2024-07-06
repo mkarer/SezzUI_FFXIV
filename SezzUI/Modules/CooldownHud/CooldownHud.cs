@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Dalamud.Game.ClientState.Objects.SubKinds;
-using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures.TextureWraps;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using SezzUI.Configuration;
 using SezzUI.Enums;
@@ -61,7 +61,7 @@ public class CooldownHud : PluginModule
 	{
 		lock (_cooldowns)
 		{
-			PlayerCharacter? player = Services.ClientState.LocalPlayer;
+			IPlayerCharacter? player = Services.ClientState.LocalPlayer;
 			uint jobId = player?.ClassJob.Id ?? 0;
 			byte level = player?.Level ?? 0;
 

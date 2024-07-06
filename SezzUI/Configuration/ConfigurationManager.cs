@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Windowing;
 using SezzUI.Configuration.Profiles;
 using SezzUI.Configuration.Tree;
@@ -28,7 +28,7 @@ public class ConfigurationManager : IPluginDisposable
 {
 	internal PluginLogger Logger;
 
-	public readonly IDalamudTextureWrap? BannerImage;
+	public static IDalamudTextureWrap? BannerImage => Plugin.GetBanner();
 
 	private BaseNode _configBaseNode;
 
@@ -113,7 +113,6 @@ public class ConfigurationManager : IPluginDisposable
 	public ConfigurationManager()
 	{
 		Logger = new(GetType().Name);
-		BannerImage = Plugin.BannerTexture;
 		ConfigDirectory = Services.PluginInterface.GetPluginConfigDirectory();
 
 		_configBaseNode = new();

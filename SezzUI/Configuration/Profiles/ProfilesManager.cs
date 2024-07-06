@@ -231,7 +231,7 @@ public class ProfilesManager
 
 	public void UpdateCurrentProfile()
 	{
-		PlayerCharacter? player = Services.ClientState.LocalPlayer;
+		IPlayerCharacter? player = Services.ClientState.LocalPlayer;
 		if (player == null)
 		{
 			return;
@@ -306,7 +306,7 @@ public class ProfilesManager
 		try
 		{
 			Save();
-			Services.PluginInterface.UiBuilder.RebuildFonts();
+			Services.PluginInterface.UiBuilder.FontAtlas.BuildFontsAsync();
 		}
 		catch (Exception ex)
 		{

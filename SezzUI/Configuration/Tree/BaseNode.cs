@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
-using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures.TextureWraps;
 using ImGuiNET;
 using SezzUI.Configuration.Attributes;
 using SezzUI.Helper;
@@ -159,11 +159,11 @@ public class BaseNode : Node
 			ImGui.BeginGroup(); // Left
 			{
 				// banner
-				IDalamudTextureWrap? banner = Singletons.Get<ConfigurationManager>().BannerImage;
-				if (banner != null)
+				IDalamudTextureWrap? banner = ConfigurationManager.BannerImage;
+				if (banner != null && banner.ImGuiHandle != IntPtr.Zero)
 				{
 					ImGui.SetCursorPos(new(10, 12));
-					ImGui.Image(banner.ImGuiHandle, new(banner.Width, banner.Height));
+					ImGui.Image(banner.ImGuiHandle, banner.Size);
 				}
 				else
 				{

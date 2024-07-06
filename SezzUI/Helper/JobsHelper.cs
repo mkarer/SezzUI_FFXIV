@@ -39,7 +39,8 @@ public static class JobsHelper
 		PolyglotStacks,
 		FirstmindsFocus,
 		EyeOfTheDragon,
-		Aetherflow
+		Aetherflow,
+		Palette
 	}
 
 	public static unsafe byte GetUnsyncedLevel()
@@ -51,7 +52,7 @@ public static class JobsHelper
 		}
 
 		int index = Services.ClientState.LocalPlayer.ClassJob.GameData.ExpArrayIndex & 0xff;
-		return (byte) uiState->PlayerState.ClassJobLevelArray[index];
+		return (byte) uiState->PlayerState.ClassJobLevels[index];
 	}
 
 	public static bool IsActionUnlocked(uint actionId)
@@ -68,7 +69,7 @@ public static class JobsHelper
 
 	public static (int, int) GetPower(PowerType powerType)
 	{
-		PlayerCharacter? player = Services.ClientState.LocalPlayer;
+		IPlayerCharacter? player = Services.ClientState.LocalPlayer;
 		byte jobLevel = player?.Level ?? 0;
 
 		switch (powerType)
@@ -186,6 +187,9 @@ public static class JobsHelper
 				}
 
 				return (SpellHelper.GetStatus(304u, Unit.Player)?.StackCount ?? 0, 2);
+
+			case PowerType.Palette:
+				return (Services.JobGauges.Get<PCTGauge>().PalleteGauge, 100);
 
 			default:
 				return (0, 0);
@@ -345,6 +349,7 @@ public static class JobsHelper
 		[JobIDs.NIN] = JobRoles.DPSMelee,
 		[JobIDs.SAM] = JobRoles.DPSMelee,
 		[JobIDs.RPR] = JobRoles.DPSMelee,
+		[JobIDs.VPR] = JobRoles.DPSMelee,
 
 		// Ranged
 		[JobIDs.ARC] = JobRoles.DPSRanged,
@@ -359,6 +364,7 @@ public static class JobsHelper
 		[JobIDs.SMN] = JobRoles.DPSCaster,
 		[JobIDs.RDM] = JobRoles.DPSCaster,
 		[JobIDs.BLU] = JobRoles.DPSCaster,
+		[JobIDs.PCT] = JobRoles.DPSCaster,
 
 		// Crafters
 		[JobIDs.CRP] = JobRoles.Crafter,
@@ -409,7 +415,8 @@ public static class JobsHelper
 			JobIDs.DRG,
 			JobIDs.NIN,
 			JobIDs.SAM,
-			JobIDs.RPR
+			JobIDs.RPR,
+			JobIDs.VPR
 		},
 
 		// Ranged
@@ -429,7 +436,8 @@ public static class JobsHelper
 			JobIDs.BLM,
 			JobIDs.SMN,
 			JobIDs.RDM,
-			JobIDs.BLU
+			JobIDs.BLU,
+			JobIDs.PCT
 		},
 
 		// Crafters
@@ -476,6 +484,7 @@ public static class JobsHelper
 		[JobIDs.NIN] = "NIN",
 		[JobIDs.SAM] = "SAM",
 		[JobIDs.RPR] = "RPR",
+		[JobIDs.VPR] = "VPR",
 
 		// Ranged
 		[JobIDs.ARC] = "ARC",
@@ -490,6 +499,7 @@ public static class JobsHelper
 		[JobIDs.SMN] = "SMN",
 		[JobIDs.RDM] = "RDM",
 		[JobIDs.BLU] = "BLU",
+		[JobIDs.PCT] = "PCT",
 
 		// Healers
 		[JobIDs.CNJ] = "CNJ",
@@ -537,6 +547,7 @@ public static class JobsHelper
 		[JobIDs.NIN] = 62584,
 		[JobIDs.SAM] = 62584,
 		[JobIDs.RPR] = 62584,
+		[JobIDs.VPR] = 62584,
 
 		// Ranged
 		[JobIDs.ARC] = 62586,
@@ -550,7 +561,8 @@ public static class JobsHelper
 		[JobIDs.BLM] = 62587,
 		[JobIDs.SMN] = 62587,
 		[JobIDs.RDM] = 62587,
-		[JobIDs.BLU] = 62587
+		[JobIDs.BLU] = 62587,
+		[JobIDs.PCT] = 62587
 	};
 }
 
@@ -577,6 +589,7 @@ public static class JobIDs
 	public const uint NIN = 30;
 	public const uint SAM = 34;
 	public const uint RPR = 39;
+	public const uint VPR = 41;
 
 	public const uint ARC = 5;
 	public const uint BRD = 23;
@@ -589,6 +602,7 @@ public static class JobIDs
 	public const uint SMN = 27;
 	public const uint RDM = 35;
 	public const uint BLU = 36;
+	public const uint PCT = 42;
 
 	public const uint CRP = 8;
 	public const uint BSM = 9;

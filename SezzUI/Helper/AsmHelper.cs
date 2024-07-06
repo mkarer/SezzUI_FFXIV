@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Text.RegularExpressions;
-using FFXIVClientStructs.Interop.Attributes;
 using Iced.Intel;
 using SezzUI.Logging;
 
@@ -50,16 +48,16 @@ public static class AsmHelper
 		return instructions;
 	}
 
-	public static string? GetSignature<T>(string methodName)
-	{
-		// https://github.com/CaiClone/GCDTracker/blob/main/src/Data/HelperMethods.cs
-		MethodBase? method = typeof(T).GetMethod(methodName);
-		if (method == null)
-		{
-			return null;
-		}
+	//public static string? GetSignature<T>(string methodName)
+	//{
+	//	// https://github.com/CaiClone/GCDTracker/blob/main/src/Data/HelperMethods.cs
+	//	MethodBase? method = typeof(T).GetMethod(methodName);
+	//	if (method == null)
+	//	{
+	//		return null;
+	//	}
 
-		MemberFunctionAttribute attribute = (MemberFunctionAttribute) method.GetCustomAttributes(typeof(MemberFunctionAttribute), true)[0];
-		return attribute?.Signature ?? null;
-	}
+	//	MemberFunctionAttribute attribute = (MemberFunctionAttribute) method.GetCustomAttributes(typeof(MemberFunctionAttribute), true)[0];
+	//	return attribute?.Signature ?? null;
+	//}
 }

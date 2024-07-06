@@ -125,7 +125,7 @@ public class JobHud : PluginModule
 	{
 		lock (Bars)
 		{
-			PlayerCharacter? player = Services.ClientState.LocalPlayer;
+			IPlayerCharacter? player = Services.ClientState.LocalPlayer;
 			uint jobId = player?.ClassJob.Id ?? 0;
 			byte level = player?.Level ?? 0;
 

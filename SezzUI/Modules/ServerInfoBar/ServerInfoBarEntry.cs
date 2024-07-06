@@ -8,7 +8,7 @@ namespace SezzUI.Modules.ServerInfoBar;
 public abstract class Entry : PluginModule
 {
 	public string Title { get; protected set; }
-	private DtrBarEntry? _dtrEntry;
+	private IDtrBarEntry? _dtrEntry;
 	internal PluginConfigObject Config => _config;
 
 	protected void ClearText() => SetText();
@@ -17,7 +17,7 @@ public abstract class Entry : PluginModule
 	{
 		if (text == null || !(this as IPluginComponent).IsEnabled)
 		{
-			_dtrEntry?.Dispose();
+			_dtrEntry?.Remove();
 			_dtrEntry = null;
 			return;
 		}
@@ -40,6 +40,6 @@ public abstract class Entry : PluginModule
 
 	protected override void OnDispose()
 	{
-		_dtrEntry?.Dispose();
+		_dtrEntry?.Remove();
 	}
 }

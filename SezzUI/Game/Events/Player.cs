@@ -47,7 +47,7 @@ internal sealed class Player : BaseEvent
 
 	private void Update()
 	{
-		PlayerCharacter? player = Services.ClientState.LocalPlayer;
+		IPlayerCharacter? player = Services.ClientState.LocalPlayer;
 
 		try
 		{

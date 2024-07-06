@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -168,7 +167,7 @@ public class ClipRectsHelper : IPluginDisposable
 
 		_clipRects.Clear();
 
-		AtkStage* stage = AtkStage.GetSingleton();
+		AtkStage* stage = AtkStage.Instance();
 		if (stage == null)
 		{
 			return;
@@ -190,13 +189,13 @@ public class ClipRectsHelper : IPluginDisposable
 		{
 			try
 			{
-				AtkUnitBase* addon = *(AtkUnitBase**) Unsafe.AsPointer(ref loadedUnitsList->EntriesSpan[i]);
+				AtkUnitBase* addon = *(AtkUnitBase**) Unsafe.AsPointer(ref loadedUnitsList->Entries[i]);
 				if (addon == null || !addon->IsVisible || addon->WindowNode == null || addon->Scale == 0)
 				{
 					continue;
 				}
 
-				string? name = Marshal.PtrToStringAnsi(new(addon->Name));
+				string? name = addon->NameString;
 				if (name == null || !AddonNames.Contains(name))
 				{
 					continue;

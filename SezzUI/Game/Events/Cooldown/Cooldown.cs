@@ -44,11 +44,11 @@ internal sealed unsafe class Cooldown : BaseEvent, IHookAccessor
 	public event CooldownFinishedDelegate? CooldownFinished;
 #pragma warning restore 67
 
-	private delegate void SendActionDelegate(long targetObjectId, byte actionType, uint actionId, ushort sequence, long a5, long a6, long a7, long a8, long a9);
+	private delegate void SendActionDelegate(ulong targetObjectId, byte actionType, uint actionId, ushort sequence, long a5, long a6, long a7, long a8, long a9);
 
 	private readonly HookWrapper<SendActionDelegate>? _sendActionHook;
 
-	private delegate void ReceiveActionEffectDelegate(int sourceActorId, IntPtr sourceActor, IntPtr vectorPosition, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail);
+	private delegate void ReceiveActionEffectDelegate(ulong sourceActorId, IntPtr sourceActor, IntPtr vectorPosition, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail);
 
 	private readonly HookWrapper<ReceiveActionEffectDelegate>? _receiveActionEffectHook;
 
@@ -174,7 +174,7 @@ internal sealed unsafe class Cooldown : BaseEvent, IHookAccessor
 
 	private bool Update(uint actionId, ActionType actionType)
 	{
-		PlayerCharacter? player = Services.ClientState.LocalPlayer;
+		IPlayerCharacter? player = Services.ClientState.LocalPlayer;
 		if (player == null)
 		{
 			return false;
@@ -466,7 +466,7 @@ internal sealed unsafe class Cooldown : BaseEvent, IHookAccessor
 
 	#region Hook
 
-	private void SendActionDetour(long targetObjectId, byte actionType, uint actionId, ushort sequence, long a5, long a6, long a7, long a8, long a9)
+	private void SendActionDetour(ulong targetObjectId, byte actionType, uint actionId, ushort sequence, long a5, long a6, long a7, long a8, long a9)
 	{
 		_sendActionHook!.Original(targetObjectId, actionType, actionId, sequence, a5, a6, a7, a8, a9);
 #if DEBUG
@@ -476,7 +476,7 @@ internal sealed unsafe class Cooldown : BaseEvent, IHookAccessor
 		}
 #endif
 
-		if ((ActionType) actionType != ActionType.Action || targetObjectId != Services.ClientState.LocalPlayer?.ObjectId)
+		if ((ActionType) actionType != ActionType.Action || targetObjectId != Services.ClientState.LocalPlayer?.GameObjectId)
 		{
 			return;
 		}
@@ -484,11 +484,11 @@ internal sealed unsafe class Cooldown : BaseEvent, IHookAccessor
 		TryUpdateIfWatched(actionId, (ActionType) actionType);
 	}
 
-	private void ReceiveActionEffectDetour(int sourceActorId, IntPtr sourceActor, IntPtr vectorPosition, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail)
+	private void ReceiveActionEffectDetour(ulong sourceActorId, IntPtr sourceActor, IntPtr vectorPosition, IntPtr effectHeader, IntPtr effectArray, IntPtr effectTrail)
 	{
 		_receiveActionEffectHook!.Original(sourceActorId, sourceActor, vectorPosition, effectHeader, effectArray, effectTrail);
 
-		if (sourceActorId != Services.ClientState.LocalPlayer?.ObjectId || effectHeader == IntPtr.Zero)
+		if (sourceActorId != Services.ClientState.LocalPlayer?.GameObjectId || effectHeader == IntPtr.Zero)
 		{
 			return;
 		}
@@ -536,8 +536,8 @@ internal sealed unsafe class Cooldown : BaseEvent, IHookAccessor
 	public Cooldown()
 	{
 		_actionManager = ActionManager.Instance();
-		_sendActionHook = (this as IHookAccessor).Hook<SendActionDelegate>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? F3 0F 10 3D ?? ?? ?? ?? 48 8D 4D BF", SendActionDetour);
-		_receiveActionEffectHook = (this as IHookAccessor).Hook<ReceiveActionEffectDelegate>("E8 ?? ?? ?? ?? 48 8B 8D F0 03 00 00", ReceiveActionEffectDetour);
+		_sendActionHook = (this as IHookAccessor).Hook<SendActionDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 48 8B E9 41 0F B7 D9", SendActionDetour); // https://github.com/Nik-Potokar/XIVSlothCombo/blob/main/XIVSlothCombo/Data/ActionWatching.cs
+		_receiveActionEffectHook = (this as IHookAccessor).Hook<ReceiveActionEffectDelegate>("40 55 56 57 41 54 41 55 41 56 48 8D AC 24", ReceiveActionEffectDetour);
 
 		(this as IPluginComponent).Enable();
 	}

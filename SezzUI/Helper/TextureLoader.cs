@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Utility;
 using Lumina.Data.Files;
 using Lumina.Data.Parsing.Tex;
@@ -27,7 +27,7 @@ public static class TextureLoader
 			TexFile? iconFile = Services.Data.GetFile<TexFile>(path);
 			if (iconFile != null)
 			{
-				return Services.PluginInterface.UiBuilder.LoadImageRaw(iconFile.GetRgbaImageData(), iconFile.Header.Width, iconFile.Header.Height, 4);
+				return Services.TextureProvider.CreateFromRaw(new(iconFile.Header.Width, iconFile.Header.Height, 4), iconFile.GetRgbaImageData());
 			}
 		}
 
@@ -55,7 +55,7 @@ public static class TextureLoader
 				return null;
 			}
 
-			return Services.PluginInterface.UiBuilder.LoadImageRaw(GetRgbaImageData(imageData), header.Width, header.Height, 4);
+			return Services.TextureProvider.CreateFromRaw(new(header.Width, header.Height, 4), GetRgbaImageData(imageData));
 		}
 		catch
 		{

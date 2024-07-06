@@ -32,11 +32,11 @@ internal static class Utils
 		Logger = new("Utils");
 	}
 
-	public static unsafe bool IsHostileMemory(BattleNpc? npc) => npc != null && (npc.BattleNpcKind == BattleNpcSubKind.Enemy || (int) npc.BattleNpcKind == 1) && *(byte*) (npc.Address + 0x19C3) != 0;
+	public static unsafe bool IsHostileMemory(IBattleNpc? npc) => npc != null && (npc.BattleNpcKind == BattleNpcSubKind.Enemy || (int) npc.BattleNpcKind == 1) && *(byte*) (npc.Address + 0x19C3) != 0;
 
-	public static PluginConfigColor ColorForActor(GameObject? actor)
+	public static PluginConfigColor ColorForActor(IGameObject? actor)
 	{
-		if (actor == null || actor is not Character character)
+		if (actor == null || actor is not ICharacter character)
 		{
 			return Singletons.Get<GlobalColors>().NPCNeutralColor;
 		}
@@ -48,14 +48,14 @@ internal static class Utils
 
 		return character switch
 		{
-			BattleNpc {SubKind: 9} battleNpc when battleNpc.ClassJob.Id > 0 => Singletons.Get<GlobalColors>().SafeColorForJobId(character.ClassJob.Id), // Trust/Squadron NPCs
-			BattleNpc battleNpc when battleNpc.BattleNpcKind is BattleNpcSubKind.Chocobo or BattleNpcSubKind.Pet || !IsHostileMemory(battleNpc) => Singletons.Get<GlobalColors>().NPCFriendlyColor,
-			BattleNpc battleNpc when battleNpc.BattleNpcKind == BattleNpcSubKind.Enemy || (battleNpc.StatusFlags & StatusFlags.InCombat) == StatusFlags.InCombat => Singletons.Get<GlobalColors>().NPCHostileColor, // I still don't think we should be defaulting to "in combat = hostile", but whatever
+			IBattleNpc {SubKind: 9} battleNpc when battleNpc.ClassJob.Id > 0 => Singletons.Get<GlobalColors>().SafeColorForJobId(character.ClassJob.Id), // Trust/Squadron NPCs
+			IBattleNpc battleNpc when battleNpc.BattleNpcKind is BattleNpcSubKind.Chocobo or BattleNpcSubKind.Pet || !IsHostileMemory(battleNpc) => Singletons.Get<GlobalColors>().NPCFriendlyColor,
+			IBattleNpc battleNpc when battleNpc.BattleNpcKind == BattleNpcSubKind.Enemy || (battleNpc.StatusFlags & StatusFlags.InCombat) == StatusFlags.InCombat => Singletons.Get<GlobalColors>().NPCHostileColor, // I still don't think we should be defaulting to "in combat = hostile", but whatever
 			_ => Singletons.Get<GlobalColors>().NPCNeutralColor
 		};
 	}
 
-	public static Status? GetTankInvulnerabilityID(BattleChara actor)
+	public static Status? GetTankInvulnerabilityID(IBattleChara actor)
 	{
 		Status? tankInvulnBuff = actor.StatusList.FirstOrDefault(o => o.StatusId is 810 or 811 or 1302 or 409 or 1836 or 82);
 
@@ -64,12 +64,12 @@ internal static class Utils
 
 	public static bool IsOnCleanseJob()
 	{
-		PlayerCharacter? player = Services.ClientState.LocalPlayer;
+		IPlayerCharacter? player = Services.ClientState.LocalPlayer;
 
 		return player != null && JobsHelper.IsJobWithCleanse(player.ClassJob.Id, player.Level);
 	}
 
-	public static GameObject? FindTargetOfTarget(GameObject? target, GameObject? player, IObjectTable actors)
+	public static IGameObject? FindTargetOfTarget(IGameObject? target, IGameObject? player, IObjectTable actors)
 	{
 		if (target == null)
 		{
@@ -85,8 +85,8 @@ internal static class Utils
 		// we do a step of 2 because its always an actor followed by its companion
 		for (int i = 0; i < 200; i += 2)
 		{
-			GameObject? actor = actors[i];
-			if (actor?.ObjectId == target.TargetObjectId)
+			IGameObject? actor = actors[i];
+			if (actor?.GameObjectId == target.TargetObjectId)
 			{
 				return actor;
 			}

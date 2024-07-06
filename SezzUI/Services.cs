@@ -24,7 +24,7 @@ internal class Services
 	internal static ICondition Condition { get; private set; } = null!;
 
 	[PluginService]
-	internal static DalamudPluginInterface PluginInterface { get; private set; } = null!;
+	internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
 
 	[PluginService]
 	internal static IDataManager Data { get; private set; } = null!;
@@ -55,4 +55,7 @@ internal class Services
 
 	[PluginService]
 	internal static IPluginLog PluginLog { get; private set; } = null!;
+
+	[PluginService]
+	internal static ITextureProvider TextureProvider { get; private set; } = null!;
 }

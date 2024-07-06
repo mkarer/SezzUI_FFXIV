@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Plugin.Ipc;
 using Lumina.Excel;
 using SezzUI.Logging;
@@ -40,7 +40,7 @@ public class TexturesCache : IPluginDisposable
 			return texture;
 		}
 
-		IDalamudTextureWrap? newTexture = LoadTexture(iconId + stackCount, hdIcon);
+		IDalamudTextureWrap? newTexture = Services.TextureProvider.GetFromGameIcon(new(iconId + stackCount, false, hdIcon)).GetWrapOrDefault();
 		if (newTexture == null)
 		{
 			return null;
