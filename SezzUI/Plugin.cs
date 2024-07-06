@@ -50,7 +50,7 @@ public class Plugin : IDalamudPlugin
 
 		AssemblyLocation = pluginInterface.AssemblyLocation.DirectoryName != null ? pluginInterface.AssemblyLocation.DirectoryName : Assembly.GetExecutingAssembly().Location;
 		AssemblyLocation = AssemblyLocation.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-		Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.1.8";
+		Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.1.9";
 
 #if DEBUG
 		Logger.Debug($"{Name} Version {Version}");
