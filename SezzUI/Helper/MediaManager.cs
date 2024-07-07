@@ -556,10 +556,7 @@ public class MediaManager : IPluginDisposable
 			Logger.Debug($"Path: {Config.Media.Path}");
 		}
 #endif
-		PathChanged?.Invoke(Config.Media.Path); // Let modules update their images before removing them from cache
-
-		Singletons.Get<ImageCache>().RemovePath(Path.Combine(_customPath, "Icons"));
-		Singletons.Get<ImageCache>().RemovePath(Path.Combine(_customPath, "Images", "Overlays"));
+		PathChanged?.Invoke(Config.Media.Path); // Let modules update their images before removing them from cache // TODO: Remove
 
 		_customPath = Config.Media.Path;
 
