@@ -588,28 +588,28 @@ public class Icon : IDisposable
 		}
 
 		// Backdrop + Icon Texture
+		if (newState != _state)
+		{
+			ColorAnimation anim1 = (ColorAnimation) _animatorBorder.Timelines.OnShow.Animations[0];
+			anim1.ColorFrom = _animatorBorder.Data.Color;
+			anim1.ColorTo = Defaults.StateColors[newState].Border;
+			_animatorBorder.Timelines.OnShow.Data.DefaultColor = anim1.ColorFrom;
+			_animatorBorder.Timelines.Loop.Data.DefaultColor = anim1.ColorTo;
+			_animatorBorder.Animate();
+
+			ColorAnimation anim2 = (ColorAnimation) _animatorTexture.Timelines.OnShow.Animations[0];
+			anim2.ColorFrom = _animatorTexture.Data.Color;
+			anim2.ColorTo = Defaults.StateColors[newState].Icon;
+			_animatorTexture.Timelines.OnShow.Data.DefaultColor = anim2.ColorFrom;
+			_animatorTexture.Timelines.Loop.Data.DefaultColor = anim2.ColorTo;
+			_animatorTexture.Animate();
+		}
+
+		_animatorBorder.Update();
+		_animatorTexture.Update();
+
 		if (_texture != null && _texture.ImGuiHandle != IntPtr.Zero)
 		{
-			if (newState != _state)
-			{
-				ColorAnimation anim1 = (ColorAnimation) _animatorBorder.Timelines.OnShow.Animations[0];
-				anim1.ColorFrom = _animatorBorder.Data.Color;
-				anim1.ColorTo = Defaults.StateColors[newState].Border;
-				_animatorBorder.Timelines.OnShow.Data.DefaultColor = anim1.ColorFrom;
-				_animatorBorder.Timelines.Loop.Data.DefaultColor = anim1.ColorTo;
-				_animatorBorder.Animate();
-
-				ColorAnimation anim2 = (ColorAnimation) _animatorTexture.Timelines.OnShow.Animations[0];
-				anim2.ColorFrom = _animatorTexture.Data.Color;
-				anim2.ColorTo = Defaults.StateColors[newState].Icon;
-				_animatorTexture.Timelines.OnShow.Data.DefaultColor = anim2.ColorFrom;
-				_animatorTexture.Timelines.Loop.Data.DefaultColor = anim2.ColorTo;
-				_animatorTexture.Animate();
-			}
-
-			_animatorBorder.Update();
-			_animatorTexture.Update();
-
 			DrawHelper.DrawBackdrop(pos, size, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 0.5f * animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(_animatorBorder.Data.Color.AddTransparency(animator.Data.Opacity)), drawList);
 			drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, _iconUV0 != null ? (Vector2) _iconUV0 : Parent.IconUV0, _iconUV1 != null ? (Vector2) _iconUV1 : Parent.IconUV1, ImGui.ColorConvertFloat4ToU32(_animatorTexture.Data.Color.AddTransparency(animator.Data.Opacity)));
 		}
