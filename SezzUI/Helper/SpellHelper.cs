@@ -65,7 +65,7 @@ public static class SpellHelper
 	public static uint GetAdjustedActionId(uint actionId, bool allowCombo = false, bool debug = false)
 	{
 		byte level = Services.ClientState.LocalPlayer?.Level ?? 0;
-		uint actionIdAdjusted = allowCombo ? OriginalFunctionManager.GetAdjustedActionId(actionId) : (_actionAdjustments.TryGetValue(actionId, out Dictionary<uint, uint>? actionAdjustments) ? actionAdjustments.Where(a => level >= a.Key).OrderByDescending(a => a.Key).Select(a => a.Value).FirstOrDefault() : 0);
+		uint actionIdAdjusted = allowCombo ? OriginalFunctionManager.GetAdjustedActionId(actionId) : _actionAdjustments.TryGetValue(actionId, out Dictionary<uint, uint>? actionAdjustments) ? actionAdjustments.Where(a => level >= a.Key).OrderByDescending(a => a.Key).Select(a => a.Value).FirstOrDefault() : 0;
 		if (debug)
 		{
 			Logger.Debug($"actionId: {actionId} actionIdAdjusted: {actionIdAdjusted} OriginalFunctionManager.GetAdjustedActionId: {OriginalFunctionManager.GetAdjustedActionId(actionId)}");
