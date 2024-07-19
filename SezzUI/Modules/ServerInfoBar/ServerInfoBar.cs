@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using SezzUI.Configuration;
 using SezzUI.Helper;
-using SezzUI.Modules.PluginMenu;
 using SezzUI.Modules.ServerInfoBar.Entries;
 
 namespace SezzUI.Modules.ServerInfoBar;
@@ -10,7 +9,7 @@ public class ServerInfoBar : PluginModule
 {
 	private ServerInfoBarConfig Config => (ServerInfoBarConfig) _config;
 #if DEBUG
-	private readonly PluginMenuDebugConfig _debugConfig;
+	private readonly ServerInfoBarDebugConfig _debugConfig;
 #endif
 
 	private readonly List<Entry> _entries;
@@ -28,7 +27,7 @@ public class ServerInfoBar : PluginModule
 	public ServerInfoBar(PluginConfigObject config) : base(config)
 	{
 #if DEBUG
-		_debugConfig = Singletons.Get<ConfigurationManager>().GetConfigObject<PluginMenuDebugConfig>();
+		_debugConfig = Singletons.Get<ConfigurationManager>().GetConfigObject<ServerInfoBarDebugConfig>();
 #endif
 		Config.ValueChangeEvent += OnConfigPropertyChanged;
 		Singletons.Get<ConfigurationManager>().Reset += OnConfigReset;
