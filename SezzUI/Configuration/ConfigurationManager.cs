@@ -17,6 +17,7 @@ using SezzUI.Modules.GameUI;
 using SezzUI.Modules.JobHud;
 using SezzUI.Modules.PluginMenu;
 using SezzUI.Modules.ServerInfoBar;
+using SezzUI.Modules.Tweaks;
 
 namespace SezzUI.Configuration;
 
@@ -486,6 +487,10 @@ public class ConfigurationManager : IPluginDisposable
 		typeof(ServerInfoBarConfig),
 #if DEBUG
 		typeof(ServerInfoBarDebugConfig),
+#endif
+		typeof(AutoDismountConfig),
+#if DEBUG
+		typeof(AutoDismountDebugConfig),
 #endif
 
 		typeof(TanksColorConfig),

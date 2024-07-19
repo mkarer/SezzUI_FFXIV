@@ -14,6 +14,7 @@ using SezzUI.Modules.GameUI;
 using SezzUI.Modules.JobHud;
 using SezzUI.Modules.PluginMenu;
 using SezzUI.Modules.ServerInfoBar;
+using SezzUI.Modules.Tweaks;
 
 namespace SezzUI.Interface;
 
@@ -34,6 +35,7 @@ public class HudManager : IPluginDisposable
 	private static ActionBar? _actionBar;
 	private static PluginMenu? _pluginMenu;
 	private static ServerInfoBar? _serverInfoBar;
+	private static AutoDismount? _autoDismount; // TODO: Tweaks
 
 	public HudManager()
 	{
@@ -48,6 +50,7 @@ public class HudManager : IPluginDisposable
 		Singletons.Register(new ElementHider(configurationManager.GetConfigObject<ElementHiderConfig>()));
 		Singletons.Register(new PluginMenu(configurationManager.GetConfigObject<PluginMenuConfig>()));
 		Singletons.Register(new ServerInfoBar(configurationManager.GetConfigObject<ServerInfoBarConfig>()));
+		Singletons.Register(new AutoDismount(configurationManager.GetConfigObject<AutoDismountConfig>()));
 
 		CreateHudElements();
 	}
@@ -170,6 +173,10 @@ public class HudManager : IPluginDisposable
 		// Server Info Bar
 		_serverInfoBar ??= Singletons.Get<ServerInfoBar>();
 		_modules.Add(_serverInfoBar);
+
+		// Tweaks
+		_autoDismount ??= Singletons.Get<AutoDismount>();
+		_modules.Add(_autoDismount);
 	}
 
 	public void Draw(DrawState drawState)
