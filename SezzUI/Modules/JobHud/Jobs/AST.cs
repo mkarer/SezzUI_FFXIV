@@ -11,7 +11,7 @@ public sealed class AST : BasePreset
 	{
 		Bar bar1 = new(hud);
 		bar1.Add(new(bar1) {TextureActionId = 3599, StatusActionId = 3599, MaxStatusDuration = 30, StatusTarget = Unit.Target}); // Combust
-		bar1.Add(new(bar1) {TextureActionId = 37017, TextureActionAllowCombo = true, CooldownActionId = 37017 }); // Astral/Umbral Draw
+		bar1.Add(new(bar1) {TextureActionId = 37017, TextureActionAllowCombo = true, CooldownActionId = 37017}); // Astral/Umbral Draw
 		bar1.Add(new(bar1) {TextureActionId = 3606, CooldownActionId = 3606, StatusId = 841, MaxStatusDuration = 15}); // Lightspeed
 		hud.AddBar(bar1);
 
