@@ -57,6 +57,7 @@ public static class Defaults
 		{JobIDs.DRG, new(65f / 255f, 100f / 255f, 205f / 255f, 100f / 100f)},
 		{JobIDs.SAM, new(228f / 255f, 109f / 255f, 4f / 255f, 100f / 100f)},
 		{JobIDs.RPR, new(150f / 255f, 90f / 255f, 144f / 255f, 100f / 100f)},
+		{JobIDs.VPR, new(16f / 255f, 130f / 255f, 16f / 255f, 100f / 100f)},
 		{JobIDs.PGL, new(214f / 255f, 156f / 255f, 0f / 255f, 100f / 100f)},
 		{JobIDs.ROG, new(175f / 255f, 25f / 255f, 100f / 255f, 100f / 100f)},
 		{JobIDs.LNC, new(65f / 255f, 100f / 255f, 205f / 255f, 100f / 100f)},
@@ -69,6 +70,7 @@ public static class Defaults
 		{JobIDs.BLM, new(165f / 255f, 121f / 255f, 214f / 255f, 100f / 100f)},
 		{JobIDs.SMN, new(45f / 255f, 155f / 255f, 120f / 255f, 100f / 100f)},
 		{JobIDs.RDM, new(232f / 255f, 123f / 255f, 123f / 255f, 100f / 100f)},
+		{JobIDs.PCT, new(252f / 255f, 146f / 255f, 225f / 255f, 100f / 100f)},
 		{JobIDs.BLU, new(0f / 255f, 185f / 255f, 247f / 255f, 100f / 100f)},
 		{JobIDs.THM, new(165f / 255f, 121f / 255f, 214f / 255f, 100f / 100f)},
 		{JobIDs.ACN, new(45f / 255f, 155f / 255f, 120f / 255f, 100f / 100f)}
