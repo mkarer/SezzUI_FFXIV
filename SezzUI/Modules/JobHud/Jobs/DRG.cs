@@ -21,8 +21,8 @@ public sealed class DRG : BasePreset
 		Bar bar2 = new(hud);
 		bar2.Add(new(bar2) {TextureActionId = 83, CooldownActionId = 83, StatusId = 116, MaxStatusDuration = 5}); // Life Surge
 		bar2.Add(new(bar2) {TextureActionId = 85, CooldownActionId = 85, StatusId = 1864, MaxStatusDuration = 20}); // Lance Charge
-		bar2.Add(new(bar2) {TextureActionId = 7398, CooldownActionId = 7398, StatusId = 1910, MaxStatusDuration = 20}); // Dragon Sight (Right Eye)
-		bar2.Add(new(bar2) {TextureActionId = 3557, CooldownActionId = 3557, StatusId = 786, MaxStatusDuration = 15, StatusSourcePlayer = false}); // Battle Litany
+//		bar2.Add(new(bar2) {TextureActionId = 7398, CooldownActionId = 7398, StatusId = 1910, MaxStatusDuration = 20}); // Dragon Sight (Right Eye)
+		bar2.Add(new(bar2) {TextureActionId = 3557, CooldownActionId = 3557, StatusId = 786, MaxStatusDuration = 20, StatusSourcePlayer = false}); // Battle Litany
 		hud.AddBar(bar2);
 
 		base.Configure(hud);

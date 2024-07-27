@@ -11,7 +11,7 @@ public sealed class DRG : BasePreset
 		base.Configure(hud);
 
 		hud.RegisterCooldown(94); // Elusive Jump
-		hud.RegisterCooldown(95); // Spineshatter Dive
+		hud.RegisterCooldown(36951); // Winged Glide
 		hud.RegisterCooldown(96); // Dragonfire Dive
 		hud.RegisterCooldown(92); // Jump
 		hud.RegisterCooldown(16480); // Stardriver

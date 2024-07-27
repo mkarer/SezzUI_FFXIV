@@ -13,5 +13,9 @@ public sealed class AST : BasePreset
 		hud.RegisterCooldown(7439); // Earthly Star
 		hud.RegisterCooldown(16552); // Divination
 		hud.RegisterCooldown(3612); // Synastry
+		hud.RegisterCooldown(16556); // Celestial Intersection
+		hud.RegisterCooldown(16553); // Celestial Opposition
+		hud.RegisterCooldown(16557); // Horoscope
+		hud.RegisterCooldown(16559); // Neutral Sect
 	}
 }
