@@ -9,5 +9,7 @@ public sealed class WHM : BasePreset
 	public override void Configure(CooldownHud hud)
 	{
 		base.Configure(hud);
+
+		hud.RegisterCooldown(37008); // Aetherial Shift
 	}
 }
