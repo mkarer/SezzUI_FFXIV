@@ -40,6 +40,9 @@ public static class SpellHelper
 			// Combo plugin issues should be resolved now by OriginalFunctionManager.GetAdjustedActionId
 			// ActionIndirection data is used to handles real combos "Action changes to X while under the effect of Y." -> "This action cannot be assigned to a hotbar."
 			// Structure: [actionId] => { level, actionIdAtLevel }, { level, actionIdAtLevel }, ...
+
+			// AST
+			{7439, new() {{62, 7439}}} // Earthly Star: ClassJob is -1 in ActionIndirection
 		};
 
 		// TODO: Test at level 80, Aethercharge gets upgraded by traits and also is in ActionIndirection.
