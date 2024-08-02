@@ -25,7 +25,7 @@ public static class TextureLoader
 		if (!manualLoad)
 		{
 			TexFile? iconFile = Services.Data.GetFile<TexFile>(path);
-			if (iconFile != null)
+			if (ThreadSafety.IsMainThread && iconFile != null)
 			{
 				return Services.TextureProvider.CreateFromRaw(new(iconFile.Header.Width, iconFile.Header.Height, 4), iconFile.GetRgbaImageData());
 			}
@@ -50,7 +50,7 @@ public static class TextureLoader
 			byte[] rawImageData = reader.ReadBytes((int) fileStream.Length - headerSize);
 			byte[] imageData = new byte[header.Width * header.Height * 4];
 
-			if (!ProcessTexture(header.Format, rawImageData, imageData, header.Width, header.Height))
+			if (!ThreadSafety.IsMainThread || !ProcessTexture(header.Format, rawImageData, imageData, header.Width, header.Height))
 			{
 				return null;
 			}

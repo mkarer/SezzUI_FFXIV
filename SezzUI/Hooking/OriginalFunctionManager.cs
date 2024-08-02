@@ -31,10 +31,9 @@ internal class OriginalFunctionManager : IPluginDisposable
 			try
 			{
 				// Client::Game::ActionManager.GetAdjustedActionId
-				throw new("Currently unsupported.");
+				// throw new("Currently unsupported.");
 				// TODO: https://github.com/goatcorp/Dalamud/pull/1843
-				// string getAdjustedActionIdSig = AsmHelper.GetSignature<ActionManager>("GetAdjustedActionId") ?? "E8 ?? ?? ?? ?? 89 03 8B 03";
-				// _originalGetAdjustedActionId = new(getAdjustedActionIdSig, "81 FA 2D 01 00 00 7F 42 0F 84 4B 01 00 00 8D 42 EB"); // TODO: Needs to get updated first.
+				_originalGetAdjustedActionId = new("E8 ?? ?? ?? ?? 89 03 8B 03", "48 89 5C 24 08 57 48 83 EC 20 8B DA 81 FA CF 72 0F 8F 5F 08 00 00 0F 84 30 08 00 00");
 			}
 			catch (Exception ex)
 			{

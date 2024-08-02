@@ -48,10 +48,11 @@ internal sealed class DutyFinderQueue : BaseEvent, IHookAccessor
 
 	public unsafe DutyFinderQueue()
 	{
-		_queue = (IntPtr) UIState.Instance() + 0x11978;
+		_queue = (IntPtr) UIState.Instance() + 0x12B00;
 #if DEBUG
 		if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventDutyFinderQueue)
 		{
+			Logger.Debug($"UIState: 0x{((IntPtr) UIState.Instance()).ToInt64():X}");
 			Logger.Debug($"Queue: 0x{_queue.ToInt64():X}");
 		}
 #endif

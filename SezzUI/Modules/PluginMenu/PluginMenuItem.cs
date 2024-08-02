@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface.Textures.TextureWraps;
+using Dalamud.Utility;
 using ImGuiNET;
 using SezzUI.Helper;
 using SezzUI.Logging;
@@ -41,7 +42,7 @@ public class PluginMenuItem : IDisposable
 
 			if (HasTexture)
 			{
-				string? file = Singletons.Get<MediaManager>().GetIconFileName(Config.Title.Substring(2));
+				string? file = ThreadSafety.IsMainThread ? Singletons.Get<MediaManager>().GetIconFileName(Config.Title.Substring(2)) : null;
 				texture = file != null ? Services.TextureProvider.GetFromFile(file!).GetWrapOrEmpty() : null;
 				if (texture != null && texture.ImGuiHandle != IntPtr.Zero)
 				{

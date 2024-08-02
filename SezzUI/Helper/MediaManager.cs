@@ -428,7 +428,7 @@ public class MediaManager : IPluginDisposable
 	/// <summary>
 	///     Retrieve texture by icon id from game files.
 	/// </summary>
-	public IDalamudTextureWrap? GetTextureFromIconId(uint iconId) => Services.TextureProvider.GetFromGameIcon(new(iconId)).GetWrapOrDefault();
+	public IDalamudTextureWrap? GetTextureFromIconId(uint iconId) => ThreadSafety.IsMainThread ? Services.TextureProvider.GetFromGameIcon(new(iconId)).GetWrapOrDefault() : null;
 
 	/// <summary>
 	///     Retrieve texture by icon id from filesystem (if available) and fails over to game files.
@@ -447,7 +447,7 @@ public class MediaManager : IPluginDisposable
 	/// <returns></returns>
 	public IDalamudTextureWrap? GetTextureFromFilesystem(string? file)
 	{
-		if (file != null && File.Exists(file))
+		if (ThreadSafety.IsMainThread && file != null && File.Exists(file))
 		{
 			return Services.TextureProvider.GetFromFile(file).GetWrapOrEmpty();
 		}

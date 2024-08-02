@@ -8,6 +8,7 @@ using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SezzUI.Configuration;
 using SezzUI.Configuration.Profiles;
@@ -116,7 +117,7 @@ public class Plugin : IDalamudPlugin
 
 	public static IDalamudTextureWrap? GetBanner()
 	{
-		if (BannerTexture == null)
+		if (BannerTexture == null && ThreadSafety.IsMainThread)
 		{
 			string bannerImage = Path.Combine(Path.GetDirectoryName(AssemblyLocation) ?? "", "Media", "Images", "Banner150.png");
 			try
