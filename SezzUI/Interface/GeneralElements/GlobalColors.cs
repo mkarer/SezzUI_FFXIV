@@ -6,6 +6,8 @@ using SezzUI.Enums;
 using SezzUI.Helper;
 using SezzUI.Modules;
 
+// ReSharper disable InconsistentNaming
+
 namespace SezzUI.Interface.GeneralElements;
 
 public class GlobalColors : IPluginDisposable
@@ -232,6 +234,10 @@ public class MeleeColorConfig : PluginConfigObject
 	[Order(25)]
 	public PluginConfigColor RPRColor = new(new(150f / 255f, 90f / 255f, 144f / 255f, 100f / 100f));
 
+	[ColorEdit4("Viper")]
+	[Order(25)]
+	public PluginConfigColor VPRColor = new(new(16f / 255f, 130f / 255f, 16f / 255f, 100f / 100f));
+
 	[ColorEdit4("Pugilist", spacing = true)]
 	[Order(30)]
 	public PluginConfigColor PGLColor = new(new(214f / 255f, 156f / 255f, 0f / 255f, 100f / 100f));
@@ -287,6 +293,10 @@ public class CastersColorConfig : PluginConfigObject
 	[ColorEdit4("Red Mage")]
 	[Order(15)]
 	public PluginConfigColor RDMColor = new(new(232f / 255f, 123f / 255f, 123f / 255f, 100f / 100f));
+
+	[ColorEdit4("Pictomancer")]
+	[Order(15)]
+	public PluginConfigColor PCTColor = new(new(252f / 255f, 146f / 255f, 225f / 255f, 100f / 100f));
 
 	[ColorEdit4("Blue Mage", spacing = true)]
 	[Order(20)]
