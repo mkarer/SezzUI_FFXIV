@@ -92,7 +92,12 @@ internal sealed unsafe class Cooldown : BaseEvent, IHookAccessor
 		new() {7427, 25831}, // Summon Bahamut [7427] + Summon Phoenix [25831]
 		new() {7429, 16516}, // Enkindle Bahamut [7429] + Enkindle Phoenix [16516]
 		// AST
-		new() {37017, 37018} // Astral Draw [37017] + Umbral Draw [37018]
+		new() {37017, 37018}, // Astral Draw [37017] + Umbral Draw [37018]
+		// WAR
+		new() {3551, 16464}, // Raw Intuition [3551] + Nascent Flash [16464]
+		// DRK
+		new() {3625, 7390}, // Blood Weapon [3625], Delirium [7390]
+		new() {3643, 3641} // Carve and Spirit [3643], Abyssal Drain [3641]
 	};
 
 	private static readonly List<uint> _frequentUpdateCooldowns = new() // Workaround until I figure out how to do this correctly. Yes, this is absolute bullshit :(

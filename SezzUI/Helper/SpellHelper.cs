@@ -46,6 +46,10 @@ public static class SpellHelper
 			// https://github.com/xivapi/ffxiv-datamining/blob/master/csv/ReplaceAction.csv
 
 			// Structure: [actionId] => { level, actionIdAtLevel }, { level, actionIdAtLevel }, ...
+
+			// WAR
+			{38, new() {{6, 38}, {70, 7389}}}, // Berserk
+			{3551, new() {{56, 3551}, {82, 25751}}} // Raw Intuition
 		};
 
 		// TODO: Test at level 80, Aethercharge gets upgraded by traits and also is in ActionIndirection.

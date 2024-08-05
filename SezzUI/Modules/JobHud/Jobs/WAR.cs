@@ -16,7 +16,7 @@ public sealed class WAR : BasePreset
 		bar1.Add(new(bar1) {TextureActionId = 38, CooldownActionId = 38, StatusActionId = 38, MaxStatusDuration = 15, GlowBorderStatusIds = new[] {1177u, 9u}, Features = IconFeatures.GlowIgnoresState}); // Berserk
 		bar1.Add(new(bar1) {TextureActionId = 7386, CooldownActionId = 7386}); // Onslaught
 		bar1.Add(new(bar1) {TextureActionId = 52, CooldownActionId = 52, StatusId = 1897, MaxStatusDuration = 30, RequiresCombat = true}); // Infuriate
-		bar1.Add(new(bar1) {TextureActionId = 3551, CooldownActionId = 3551, StatusIds = new[] {735u, 1857u}, MaxStatusDuration = jobLevel >= 82 ? 8 : 6}); // Raw Intuition/Nascent Flash
+		bar1.Add(new(bar1) {TextureActionId = 3551, CooldownActionId = 3551, StatusIds = new[] {735u, 1857u, 2678u}, MaxStatusDuration = jobLevel >= 82 ? 8 : 6}); // Raw Intuition/Bloodwhetting/Nascent Flash
 		hud.AddBar(bar1);
 
 		Bar bar2 = new(hud);
