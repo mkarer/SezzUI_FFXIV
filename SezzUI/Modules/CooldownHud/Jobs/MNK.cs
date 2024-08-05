@@ -10,6 +10,6 @@ public sealed class MNK : BasePreset
 	{
 		base.Configure(hud);
 
-		hud.RegisterCooldown(16475); // Anatman
+		hud.RegisterCooldown(25762); // Thunderclap
 	}
 }
