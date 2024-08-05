@@ -12,5 +12,6 @@ public sealed class NIN : BasePreset
 
 		hud.RegisterCooldown(2248); // Mug
 		hud.RegisterCooldown(2245); // Hide
+		hud.RegisterCooldown(2262); // Shukuchi
 	}
 }

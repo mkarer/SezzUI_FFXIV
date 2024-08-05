@@ -15,18 +15,17 @@ public sealed class NIN : BasePreset
 	public override void Configure(JobHud hud)
 	{
 		Bar bar1 = new(hud);
-		bar1.Add(new(bar1) {TextureActionId = 2269, CustomDuration = GetHutonDuration, StatusWarningThreshold = 20}); // Huton
-		bar1.Add(new(bar1) {TextureActionId = 2258, CooldownActionId = 2258, StatusId = 638, StatusTarget = Unit.Target, MaxStatusDuration = 15, StatusSourcePlayer = false, GlowBorderUsable = true, CustomCondition = IsHidden}); // Trick Attack
+		bar1.Add(new(bar1) {TextureActionId = 2258, CooldownActionId = 2258, StatusId = 3254, StatusTarget = Unit.Target, MaxStatusDuration = 15, StatusSourcePlayer = false, GlowBorderUsable = true, CustomCondition = IsHidden}); // Trick Attack
 		bar1.Add(new(bar1) {TextureActionId = 2264, CooldownActionId = 2264, StatusId = 497, MaxStatusDuration = 15}); // Kassatsu
 		bar1.Add(new(bar1) {TextureActionId = 16493, CooldownActionId = 16493, StatusId = 1954, MaxStatusDuration = 30, RequiredPowerType = JobsHelper.PowerType.Ninki, RequiredPowerAmount = 50}); // Bunshin
-		bar1.Add(new(bar1) {TextureActionId = 7403, CooldownActionId = 7403, StatusId = 1186, MaxStatusDuration = 6}); // Ten Chi Jin
+		bar1.Add(new(bar1) {TextureActionId = 36957, CooldownActionId = 36957, StatusId = 3849, StatusTarget = Unit.Target, MaxStatusDuration = 20}); // Dokumori
 		hud.AddBar(bar1);
 
 		Bar bar2 = new(hud);
 		bar2.Add(new(bar2) {TextureActionId = 2245, CooldownActionId = 2245, StatusIds = new[] {507u, 614u}, MaxStatusDurations = new[] {20f, Constants.PERMANENT_STATUS_DURATION}, CustomCondition = IsOutOfCombat}); // Hide
 		bar2.Add(new(bar2) {TextureActionId = 16489, CooldownActionId = 16489, CustomPowerCondition = IsMeisuiUsable, RequiresCombat = true}); // Meisui
 		bar2.Add(new(bar2) {TextureActionId = 7402, RequiredPowerType = JobsHelper.PowerType.Ninki, RequiredPowerAmount = 50, GlowBorderUsable = true, StacksPowerType = JobsHelper.PowerType.Ninki}); // Bhavacakra
-		bar2.Add(new(bar2) {TextureActionId = 2262, CooldownActionId = 2262}); // Shukuchi
+		bar2.Add(new(bar2) {TextureActionId = 7403, CooldownActionId = 7403, StatusId = 1186, MaxStatusDuration = 6}); // Ten Chi Jin
 		hud.AddBar(bar2);
 
 		// Ten Chi Jin
@@ -53,7 +52,7 @@ public sealed class NIN : BasePreset
 
 	private static bool IsMeisuiUsable() => Services.JobGauges.Get<NINGauge>().Ninki <= 50 && IsHidden();
 
-	private static bool IsHidden() => SpellHelper.GetStatus(507, Unit.Player) != null || SpellHelper.GetStatus(614, Unit.Player) != null;
+	private static bool IsHidden() => SpellHelper.GetStatus(507, Unit.Player) != null || SpellHelper.GetStatus(614, Unit.Player) != null || SpellHelper.GetStatus(3848, Unit.Player) != null;
 
 	private static (float, float) GetHutonDuration()
 	{

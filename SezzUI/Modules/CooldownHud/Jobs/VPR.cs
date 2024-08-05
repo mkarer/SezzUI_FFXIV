@@ -10,5 +10,7 @@ public sealed class VPR : BasePreset
 	public override void Configure(CooldownHud hud)
 	{
 		base.Configure(hud);
+
+		hud.RegisterCooldown(34646); // Slither
 	}
 }
