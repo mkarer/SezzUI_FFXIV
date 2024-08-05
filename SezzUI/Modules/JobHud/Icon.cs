@@ -90,7 +90,7 @@ public class Icon : IDisposable
 				_texture = SpellHelper.GetStatusIconTexture((uint) value, out bool isOverriden);
 				if (_texture != null)
 				{
-					if (!isOverriden && Parent.Size.X.Equals(Parent.Size.Y))
+					if (!isOverriden && !Parent.Size.X.Equals(Parent.Size.Y))
 					{
 						// Status icons are ugly, they should always be replaced with custom ones...
 						(_iconUV0, _iconUV1) = DrawHelper.GetTexCoordinates(new(_texture.Width, _texture.Height), true);
@@ -218,7 +218,7 @@ public class Icon : IDisposable
 		set
 		{
 			_clipMultiplier = value;
-			if (_texture != null)
+			if (_texture != null && _texture.ImGuiHandle != IntPtr.Zero)
 			{
 				Vector2 iconSize = new(_texture.Width, _texture.Height);
 				(_iconUV0, _iconUV1) = DrawHelper.GetTexCoordinates(iconSize, Parent.IconSize, _clipMultiplier ?? Vector2.Zero);

@@ -356,11 +356,11 @@ public static class DrawHelper
 
 	public static (Vector2, Vector2) GetTexCoordinates(Vector2 size, bool isStatus = false)
 	{
-		float uv0X = isStatus ? 4f : 2f;
-		float uv0Y = isStatus ? 14f : 2f;
+		float uv0X = isStatus ? 5f : 2f;
+		float uv0Y = isStatus ? 16f : 2f;
 
-		float uv1X = isStatus ? 4f : 2f;
-		float uv1Y = isStatus ? 9f : 2f;
+		float uv1X = isStatus ? 5f : 2f;
+		float uv1Y = isStatus ? 14f : 2f;
 
 		Vector2 uv0 = new(uv0X / size.X, uv0Y / size.Y);
 		Vector2 uv1 = new(1f - uv1X / size.X, 1f - uv1Y / size.Y);
