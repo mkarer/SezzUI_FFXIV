@@ -14,7 +14,7 @@ public sealed class MNK : BasePreset
 		bar1.Add(new(bar1) {TextureActionId = 69, CooldownActionId = 69, StatusId = 110, StacksStatusId = 110, MaxStatusDuration = 20, RequiresCombat = true}); // Perfect Balance
 		bar1.Add(new(bar1) {TextureActionId = 7395, CooldownActionId = 7395, StatusId = 1181, MaxStatusDuration = 20}); // Riddle of Fire
 		bar1.Add(new(bar1) {TextureActionId = 25766, CooldownActionId = 25766, StatusId = 2687, MaxStatusDuration = 15}); // Riddle of Wind
-		bar1.Add(new(bar1) {TextureActionId = 7396, CooldownActionId = 7396, StatusIds = new[] {1182u, 1185u}, MaxStatusDuration = 15}); // Brotherhood
+		bar1.Add(new(bar1) {TextureActionId = 7396, CooldownActionId = 7396, StatusIds = new[] {1182u, 1185u}, MaxStatusDuration = 20}); // Brotherhood
 		hud.AddBar(bar1);
 
 		base.Configure(hud);
