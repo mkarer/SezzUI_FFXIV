@@ -1,5 +1,4 @@
 using System.Linq;
-using SezzUI.Enums;
 using SezzUI.Helper;
 
 namespace SezzUI.Modules.JobHud.Jobs;
