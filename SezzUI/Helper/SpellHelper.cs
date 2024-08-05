@@ -12,6 +12,7 @@ using SezzUI.Hooking;
 using SezzUI.Logging;
 using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
 using LuminaActionIndirection = Lumina.Excel.GeneratedSheets.ActionIndirection;
+using LuminaReplaceAction = Lumina.Excel.GeneratedSheets.ReplaceAction;
 using LuminaGeneralAction = Lumina.Excel.GeneratedSheets.GeneralAction;
 using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
 
@@ -38,11 +39,13 @@ public static class SpellHelper
 			// Hardcoded actions that that will be used instead of calling GetAdjustedActionId.
 			// The idea is that SpellHelper.GetAdjustedActionId should always only return the level appropriate action and don't care about combos.  
 			// Combo plugin issues should be resolved now by OriginalFunctionManager.GetAdjustedActionId
-			// ActionIndirection data is used to handles real combos "Action changes to X while under the effect of Y." -> "This action cannot be assigned to a hotbar."
-			// Structure: [actionId] => { level, actionIdAtLevel }, { level, actionIdAtLevel }, ...
 
-			// AST
-			{7439, new() {{62, 7439}}} // Earthly Star: ClassJob is -1 in ActionIndirection
+			// ActionIndirection data is used to handle real combos ("Action changes to X while under the effect of Y." -> "This action cannot be assigned to a hotbar."):
+			// https://github.com/xivapi/ffxiv-datamining/blob/master/csv/ActionIndirection.csv
+			// ReplaceAction data is used for Dawntrail's "action change" feature:
+			// https://github.com/xivapi/ffxiv-datamining/blob/master/csv/ReplaceAction.csv
+
+			// Structure: [actionId] => { level, actionIdAtLevel }, { level, actionIdAtLevel }, ...
 		};
 
 		// TODO: Test at level 80, Aethercharge gets upgraded by traits and also is in ActionIndirection.
@@ -50,19 +53,23 @@ public static class SpellHelper
 		List<uint> adjustmentWhitelist = new() {25800u};
 
 		ExcelSheet<LuminaActionIndirection>? sheetActionIndirection = Services.Data.Excel.GetSheet<LuminaActionIndirection>();
-		sheetActionIndirection?.Where(a => a.ClassJob.Value?.RowId > 0 && a.PreviousComboAction.Value is {RowId: > 0} && !adjustmentWhitelist.Contains(a.PreviousComboAction.Value.RowId)).ToList().ForEach(a =>
+		sheetActionIndirection?.Where(a => a.ClassJob.Value?.RowId > 0 && a.PreviousComboAction.Value is {RowId: > 0} && !adjustmentWhitelist.Contains(a.PreviousComboAction.Value.RowId)).ToList().ForEach(a => AddAdjustedAction(a.PreviousComboAction.Value!));
+
+		ExcelSheet<LuminaReplaceAction>? sheetReplaceAction = Services.Data.Excel.GetSheet<LuminaReplaceAction>();
+		sheetReplaceAction?.Where(a => a.Action.Value?.RowId > 0 && a.ReplaceAction1.Value is {RowId: > 0} && !adjustmentWhitelist.Contains(a.Action.Value.RowId)).ToList().ForEach(a => AddAdjustedAction(a.Action.Value!));
+	}
+
+	private static void AddAdjustedAction(LuminaAction action)
+	{
+		if (!_actionAdjustments.ContainsKey(action.RowId))
 		{
-			LuminaAction previousAction = a.PreviousComboAction.Value!; // It's never null.
-			if (!_actionAdjustments.ContainsKey(previousAction.RowId))
-			{
-				_actionAdjustments[previousAction.RowId] = new() {{previousAction.ClassJobLevel, previousAction.RowId}};
-			}
-			else if (!_actionAdjustments[previousAction.RowId].ContainsKey(previousAction.ClassJobLevel))
-			{
-				// This should only be possible when there are already some hardcoded actions defined, let's keep it for now.
-				_actionAdjustments[previousAction.RowId][previousAction.ClassJobLevel] = previousAction.RowId;
-			}
-		});
+			_actionAdjustments[action.RowId] = new() {{action.ClassJobLevel, action.RowId}};
+		}
+		else if (!_actionAdjustments[action.RowId].ContainsKey(action.ClassJobLevel))
+		{
+			// This should only be possible when there are already some hardcoded actions defined, let's keep it for now.
+			_actionAdjustments[action.RowId][action.ClassJobLevel] = action.RowId;
+		}
 	}
 
 	public static uint GetAdjustedActionId(uint actionId, bool allowCombo = false, bool debug = false)
