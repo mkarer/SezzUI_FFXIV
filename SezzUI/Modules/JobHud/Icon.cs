@@ -65,7 +65,7 @@ public class Icon : IDisposable
 			_textureActionId = value;
 			if (value != null)
 			{
-				uint actionIdAdjusted = SpellHelper.GetAdjustedActionId((uint) value, TextureActionAllowCombo);
+				uint actionIdAdjusted = SpellHelper.GetAdjustedActionId((uint) value, TextureActionAdjust);
 				_texture = SpellHelper.GetActionIconTexture(actionIdAdjusted, out bool _);
 				if (_texture != null)
 				{
@@ -77,7 +77,7 @@ public class Icon : IDisposable
 
 	private uint? _textureActionId;
 
-	public bool TextureActionAllowCombo = false;
+	public bool TextureActionAdjust = false;
 
 	public uint? TextureStatusId
 	{
