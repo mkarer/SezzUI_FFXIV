@@ -10,8 +10,8 @@ public sealed class AST : BasePreset
 	public override void Configure(JobHud hud)
 	{
 		Bar bar1 = new(hud);
-		bar1.Add(new(bar1) {TextureActionId = 3599, StatusActionId = 3599, MaxStatusDuration = 30, StatusTarget = Unit.Target}); // Combust
-		bar1.Add(new(bar1) {TextureActionId = 37017, TextureActionAllowCombo = true, CooldownActionId = 37017}); // Astral/Umbral Draw
+		bar1.Add(new(bar1) {TextureActionId = 3599, TextureActionAdjust = true, StatusIds = new[] {3599u, 1881u}, MaxStatusDuration = 30, StatusTarget = Unit.Target}); // Combust
+		bar1.Add(new(bar1) {TextureActionId = 37017, TextureActionAdjust = true, CooldownActionId = 37017}); // Astral/Umbral Draw
 		bar1.Add(new(bar1) {TextureActionId = 3613, CooldownActionId = 3613, StatusId = 848, MaxStatusDuration = 18, StatusTarget = Unit.Player}); // Collective Unconscious
 		bar1.Add(new(bar1) {TextureActionId = 16557, CooldownActionId = 16557, StatusIds = new[] {1890u, 1891u}, MaxStatusDurations = new[] {10f, 30f}, StatusTarget = Unit.Player}); // Horoscope
 		bar1.Add(new(bar1) {TextureActionId = 3606, CooldownActionId = 3606, StatusId = 841, MaxStatusDuration = 15}); // Lightspeed
