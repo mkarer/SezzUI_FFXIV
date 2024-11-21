@@ -540,7 +540,7 @@ public class ActionBar : PluginModule
 		}
 
 		AddonActionBarBase* actionBarBase = (AddonActionBarBase*) actionBar;
-		if ((!ImGui.GetIO().KeyCtrl && actionBarBase->HotbarID == Config.BarPagingPageCtrl) || (!ImGui.GetIO().KeyAlt && actionBarBase->HotbarID == Config.BarPagingPageAlt))
+		if ((!ImGui.GetIO().KeyCtrl && actionBarBase->RaptureHotbarId == Config.BarPagingPageCtrl) || (!ImGui.GetIO().KeyAlt && actionBarBase->RaptureHotbarId == Config.BarPagingPageAlt))
 		{
 #if DEBUG
 			if (_debugConfig.LogBarPaging)
@@ -610,7 +610,7 @@ public class ActionBar : PluginModule
 
 		AddonActionBarBase* actionBarBase = (AddonActionBarBase*) actionBar;
 
-		if (actionBarBase->HotbarID < 10 && actionBarBase->HotbarID != page)
+		if (actionBarBase->RaptureHotbarId < 10 && actionBarBase->RaptureHotbarId != page)
 		{
 #if DEBUG
 			if (_debugConfig.LogBarPaging)
@@ -639,7 +639,7 @@ public class ActionBar : PluginModule
 #if DEBUG
 		else if (_debugConfig.LogBarPaging)
 		{
-			Logger.Debug($"HasPetHotbar: {actionBarBase->HasPetHotbar} HotbarID {actionBarBase->HotbarID}");
+			Logger.Debug($"HasPetHotbar: {actionBarBase->DisplayPetBar} HotbarID {actionBarBase->RaptureHotbarId}");
 		}
 #endif
 	}

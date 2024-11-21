@@ -52,7 +52,7 @@ internal sealed class Player : BaseEvent
 		try
 		{
 			// Job
-			uint jobId = player != null ? player.ClassJob.Id : 0;
+			uint jobId = player != null ? player.ClassJob.RowId : 0;
 			if (jobId != _lastJobId)
 			{
 				_lastJobId = jobId;

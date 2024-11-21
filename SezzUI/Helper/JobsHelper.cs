@@ -4,9 +4,9 @@ using Dalamud.Game.ClientState.JobGauge.Types;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SezzUI.Enums;
-using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
+using LuminaAction = Lumina.Excel.Sheets.Action;
 
 namespace SezzUI.Helper;
 
@@ -46,12 +46,12 @@ public static class JobsHelper
 	public static unsafe byte GetUnsyncedLevel()
 	{
 		UIState* uiState = UIState.Instance();
-		if (Services.ClientState.LocalPlayer == null || uiState == null || uiState->PlayerState.SyncedLevel == 0 || Services.ClientState.LocalPlayer?.ClassJob == null || Services.ClientState.LocalPlayer.ClassJob.GameData == null)
+		if (Services.ClientState.LocalPlayer == null || uiState == null || uiState->PlayerState.SyncedLevel == 0 || Services.ClientState.LocalPlayer?.ClassJob == null)
 		{
 			return Services.ClientState.LocalPlayer?.Level ?? 0;
 		}
 
-		int index = Services.ClientState.LocalPlayer.ClassJob.GameData.ExpArrayIndex & 0xff;
+		int index = Services.ClientState.LocalPlayer.ClassJob.Value.ExpArrayIndex & 0xff;
 		return (byte) uiState->PlayerState.ClassJobLevels[index];
 	}
 
@@ -63,8 +63,8 @@ public static class JobsHelper
 			return false;
 		}
 
-		byte jobLevel = action.IsRoleAction ? GetUnsyncedLevel() : Services.ClientState.LocalPlayer?.Level ?? 0;
-		return action.ClassJobLevel <= jobLevel;
+		byte jobLevel = action.Value.IsRoleAction ? GetUnsyncedLevel() : Services.ClientState.LocalPlayer?.Level ?? 0;
+		return action.Value.ClassJobLevel <= jobLevel;
 	}
 
 	public static (int, int) GetPower(PowerType powerType)
@@ -318,7 +318,7 @@ public static class JobsHelper
 	public static uint GetParentJobId(uint jobId)
 	{
 		ExcelSheet<ClassJob>? classJobSheet = Services.Data.GetExcelSheet<ClassJob>();
-		return classJobSheet?.GetRow(jobId)?.ClassJobParent.Row ?? 0;
+		return classJobSheet?.GetRowOrDefault(jobId)?.ClassJobParent.RowId ?? 0;
 	}
 
 	public static uint RoleIconIDForBattleCompanion => 62041;

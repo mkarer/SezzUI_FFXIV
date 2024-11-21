@@ -7,11 +7,11 @@ using System.Linq;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SezzUI.Configuration;
 using SezzUI.Helper;
 using SezzUI.Hooking;
-using Action = Lumina.Excel.GeneratedSheets.Action;
+using Action = Lumina.Excel.Sheets.Action;
 
 namespace SezzUI.Modules.Tweaks;
 
@@ -37,9 +37,9 @@ public class AutoDismount : PluginModule, IHookAccessor
 
 	protected override void OnEnable()
 	{
-		_dismountActions = Services.Data.GetExcelSheet<Action>()!.Where(i => i.IsPlayerAction && i.RowId > 8 && i.ActionCategory?.Value?.RowId is 2 or 3 or 4 or 9 or 15).ToDictionary(i => i.RowId, j => j);
-		_groundTargetActions = Services.Data.GetExcelSheet<Action>()!.Where(i => i.TargetArea && i.RowId != 7419 && i.RowId != 3573).ToDictionary(i => i.RowId, j => j);
-		_battleJobs = Services.Data.GetExcelSheet<ClassJob>()!.Where(i => i.ClassJobCategory?.Value?.RowId is 30 or 31).Select(i => i.RowId).ToHashSet();
+		_dismountActions = Services.Data.GetExcelSheet<Action>().Where(i => i.IsPlayerAction && i.RowId > 8 && i.ActionCategory.RowId is 2 or 3 or 4 or 9 or 15).ToDictionary(i => i.RowId, j => j);
+		_groundTargetActions = Services.Data.GetExcelSheet<Action>().Where(i => i.TargetArea && i.RowId != 7419 && i.RowId != 3573).ToDictionary(i => i.RowId, j => j);
+		_battleJobs = Services.Data.GetExcelSheet<ClassJob>().Where(i => i.ClassJobCategory.RowId is 30 or 31).Select(i => i.RowId).ToHashSet();
 	}
 
 	// ReSharper disable once InconsistentNaming
@@ -55,7 +55,7 @@ public class AutoDismount : PluginModule, IHookAccessor
 		{
 			uint actionIdAdjusted = SpellHelper.GetAdjustedActionId(actionId);
 
-			if (Services.ClientState.LocalPlayer != null && _battleJobs.Contains(Services.ClientState.LocalPlayer.ClassJob.Id) && (_dismountActions.ContainsKey(actionIdAdjusted) || (actionType == ActionType.GeneralAction && actionId == 4)))
+			if (Services.ClientState.LocalPlayer != null && _battleJobs.Contains(Services.ClientState.LocalPlayer.ClassJob.RowId) && (_dismountActions.ContainsKey(actionIdAdjusted) || (actionType == ActionType.GeneralAction && actionId == 4)))
 			{
 				if (Config.AutoCast)
 				{

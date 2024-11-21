@@ -10,11 +10,11 @@ using Lumina.Excel;
 using SezzUI.Enums;
 using SezzUI.Hooking;
 using SezzUI.Logging;
-using LuminaAction = Lumina.Excel.GeneratedSheets.Action;
-using LuminaActionIndirection = Lumina.Excel.GeneratedSheets.ActionIndirection;
-using LuminaReplaceAction = Lumina.Excel.GeneratedSheets.ReplaceAction;
-using LuminaGeneralAction = Lumina.Excel.GeneratedSheets.GeneralAction;
-using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
+using LuminaAction = Lumina.Excel.Sheets.Action;
+using LuminaActionIndirection = Lumina.Excel.Sheets.ActionIndirection;
+using LuminaReplaceAction = Lumina.Excel.Sheets.ReplaceAction;
+using LuminaGeneralAction = Lumina.Excel.Sheets.GeneralAction;
+using LuminaStatus = Lumina.Excel.Sheets.Status;
 
 namespace SezzUI.Helper;
 
@@ -30,9 +30,9 @@ public static class SpellHelper
 	{
 		Logger = new("SpellHelper");
 
-		_sheetAction = Services.Data.Excel.GetSheet<LuminaAction>();
-		_sheetGeneralAction = Services.Data.Excel.GetSheet<LuminaGeneralAction>();
-		_sheetStatus = Services.Data.Excel.GetSheet<LuminaStatus>();
+		_sheetAction = Services.Data.GetExcelSheet<LuminaAction>();
+		_sheetGeneralAction = Services.Data.GetExcelSheet<LuminaGeneralAction>();
+		_sheetStatus = Services.Data.GetExcelSheet<LuminaStatus>();
 
 		_actionAdjustments = new()
 		{
@@ -56,11 +56,11 @@ public static class SpellHelper
 		// ActionIndirection data: 25800 (Aethercharge) -> 25831 (Summon Phoenix)
 		List<uint> adjustmentWhitelist = new() {25800u};
 
-		ExcelSheet<LuminaActionIndirection>? sheetActionIndirection = Services.Data.Excel.GetSheet<LuminaActionIndirection>();
-		sheetActionIndirection?.Where(a => a.ClassJob.Value?.RowId > 0 && a.PreviousComboAction.Value is {RowId: > 0} && !adjustmentWhitelist.Contains(a.PreviousComboAction.Value.RowId)).ToList().ForEach(a => AddAdjustedAction(a.PreviousComboAction.Value!));
+		ExcelSheet<LuminaActionIndirection> sheetActionIndirection = Services.Data.GetExcelSheet<LuminaActionIndirection>();
+		sheetActionIndirection.Where(a => a.ClassJob.ValueNullable?.RowId > 0 && a.PreviousComboAction.Value is {RowId: > 0} && !adjustmentWhitelist.Contains(a.PreviousComboAction.Value.RowId)).ToList().ForEach(a => AddAdjustedAction(a.PreviousComboAction.Value));
 
-		ExcelSheet<LuminaReplaceAction>? sheetReplaceAction = Services.Data.Excel.GetSheet<LuminaReplaceAction>();
-		sheetReplaceAction?.Where(a => a.Action.Value?.RowId > 0 && a.ReplaceAction1.Value is {RowId: > 0} && !adjustmentWhitelist.Contains(a.Action.Value.RowId)).ToList().ForEach(a => AddAdjustedAction(a.Action.Value!));
+		SubrowExcelSheet<LuminaReplaceAction> sheetReplaceAction = Services.Data.GetSubrowExcelSheet<LuminaReplaceAction>();
+		sheetReplaceAction.SelectMany(a => a).Where(a => a.Action.ValueNullable?.RowId > 0 && a.ReplaceActions.First().Value is {RowId: > 0} && !adjustmentWhitelist.Contains(a.Action.Value.RowId)).ToList().ForEach(a => AddAdjustedAction(a.Action.Value));
 	}
 
 	private static void AddAdjustedAction(LuminaAction action)
@@ -111,10 +111,10 @@ public static class SpellHelper
 		return GetIconTexture(GetStatus(statusId)?.Icon, out isOverriden);
 	}
 
-	public static LuminaAction? GetAction(uint actionId) => _sheetAction?.GetRow(actionId);
+	public static LuminaAction? GetAction(uint actionId) => _sheetAction?.GetRowOrDefault(actionId);
 	public static string? GetActionName(uint actionId) => GetAction(actionId)?.Name.ToDalamudString().ToString();
 	public static ushort? GetActionIconId(uint actionId) => GetAction(actionId)?.Icon;
-	public static LuminaGeneralAction? GetGeneralAction(uint actionId) => _sheetGeneralAction?.GetRow(actionId);
+	public static LuminaGeneralAction? GetGeneralAction(uint actionId) => _sheetGeneralAction?.GetRowOrDefault(actionId);
 	public static string? GetGeneralActionName(uint actionId) => GetGeneralAction(actionId)?.Name.ToDalamudString().ToString();
 	public static int? GetGeneralActionIconId(uint actionId) => GetGeneralAction(actionId)?.Icon;
 
@@ -125,7 +125,7 @@ public static class SpellHelper
 		LuminaAction? action = GetAction(actionId);
 		if (action != null && _sheetStatus != null)
 		{
-			string actionName = action.Name.ToString().ToLower();
+			string actionName = action.Value.Name.ToString().ToLower();
 			LuminaStatus? status = _sheetStatus.FirstOrDefault(status => status.Name.ToString().ToLower().Equals(actionName));
 			if (status != null)
 			{

@@ -102,7 +102,7 @@ public class JobHud : PluginModule
 		EventManager.Combat.LeavingCombat -= OnLeavingCombat;
 		Singletons.Get<MediaManager>().PathChanged -= OnMediaPathChanged;
 
-		OnLogout();
+		OnLogout(0, 0);
 	}
 
 	private void Reset()
@@ -126,7 +126,7 @@ public class JobHud : PluginModule
 		lock (Bars)
 		{
 			IPlayerCharacter? player = Services.ClientState.LocalPlayer;
-			uint jobId = player?.ClassJob.Id ?? 0;
+			uint jobId = player?.ClassJob.RowId ?? 0;
 			byte level = player?.Level ?? 0;
 
 			if (_currentLevel == level && _currentJobId == jobId)
@@ -309,7 +309,7 @@ public class JobHud : PluginModule
 
 	#region Events
 
-	private void OnLogout()
+	private void OnLogout(int type, int code)
 	{
 		Hide(true);
 	}

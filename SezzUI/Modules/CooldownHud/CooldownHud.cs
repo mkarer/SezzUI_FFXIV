@@ -61,7 +61,7 @@ public class CooldownHud : PluginModule
 		lock (_cooldowns)
 		{
 			IPlayerCharacter? player = Services.ClientState.LocalPlayer;
-			uint jobId = player?.ClassJob.Id ?? 0;
+			uint jobId = player?.ClassJob.RowId ?? 0;
 			byte level = player?.Level ?? 0;
 
 			if (_currentLevel == level && _currentJobId == jobId)

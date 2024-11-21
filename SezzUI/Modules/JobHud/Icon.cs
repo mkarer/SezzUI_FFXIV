@@ -13,7 +13,7 @@ using SezzUI.Game.Events.Cooldown;
 using SezzUI.Helper;
 using SezzUI.Interface.Animation;
 using SezzUI.Logging;
-using LuminaStatus = Lumina.Excel.GeneratedSheets.Status;
+using LuminaStatus = Lumina.Excel.Sheets.Status;
 
 namespace SezzUI.Modules.JobHud;
 
@@ -155,7 +155,7 @@ public class Icon : IDisposable
 				LuminaStatus? status = SpellHelper.GetStatusByAction(actionIdAdjusted);
 				if (status != null)
 				{
-					StatusId = status.RowId;
+					StatusId = status.Value.RowId;
 					Logger.Debug($"Found matching status for {value}: {StatusId}");
 				}
 			}
@@ -355,7 +355,7 @@ public class Icon : IDisposable
 			{
 				// Permanent is either really permanent or a status that hasn't ticked yet.
 				float duration = (MaxStatusDuration ?? 0) == Constants.PERMANENT_STATUS_DURATION ? Constants.PERMANENT_STATUS_DURATION : Math.Max(Constants.PERMANENT_STATUS_DURATION, status.RemainingTime);
-				byte stacks = (duration > 0 || duration == Constants.PERMANENT_STATUS_DURATION) && status.GameData.MaxStacks > 1 ? status.StackCount : (byte) 0;
+				byte stacks = (duration > 0 || duration == Constants.PERMANENT_STATUS_DURATION) && status.GameData.Value.MaxStacks > 1 ? status.StackCount : (byte) 0;
 
 				float durationMax = 0f;
 				if (MaxStatusDuration != null)
@@ -421,7 +421,7 @@ public class Icon : IDisposable
 			if (status != null)
 			{
 				float duration = Math.Abs(status.RemainingTime);
-				byte stacks = duration > 0 && status.GameData.MaxStacks > 1 ? status.StackCount : (byte) 0;
+				byte stacks = duration > 0 && status.GameData.Value.MaxStacks > 1 ? status.StackCount : (byte) 0;
 				if (stacks > 0)
 				{
 					chargesTextAmount = stacks;

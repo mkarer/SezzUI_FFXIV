@@ -43,12 +43,12 @@ internal static class Utils
 
 		if (character.ObjectKind == ObjectKind.Player)
 		{
-			return Singletons.Get<GlobalColors>().SafeColorForJobId(character.ClassJob.Id);
+			return Singletons.Get<GlobalColors>().SafeColorForJobId(character.ClassJob.RowId);
 		}
 
 		return character switch
 		{
-			IBattleNpc {SubKind: 9} battleNpc when battleNpc.ClassJob.Id > 0 => Singletons.Get<GlobalColors>().SafeColorForJobId(character.ClassJob.Id), // Trust/Squadron NPCs
+			IBattleNpc {SubKind: 9} battleNpc when battleNpc.ClassJob.RowId > 0 => Singletons.Get<GlobalColors>().SafeColorForJobId(character.ClassJob.RowId), // Trust/Squadron NPCs
 			IBattleNpc battleNpc when battleNpc.BattleNpcKind is BattleNpcSubKind.Chocobo or BattleNpcSubKind.Pet || !IsHostileMemory(battleNpc) => Singletons.Get<GlobalColors>().NPCFriendlyColor,
 			IBattleNpc battleNpc when battleNpc.BattleNpcKind == BattleNpcSubKind.Enemy || (battleNpc.StatusFlags & StatusFlags.InCombat) == StatusFlags.InCombat => Singletons.Get<GlobalColors>().NPCHostileColor, // I still don't think we should be defaulting to "in combat = hostile", but whatever
 			_ => Singletons.Get<GlobalColors>().NPCNeutralColor
@@ -66,7 +66,7 @@ internal static class Utils
 	{
 		IPlayerCharacter? player = Services.ClientState.LocalPlayer;
 
-		return player != null && JobsHelper.IsJobWithCleanse(player.ClassJob.Id, player.Level);
+		return player != null && JobsHelper.IsJobWithCleanse(player.ClassJob.RowId, player.Level);
 	}
 
 	public static IGameObject? FindTargetOfTarget(IGameObject? target, IGameObject? player, IObjectTable actors)

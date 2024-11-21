@@ -190,7 +190,7 @@ public class ConfigurationManager : IPluginDisposable
 		Reset?.Invoke(this, config);
 	}
 
-	private void OnLogout()
+	private void OnLogout(int type, int code)
 	{
 		SaveConfigurations();
 		ProfilesManager.Instance.SaveCurrentProfile();

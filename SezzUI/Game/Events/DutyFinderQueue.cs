@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SezzUI.Hooking;
 using SezzUI.Modules;
 
@@ -24,8 +24,8 @@ internal sealed class DutyFinderQueue : BaseEvent, IHookAccessor
 	public unsafe bool IsReady => Queue != null ? Queue->IsReady() : false;
 	public unsafe byte ContentRouletteId => Queue != null ? Queue->ContentRouletteId : (byte) 0;
 	public unsafe uint ContentFinderConditionId => Queue != null ? Queue->ContentFinderConditionId : 0u;
-	public ContentFinderCondition? ContentFinderCondition => ContentFinderConditionId != 0 ? Services.Data.GetExcelSheet<ContentFinderCondition>()?.GetRow(ContentFinderConditionId) : null;
-	public ContentRoulette? ContentRoulette => ContentRouletteId != 0 ? Services.Data.GetExcelSheet<ContentRoulette>()?.GetRow(ContentRouletteId) : null;
+	public ContentFinderCondition? ContentFinderCondition => ContentFinderConditionId != 0 ? Services.Data.GetExcelSheet<ContentFinderCondition>()?.GetRowOrDefault(ContentFinderConditionId) : null;
+	public ContentRoulette? ContentRoulette => ContentRouletteId != 0 ? Services.Data.GetExcelSheet<ContentRoulette>()?.GetRowOrDefault(ContentRouletteId) : null;
 
 	private delegate IntPtr JoinQueueDelegate(IntPtr queue, int unused, byte unk1);
 
@@ -81,7 +81,7 @@ internal sealed class DutyFinderQueue : BaseEvent, IHookAccessor
 		_queueStarted = null;
 	}
 
-	private void OnLogout()
+	private void OnLogout(int type, int code)
 	{
 		InvokeLeft();
 	}
@@ -95,7 +95,7 @@ internal sealed class DutyFinderQueue : BaseEvent, IHookAccessor
 		}
 #endif
 
-		if (_queueStarted != null && Queue != null && ((ContentFinderCondition?.TerritoryType.Row ?? ushort.MaxValue) == territoryType || Queue->IsInDuty() || Services.Condition[ConditionFlag.BoundByDuty] || Services.Condition[ConditionFlag.BoundByDuty56] || Services.Condition[ConditionFlag.BoundByDuty95] || Services.Condition[ConditionFlag.WaitingForDuty]))
+		if (_queueStarted != null && Queue != null && ((ContentFinderCondition?.TerritoryType.RowId ?? ushort.MaxValue) == territoryType || Queue->IsInDuty() || Services.Condition[ConditionFlag.BoundByDuty] || Services.Condition[ConditionFlag.BoundByDuty56] || Services.Condition[ConditionFlag.BoundByDuty95] || Services.Condition[ConditionFlag.WaitingForDuty]))
 		{
 			InvokeLeft(); // In a duty, not in the queue.
 		}
@@ -234,7 +234,7 @@ internal sealed class DutyFinderQueue : BaseEvent, IHookAccessor
 	{
 		if (Plugin.DebugConfig.LogEvents && Plugin.DebugConfig.LogEventDutyFinderQueue)
 		{
-			string dutyName = ContentFinderConditionId != 0 ? ContentFinderCondition?.Name ?? "Unknown" : ContentRouletteId != 0 ? ContentRoulette?.Name ?? "Unknown" : "Unknown";
+			string dutyName = ContentFinderConditionId != 0 ? ContentFinderCondition?.Name.ToString() ?? "Unknown" : ContentRouletteId != 0 ? ContentRoulette?.Name.ToString() ?? "Unknown" : "Unknown";
 			Logger.Debug($"{messagePrefix}: QueueState2: {(Queue != null ? Queue->QueueState2 : 0)} QueueState3: {(Queue != null ? Queue->QueueState3 : 0)} Position: {Position} AverageWaitTime: {AverageWaitTime} EstimatedWaitTime: {EstimatedWaitTime} ContentFinderConditionId: {Queue->ContentFinderConditionId} ContentRouletteId: {Queue->ContentRouletteId} Duty: {dutyName}");
 		}
 	}

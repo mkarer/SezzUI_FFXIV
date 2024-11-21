@@ -121,7 +121,7 @@ internal sealed unsafe class Game : BaseEvent, IHookAccessor
 		SetAddonsLoaded(true);
 	}
 
-	private void OnLogout()
+	private void OnLogout(int type, int code)
 	{
 		SetAddonsLoaded(false);
 	}

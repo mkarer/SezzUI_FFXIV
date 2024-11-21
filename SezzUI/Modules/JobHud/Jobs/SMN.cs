@@ -78,9 +78,9 @@ public sealed class SMN : BasePreset
 		return now - _petSeen > 2500;
 	}
 
-	private static bool IsCarbuncleSummoned() => Services.BuddyList.PetBuddy != null && Services.BuddyList.PetBuddy.PetData.Id == 23;
+	private static bool IsCarbuncleSummoned() => Services.BuddyList.PetBuddy != null && Services.BuddyList.PetBuddy.PetData.Value.RowId == 23;
 
-	private static bool IsDemiBahamutSummoned() => Services.BuddyList.PetBuddy != null && Services.BuddyList.PetBuddy.PetData.Id == 10;
+	private static bool IsDemiBahamutSummoned() => Services.BuddyList.PetBuddy != null && Services.BuddyList.PetBuddy.PetData.Value.RowId == 10;
 
 	private static (float, float) GetDemiBahamutDuration()
 	{
