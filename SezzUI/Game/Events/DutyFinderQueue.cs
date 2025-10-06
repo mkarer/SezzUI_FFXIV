@@ -25,7 +25,7 @@ internal sealed class DutyFinderQueue : BaseEvent, IHookAccessor
 	public unsafe byte ContentRouletteId => Queue != null ? Queue->ContentRouletteId : (byte) 0;
 	public unsafe uint ContentFinderConditionId => Queue != null ? Queue->ContentFinderConditionId : 0u;
 	public ContentFinderCondition? ContentFinderCondition => ContentFinderConditionId != 0 ? Services.Data.GetExcelSheet<ContentFinderCondition>()?.GetRowOrDefault(ContentFinderConditionId) : null;
-	public ContentRoulette? ContentRoulette => ContentRouletteId != 0 ? Services.Data.GetExcelSheet<ContentRoulette>()?.GetRowOrDefault(ContentRouletteId) : null;
+	public Lumina.Excel.Sheets.ContentRoulette? ContentRoulette => ContentRouletteId != 0 ? Services.Data.GetExcelSheet<Lumina.Excel.Sheets.ContentRoulette>()?.GetRowOrDefault(ContentRouletteId) : null;
 
 	private delegate IntPtr JoinQueueDelegate(IntPtr queue, int unused, byte unk1);
 

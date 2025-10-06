@@ -2,7 +2,7 @@
 using System.Linq;
 using Dalamud.Interface;
 using Dalamud.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Newtonsoft.Json;
 using SezzUI.Configuration;
 using SezzUI.Configuration.Attributes;

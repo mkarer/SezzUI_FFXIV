@@ -138,7 +138,7 @@ internal sealed unsafe class Game : BaseEvent, IHookAccessor
 
 	private bool AreActionBarsLoaded()
 	{
-		AtkUnitBase* addon = (AtkUnitBase*) Services.GameGui.GetAddonByName(Addons.Names[Addon.ActionBar1]);
+		AtkUnitBase* addon = (AtkUnitBase*) Services.GameGui.GetAddonByName(Addons.Names[Addon.ActionBar1]).Address;
 		return (IntPtr) addon != IntPtr.Zero && addon->UldManager.LoadedState == AtkLoadState.Loaded && addon->RootNode->DrawFlags == 12;
 	}
 

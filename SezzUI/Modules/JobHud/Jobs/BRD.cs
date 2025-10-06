@@ -47,7 +47,7 @@ public sealed class BRD : BasePreset
 		roleBar.Add(new(roleBar) {TextureActionId = 7408, CooldownActionId = 7408, StatusId = 1202, MaxStatusDuration = 15, StatusSourcePlayer = false}, 1); // Nature's Minne
 	}
 
-	private static bool IsPlaying() => Services.JobGauges.Get<BRDGauge>().Song != Song.NONE;
+	private static bool IsPlaying() => Services.JobGauges.Get<BRDGauge>().Song != Song.None;
 
 	private static (float, float) GetSongDuration(Song song)
 	{
@@ -64,8 +64,8 @@ public sealed class BRD : BasePreset
 	{
 		byte maxStacks = song switch
 		{
-			Song.WANDERER => 3,
-			Song.ARMY => 4,
+			Song.Wanderer => 3,
+			Song.Army => 4,
 			_ => 0
 		};
 
@@ -73,13 +73,13 @@ public sealed class BRD : BasePreset
 		return (gauge.Song == song ? gauge.Repertoire : (byte) 0, maxStacks);
 	}
 
-	private static (float, float) GetWanderersMinuetDuration() => GetSongDuration(Song.WANDERER);
+	private static (float, float) GetWanderersMinuetDuration() => GetSongDuration(Song.Wanderer);
 
-	private static (byte, byte) GetWanderersMinuetStacks() => GetSongStacks(Song.WANDERER);
+	private static (byte, byte) GetWanderersMinuetStacks() => GetSongStacks(Song.Wanderer);
 
-	private static (float, float) GetMagesBalladDuration() => GetSongDuration(Song.MAGE);
+	private static (float, float) GetMagesBalladDuration() => GetSongDuration(Song.Mage);
 
-	private static (float, float) GetArmysPaeonDuration() => GetSongDuration(Song.ARMY);
+	private static (float, float) GetArmysPaeonDuration() => GetSongDuration(Song.Army);
 
-	private static (byte, byte) GetArmysPaeonStacks() => GetSongStacks(Song.ARMY);
+	private static (byte, byte) GetArmysPaeonStacks() => GetSongStacks(Song.Army);
 }

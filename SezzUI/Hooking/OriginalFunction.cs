@@ -203,7 +203,7 @@ public class OriginalFunction<T> : IDisposable where T : Delegate
 			}
 
 			assemblyCode.Add($"jmp qword {OriginalAddress + hookLength}");
-			opCodes.AddRange(Utilities.Assembler.Assemble(assemblyCode.ToArray()));
+			opCodes.AddRange(Utilities.Assemble(assemblyCode.ToArray()));
 			Utilities.FillArrayUntilSize<byte>(opCodes, 0x90, MAX_FUNCTION_SIZE);
 
 			return buffer.Add(opCodes.ToArray(), 1);

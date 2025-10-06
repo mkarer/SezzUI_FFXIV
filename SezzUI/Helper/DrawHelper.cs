@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using Dalamud.Interface.Textures.TextureWraps;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Enums;
 using SezzUI.Logging;
 
@@ -64,7 +64,7 @@ public static class DrawHelper
 	public static void DrawBackdrop(Vector2 pos, Vector2 size, uint backgroundColor, uint borderColor, ImDrawListPtr drawList)
 	{
 		// Background
-		drawList.AddRectFilled(pos, pos + size, backgroundColor, 0);
+		drawList.AddRectFilled(pos, pos + size, backgroundColor, 0f);
 
 		// Border
 		drawList.AddRect(pos, pos + size, borderColor, 0, ImDrawFlags.None, 1);
@@ -118,21 +118,21 @@ public static class DrawHelper
 		float verticalY2 = backdropPos.Y + backdropSize.Y - (inset > 0 ? inset : inset + size);
 
 		// Left
-		drawList.AddImage(texture.ImGuiHandle, new(leftX, verticalY1), new(leftX + size, verticalY2), _edgeUv0[inset < 0 ? 0 : 1], _edgeUv1[inset < 0 ? 0 : 1], glowColor);
+		drawList.AddImage(texture.Handle, new(leftX, verticalY1), new(leftX + size, verticalY2), _edgeUv0[inset < 0 ? 0 : 1], _edgeUv1[inset < 0 ? 0 : 1], glowColor);
 		// Right
-		drawList.AddImage(texture.ImGuiHandle, new(rightX, verticalY1), new(rightX + size, verticalY2), _edgeUv0[inset < 0 ? 1 : 0], _edgeUv1[inset < 0 ? 1 : 0], glowColor);
+		drawList.AddImage(texture.Handle, new(rightX, verticalY1), new(rightX + size, verticalY2), _edgeUv0[inset < 0 ? 1 : 0], _edgeUv1[inset < 0 ? 1 : 0], glowColor);
 		// Top
-		drawList.AddImage(texture.ImGuiHandle, new(horizontalX1, topY), new(horizontalX2, topY + size), _edgeUv0[inset < 0 ? 2 : 3], _edgeUv1[inset < 0 ? 2 : 3], glowColor);
+		drawList.AddImage(texture.Handle, new(horizontalX1, topY), new(horizontalX2, topY + size), _edgeUv0[inset < 0 ? 2 : 3], _edgeUv1[inset < 0 ? 2 : 3], glowColor);
 		// Bottom
-		drawList.AddImage(texture.ImGuiHandle, new(horizontalX1, bottomY), new(horizontalX2, bottomY + size), _edgeUv0[inset < 0 ? 3 : 2], _edgeUv1[inset < 0 ? 3 : 2], glowColor);
+		drawList.AddImage(texture.Handle, new(horizontalX1, bottomY), new(horizontalX2, bottomY + size), _edgeUv0[inset < 0 ? 3 : 2], _edgeUv1[inset < 0 ? 3 : 2], glowColor);
 		// Top Left
-		drawList.AddImage(texture.ImGuiHandle, new(leftX, topY), new(leftX + size, topY + size), _edgeUv0[inset < 0 ? 4 : 7], _edgeUv1[inset < 0 ? 4 : 7], glowColor);
+		drawList.AddImage(texture.Handle, new(leftX, topY), new(leftX + size, topY + size), _edgeUv0[inset < 0 ? 4 : 7], _edgeUv1[inset < 0 ? 4 : 7], glowColor);
 		// Top Right
-		drawList.AddImage(texture.ImGuiHandle, new(rightX, topY), new(rightX + size, topY + size), _edgeUv0[inset < 0 ? 5 : 6], _edgeUv1[inset < 0 ? 5 : 6], glowColor);
+		drawList.AddImage(texture.Handle, new(rightX, topY), new(rightX + size, topY + size), _edgeUv0[inset < 0 ? 5 : 6], _edgeUv1[inset < 0 ? 5 : 6], glowColor);
 		// Bottom Left
-		drawList.AddImage(texture.ImGuiHandle, new(leftX, bottomY), new(leftX + size, bottomY + size), _edgeUv0[inset < 0 ? 6 : 5], _edgeUv1[inset < 0 ? 6 : 5], glowColor);
+		drawList.AddImage(texture.Handle, new(leftX, bottomY), new(leftX + size, bottomY + size), _edgeUv0[inset < 0 ? 6 : 5], _edgeUv1[inset < 0 ? 6 : 5], glowColor);
 		// Bottom Right
-		drawList.AddImage(texture.ImGuiHandle, new(rightX, bottomY), new(rightX + size, bottomY + size), _edgeUv0[inset < 0 ? 7 : 4], _edgeUv1[inset < 0 ? 7 : 4], glowColor);
+		drawList.AddImage(texture.Handle, new(rightX, bottomY), new(rightX + size, bottomY + size), _edgeUv0[inset < 0 ? 7 : 4], _edgeUv1[inset < 0 ? 7 : 4], glowColor);
 	}
 
 	public static void DrawBackdropEdgeGlow(Vector2 backdropPos, Vector2 backdropSize, uint glowColor, ImDrawListPtr drawList, uint size = 8, short inset = -8)
@@ -254,10 +254,10 @@ public static class DrawHelper
 
 	public static void DrawProgressBar(Vector2 pos, Vector2 size, float min, float max, float current, uint barColor, uint bgColor, ImDrawListPtr drawList)
 	{
-		drawList.AddRectFilled(pos, pos + size, bgColor, 0);
+		drawList.AddRectFilled(pos, pos + size, bgColor, 0f);
 
 		float fillPercent = max == 0 ? 1f : Math.Clamp((current - min) / (max - min), 0f, 1f);
-		drawList.AddRectFilled(pos, pos + new Vector2(size.X * fillPercent, size.Y), barColor, 0);
+		drawList.AddRectFilled(pos, pos + new Vector2(size.X * fillPercent, size.Y), barColor, 0f);
 	}
 
 	#region Cooldowns

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Numerics;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Configuration;
 using SezzUI.Configuration.Attributes;
 using SezzUI.Modules;
@@ -52,7 +52,7 @@ public class TooltipsHelper : IPluginDisposable
 
 			using (MediaManager.PushFont(PluginFontSize.Large))
 			{
-				_titleSize = ImGui.CalcTextSize(_currentTooltipTitle, MaxWidth);
+				_titleSize = ImGui.CalcTextSize(_currentTooltipTitle, false, MaxWidth);
 				_titleSize.Y += Margin;
 			}
 		}
@@ -60,7 +60,7 @@ public class TooltipsHelper : IPluginDisposable
 		// calculate text size
 		using (MediaManager.PushFont())
 		{
-			_textSize = ImGui.CalcTextSize(_currentTooltipText, MaxWidth);
+			_textSize = ImGui.CalcTextSize(_currentTooltipText, false, MaxWidth);
 		}
 
 		_size = new(Math.Max(_titleSize.X, _textSize.X) + Margin * 2, _titleSize.Y + _textSize.Y + Margin * 2);

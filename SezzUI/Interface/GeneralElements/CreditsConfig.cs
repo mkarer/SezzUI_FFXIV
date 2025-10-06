@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Newtonsoft.Json;
 using SezzUI.Configuration;
 using SezzUI.Configuration.Attributes;

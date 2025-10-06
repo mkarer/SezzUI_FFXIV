@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Configuration.Attributes;
 
 namespace SezzUI.Configuration.Tree;

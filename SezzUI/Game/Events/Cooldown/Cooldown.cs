@@ -543,8 +543,8 @@ internal sealed unsafe class Cooldown : BaseEvent, IHookAccessor
 	public Cooldown()
 	{
 		_actionManager = ActionManager.Instance();
-		_sendActionHook = (this as IHookAccessor).Hook<SendActionDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 48 8B E9 41 0F B7 D9", SendActionDetour); // https://github.com/Nik-Potokar/XIVSlothCombo/blob/main/XIVSlothCombo/Data/ActionWatching.cs
-		_receiveActionEffectHook = (this as IHookAccessor).Hook<ReceiveActionEffectDelegate>("40 55 56 57 41 54 41 55 41 56 48 8D AC 24", ReceiveActionEffectDetour);
+		_sendActionHook = (this as IHookAccessor).Hook<SendActionDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 48 8B E9 41 0F B7 D9", SendActionDetour); // https://github.com/44451516/XIVSlothCombo/blob/CN/XIVSlothComboX/Core/HookAddress.cs#L23
+		_receiveActionEffectHook = (this as IHookAccessor).Hook<ReceiveActionEffectDelegate>(FFXIVClientStructs.FFXIV.Client.Game.Character.ActionEffectHandler.Addresses.Receive.Value, ReceiveActionEffectDetour);
 
 		(this as IPluginComponent).Enable();
 	}

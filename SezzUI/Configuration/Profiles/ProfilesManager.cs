@@ -6,7 +6,7 @@ using System.Numerics;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface;
 using Dalamud.Interface.ImGuiFileDialog;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Newtonsoft.Json;
 using SezzUI.Configuration.Attributes;
 using SezzUI.Configuration.Tree;
@@ -587,7 +587,7 @@ public class ProfilesManager
 
 			ImGui.PushItemWidth(408);
 			ImGuiHelper.NewLineAndTab();
-			if (ImGui.Combo("Active Profile", ref _selectedProfileIndex, profiles, profiles.Length, 10))
+			if (ImGui.Combo("Active Profile", ref _selectedProfileIndex, profiles, 10))
 			{
 				string newProfileName = profiles[_selectedProfileIndex];
 
@@ -684,7 +684,7 @@ public class ProfilesManager
 
 			ImGuiHelper.Tab();
 			ImGui.PushItemWidth(200);
-			ImGui.Combo("", ref _copyFromIndex, profiles, profiles.Length, 10);
+			ImGui.Combo("", ref _copyFromIndex, profiles, 10);
 
 			ImGui.SameLine();
 			if (ImGui.Button("Copy", new(200, 0)))

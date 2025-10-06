@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Numerics;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Configuration.Attributes;
 
 namespace SezzUI.Configuration.Tree;

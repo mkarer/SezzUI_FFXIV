@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Configuration;
 using SezzUI.Enums;
 using SezzUI.Game.Events;
@@ -88,7 +88,7 @@ public class ActionBar : PluginModule
 			Logger.Debug($"[{bar}] Updating...");
 		}
 #endif
-		AtkUnitBase* addon = (AtkUnitBase*) Services.GameGui.GetAddonByName(Addons.Names[bar]);
+		AtkUnitBase* addon = (AtkUnitBase*) Services.GameGui.GetAddonByName(Addons.Names[bar]).Address;
 		if ((IntPtr) addon != IntPtr.Zero)
 		{
 			ActionBarLayout layout = ((AddonActionBarBase*) addon)->Layout;
@@ -288,7 +288,7 @@ public class ActionBar : PluginModule
 		}
 #endif
 
-		AtkUnitBase* addon = (AtkUnitBase*) Services.GameGui.GetAddonByName(Addons.Names[bar]);
+		AtkUnitBase* addon = (AtkUnitBase*) Services.GameGui.GetAddonByName(Addons.Names[bar]).Address;
 		if ((IntPtr) addon != IntPtr.Zero)
 		{
 			foreach ((uint nodeId, Vector2<float> pos) in _originalPositions[bar])
@@ -533,7 +533,7 @@ public class ActionBar : PluginModule
 	/// </summary>
 	private unsafe void CheckStuckModifiers()
 	{
-		AtkUnitBase* actionBar = (AtkUnitBase*) Services.GameGui.GetAddonByName("_ActionBar");
+		AtkUnitBase* actionBar = (AtkUnitBase*) Services.GameGui.GetAddonByName("_ActionBar").Address;
 		if ((IntPtr) actionBar == IntPtr.Zero || !actionBar->IsVisible)
 		{
 			return;
@@ -596,7 +596,7 @@ public class ActionBar : PluginModule
 			return;
 		}
 
-		AtkUnitBase* actionBar = (AtkUnitBase*) Services.GameGui.GetAddonByName("_ActionBar");
+		AtkUnitBase* actionBar = (AtkUnitBase*) Services.GameGui.GetAddonByName("_ActionBar").Address;
 		if ((IntPtr) actionBar == IntPtr.Zero || !actionBar->IsVisible)
 		{
 #if DEBUG

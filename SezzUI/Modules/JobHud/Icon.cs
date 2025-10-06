@@ -5,7 +5,7 @@ using System;
 using System.Numerics;
 using Dalamud.Game.ClientState.Statuses;
 using Dalamud.Interface.Textures.TextureWraps;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Enums;
 using SezzUI.Game;
 using SezzUI.Game.Events;
@@ -218,7 +218,7 @@ public class Icon : IDisposable
 		set
 		{
 			_clipMultiplier = value;
-			if (_texture != null && _texture.ImGuiHandle != IntPtr.Zero)
+			if (_texture != null && _texture.Handle != IntPtr.Zero)
 			{
 				Vector2 iconSize = new(_texture.Width, _texture.Height);
 				(_iconUV0, _iconUV1) = DrawHelper.GetTexCoordinates(iconSize, Parent.IconSize, _clipMultiplier ?? Vector2.Zero);
@@ -355,7 +355,7 @@ public class Icon : IDisposable
 			{
 				// Permanent is either really permanent or a status that hasn't ticked yet.
 				float duration = (MaxStatusDuration ?? 0) == Constants.PERMANENT_STATUS_DURATION ? Constants.PERMANENT_STATUS_DURATION : Math.Max(Constants.PERMANENT_STATUS_DURATION, status.RemainingTime);
-				byte stacks = (duration > 0 || duration == Constants.PERMANENT_STATUS_DURATION) && status.GameData.Value.MaxStacks > 1 ? status.StackCount : (byte) 0;
+				byte stacks = (duration > 0 || duration == Constants.PERMANENT_STATUS_DURATION) && status.GameData.Value.MaxStacks > 1 ? (byte)status.Param : (byte) 0;
 
 				float durationMax = 0f;
 				if (MaxStatusDuration != null)
@@ -421,7 +421,7 @@ public class Icon : IDisposable
 			if (status != null)
 			{
 				float duration = Math.Abs(status.RemainingTime);
-				byte stacks = duration > 0 && status.GameData.Value.MaxStacks > 1 ? status.StackCount : (byte) 0;
+				byte stacks = duration > 0 && status.GameData.Value.MaxStacks > 1 ? (byte)status.Param : (byte) 0;
 				if (stacks > 0)
 				{
 					chargesTextAmount = stacks;
@@ -608,10 +608,10 @@ public class Icon : IDisposable
 		_animatorBorder.Update();
 		_animatorTexture.Update();
 
-		if (_texture != null && _texture.ImGuiHandle != IntPtr.Zero)
+		if (_texture != null && _texture.Handle != IntPtr.Zero)
 		{
 			DrawHelper.DrawBackdrop(pos, size, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 0.5f * animator.Data.Opacity)), ImGui.ColorConvertFloat4ToU32(_animatorBorder.Data.Color.AddTransparency(animator.Data.Opacity)), drawList);
-			drawList.AddImage(_texture.ImGuiHandle, posInside, posInside + sizeInside, _iconUV0 != null ? (Vector2) _iconUV0 : Parent.IconUV0, _iconUV1 != null ? (Vector2) _iconUV1 : Parent.IconUV1, ImGui.ColorConvertFloat4ToU32(_animatorTexture.Data.Color.AddTransparency(animator.Data.Opacity)));
+			drawList.AddImage(_texture.Handle, posInside, posInside + sizeInside, _iconUV0 != null ? (Vector2) _iconUV0 : Parent.IconUV0, _iconUV1 != null ? (Vector2) _iconUV1 : Parent.IconUV1, ImGui.ColorConvertFloat4ToU32(_animatorTexture.Data.Color.AddTransparency(animator.Data.Opacity)));
 		}
 		else
 		{
@@ -653,7 +653,7 @@ public class Icon : IDisposable
 			if (tex != null)
 			{
 				uint glowColor = ImGui.ColorConvertFloat4ToU32(new(0.95f, 0.95f, 0.32f, animator.Data.Opacity));
-				drawList.AddImage(tex.ImGuiHandle, pos, pos + size, Vector2.Zero, Vector2.One, glowColor);
+				drawList.AddImage(tex.Handle, pos, pos + size, Vector2.Zero, Vector2.One, glowColor);
 			}
 			else
 			{

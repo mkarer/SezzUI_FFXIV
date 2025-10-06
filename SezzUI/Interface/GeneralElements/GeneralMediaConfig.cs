@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Newtonsoft.Json;
 using SezzUI.Configuration;
 using SezzUI.Configuration.Attributes;
@@ -154,7 +155,7 @@ public class CustomFontsConfig : PluginConfigObject
 					{
 						ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 4f);
 						ImGui.PushFont(UiBuilder.IconFont);
-						ImGui.TextColored(new(1, 216f / 255f, 0, 1), FontAwesomeIcon.ExclamationCircle.ToIconString());
+						ImGui.TextColored(ImGui.ColorConvertFloat4ToU32(new(1, 216f / 255f, 0, 1)), FontAwesomeIcon.ExclamationCircle.ToIconString());
 						ImGui.PopFont();
 						if (ImGui.IsItemHovered())
 						{

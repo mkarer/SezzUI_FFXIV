@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Reflection;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Newtonsoft.Json.Linq;
 using SezzUI.Configuration;
 using SezzUI.Configuration.Attributes;

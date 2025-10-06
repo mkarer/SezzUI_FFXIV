@@ -51,7 +51,7 @@ public class Plugin : IDalamudPlugin
 
 		AssemblyLocation = pluginInterface.AssemblyLocation.DirectoryName != null ? pluginInterface.AssemblyLocation.DirectoryName : Assembly.GetExecutingAssembly().Location;
 		AssemblyLocation = AssemblyLocation.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-		Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.7.4";
+		Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.7.5";
 
 #if DEBUG
 		Logger.Debug($"{Name} Version {Version}");
@@ -182,6 +182,7 @@ public class Plugin : IDalamudPlugin
 	private void Draw()
 	{
 		Services.PluginInterface.UiBuilder.OverrideGameCursor = false;
+		_hudManager.Initialize();
 
 		DrawState drawState = GetDrawState();
 		if (DrawState != drawState)

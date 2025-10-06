@@ -5,7 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Configuration;
 using SezzUI.Enums;
 using SezzUI.Helper;
@@ -110,7 +110,7 @@ public class PluginMenu : PluginModule
 					Vector2 imageSize = new(item.Size.X - 8, item.Size.Y - 8);
 					Vector2 imagePos = DrawHelper.GetAnchoredPosition(buttonPos, item.Size, imageSize, DrawAnchor.Center);
 					imagePos.Y += BORDER_SIZE;
-					drawList.AddImage(item.Texture.ImGuiHandle, imagePos, imagePos + imageSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)));
+					drawList.AddImage(item.Texture.Handle, imagePos, imagePos + imageSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(color.AddTransparency(opacity)));
 				}
 				else if (Tags.RegexColorTags.IsMatch(item.Config.Title))
 				{

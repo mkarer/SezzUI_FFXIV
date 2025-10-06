@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Dalamud.Plugin;
 using Dalamud.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Logging;
 
 namespace SezzUI.Helper;

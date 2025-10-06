@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using Dalamud.Interface.Textures.TextureWraps;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Enums;
 using SezzUI.Helper;
 using SezzUI.Interface;
@@ -85,10 +85,10 @@ public sealed class CooldownPulse : AnimatedHudElement
 		string windowId = $"SezzUI_CooldownPulse{IconId}";
 		DrawHelper.DrawInWindow(windowId, elementPosition, elementSize, false, false, drawList =>
 		{
-			if (Texture != null && Texture.ImGuiHandle != IntPtr.Zero)
+			if (Texture != null && Texture.Handle != IntPtr.Zero)
 			{
 				// Texture
-				drawList.AddImage(Texture.ImGuiHandle, elementPosition, elementPosition + elementSize, IconUv0, IconUv1, ImGui.ColorConvertFloat4ToU32(Vector4.One.AddTransparency(Animator.Data.Opacity)));
+				drawList.AddImage(Texture.Handle, elementPosition, elementPosition + elementSize, IconUv0, IconUv1, ImGui.ColorConvertFloat4ToU32(Vector4.One.AddTransparency(Animator.Data.Opacity)));
 
 				// Border
 				if (BorderSize > 0)
@@ -99,7 +99,7 @@ public sealed class CooldownPulse : AnimatedHudElement
 			else
 			{
 				// Fail-over Text
-				drawList.AddRectFilled(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 0.5f * Animator.Data.Opacity)), 0);
+				drawList.AddRectFilled(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 0.5f * Animator.Data.Opacity)), 0f);
 				drawList.AddRect(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, 0.3f * Animator.Data.Opacity)), 0, ImDrawFlags.None, 1);
 
 				using (MediaManager.PushFont(PluginFontSize.Small))

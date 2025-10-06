@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using Dalamud.Interface.Textures.TextureWraps;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Enums;
 using SezzUI.Helper;
 
@@ -50,14 +50,14 @@ public class BarManagerBar : IDisposable
 					if (IconId != null)
 					{
 						IDalamudTextureWrap? icon = Singletons.Get<MediaManager>().GetTextureFromIconIdOverridable((uint) IconId, out _);
-						if (icon != null && icon.ImGuiHandle != IntPtr.Zero)
+						if (icon != null && icon.Handle != IntPtr.Zero)
 						{
 							Vector2 posIcon = new(position.X + Config.BorderSize, position.Y + Config.BorderSize);
 							Vector2 sizeIcon = new(Config.Size.Y - 2 * Config.BorderSize, Config.Size.Y - 2 * Config.BorderSize);
 							(Vector2 uv0, Vector2 uv1) = DrawHelper.GetTexCoordinates(sizeIcon);
 
-							drawList.AddRectFilled(posIcon, posIcon + sizeIcon, Config.BackgroundColor.Base, 0);
-							drawList.AddImage(icon.ImGuiHandle, posIcon, posIcon + sizeIcon, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Vector4.One));
+							drawList.AddRectFilled(posIcon, posIcon + sizeIcon, Config.BackgroundColor.Base, 0f);
+							drawList.AddImage(icon.Handle, posIcon, posIcon + sizeIcon, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Vector4.One));
 
 							posBar.X += sizeIcon.X + 4;
 							sizeBar.X -= sizeIcon.X + 4;
@@ -83,12 +83,12 @@ public class BarManagerBar : IDisposable
 					}
 
 					// Bar BG
-					drawList.AddRectFilled(posBar, posBar + sizeBar, Config.BackgroundColor.Base, 0);
+					drawList.AddRectFilled(posBar, posBar + sizeBar, Config.BackgroundColor.Base, 0f);
 
 					// Bar
 					float fillPercent = (Config.FillInverted ? Remaining : (float) Elapsed) / Duration;
 					Vector2 sizeBarFilled = new(Config.FillDirection.IsHorizontal() ? sizeBar.X * fillPercent : sizeBar.X, !Config.FillDirection.IsHorizontal() ? sizeBar.Y * fillPercent : sizeBar.Y);
-					drawList.AddRectFilled(posBar, posBar + sizeBarFilled, Config.FillColor.Base, 0);
+					drawList.AddRectFilled(posBar, posBar + sizeBarFilled, Config.FillColor.Base, 0f);
 
 					// Text: Name
 					if (Text != null)
@@ -130,14 +130,14 @@ public class BarManagerBar : IDisposable
 					if (IconId != null)
 					{
 						IDalamudTextureWrap? icon = Singletons.Get<MediaManager>().GetTextureFromIconIdOverridable((uint) IconId, out _);
-						if (icon != null && icon.ImGuiHandle != IntPtr.Zero)
+						if (icon != null && icon.Handle != IntPtr.Zero)
 						{
 							Vector2 posIcon = new(position.X + Config.BorderSize, position.Y + Config.BorderSize);
 							Vector2 sizeIcon = new(Config.Size.Y - 2 * Config.BorderSize, Config.Size.Y - 2 * Config.BorderSize);
 							(Vector2 uv0, Vector2 uv1) = DrawHelper.GetTexCoordinates(sizeIcon);
 
-							drawList.AddRectFilled(posIcon, posIcon + sizeIcon, Config.BackgroundColor.Base, 0);
-							drawList.AddImage(icon.ImGuiHandle, posIcon, posIcon + sizeIcon, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Vector4.One));
+							drawList.AddRectFilled(posIcon, posIcon + sizeIcon, Config.BackgroundColor.Base, 0f);
+							drawList.AddImage(icon.Handle, posIcon, posIcon + sizeIcon, uv0, uv1, ImGui.ColorConvertFloat4ToU32(Vector4.One));
 
 							posBar.X += sizeIcon.X;
 							sizeBar.X -= sizeIcon.X;
@@ -154,12 +154,12 @@ public class BarManagerBar : IDisposable
 					}
 
 					// Bar BG
-					drawList.AddRectFilled(posBar, posBar + sizeBar, Config.BackgroundColor.Base, 0);
+					drawList.AddRectFilled(posBar, posBar + sizeBar, Config.BackgroundColor.Base, 0f);
 
 					// Bar
 					float fillPercent = (Config.FillInverted ? Remaining : (float) Elapsed) / Duration;
 					Vector2 sizeBarFilled = new(Config.FillDirection.IsHorizontal() ? sizeBar.X * fillPercent : sizeBar.X, !Config.FillDirection.IsHorizontal() ? sizeBar.Y * fillPercent : sizeBar.Y);
-					drawList.AddRectFilled(posBar, posBar + sizeBarFilled, Config.FillColor.Base, 0);
+					drawList.AddRectFilled(posBar, posBar + sizeBarFilled, Config.FillColor.Base, 0f);
 
 					// Text: Name
 					if (Text != null)

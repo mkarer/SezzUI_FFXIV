@@ -7,7 +7,7 @@ using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Configuration;
 using SezzUI.Interface.GeneralElements;
 using SezzUI.Logging;
@@ -330,7 +330,7 @@ public class MediaManager : IPluginDisposable
 		}
 	}
 
-	private ushort[]? GetCharacterRanges(FontData fontData, ImGuiIOPtr io)
+	private unsafe ushort[]? GetCharacterRanges(FontData fontData, ImGuiIOPtr io)
 	{
 		if (!fontData.Chinese && !fontData.Korean)
 		{

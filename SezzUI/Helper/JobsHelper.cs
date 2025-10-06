@@ -186,7 +186,7 @@ public static class JobsHelper
 					return (0, 0);
 				}
 
-				return (SpellHelper.GetStatus(304u, Unit.Player)?.StackCount ?? 0, 2);
+				return (SpellHelper.GetStatus(304u, Unit.Player)?.Param ?? 0, 2);
 
 			case PowerType.Palette:
 				return (Services.JobGauges.Get<PCTGauge>().PalleteGauge, 100);

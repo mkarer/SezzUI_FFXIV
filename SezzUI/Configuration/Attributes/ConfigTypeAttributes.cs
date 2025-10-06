@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Reflection;
 using Dalamud.Interface;
 using Dalamud.Interface.ImGuiFileDialog;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Helper;
 
 namespace SezzUI.Configuration.Attributes;
@@ -331,7 +331,7 @@ public class DragInt2Attribute : ConfigAttribute
 [AttributeUsage(AttributeTargets.Field)]
 public class InputTextAttribute : ConfigAttribute
 {
-	public uint maxLength;
+	public int maxLength;
 	public bool formattable = true;
 
 	public InputTextAttribute(string friendlyName) : base(friendlyName)
@@ -433,7 +433,7 @@ public class ComboAttribute : ConfigAttribute
 			intVal = (int) fieldVal;
 		}
 
-		if (ImGui.Combo(friendlyName + IDText(ID), ref intVal, options, options.Length, 4))
+		if (ImGui.Combo(friendlyName + IDText(ID), ref intVal, options, 4))
 		{
 			field.SetValue(config, intVal);
 
@@ -618,7 +618,7 @@ public class TextAttribute : ConfigAttribute
 [AttributeUsage(AttributeTargets.Field)]
 public class SelectFolderAttribute : ConfigAttribute
 {
-	private const uint MAX_PATH = 256; // I know. I also don't care.
+	private const int MAX_PATH = 256; // I know. I also don't care.
 	private readonly FileDialogManager _fileDialogManager;
 
 	public SelectFolderAttribute(string friendlyName) : base(friendlyName)
@@ -727,7 +727,7 @@ public class DynamicListAttribute : ConfigAttribute
 
 		int intVal = 0;
 		ImGui.Text("Add");
-		if (ImGui.Combo("##Add" + idText + friendlyName, ref intVal, addOptions.ToArray(), addOptions.Count, 6))
+		if (ImGui.Combo("##Add" + idText + friendlyName, ref intVal, addOptions.ToArray(), 6))
 		{
 			changed = true;
 
@@ -825,7 +825,7 @@ public class FontAttribute : ConfigAttribute
 
 		string[] options = MediaManager.ImGuiFontData.Values.Select(fontData => fontData.Name + "\u2002\u2002" + fontData.Size).ToArray();
 
-		if (ImGui.Combo(friendlyName + IDText(ID), ref index, options, options.Length, 4))
+		if (ImGui.Combo(friendlyName + IDText(ID), ref index, options, 4))
 		{
 			stringVal = fontKeys[index];
 			field.SetValue(config, stringVal);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Configuration;
 using SezzUI.Enums;
 using SezzUI.Helper;
@@ -43,16 +43,28 @@ public class HudManager : IPluginDisposable
 		configurationManager.ResetEvent += OnConfigReset;
 		configurationManager.LockEvent += OnHUDLockChanged;
 		configurationManager.ConfigClosedEvent += OnConfigWindowClosed;
+	}
 
-		Singletons.Register(new JobHud(configurationManager.GetConfigObject<JobHudConfig>()));
-		Singletons.Register(new CooldownHud(configurationManager.GetConfigObject<CooldownHudConfig>()));
-		Singletons.Register(new ActionBar(configurationManager.GetConfigObject<ActionBarConfig>()));
-		Singletons.Register(new ElementHider(configurationManager.GetConfigObject<ElementHiderConfig>()));
-		Singletons.Register(new PluginMenu(configurationManager.GetConfigObject<PluginMenuConfig>()));
-		Singletons.Register(new ServerInfoBar(configurationManager.GetConfigObject<ServerInfoBarConfig>()));
-		Singletons.Register(new AutoDismount(configurationManager.GetConfigObject<AutoDismountConfig>()));
+	private bool _isInitialized = false;
+	
+	public void Initialize()
+	{
+		if (!_isInitialized)
+		{
+			_isInitialized = true;
+			
+			ConfigurationManager configurationManager = Singletons.Get<ConfigurationManager>();
 
-		CreateHudElements();
+			Singletons.Register(new JobHud(configurationManager.GetConfigObject<JobHudConfig>()));
+			Singletons.Register(new CooldownHud(configurationManager.GetConfigObject<CooldownHudConfig>()));
+			Singletons.Register(new ActionBar(configurationManager.GetConfigObject<ActionBarConfig>()));
+			Singletons.Register(new ElementHider(configurationManager.GetConfigObject<ElementHiderConfig>()));
+			Singletons.Register(new PluginMenu(configurationManager.GetConfigObject<PluginMenuConfig>()));
+			Singletons.Register(new ServerInfoBar(configurationManager.GetConfigObject<ServerInfoBarConfig>()));
+			Singletons.Register(new AutoDismount(configurationManager.GetConfigObject<AutoDismountConfig>()));
+
+			CreateHudElements();
+		}
 	}
 
 	bool IPluginDisposable.IsDisposed { get; set; } = false;

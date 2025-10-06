@@ -3,7 +3,7 @@ using System.Numerics;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Statuses;
 using Dalamud.Interface.Textures.TextureWraps;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Enums;
 using SezzUI.Game.Events;
 using SezzUI.Helper;
@@ -209,7 +209,7 @@ public sealed class AuraAlert : AnimatedHudElement
 						Hide(elapsed > 2000);
 					}
 
-					if (!conditionsFailed && status != null && ((ExactStacks != null && status.StackCount != ExactStacks) || (MinimumStacks != null && status.StackCount < MinimumStacks)))
+					if (!conditionsFailed && status != null && ((ExactStacks != null && status.Param != ExactStacks) || (MinimumStacks != null && status.Param < MinimumStacks)))
 					{
 						conditionsFailed = true;
 						Hide(elapsed > 2000);
@@ -276,10 +276,10 @@ public sealed class AuraAlert : AnimatedHudElement
 					DrawHelper.DrawBackdropEdgeGlow(elementPosition, elementSize, ImGui.ColorConvertFloat4ToU32(GlowColor.AddTransparency(Animator.Data.Opacity)), drawList, GlowBackdropSize, (short) -GlowBackdropSize);
 				}
 
-				if (_texture != null && _texture.ImGuiHandle != IntPtr.Zero)
+				if (_texture != null && _texture.Handle != IntPtr.Zero)
 				{
 					// Texture
-					drawList.AddImage(_texture.ImGuiHandle, elementPosition, elementPosition + elementSize, ImageUV0, ImageUV1, ImGui.ColorConvertFloat4ToU32(Color.AddTransparency(Animator.Data.Opacity)));
+					drawList.AddImage(_texture.Handle, elementPosition, elementPosition + elementSize, ImageUV0, ImageUV1, ImGui.ColorConvertFloat4ToU32(Color.AddTransparency(Animator.Data.Opacity)));
 
 					// Border
 					if (BorderSize > 0)
@@ -290,7 +290,7 @@ public sealed class AuraAlert : AnimatedHudElement
 				else
 				{
 					// Fail-over Text
-					drawList.AddRectFilled(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 0.5f * Animator.Data.Opacity)), 0);
+					drawList.AddRectFilled(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new(0, 0, 0, 0.5f * Animator.Data.Opacity)), 0f);
 					drawList.AddRect(elementPosition, elementPosition + elementSize, ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, 0.3f * Animator.Data.Opacity)), 0, ImDrawFlags.None, 1);
 
 					using (MediaManager.PushFont(PluginFontSize.Small))

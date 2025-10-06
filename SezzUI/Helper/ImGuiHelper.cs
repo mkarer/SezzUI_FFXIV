@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Reflection;
 using Dalamud.Interface;
 using Dalamud.Interface.ImGuiFileDialog;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SezzUI.Configuration;
 using SezzUI.Configuration.Tree;
 using SezzUI.Enums;
@@ -146,7 +146,7 @@ public static class ImGuiHelper
 	{
 		Node? nodeToReset = null;
 
-		if (ImGui.BeginPopupContextItem())
+		if (ImGui.BeginPopupContextItem("ResetContextMenu"))
 		{
 			if (canExport && ImGui.Selectable("Export"))
 			{
@@ -373,7 +373,7 @@ public static class ImGuiHelper
 		Vector2 oldCursor = ImGui.GetCursorPos();
 		Vector2 offset = new(26 * Math.Max(depth - 1, 0), 2);
 		ImGui.SetCursorPos(oldCursor + offset);
-		ImGui.TextColored(new(0f / 255f, 174f / 255f, 255f / 255f, 1f), "\u2002\u2514");
+		ImGui.TextColored(ImGui.ColorConvertFloat4ToU32(new(0f / 255f, 174f / 255f, 255f / 255f, 1f)), "\u2002\u2514");
 		ImGui.SameLine();
 		ImGui.SetCursorPosY(oldCursor.Y);
 	}
@@ -390,7 +390,7 @@ public static class ImGuiHelper
 	{
 		ImGuiStylePtr style = ImGui.GetStyle();
 		Vector2 size = new(ImGui.GetContentRegionAvail().X, 0);
-		size.Y += ImGui.CalcTextSize(message, size.X - ImGui.GetTextLineHeight() - 2 * style.FramePadding.X - style.ScrollbarSize).Y;
+		size.Y += ImGui.CalcTextSize(message, false, size.X - ImGui.GetTextLineHeight() - 2 * style.FramePadding.X - style.ScrollbarSize).Y;
 		size.Y += ImGui.GetFrameHeightWithSpacing() - 3f;
 
 		ImGui.PushStyleColor(ImGuiCol.ChildBg, color.Background);
