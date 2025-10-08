@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Utility;
-using Dalamud.Bindings.ImGui;
 using Newtonsoft.Json;
 using SezzUI.Configuration;
 using SezzUI.Configuration.Attributes;

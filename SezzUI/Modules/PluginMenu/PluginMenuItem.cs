@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 using System.Numerics;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Utility;
-using Dalamud.Bindings.ImGui;
 using SezzUI.Helper;
 using SezzUI.Logging;
 

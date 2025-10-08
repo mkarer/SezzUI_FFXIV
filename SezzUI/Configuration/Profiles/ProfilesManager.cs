@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface;
 using Dalamud.Interface.ImGuiFileDialog;
-using Dalamud.Bindings.ImGui;
 using Newtonsoft.Json;
 using SezzUI.Configuration.Attributes;
 using SezzUI.Configuration.Tree;
@@ -576,7 +576,7 @@ public class ProfilesManager
 	{
 		string[] profiles = Profiles.Keys.ToArray();
 
-		if (ImGui.BeginChild("Profiles", new(800, 600), false))
+		if (ImGui.BeginChild("Profiles", new(800, 600)))
 		{
 			if (Profiles.Count == 0)
 			{

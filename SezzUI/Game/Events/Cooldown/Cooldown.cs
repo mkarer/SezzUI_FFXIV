@@ -19,6 +19,7 @@ using System.Runtime.InteropServices;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using JetBrains.Annotations;
 using SezzUI.Helper;
 using SezzUI.Hooking;
@@ -544,7 +545,7 @@ internal sealed unsafe class Cooldown : BaseEvent, IHookAccessor
 	{
 		_actionManager = ActionManager.Instance();
 		_sendActionHook = (this as IHookAccessor).Hook<SendActionDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 48 8B E9 41 0F B7 D9", SendActionDetour); // https://github.com/44451516/XIVSlothCombo/blob/CN/XIVSlothComboX/Core/HookAddress.cs#L23
-		_receiveActionEffectHook = (this as IHookAccessor).Hook<ReceiveActionEffectDelegate>(FFXIVClientStructs.FFXIV.Client.Game.Character.ActionEffectHandler.Addresses.Receive.Value, ReceiveActionEffectDetour);
+		_receiveActionEffectHook = (this as IHookAccessor).Hook<ReceiveActionEffectDelegate>(ActionEffectHandler.Addresses.Receive.Value, ReceiveActionEffectDetour);
 
 		(this as IPluginComponent).Enable();
 	}

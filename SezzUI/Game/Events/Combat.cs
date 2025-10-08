@@ -2,7 +2,6 @@
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Plugin.Services;
-using Dalamud.Utility;
 using SezzUI.Modules;
 
 namespace SezzUI.Game.Events;

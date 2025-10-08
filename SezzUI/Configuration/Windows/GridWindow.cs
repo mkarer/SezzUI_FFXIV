@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
-using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Windowing;
 using SezzUI.Configuration.Tree;
 using SezzUI.Helper;
 using SezzUI.Interface.GeneralElements;

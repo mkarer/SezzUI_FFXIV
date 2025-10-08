@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Dalamud.Interface.Utility;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility;
 using SezzUI.Configuration;
 using SezzUI.Enums;
 using SezzUI.Helper;
@@ -45,14 +45,14 @@ public class HudManager : IPluginDisposable
 		configurationManager.ConfigClosedEvent += OnConfigWindowClosed;
 	}
 
-	private bool _isInitialized = false;
-	
+	private bool _isInitialized;
+
 	public void Initialize()
 	{
 		if (!_isInitialized)
 		{
 			_isInitialized = true;
-			
+
 			ConfigurationManager configurationManager = Singletons.Get<ConfigurationManager>();
 
 			Singletons.Register(new JobHud(configurationManager.GetConfigObject<JobHudConfig>()));

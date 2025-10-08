@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
-using Dalamud.Bindings.ImGui;
 using Newtonsoft.Json;
 using SezzUI.Configuration;
 using SezzUI.Configuration.Attributes;
@@ -128,7 +127,7 @@ public class CustomFontsConfig : PluginConfigObject
 		ImGuiHelper.DrawNestIndicator(1);
 		if (ImGui.BeginTable("##SezzUICustomFontsConfig_FontTable", 6, tableFlags, new(519, 260)))
 		{
-			ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed, 16, 0);
+			ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed, 16);
 			ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch, 0, 1);
 			ImGui.TableSetupColumn("Size", ImGuiTableColumnFlags.WidthFixed, 40, 2);
 			ImGui.TableSetupColumn("CN/JP", ImGuiTableColumnFlags.WidthFixed, 40, 3);

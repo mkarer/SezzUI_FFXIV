@@ -3,9 +3,9 @@
 
 using System;
 using System.Numerics;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Statuses;
 using Dalamud.Interface.Textures.TextureWraps;
-using Dalamud.Bindings.ImGui;
 using SezzUI.Enums;
 using SezzUI.Game;
 using SezzUI.Game.Events;
@@ -355,7 +355,7 @@ public class Icon : IDisposable
 			{
 				// Permanent is either really permanent or a status that hasn't ticked yet.
 				float duration = (MaxStatusDuration ?? 0) == Constants.PERMANENT_STATUS_DURATION ? Constants.PERMANENT_STATUS_DURATION : Math.Max(Constants.PERMANENT_STATUS_DURATION, status.RemainingTime);
-				byte stacks = (duration > 0 || duration == Constants.PERMANENT_STATUS_DURATION) && status.GameData.Value.MaxStacks > 1 ? (byte)status.Param : (byte) 0;
+				byte stacks = (duration > 0 || duration == Constants.PERMANENT_STATUS_DURATION) && status.GameData.Value.MaxStacks > 1 ? (byte) status.Param : (byte) 0;
 
 				float durationMax = 0f;
 				if (MaxStatusDuration != null)
@@ -421,7 +421,7 @@ public class Icon : IDisposable
 			if (status != null)
 			{
 				float duration = Math.Abs(status.RemainingTime);
-				byte stacks = duration > 0 && status.GameData.Value.MaxStacks > 1 ? (byte)status.Param : (byte) 0;
+				byte stacks = duration > 0 && status.GameData.Value.MaxStacks > 1 ? (byte) status.Param : (byte) 0;
 				if (stacks > 0)
 				{
 					chargesTextAmount = stacks;

@@ -39,7 +39,7 @@ public class SectionNode : Node
 			ImGui.PushStyleColor(ImGuiCol.Tab, new Vector4(45f / 255f, 45f / 255f, 45f / 255f, alpha));
 			ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(45f / 255f, 45f / 255f, 45f / 255f, alpha));
 
-			if (ImGui.BeginTabBar("##Tabs", ImGuiTabBarFlags.None))
+			if (ImGui.BeginTabBar("##Tabs"))
 			{
 				foreach (SubSectionNode subSectionNode in _children)
 				{

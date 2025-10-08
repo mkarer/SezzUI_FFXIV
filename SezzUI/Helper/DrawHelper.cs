@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
-using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Textures.TextureWraps;
 using SezzUI.Enums;
 using SezzUI.Logging;
 

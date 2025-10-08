@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Plugin;
 using Dalamud.Utility;
-using Dalamud.Bindings.ImGui;
 using SezzUI.Logging;
 
 namespace SezzUI.Helper;

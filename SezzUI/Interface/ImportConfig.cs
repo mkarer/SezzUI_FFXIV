@@ -99,7 +99,7 @@ public class ImportConfig : PluginConfigObject
 
 		for (int i = 0; i < _importDataList.Count; i++)
 		{
-			if (i >= _importDataEnabled.Count || _importDataEnabled[i] == false)
+			if (i >= _importDataEnabled.Count || !_importDataEnabled[i])
 			{
 				continue;
 			}
@@ -199,7 +199,7 @@ public class ImportConfig : PluginConfigObject
 			ImGui.NewLine();
 			float height = Math.Min(30 * _importDataList.Count, 400);
 
-			ImGui.BeginChild("import checkboxes", new(width, height), false);
+			ImGui.BeginChild("import checkboxes", new(width, height));
 
 			for (int i = 0; i < _importDataList.Count; i++)
 			{

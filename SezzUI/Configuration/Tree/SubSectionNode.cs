@@ -25,7 +25,7 @@ public class NestedSubSectionNode : SubSectionNode
 		{
 			ImGui.BeginChild("SezzUI_Tabs_" + Depth, new(0, ImGui.GetWindowHeight() - 22), false, ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse); // Leave room for 1 line below us
 
-			if (ImGui.BeginTabBar("##tabs" + Depth, ImGuiTabBarFlags.None))
+			if (ImGui.BeginTabBar("##tabs" + Depth))
 			{
 				didReset |= DrawSubConfig(ref changed);
 			}

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Numerics;
 using System.Reflection;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.ImGuiFileDialog;
-using Dalamud.Bindings.ImGui;
 using SezzUI.Configuration;
 using SezzUI.Configuration.Tree;
 using SezzUI.Enums;
@@ -200,7 +200,7 @@ public static class ImGuiHelper
 				width = Math.Max(width, ImGui.CalcTextSize(textLine).X);
 			}
 
-			ImGui.BeginChild("confirmation_modal_message", new(width, height), false);
+			ImGui.BeginChild("confirmation_modal_message", new(width, height));
 			foreach (string text in textLines)
 			{
 				if (text.StartsWith("\u24d8"))

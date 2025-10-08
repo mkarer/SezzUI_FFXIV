@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.ImGuiFileDialog;
-using Dalamud.Bindings.ImGui;
 using SezzUI.Helper;
 
 namespace SezzUI.Configuration.Attributes;
@@ -743,7 +743,7 @@ public class DynamicListAttribute : ConfigAttribute
 
 		if (ImGui.BeginTable("##myTable2" + friendlyName + idText, 2, flags, new(326, 150)))
 		{
-			ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch, 0, 0);
+			ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
 			ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed, 0, 1);
 
 			ImGui.TableSetupScrollFreeze(0, 1);

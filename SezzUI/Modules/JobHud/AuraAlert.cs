@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Numerics;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Statuses;
 using Dalamud.Interface.Textures.TextureWraps;
-using Dalamud.Bindings.ImGui;
 using SezzUI.Enums;
 using SezzUI.Game.Events;
 using SezzUI.Helper;
